@@ -1,0 +1,140 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Usuario del sistema (Administrador o Docente)
+model Usuario {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  nombre    String
+  rol       String   // "admin" o "docente"
+  activo    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  gradosComoTutor   Grado[]          @relation("TutorGrado") // Para grados 2-5 (tutor)
+  materiasAsignadas DocenteMateria[] // Para grados 6-9 (materias específicas)
+}
+
+// Grado escolar (2do a 9no)
+model Grado {
+  id        String   @id @default(cuid())
+  numero    Int      // 2, 3, 4, 5, 6, 7, 8, 9
+  seccion   String   @default("A")
+  año       Int      @default(2026)
+  docenteId String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  docente     Usuario?    @relation("TutorGrado", fields: [docenteId], references: [id])
+  estudiantes Estudiante[]
+  materias    Materia[]
+}
+
+// Estudiante
+model Estudiante {
+  id        String   @id @default(cuid())
+  numero    Int      // Número de lista
+  nombre    String   // Nombre completo
+  gradoId   String
+  activo    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  grado          Grado          @relation(fields: [gradoId], references: [id])
+  calificaciones Calificacion[]
+}
+
+// Materia
+model Materia {
+  id        String   @id @default(cuid())
+  nombre    String   // Comunicación, Números y Formas, etc.
+  gradoId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  grado              Grado              @relation(fields: [gradoId], references: [id])
+  calificaciones     Calificacion[]
+  configActividades  ConfigActividad[]
+  docentesAsignados  DocenteMateria[] // Para grados 6-9
+}
+
+// Asignación de docentes a materias (para grados 6-9)
+model DocenteMateria {
+  id        String   @id @default(cuid())
+  docenteId String
+  materiaId String
+  createdAt DateTime @default(now())
+  
+  docente Usuario @relation(fields: [docenteId], references: [id], onDelete: Cascade)
+  materia Materia @relation(fields: [materiaId], references: [id], onDelete: Cascade)
+  
+  @@unique([docenteId, materiaId])
+}
+
+// Configuración de actividades por materia y trimestre
+model ConfigActividad {
+  id                         String   @id @default(cuid())
+  materiaId                  String
+  trimestre                  Int      @default(1) // 1, 2, 3
+  
+  // Cantidad de cada tipo de actividad
+  numActividadesCotidianas   Int      @default(4)
+  numActividadesIntegradoras Int      @default(1)
+  tieneExamen                Boolean  @default(true)
+  
+  // Porcentajes (deben sumar 100%)
+  porcentajeAC       Float @default(35.0)
+  porcentajeAI       Float @default(35.0)
+  porcentajeExamen   Float @default(30.0)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  materia Materia @relation(fields: [materiaId], references: [id])
+  
+  @@unique([materiaId, trimestre])
+}
+
+// Configuración del sistema (año escolar actual, etc.)
+model ConfiguracionSistema {
+  id           String   @id @default(cuid())
+  añoEscolar   Int      @default(2026)
+  escuela      String   @default("Centro Escolar")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// Calificaciones por estudiante, materia y trimestre
+model Calificacion {
+  id           String   @id @default(cuid())
+  estudianteId String
+  materiaId    String
+  trimestre    Int      @default(1)
+  
+  // Notas de actividades (JSON arrays)
+  actividadesCotidianas   String?  // JSON array: [10, 9, 8, 7]
+  calificacionAC          Float?   // Promedio calculado
+  actividadesIntegradoras String?  // JSON array: [10, 9]
+  calificacionAI          Float?   // Promedio calculado
+  examenTrimestral        Float?   // Nota del examen
+  promedioFinal           Float?   // Promedio final calculado
+  recuperacion            Float?   // Nota de recuperación
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  estudiante Estudiante @relation(fields: [estudianteId], references: [id])
+  materia    Materia    @relation(fields: [materiaId], references: [id])
+  
+  @@unique([estudianteId, materiaId, trimestre])
+}
