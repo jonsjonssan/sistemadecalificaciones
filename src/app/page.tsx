@@ -20,8 +20,8 @@ import Dashboard from "@/components/Dashboard";
 import AsistenciaBoard from "@/components/AsistenciaBoard";
 
 // Interfaces
-interface UsuarioSesion { id: string; email: string; nombre: string; rol: string; gradosAsignados?: { id: string; numero: number; seccion: string; }[]; materiasAsignadas?: { id: string; nombre: string; gradoId: string; gradoNumero?: number; }[]; }
-interface MateriaConGrado { id: string; nombre: string; gradoId: string; grado?: { id: string; numero: number; seccion: string; }; }
+interface UsuarioSesion { id: string; email: string; nombre: string; rol: string; gradosAsignados?: { id: string; numero: number; seccion: string; }[]; asignaturasAsignadas?: { id: string; nombre: string; gradoId: string; gradoNumero?: number; }[]; }
+interface AsignaturaConGrado { id: string; nombre: string; gradoId: string; grado?: { id: string; numero: number; seccion: string; }; }
 interface Usuario { 
   id: string; 
   email: string; 
@@ -29,13 +29,13 @@ interface Usuario {
   rol: string; 
   activo: boolean; 
   gradosComoTutor?: { id: string; numero: number; seccion: string; año: number; }[]; 
-  materias?: MateriaConGrado[];
+  asignaturas?: AsignaturaConGrado[];
 }
 interface Estudiante { id: string; numero: number; nombre: string; gradoId: string; activo: boolean; }
-interface Materia { id: string; nombre: string; gradoId: string; }
-interface ConfigActividad { id: string; materiaId: string; trimestre: number; numActividadesCotidianas: number; numActividadesIntegradoras: number; tieneExamen: boolean; porcentajeAC: number; porcentajeAI: number; porcentajeExamen: number; materiaNombre?: string; }
-interface Calificacion { id: string; estudianteId: string; materiaId: string; trimestre: number; actividadesCotidianas: string | null; calificacionAC: number | null; actividadesIntegradoras: string | null; calificacionAI: number | null; examenTrimestral: number | null; promedioFinal: number | null; recuperacion: number | null; estudiante?: Estudiante; materia?: Materia; config?: ConfigActividad; }
-interface Grado { id: string; numero: number; seccion: string; año: number; docenteId: string | null; docente?: { id: string; nombre: string; email: string; }; _count?: { estudiantes: number; materias: number; }; }
+interface Asignatura { id: string; nombre: string; gradoId: string; }
+interface ConfigActividad { id: string; materiaId: string; trimestre: number; numActividadesCotidianas: number; numActividadesIntegradoras: number; tieneExamen: boolean; porcentajeAC: number; porcentajeAI: number; porcentajeExamen: number; asignaturaNombre?: string; }
+interface Calificacion { id: string; estudianteId: string; materiaId: string; trimestre: number; actividadesCotidianas: string | null; calificacionAC: number | null; actividadesIntegradoras: string | null; calificacionAI: number | null; examenTrimestral: number | null; promedioFinal: number | null; recuperacion: number | null; estudiante?: Estudiante; asignatura?: Asignatura; config?: ConfigActividad; }
+interface Grado { id: string; numero: number; seccion: string; año: number; docenteId: string | null; docente?: { id: string; nombre: string; email: string; }; _count?: { estudiantes: number; asignaturas: number; }; }
 interface ConfiguracionSistema { id: string; añoEscolar: number; escuela: string; }
 
 // Utilidades
@@ -68,19 +68,20 @@ export default function Home() {
   // Datos
   const [grados, setGrados] = useState<Grado[]>([]);
   const [gradosFiltrados, setGradosFiltrados] = useState<Grado[]>([]);
-  const [materiasFiltradas, setMateriasFiltradas] = useState<Materia[]>([]);
+  const [asignaturasFiltradas, setAsignaturasFiltradas] = useState<Asignatura[]>([]);
   const [estudiantes, setEstudiantes] = useState<Estudiante[]>([]);
-  const [materias, setMaterias] = useState<Materia[]>([]);
-  const [todasMaterias, setTodasMaterias] = useState<MateriaConGrado[]>([]);
+  const [asignaturas, setAsignaturas] = useState<Asignatura[]>([]);
+  const [todasAsignaturas, setTodasAsignaturas] = useState<AsignaturaConGrado[]>([]);
   const [calificaciones, setCalificaciones] = useState<Calificacion[]>([]);
   const [configActual, setConfigActual] = useState<ConfigActividad | null>(null);
   const [configsGrado, setConfigsGrado] = useState<ConfigActividad[]>([]);
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+  const [promediosAsignaturas, setPromediosAsignaturas] = useState<any[]>([]);
   
   // Selecciones
   const [gradoSeleccionado, setGradoSeleccionado] = useState<string>("");
   const [trimestreSeleccionado, setTrimestreSeleccionado] = useState<string>("1");
-  const [materiaSeleccionada, setMateriaSeleccionada] = useState<string>("");
+  const [asignaturaSeleccionada, setAsignaturaSeleccionada] = useState<string>("");
   
   // UI
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -105,7 +106,7 @@ export default function Home() {
     nombre: "", 
     rol: "docente", 
     gradosAsignados: [] as string[],
-    materiasAsignadas: [] as string[]
+    asignaturasAsignadas: [] as string[]
   });
   const [configuracion, setConfiguracion] = useState<ConfiguracionSistema | null>(null);
   const [nuevoAño, setNuevoAño] = useState(2026);
@@ -149,30 +150,30 @@ export default function Home() {
     } catch { toast({ title: "Error al cargar estudiantes", variant: "destructive" }); }
   }, [gradoSeleccionado, toast]);
 
-  const loadMaterias = useCallback(async () => {
+  const loadAsignaturas = useCallback(async () => {
     if (!gradoSeleccionado) return;
     try {
       const res = await fetch(`/api/materias?gradoId=${gradoSeleccionado}`);
       const data = await res.json();
-      setMaterias(data);
-      if (data.length && !materiaSeleccionada) setMateriaSeleccionada(data[0].id);
-    } catch { toast({ title: "Error al cargar materias", variant: "destructive" }); }
-  }, [gradoSeleccionado, materiaSeleccionada, toast]);
+      setAsignaturas(data);
+      if (data.length && !asignaturaSeleccionada) setAsignaturaSeleccionada(data[0].id);
+    } catch { toast({ title: "Error al cargar asignaturas", variant: "destructive" }); }
+  }, [gradoSeleccionado, asignaturaSeleccionada, toast]);
 
-  const loadTodasMaterias = useCallback(async () => {
+  const loadTodasAsignaturas = useCallback(async () => {
     try {
       const res = await fetch("/api/materias?todas=true");
-      setTodasMaterias(await res.json());
+      setTodasAsignaturas(await res.json());
     } catch { /* ignore */ }
   }, []);
 
   const loadConfig = useCallback(async () => {
-    if (!materiaSeleccionada || !trimestreSeleccionado) return;
+    if (!asignaturaSeleccionada || !trimestreSeleccionado) return;
     try {
-      const res = await fetch(`/api/config-actividades?materiaId=${materiaSeleccionada}&trimestre=${trimestreSeleccionado}`);
+      const res = await fetch(`/api/config-actividades?materiaId=${asignaturaSeleccionada}&trimestre=${trimestreSeleccionado}`);
       setConfigActual(await res.json());
     } catch { toast({ title: "Error al cargar configuración", variant: "destructive" }); }
-  }, [materiaSeleccionada, trimestreSeleccionado, toast]);
+  }, [asignaturaSeleccionada, trimestreSeleccionado, toast]);
 
   const loadConfigsGrado = useCallback(async () => {
     if (!gradoSeleccionado || !trimestreSeleccionado) return;
@@ -312,7 +313,7 @@ export default function Home() {
       await fetch("/api/calificaciones", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ estudianteId, materiaId: materiaSeleccionada, trimestre: parseInt(trimestreSeleccionado), actividadesCotidianas: JSON.stringify(data.actividadesCotidianas), actividadesIntegradoras: JSON.stringify(data.actividadesIntegradoras), examenTrimestral: data.examenTrimestral, recuperacion: data.recuperacion }),
+        body: JSON.stringify({ estudianteId, materiaId: asignaturaSeleccionada, trimestre: parseInt(trimestreSeleccionado), actividadesCotidianas: JSON.stringify(data.actividadesCotidianas), actividadesIntegradoras: JSON.stringify(data.actividadesIntegradoras), examenTrimestral: data.examenTrimestral, recuperacion: data.recuperacion }),
       });
       loadCalificaciones();
     } catch { toast({ title: "Error", variant: "destructive" }); }
@@ -337,7 +338,7 @@ export default function Home() {
   };
 
   const handleImport = async () => {
-    if (!importData || !materiaSeleccionada || !configActual) return;
+    if (!importData || !asignaturaSeleccionada || !configActual) return;
     const lines = importData.split('\n').filter(l => l.trim());
     if (lines.length < 2) return;
     const headers = lines[0].split(/[,;\t]/).map(h => h.trim().toLowerCase());
@@ -352,7 +353,7 @@ export default function Home() {
       await fetch("/api/calificaciones", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ estudianteId: est.id, materiaId: materiaSeleccionada, trimestre: parseInt(trimestreSeleccionado), actividadesCotidianas: JSON.stringify(acNotas), actividadesIntegradoras: JSON.stringify(aiNotas) }),
+        body: JSON.stringify({ estudianteId: est.id, materiaId: asignaturaSeleccionada, trimestre: parseInt(trimestreSeleccionado), actividadesCotidianas: JSON.stringify(acNotas), actividadesIntegradoras: JSON.stringify(aiNotas) }),
       });
       importados++;
     }
@@ -381,7 +382,7 @@ export default function Home() {
         body: JSON.stringify(nuevoUsuario),
       });
       if (res.ok) { 
-        setNuevoUsuario({ email: "", password: "", nombre: "", rol: "docente", gradosAsignados: [], materiasAsignadas: [] }); 
+        setNuevoUsuario({ email: "", password: "", nombre: "", rol: "docente", gradosAsignados: [], asignaturasAsignadas: [] }); 
         setUserDialogOpen(false); 
         loadUsuarios(); 
         toast({ title: "Usuario creado" }); 
@@ -423,7 +424,7 @@ export default function Home() {
         setAñoDialogOpen(false);
         // Recargar todos los datos
         loadGrados();
-        loadTodasMaterias();
+        loadTodasAsignaturas();
         toast({ title: `Año escolar cambiado a ${nuevoAño}` });
       } else {
         const err = await res.json();
@@ -436,37 +437,67 @@ export default function Home() {
     }
   };
 
-  const getCalificacion = (estudianteId: string) => calificaciones.find(c => c.estudianteId === estudianteId && c.materiaId === materiaSeleccionada);
+  const getCalificacion = (estudianteId: string) => calificaciones.find(c => c.estudianteId === estudianteId && c.materiaId === asignaturaSeleccionada);
 
-  // Agrupar materias por grado para el selector
-  const materiasPorGrado = todasMaterias.reduce((acc, m) => {
+  // Agrupar asignaturas por grado para el selector
+  const asignaturasPorGrado = todasAsignaturas.reduce((acc, m) => {
     const key = m.grado?.numero || 0;
     if (!acc[key]) acc[key] = [];
     acc[key].push(m);
     return acc;
-  }, {} as Record<number, MateriaConGrado[]>);
+  }, {} as Record<number, AsignaturaConGrado[]>);
 
-  // Materias de grados 6-9 para asignación
-  const materiasGradosSuperiores = todasMaterias.filter(m => m.grado && m.grado.numero >= 6);
+  // Asignaturas de grados 6-9 para asignación
+  const asignaturasGradosSuperiores = todasAsignaturas.filter(m => m.grado && m.grado.numero >= 6);
   // Grados 2-5 para asignación de tutor
   const gradosInferiores = grados.filter(g => g.numero >= 2 && g.numero <= 5);
   // Grados 6-9
   const gradosSuperiores = grados.filter(g => g.numero >= 6);
 
+  // Calcular promedios para el dashboard
+  useEffect(() => {
+    if (calificaciones.length > 0) {
+      const map = new Map();
+      calificaciones.forEach(c => {
+        const mId = c.materiaId;
+        if (!map.has(mId)) {
+          map.set(mId, { 
+            nombre: c.asignatura?.nombre || "Asignatura", 
+            ac: [] as number[], ai: [] as number[], ex: [] as number[] 
+          });
+        }
+        const data = map.get(mId);
+        if (c.calificacionAC !== null) data.ac.push(c.calificacionAC);
+        if (c.calificacionAI !== null) data.ai.push(c.calificacionAI);
+        if (c.examenTrimestral !== null) data.ex.push(c.examenTrimestral);
+      });
+
+      const result = Array.from(map.values()).map(d => ({
+        name: d.nombre,
+        Cotidiana: d.ac.length ? parseFloat((d.ac.reduce((a, b) => a + b, 0) / d.ac.length).toFixed(2)) : 0,
+        Integradora: d.ai.length ? parseFloat((d.ai.reduce((a, b) => a + b, 0) / d.ai.length).toFixed(2)) : 0,
+        Examen: d.ex.length ? parseFloat((d.ex.reduce((a, b) => a + b, 0) / d.ex.length).toFixed(2)) : 0
+      }));
+      setPromediosAsignaturas(result);
+    } else {
+      setPromediosAsignaturas([]);
+    }
+  }, [calificaciones]);
+
   // Effects
   useEffect(() => { checkAuth(); }, [checkAuth]);
-  useEffect(() => { if (usuario) { loadGrados(); loadUsuarios(); loadTodasMaterias(); loadConfiguracion(); } }, [usuario, loadGrados, loadUsuarios, loadTodasMaterias, loadConfiguracion]);
-  useEffect(() => { loadEstudiantes(); loadMaterias(); loadConfigsGrado(); }, [loadEstudiantes, loadMaterias, loadConfigsGrado]);
-  useEffect(() => { loadConfig(); loadCalificaciones(); }, [loadConfig, loadCalificaciones, materiaSeleccionada]);
-  // Solo cambiar la materia seleccionada si la actual no está en la nueva lista de materias
+  useEffect(() => { if (usuario) { loadGrados(); loadUsuarios(); loadTodasAsignaturas(); loadConfiguracion(); } }, [usuario, loadGrados, loadUsuarios, loadTodasAsignaturas, loadConfiguracion]);
+  useEffect(() => { loadEstudiantes(); loadAsignaturas(); loadConfigsGrado(); }, [loadEstudiantes, loadAsignaturas, loadConfigsGrado]);
+  useEffect(() => { loadConfig(); loadCalificaciones(); }, [loadConfig, loadCalificaciones, asignaturaSeleccionada]);
+  // Solo cambiar la asignatura seleccionada si la actual no está en la nueva lista de asignaturas
   useEffect(() => {
-    if (materias.length) {
-      const materiaActualEnLista = materias.some(m => m.id === materiaSeleccionada);
-      if (!materiaActualEnLista) {
-        setMateriaSeleccionada(materias[0].id);
+    if (asignaturas.length) {
+      const asignaturaActualEnLista = asignaturas.some(m => m.id === asignaturaSeleccionada);
+      if (!asignaturaActualEnLista) {
+        setAsignaturaSeleccionada(asignaturas[0].id);
       }
     }
-  }, [gradoSeleccionado, materias, materiaSeleccionada]);
+  }, [gradoSeleccionado, asignaturas, asignaturaSeleccionada]);
 
   // Filtrar grados según el usuario
   useEffect(() => {
@@ -481,8 +512,8 @@ export default function Home() {
     } else {
       // Docente: filtrar según sus asignaciones
       const gradosIdsTutor = new Set(usuario.gradosAsignados?.map(g => g.id) || []);
-      const gradosIdsMaterias = new Set(usuario.materiasAsignadas?.map(m => m.gradoId) || []);
-      const todosIds = new Set([...gradosIdsTutor, ...gradosIdsMaterias]);
+      const gradosIdsAsignaturas = new Set(usuario.asignaturasAsignadas?.map(m => m.gradoId) || []);
+      const todosIds = new Set([...gradosIdsTutor, ...gradosIdsAsignaturas]);
       
       const filtrados = grados.filter(g => todosIds.has(g.id));
       setGradosFiltrados(filtrados);
@@ -494,40 +525,40 @@ export default function Home() {
     }
   }, [usuario, grados, gradoSeleccionado]);
 
-  // Filtrar materias según el usuario
+  // Filtrar asignaturas según el usuario
   useEffect(() => {
     if (!usuario || !gradoSeleccionado) {
-      setMateriasFiltradas(materias);
+      setAsignaturasFiltradas(asignaturas);
       return;
     }
     
     if (usuario.rol === "admin") {
-      // Admin ve todas las materias
-      setMateriasFiltradas(materias);
+      // Admin ve todas las asignaturas
+      setAsignaturasFiltradas(asignaturas);
     } else {
       // Verificar si es tutor del grado
       const esTutor = usuario.gradosAsignados?.some(g => g.id === gradoSeleccionado);
       
       if (esTutor) {
-        // Tutor ve todas las materias del grado
-        setMateriasFiltradas(materias);
+        // Tutor ve todas las asignaturas del grado
+        setAsignaturasFiltradas(asignaturas);
       } else {
-        // Filtrar solo las materias asignadas en este grado
-        const materiasDelGrado = new Set(
-          usuario.materiasAsignadas
+        // Filtrar solo las asignaturas asignadas en este grado
+        const asignaturasDelGrado = new Set(
+          usuario.asignaturasAsignadas
             ?.filter(m => m.gradoId === gradoSeleccionado)
             ?.map(m => m.id) || []
         );
-        const filtradas = materias.filter(m => materiasDelGrado.has(m.id));
-        setMateriasFiltradas(filtradas);
+        const filtradas = asignaturas.filter(m => asignaturasDelGrado.has(m.id));
+        setAsignaturasFiltradas(filtradas);
         
-        // Si la materia seleccionada no está en las filtradas, seleccionar la primera
-        if (filtradas.length > 0 && !filtradas.some(m => m.id === materiaSeleccionada)) {
-          setMateriaSeleccionada(filtradas[0].id);
+        // Si la asignatura seleccionada no está en las filtradas, seleccionar la primera
+        if (filtradas.length > 0 && !filtradas.some(m => m.id === asignaturaSeleccionada)) {
+          setAsignaturaSeleccionada(filtradas[0].id);
         }
       }
     }
-  }, [usuario, gradoSeleccionado, materias, materiaSeleccionada]);
+  }, [usuario, gradoSeleccionado, asignaturas, asignaturaSeleccionada]);
 
   // Loading
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-100"><RefreshCw className="h-8 w-8 animate-spin text-teal-600" /></div>;
@@ -613,8 +644,9 @@ export default function Home() {
               usuario={usuario}
               grados={grados}
               totalEstudiantes={grados.reduce((sum, g) => sum + (g._count?.estudiantes || 0), 0)}
-              totalMaterias={todasMaterias.length}
+              totalAsignaturas={todasAsignaturas.length}
               totalDocentes={usuarios.filter(u => u.rol === "docente" && u.activo).length}
+              promediosAsignaturas={promediosAsignaturas}
             />
           </TabsContent>
 
@@ -622,10 +654,10 @@ export default function Home() {
           <TabsContent value="asistencia" className="mt-3">
             <AsistenciaBoard 
               grados={gradosFiltrados}
-              materias={materiasFiltradas}
+              asignaturas={asignaturasFiltradas}
               estudiantes={estudiantes}
               gradoInicial={gradoSeleccionado}
-              materiaInicial={materiaSeleccionada}
+              asignaturaInicial={asignaturaSeleccionada}
             />
           </TabsContent>
 
@@ -635,7 +667,7 @@ export default function Home() {
               <CardContent className="p-3">
                 <div className="flex flex-wrap items-end gap-3">
                   <div className="flex-1 min-w-[140px]"><Label className="text-xs mb-1 block">Grado</Label><Select value={gradoSeleccionado} onValueChange={setGradoSeleccionado}><SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger><SelectContent>{gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}" - {g.año}</SelectItem>)}</SelectContent></Select></div>
-                  <div className="flex-1 min-w-[180px]"><Label className="text-xs mb-1 block">Materia</Label><Select value={materiaSeleccionada} onValueChange={setMateriaSeleccionada}><SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger><SelectContent>{materiasFiltradas.map(m => <SelectItem key={m.id} value={m.id} className="text-sm">{m.nombre}</SelectItem>)}</SelectContent></Select></div>
+                  <div className="flex-1 min-w-[180px]"><Label className="text-xs mb-1 block">Asignatura</Label><Select value={asignaturaSeleccionada} onValueChange={setAsignaturaSeleccionada}><SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger><SelectContent>{asignaturasFiltradas.map(m => <SelectItem key={m.id} value={m.id} className="text-sm">{m.nombre}</SelectItem>)}</SelectContent></Select></div>
                   <div className="w-28"><Label className="text-xs mb-1 block">Trimestre</Label><Select value={trimestreSeleccionado} onValueChange={setTrimestreSeleccionado}><SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="1" className="text-sm">I</SelectItem><SelectItem value="2" className="text-sm">II</SelectItem><SelectItem value="3" className="text-sm">III</SelectItem></SelectContent></Select></div>
                   {configActual && <div className="flex items-center gap-1 text-[10px] text-slate-500 bg-slate-50 px-2 py-1 rounded"><span>{configActual.numActividadesCotidianas} AC ({configActual.porcentajeAC}%)</span><span>•</span><span>{configActual.numActividadesIntegradoras} AI ({configActual.porcentajeAI}%)</span>{configActual.tieneExamen && <><span>•</span><span>Ex ({configActual.porcentajeExamen}%)</span></>}</div>}
                   {usuario.rol === "admin" && <Button size="sm" variant="outline" className="h-8" onClick={() => { setEditConfig(configActual); setConfigDialogOpen(true); }}><Settings className="h-3.5 w-3.5 mr-1" />Config</Button>}
@@ -644,7 +676,7 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            {gradoSeleccionado && materiaSeleccionada && configActual && (
+            {gradoSeleccionado && asignaturaSeleccionada && configActual && (
               <Card className="shadow-sm">
                 <CardContent className="p-0">
                   <div className="overflow-x-auto">
@@ -662,7 +694,7 @@ export default function Home() {
                         <th className="w-10 p-1.5 border-l border-slate-600"></th>
                       </tr></thead>
                       <tbody>
-                        {estudiantes.map(est => <CalificacionRow key={`${est.id}-${materiaSeleccionada}`} estudiante={est} calificacion={getCalificacion(est.id)} config={configActual} onSave={handleSaveCalificacion} saving={saving} />)}
+                        {estudiantes.map(est => <CalificacionRow key={`${est.id}-${asignaturaSeleccionada}`} estudiante={est} calificacion={getCalificacion(est.id)} config={configActual} onSave={handleSaveCalificacion} saving={saving} />)}
                       </tbody>
                     </table>
                   </div>
@@ -724,7 +756,7 @@ export default function Home() {
                   <div className="flex-1"><Label className="text-xs">Grado</Label><Select value={gradoSeleccionado} onValueChange={setGradoSeleccionado}><SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger><SelectContent>{gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}"</SelectItem>)}</SelectContent></Select></div>
                   <div className="w-32"><Label className="text-xs">Trimestre</Label><Select value={trimestreSeleccionado} onValueChange={setTrimestreSeleccionado}><SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="1">I</SelectItem><SelectItem value="2">II</SelectItem><SelectItem value="3">III</SelectItem></SelectContent></Select></div>
                 </div>
-                {gradoSeleccionado && estudiantes.length > 0 && <BoletaList estudiantes={estudiantes} calificaciones={calificaciones} materias={materiasFiltradas} grado={gradosFiltrados.find(g => g.id === gradoSeleccionado)} trimestre={parseInt(trimestreSeleccionado)} expandedBoleta={expandedBoleta} setExpandedBoleta={setExpandedBoleta} />}
+                {gradoSeleccionado && estudiantes.length > 0 && <BoletaList estudiantes={estudiantes} calificaciones={calificaciones} asignaturas={asignaturasFiltradas} grado={gradosFiltrados.find(g => g.id === gradoSeleccionado)} trimestre={parseInt(trimestreSeleccionado)} expandedBoleta={expandedBoleta} setExpandedBoleta={setExpandedBoleta} />}
               </CardContent>
             </Card>
           </TabsContent>
@@ -774,23 +806,23 @@ export default function Home() {
                             
                             {/* Grados 6-9: Materias específicas */}
                             <div>
-                              <Label className="text-xs">Materias Asignadas (6° a 9°)</Label>
-                              <p className="text-[10px] text-slate-500 mb-1">El docente califica estas materias específicas</p>
+                              <Label className="text-xs">Asignaturas Asignadas (6° a 9°)</Label>
+                              <p className="text-[10px] text-slate-500 mb-1">El docente califica estas asignaturas específicas</p>
                               <div className="border rounded max-h-48 overflow-y-auto">
                                 {gradosSuperiores.map(grado => (
                                   <div key={grado.id} className="border-b last:border-b-0">
                                     <div className="bg-slate-100 px-2 py-1 text-xs font-medium">{grado.numero}° "{grado.seccion}"</div>
                                     <div className="p-2 grid grid-cols-2 gap-1">
-                                      {todasMaterias.filter(m => m.gradoId === grado.id).map(m => (
+                                      {todasAsignaturas.filter(m => m.gradoId === grado.id).map(m => (
                                         <label key={m.id} className="flex items-center gap-1 text-xs p-1 hover:bg-slate-50 rounded cursor-pointer">
                                           <input 
                                             type="checkbox" 
-                                            checked={nuevoUsuario.materiasAsignadas.includes(m.id)} 
+                                            checked={nuevoUsuario.asignaturasAsignadas.includes(m.id)} 
                                             onChange={e => setNuevoUsuario({
                                               ...nuevoUsuario, 
-                                              materiasAsignadas: e.target.checked 
-                                                ? [...nuevoUsuario.materiasAsignadas, m.id] 
-                                                : nuevoUsuario.materiasAsignadas.filter(id => id !== m.id)
+                                              asignaturasAsignadas: e.target.checked 
+                                                ? [...nuevoUsuario.asignaturasAsignadas, m.id] 
+                                                : nuevoUsuario.asignaturasAsignadas.filter(id => id !== m.id)
                                             })} 
                                             className="h-3 w-3" 
                                           />
@@ -825,10 +857,10 @@ export default function Home() {
                                 {u.gradosComoTutor && u.gradosComoTutor.length > 0 && (
                                   <div><span className="text-[10px] text-slate-500">Tutor: </span>{u.gradosComoTutor.map(g => `${g.numero}°${g.seccion}`).join(", ")}</div>
                                 )}
-                                {u.materias && u.materias.length > 0 && (
-                                  <div><span className="text-[10px] text-slate-500">Materias: </span>{u.materias.map(m => `${m.nombre} (${m.grado?.numero}º)`).join(", ")}</div>
+                                {u.asignaturas && u.asignaturas.length > 0 && (
+                                  <div><span className="text-[10px] text-slate-500">Asignaturas: </span>{u.asignaturas.map(m => `${m.nombre} (${m.grado?.numero}º)`).join(", ")}</div>
                                 )}
-                                {(!u.gradosComoTutor || u.gradosComoTutor.length === 0) && (!u.materias || u.materias.length === 0) && "-"}
+                                {(!u.gradosComoTutor || u.gradosComoTutor.length === 0) && (!u.asignaturas || u.asignaturas.length === 0) && "-"}
                               </div>
                             </TableCell>
                             <TableCell className="text-center">
@@ -902,8 +934,8 @@ export default function Home() {
                       <p className="text-xs text-slate-500">Grados activos</p>
                     </div>
                     <div className="flex-1 p-4 bg-slate-50 rounded-lg border">
-                      <p className="text-lg font-medium">{todasMaterias.length}</p>
-                      <p className="text-xs text-slate-500">Materias</p>
+                      <p className="text-lg font-medium">{todasAsignaturas.length}</p>
+                      <p className="text-xs text-slate-500">Asignaturas</p>
                     </div>
                   </div>
                 </CardContent>
@@ -975,7 +1007,7 @@ function CalificacionRow({ estudiante, calificacion, config, onSave, saving }: {
   );
 }
 
-function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, expandedBoleta, setExpandedBoleta }: { estudiantes: Estudiante[]; calificaciones: Calificacion[]; materias: Materia[]; grado?: Grado; trimestre: number; expandedBoleta: string | null; setExpandedBoleta: (id: string | null) => void; }) {
+function BoletaList({ estudiantes, calificaciones, asignaturas, grado, trimestre, expandedBoleta, setExpandedBoleta }: { estudiantes: Estudiante[]; calificaciones: Calificacion[]; asignaturas: Asignatura[]; grado?: Grado; trimestre: number; expandedBoleta: string | null; setExpandedBoleta: (id: string | null) => void; }) {
   const getCalifs = (id: string) => calificaciones.filter(c => c.estudianteId === id && c.trimestre === trimestre);
   const calcProm = (c: Calificacion[]) => { const p = c.map(x => x.promedioFinal).filter((x): x is number => x !== null); return p.length ? p.reduce((a, b) => a + b, 0) / p.length : null; };
   
@@ -989,17 +1021,28 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
     return promedio >= 6 ? 'APROBADO' : 'REPROBADO';
   };
 
-  const imprimir = async (id: string) => {
-    const est = estudiantes.find(e => e.id === id);
-    if (!est) return;
-    const califs = getCalifs(id);
+  const imprimirBoleta = async (est: Estudiante) => {
+    const trimester = parseInt(trimestreSeleccionado);
+    let inasistencias = 0;
+    let justificaciones = 0;
+    
+    try {
+      const res = await fetch(`/api/boleta?estudianteId=${est.id}&trimestre=${trimester}`);
+      if (res.ok) {
+        const data = await res.json();
+        inasistencias = data.asistencia?.inasistencias || 0;
+        justificaciones = data.asistencia?.justificaciones || 0;
+      }
+    } catch { /* use 0 */ }
+
+    const califs = getCalifs(est.id);
     const prom = calcProm(califs);
     const estadoFinal = getEstadoFinal(prom);
     const año = grado?.año || new Date().getFullYear();
     const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
 
-    // Crear tabla de materias
-    let tablaMaterias = materias.map(m => {
+    // Crear tabla de asignaturas
+    let tablaAsignaturas = asignaturas.map(m => {
       const c = califs.find(x => x.materiaId === m.id);
       const notaFinal = c?.promedioFinal?.toFixed(1) ?? '-';
       const estado = c?.promedioFinal !== null && c?.promedioFinal !== undefined 
@@ -1104,7 +1147,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
         </tr>
       </thead>
       <tbody>
-        ${tablaMaterias}
+        ${tablaAsignaturas}
       </tbody>
     </table>
 
@@ -1116,6 +1159,14 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
       <div class="resumen-item ${estadoFinal === 'REPROBADO' ? 'reprobado' : ''}">
         <div class="valor">${estadoFinal}</div>
         <div class="etiqueta">Estado Final</div>
+      </div>
+      <div class="resumen-item">
+        <div class="valor">${inasistencias}</div>
+        <div class="etiqueta">Inasistencias</div>
+      </div>
+      <div class="resumen-item">
+        <div class="valor">${justificaciones}</div>
+        <div class="etiqueta">Permisos/Jus.</div>
       </div>
       <div class="resumen-item">
         <div class="valor">${getTrimestreRomano(trimestre)} Trimestre</div>
@@ -1162,12 +1213,20 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
     const año = grado?.año || new Date().getFullYear();
     const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
 
+    let boletasData = [];
+    try {
+      const res = await fetch(`/api/boleta?gradoId=${gradoId}&trimestre=${trimestreSeleccionado}`);
+      if (res.ok) boletasData = await res.json();
+    } catch { /* use local */ }
+
     for (const est of estudiantes) {
+      const boletaEst = boletasData.find((b: any) => b.estudiante.id === est.id);
+      const inasistencias = boletaEst?.asistencia?.inasistencias || 0;
       const califs = getCalifs(est.id);
       const prom = calcProm(califs);
       const estadoFinal = getEstadoFinal(prom);
 
-      let tablaMaterias = materias.map(m => {
+      let tablaAsignaturas = asignaturas.map(m => {
         const c = califs.find(x => x.materiaId === m.id);
         const notaFinal = c?.promedioFinal?.toFixed(1) ?? '-';
         const estado = c?.promedioFinal !== null && c?.promedioFinal !== undefined 
@@ -1222,7 +1281,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
             </tr>
           </thead>
           <tbody>
-            ${tablaMaterias}
+            ${tablaAsignaturas}
           </tbody>
         </table>
 
@@ -1234,6 +1293,10 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
           <div class="resumen-item ${estadoFinal === 'REPROBADO' ? 'reprobado' : ''}">
             <div class="valor">${estadoFinal}</div>
             <div class="etiqueta">Estado Final</div>
+          </div>
+          <div class="resumen-item">
+            <div class="valor">${inasistencias}</div>
+            <div class="etiqueta">Inasistencias</div>
           </div>
           <div class="resumen-item">
             <div class="valor">${getTrimestreRomano(trimestre)} Trimestre</div>
@@ -1340,9 +1403,9 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
           <Card key={est.id} className="shadow-sm">
             <div className="p-2.5 flex items-center justify-between cursor-pointer hover:bg-slate-50" onClick={() => setExpandedBoleta(open ? null : est.id)}>
               <div className="flex items-center gap-2"><span className="text-xs text-slate-400 w-5">{est.numero}</span><span className="text-sm font-medium">{est.nombre}</span><Badge variant={prom !== null && prom >= 6 ? "default" : prom !== null ? "destructive" : "secondary"} className={`text-[10px] h-5 ${prom !== null && prom >= 6 ? 'bg-teal-600' : ''}`}>Prom: {prom !== null ? prom.toFixed(1) : "N/A"}</Badge></div>
-              <div className="flex items-center gap-1"><Button size="sm" variant="ghost" className="h-6 px-2" onClick={e => { e.stopPropagation(); imprimir(est.id); }}><Printer className="h-3 w-3 mr-1" />Imprimir</Button>{open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}</div>
+              <div className="flex items-center gap-1"><Button size="sm" variant="ghost" className="h-6 px-2" onClick={e => { e.stopPropagation(); imprimirBoleta(est); }}><Printer className="h-3 w-3 mr-1" />Imprimir</Button>{open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}</div>
             </div>
-            {open && <div className="border-t p-2 bg-slate-50"><Table className="text-xs"><TableHeader><TableRow className="bg-slate-100 h-7"><TableHead>Materia</TableHead><TableHead className="text-center">Prom. A.C.</TableHead><TableHead className="text-center">Prom. A.I.</TableHead><TableHead className="text-center">Examen</TableHead><TableHead className="text-center font-bold">Promedio</TableHead></TableRow></TableHeader><TableBody>{materias.map(m => { const c = califs.find(x => x.materiaId === m.id); return <TableRow key={m.id} className="h-7"><TableCell className="font-medium">{m.nombre}</TableCell><TableCell className="text-center">{c?.calificacionAC?.toFixed(1) ?? "-"}</TableCell><TableCell className="text-center">{c?.calificacionAI?.toFixed(1) ?? "-"}</TableCell><TableCell className="text-center">{c?.examenTrimestral?.toFixed(1) ?? "-"}</TableCell><TableCell className="text-center"><Badge variant={c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= 6 ? "default" : "secondary"} className={`text-[10px] ${c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= 6 ? 'bg-teal-600' : ''}`}>{c?.promedioFinal?.toFixed(1) ?? "-"}</Badge></TableCell></TableRow>; })}</TableBody></Table></div>}
+            {open && <div className="border-t p-2 bg-slate-50"><Table className="text-xs"><TableHeader><TableRow className="bg-slate-100 h-7"><TableHead>Asignatura</TableHead><TableHead className="text-center">Prom. A.C.</TableHead><TableHead className="text-center">Prom. A.I.</TableHead><TableHead className="text-center">Examen</TableHead><TableHead className="text-center font-bold">Promedio</TableHead></TableRow></TableHeader><TableBody>{asignaturas.map(m => { const c = califs.find(x => x.materiaId === m.id); return <TableRow key={m.id} className="h-7"><TableCell className="font-medium">{m.nombre}</TableCell><TableCell className="text-center">{c?.calificacionAC?.toFixed(1) ?? "-"}</TableCell><TableCell className="text-center">{c?.calificacionAI?.toFixed(1) ?? "-"}</TableCell><TableCell className="text-center">{c?.examenTrimestral?.toFixed(1) ?? "-"}</TableCell><TableCell className="text-center"><Badge variant={c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= 6 ? "default" : "secondary"} className={`text-[10px] ${c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= 6 ? 'bg-teal-600' : ''}`}>{c?.promedioFinal?.toFixed(1) ?? "-"}</Badge></TableCell></TableRow>; })}</TableBody></Table></div>}
           </Card>
         );
       })}

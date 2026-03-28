@@ -162,6 +162,13 @@ async function main() {
       ]
     },
     {
+      nombre: "Administrador",
+      email: "admin@escuela.edu",
+      password: "admin",
+      rol: "admin",
+      materias: []
+    },
+    {
       nombre: "Claudia Jasmin Arce Castillo",
       email: "claudia.jasmin.arce@clases.edu.sv",
       password: "admin123",
