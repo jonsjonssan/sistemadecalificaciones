@@ -14,8 +14,10 @@ import { useToast } from "@/hooks/use-toast";
 import { 
   LogOut, Users, ClipboardList, FileText, Plus, RefreshCw,
   School, Save, Printer, ChevronDown, ChevronUp, Settings, Upload,
-  Download, Trash2, ListPlus, UserPlus, Key, Calendar
+  Download, Trash2, ListPlus, UserPlus, Key, Calendar, LayoutDashboard, CalendarDays
 } from "lucide-react";
+import Dashboard from "@/components/Dashboard";
+import AsistenciaBoard from "@/components/AsistenciaBoard";
 
 // Interfaces
 interface UsuarioSesion { id: string; email: string; nombre: string; rol: string; gradosAsignados?: { id: string; numero: number; seccion: string; }[]; materiasAsignadas?: { id: string; nombre: string; gradoId: string; gradoNumero?: number; }[]; }
@@ -81,7 +83,7 @@ export default function Home() {
   const [materiaSeleccionada, setMateriaSeleccionada] = useState<string>("");
   
   // UI
-  const [activeTab, setActiveTab] = useState("calificaciones");
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [configDialogOpen, setConfigDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
@@ -596,12 +598,36 @@ export default function Home() {
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-3 py-3">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-white shadow-sm h-9">
-            <TabsTrigger value="calificaciones" className="text-xs px-3 gap-1"><ClipboardList className="h-3.5 w-3.5" />Calificaciones</TabsTrigger>
-            <TabsTrigger value="estudiantes" className="text-xs px-3 gap-1"><Users className="h-3.5 w-3.5" />Estudiantes</TabsTrigger>
-            <TabsTrigger value="boletas" className="text-xs px-3 gap-1"><FileText className="h-3.5 w-3.5" />Boletas</TabsTrigger>
-            {usuario.rol === "admin" && <TabsTrigger value="admin" className="text-xs px-3 gap-1"><Settings className="h-3.5 w-3.5" />Admin</TabsTrigger>}
+          <TabsList className="bg-white shadow-sm h-9 overflow-x-auto rounded-none sm:rounded-md flex sm:inline-flex w-full sm:w-auto shrink-0 hide-scrollbar justify-start">
+            <TabsTrigger id="tab-dashboard" value="dashboard" className="text-xs px-3 gap-1 shrink-0"><LayoutDashboard className="h-3.5 w-3.5" />Inicio</TabsTrigger>
+            <TabsTrigger id="tab-calificaciones" value="calificaciones" className="text-xs px-3 gap-1 shrink-0"><ClipboardList className="h-3.5 w-3.5" />Calificaciones</TabsTrigger>
+            <TabsTrigger id="tab-asistencia" value="asistencia" className="text-xs px-3 gap-1 shrink-0"><CalendarDays className="h-3.5 w-3.5" />Asistencia</TabsTrigger>
+            <TabsTrigger value="estudiantes" className="text-xs px-3 gap-1 shrink-0"><Users className="h-3.5 w-3.5" />Estudiantes</TabsTrigger>
+            <TabsTrigger value="boletas" className="text-xs px-3 gap-1 shrink-0"><FileText className="h-3.5 w-3.5" />Boletas</TabsTrigger>
+            {usuario.rol === "admin" && <TabsTrigger value="admin" className="text-xs px-3 gap-1 shrink-0"><Settings className="h-3.5 w-3.5" />Admin</TabsTrigger>}
           </TabsList>
+
+          {/* Dashboard */}
+          <TabsContent value="dashboard" className="mt-3">
+            <Dashboard 
+              usuario={usuario}
+              grados={grados}
+              totalEstudiantes={grados.reduce((sum, g) => sum + (g._count?.estudiantes || 0), 0)}
+              totalMaterias={todasMaterias.length}
+              totalDocentes={usuarios.filter(u => u.rol === "docente" && u.activo).length}
+            />
+          </TabsContent>
+
+          {/* Asistencia */}
+          <TabsContent value="asistencia" className="mt-3">
+            <AsistenciaBoard 
+              grados={gradosFiltrados}
+              materias={materiasFiltradas}
+              estudiantes={estudiantes}
+              gradoInicial={gradoSeleccionado}
+              materiaInicial={materiaSeleccionada}
+            />
+          </TabsContent>
 
           {/* Calificaciones */}
           <TabsContent value="calificaciones" className="mt-3 space-y-3">
@@ -800,7 +826,7 @@ export default function Home() {
                                   <div><span className="text-[10px] text-slate-500">Tutor: </span>{u.gradosComoTutor.map(g => `${g.numero}°${g.seccion}`).join(", ")}</div>
                                 )}
                                 {u.materias && u.materias.length > 0 && (
-                                  <div><span className="text-[10px] text-slate-500">Materias: </span>{u.materias.map(m => `${m.nombre} (${m.gradoNumero}°)`).join(", ")}</div>
+                                  <div><span className="text-[10px] text-slate-500">Materias: </span>{u.materias.map(m => `${m.nombre} (${m.grado?.numero}º)`).join(", ")}</div>
                                 )}
                                 {(!u.gradosComoTutor || u.gradosComoTutor.length === 0) && (!u.materias || u.materias.length === 0) && "-"}
                               </div>
@@ -924,8 +950,8 @@ export default function Home() {
 
 // Componentes
 function CalificacionRow({ estudiante, calificacion, config, onSave, saving }: { estudiante: Estudiante; calificacion?: Calificacion; config: ConfigActividad; onSave: (id: string, data: { actividadesCotidianas: (number | null)[]; actividadesIntegradoras: (number | null)[]; examenTrimestral: number | null; recuperacion: number | null; }) => void; saving: boolean; }) {
-  const [acNotas, setAcNotas] = useState<(number | null)[]>(() => parseNotas(calificacion?.actividadesCotidianas, config.numActividadesCotidianas));
-  const [aiNotas, setAiNotas] = useState<(number | null)[]>(() => parseNotas(calificacion?.actividadesIntegradoras, config.numActividadesIntegradoras));
+  const [acNotas, setAcNotas] = useState<(number | null)[]>(() => parseNotas(calificacion?.actividadesCotidianas ?? null, config.numActividadesCotidianas));
+  const [aiNotas, setAiNotas] = useState<(number | null)[]>(() => parseNotas(calificacion?.actividadesIntegradoras ?? null, config.numActividadesIntegradoras));
   const [examen, setExamen] = useState<number | null>(() => calificacion?.examenTrimestral ?? null);
   const [recup, setRecup] = useState<number | null>(() => calificacion?.recuperacion ?? null);
   const promAC = calcularPromedio(acNotas), promAI = calcularPromedio(aiNotas), promFinal = calcularPromedioFinal(promAC, promAI, examen, config);
@@ -1129,8 +1155,185 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
     }
   };
 
+  const imprimirTodas = async () => {
+    if (!estudiantes.length) return;
+    
+    let allBoletasHtml = '';
+    const año = grado?.año || new Date().getFullYear();
+    const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
+
+    for (const est of estudiantes) {
+      const califs = getCalifs(est.id);
+      const prom = calcProm(califs);
+      const estadoFinal = getEstadoFinal(prom);
+
+      let tablaMaterias = materias.map(m => {
+        const c = califs.find(x => x.materiaId === m.id);
+        const notaFinal = c?.promedioFinal?.toFixed(1) ?? '-';
+        const estado = c?.promedioFinal !== null && c?.promedioFinal !== undefined 
+          ? (c.promedioFinal >= 6 ? 'A' : 'R') 
+          : '-';
+        return `<tr>
+          <td style="text-align:left;padding:6px 8px">${m.nombre}</td>
+          <td>${c?.calificacionAC?.toFixed(1) ?? '-'}</td>
+          <td>${c?.calificacionAI?.toFixed(1) ?? '-'}</td>
+          <td>${c?.examenTrimestral?.toFixed(1) ?? '-'}</td>
+          <td style="font-weight:bold">${notaFinal}</td>
+          <td style="font-weight:bold;color:${estado === 'A' ? '#059669' : estado === 'R' ? '#dc2626' : '#666'}">${estado}</td>
+        </tr>`;
+      }).join('');
+
+      allBoletasHtml += `
+      <div class="boleta" style="page-break-after: always;">
+        <div class="header">
+          <img src="${window.location.origin}/api/logo" alt="Logo" class="logo" onerror="this.style.display='none'">
+          <div class="header-text">
+            <h1>Centro Escolar Católico San José de la Montaña</h1>
+            <h2>Centro Educativo Católico</h2>
+            <p class="codigo">Código: 88125 | Departamento: 06-San Salvador | Municipio: 0614 San Salvador</p>
+          </div>
+          <img src="${window.location.origin}/api/logo" alt="Logo" class="logo" onerror="this.style.display='none'">
+        </div>
+
+        <div class="titulo-boleta">
+          <h3>Boleta de Calificaciones - Trimestre ${getTrimestreRomano(trimestre)}</h3>
+        </div>
+
+        <div class="info-estudiante">
+          <div>
+            <p><span class="label">Estudiante:</span> ${est.nombre}</p>
+            <p><span class="label">Grado:</span> ${grado?.numero}° Grado "${grado?.seccion}"</p>
+          </div>
+          <div style="text-align: right;">
+            <p><span class="label">Año Lectivo:</span> ${año}</p>
+            <p><span class="label">N° de Lista:</span> ${est.numero}</p>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 35%">Asignatura</th>
+              <th style="width: 12%">Prom. A.C.<br><small>(35%)</small></th>
+              <th style="width: 12%">Prom. A.I.<br><small>(35%)</small></th>
+              <th style="width: 12%">Examen<br><small>(30%)</small></th>
+              <th style="width: 14%">Promedio<br>Final</th>
+              <th style="width: 15%">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tablaMaterias}
+          </tbody>
+        </table>
+
+        <div class="resumen">
+          <div class="resumen-item">
+            <div class="valor">${prom?.toFixed(2) ?? 'N/A'}</div>
+            <div class="etiqueta">Promedio General</div>
+          </div>
+          <div class="resumen-item ${estadoFinal === 'REPROBADO' ? 'reprobado' : ''}">
+            <div class="valor">${estadoFinal}</div>
+            <div class="etiqueta">Estado Final</div>
+          </div>
+          <div class="resumen-item">
+            <div class="valor">${getTrimestreRomano(trimestre)} Trimestre</div>
+            <div class="etiqueta">Período Evaluado</div>
+          </div>
+        </div>
+
+        <div class="firmas">
+          <div class="firma">
+            <div class="linea">
+              <p class="nombre">________________________________</p>
+              <p class="cargo">Firma del Docente</p>
+            </div>
+          </div>
+          <div class="firma">
+            <div class="linea">
+              <p class="nombre">________________________________</p>
+              <p class="cargo">Firma de la Directora</p>
+              <p class="cargo">Centro Escolar Católico San José de la Montaña</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="pie">
+          <p>Fecha de impresión: ${fechaImpresion}</p>
+          <p>Código: 88125 | Departamento: 06-San Salvador | Municipio: 0614 San Salvador</p>
+        </div>
+      </div>`;
+    }
+
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+  <title>Boletas de Calificaciones - ${grado?.numero}° ${grado?.seccion}</title>
+  <style>
+    @page { size: letter; margin: 15mm; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Times New Roman', serif; font-size: 11pt; line-height: 1.4; color: #333; }
+    .boleta { max-width: 190mm; margin: 0 auto; padding: 5mm; }
+    
+    .header { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 15px; }
+    .logo { width: 70px; height: 70px; object-fit: contain; }
+    .header-text { text-align: center; flex: 1; }
+    .header-text h1 { font-size: 13pt; font-weight: bold; margin-bottom: 3px; text-transform: uppercase; }
+    .header-text h2 { font-size: 10pt; font-weight: normal; margin-bottom: 2px; }
+    .header-text .codigo { font-size: 8pt; color: #555; }
+    
+    .titulo-boleta { text-align: center; background: #f3f4f6; padding: 8px; margin: 15px 0; border: 1px solid #333; }
+    .titulo-boleta h3 { font-size: 12pt; text-transform: uppercase; letter-spacing: 1px; }
+    
+    .info-estudiante { display: flex; justify-content: space-between; margin-bottom: 15px; padding: 10px; background: #fafafa; border: 1px solid #ddd; border-radius: 4px; }
+    .info-estudiante p { margin: 3px 0; }
+    .info-estudiante .label { font-weight: bold; }
+    
+    table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+    th, td { border: 1px solid #333; padding: 5px 8px; text-align: center; }
+    th { background: #e5e7eb; font-weight: bold; font-size: 9pt; }
+    td { font-size: 10pt; }
+    
+    .resumen { display: flex; justify-content: space-between; margin: 20px 0; padding: 10px; background: #f0fdf4; border: 2px solid #059669; border-radius: 4px; }
+    .resumen-item { text-align: center; }
+    .resumen-item .valor { font-size: 16pt; font-weight: bold; color: #059669; }
+    .resumen-item.reprobado .valor { color: #dc2626; }
+    .resumen-item .etiqueta { font-size: 9pt; color: #666; }
+    
+    .firmas { display: flex; justify-content: space-between; margin-top: 40px; padding-top: 20px; }
+    .firma { text-align: center; width: 45%; }
+    .firma .linea { border-top: 1px solid #333; margin-top: 50px; padding-top: 5px; }
+    .firma .nombre { font-weight: bold; font-size: 10pt; }
+    .firma .cargo { font-size: 8pt; color: #555; }
+    
+    .pie { margin-top: 30px; text-align: center; font-size: 8pt; color: #666; border-top: 1px solid #ccc; padding-top: 10px; }
+    .pie p { margin: 2px 0; }
+    
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .no-print { display: none; }
+    }
+  </style>
+</head>
+<body>
+  ${allBoletasHtml}
+</body>
+</html>`;
+
+    const w = window.open('', '_blank');
+    if (w) {
+      w.document.write(html);
+      w.document.close();
+      setTimeout(() => w.print(), 500);
+    }
+  };
+
   return (
     <div className="space-y-1.5">
+      <div className="flex justify-end mb-2">
+         <Button onClick={imprimirTodas} size="sm" className="bg-teal-600 hover:bg-teal-700 text-white shadow-sm transition-colors">
+            <Printer className="h-4 w-4 mr-2" /> Imprimir Todas
+         </Button>
+      </div>
       {estudiantes.map(est => {
         const califs = getCalifs(est.id), prom = calcProm(califs), open = expandedBoleta === est.id;
         return (
