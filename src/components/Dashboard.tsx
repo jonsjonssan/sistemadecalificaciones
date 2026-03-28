@@ -1,29 +1,76 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Users, BookOpen, ClipboardList, School, GraduationCap, CalendarDays } from "lucide-react";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
+import { Users, BookOpen, ClipboardList, School, GraduationCap, CalendarDays, Trophy, AlertTriangle, TrendingUp } from "lucide-react";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend, Cell } from "recharts";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 
 interface UsuarioSesion { id: string; email: string; nombre: string; rol: string; }
-interface Grado { id: string; numero: number; seccion: string; _count?: { estudiantes: number; asignaturas: number; }; }
-interface AsignaturaConGrado { id: string; nombre: string; grado?: { numero: number; seccion: string; }; }
+interface Grado { id: string; numero: number; seccion: string; _count?: { estudiantes: number; materias: number; }; }
+interface MateriaConGrado { id: string; nombre: string; grado?: { numero: number; seccion: string; }; }
 
 interface DashboardProps {
   usuario: UsuarioSesion;
   grados: Grado[];
   totalEstudiantes: number;
   totalAsignaturas: number;
-  asignaturasAsignadas?: AsignaturaConGrado[]; // solo docentes
+  asignaturasAsignadas?: MateriaConGrado[]; // solo docentes
   totalDocentes: number;
-  promediosAsignaturas?: any[];
 }
 
-export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsignaturas, asignaturasAsignadas, totalDocentes, promediosAsignaturas = [] }: DashboardProps) {
+interface GradeStats {
+  gradoId: string;
+  nombre: string;
+  promedios: {
+    cotidiana: number;
+    integradora: number;
+    examen: number;
+  };
+  topEstudiantes: { id: string, nombre: string, numero: number, promedio: number }[];
+  alertas: { id: string, nombre: string, numero: number, promedio: number }[];
+}
+
+export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsignaturas, asignaturasAsignadas, totalDocentes }: DashboardProps) {
+  const [stats, setStats] = useState<GradeStats[]>([]);
+  const [selectedGradoId, setSelectedGradoId] = useState<string>("all");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await fetch("/api/stats/dashboard");
+        if (res.ok) {
+          const data = await res.json();
+          setStats(data);
+          if (data.length > 0 && selectedGradoId === "all") {
+            // No cambiar el default "all" pero tener los datos listos
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching stats:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, [selectedGradoId]);
+
+  const selectedStats = selectedGradoId === "all" ? null : stats.find(s => s.gradoId === selectedGradoId);
+
   // Datos para gráfico de población
-  const chartData = grados.map(g => ({
+  const popChartData = grados.map(g => ({
     name: `${g.numero}° ${g.seccion}`,
     estudiantes: g._count?.estudiantes || 0
   })).filter(g => g.estudiantes > 0);
+
+  // Datos para gráfico de promedios por categoría
+  const categoryChartData = selectedStats ? [
+    { name: "Cotidianas", valor: selectedStats.promedios.cotidiana, color: "#0d9488" },
+    { name: "Integradoras", valor: selectedStats.promedios.integradora, color: "#0891b2" },
+    { name: "Exámenes", valor: selectedStats.promedios.examen, color: "#4f46e5" }
+  ] : [];
 
   return (
     <div className="space-y-4">
@@ -98,103 +145,154 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
         </div>
       )}
 
-      {/* Gráficos Principales */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card className="shadow-sm border-slate-100">
-          <CardHeader>
-            <CardTitle className="text-base text-slate-700">Población Estudiantil por Grado</CardTitle>
-            <CardDescription className="text-xs">Cantidad de estudiantes registrados por sección</CardDescription>
+      {/* Analíticas Avanzadas */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+        <Card className="lg:col-span-3 shadow-sm border-slate-100 overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 border-b bg-slate-50/50">
+            <div>
+              <CardTitle className="text-base text-slate-700 flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-teal-600" />
+                Rendimiento Académico por Grado
+              </CardTitle>
+              <CardDescription className="text-xs">Promedios por categoría evaluativa</CardDescription>
+            </div>
+            <Select value={selectedGradoId} onValueChange={setSelectedGradoId}>
+              <SelectTrigger className="w-[180px] h-8 text-xs bg-white">
+                <SelectValue placeholder="Seleccionar grado" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all" className="text-xs">Vista General</SelectItem>
+                {stats.map(s => (
+                  <SelectItem key={s.gradoId} value={s.gradoId} className="text-xs">
+                    {s.nombre}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </CardHeader>
-          <CardContent className="h-[250px]">
-            {chartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
-                  <Tooltip 
-                    cursor={{fill: '#f1f5f9'}} 
-                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                  />
-                  <Bar dataKey="estudiantes" fill="#0d9488" radius={[4, 4, 0, 0]} barSize={24} />
-                </BarChart>
-              </ResponsiveContainer>
+          <CardContent className="p-6">
+            {selectedGradoId === "all" ? (
+              <div className="h-[300px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={popChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
+                    <Tooltip cursor={{fill: '#f1f5f9'}} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px' }} />
+                    <Bar dataKey="estudiantes" name="N° Estudiantes" fill="#0d9488" radius={[4, 4, 0, 0]} barSize={40} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            ) : selectedStats ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center h-full">
+                <div className="h-[250px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={categoryChartData} layout="vertical" margin={{ top: 0, right: 30, left: 40, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E2E8F0" />
+                      <XAxis type="number" domain={[0, 10]} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
+                      <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} width={80} />
+                      <Tooltip cursor={{fill: '#f1f5f9'}} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px' }} />
+                      <Bar dataKey="valor" name="Promedio" radius={[0, 4, 4, 0]} barSize={35}>
+                        {categoryChartData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="space-y-4">
+                  <div className="bg-teal-50/50 p-4 rounded-xl border border-teal-100">
+                    <h4 className="text-xs font-bold text-teal-800 uppercase tracking-wider mb-2 flex items-center gap-2">
+                       <Trophy className="h-3.5 w-3.5 text-amber-500" /> Cuadro de Honor
+                    </h4>
+                    <div className="space-y-2">
+                      {selectedStats.topEstudiantes.length > 0 ? selectedStats.topEstudiantes.map((est, i) => (
+                        <div key={est.id} className="flex items-center justify-between text-sm">
+                          <span className="text-slate-700 truncate max-w-[180px]">{i+1}. {est.nombre}</span>
+                          <Badge variant="outline" className="bg-white text-teal-700 border-teal-200 font-bold ml-2">
+                            {est.promedio.toFixed(1)}
+                          </Badge>
+                        </div>
+                      )) : <p className="text-[10px] text-slate-400">Sin promedios calculados</p>}
+                    </div>
+                  </div>
+                  <div className="bg-red-50/50 p-4 rounded-xl border border-red-100">
+                    <h4 className="text-xs font-bold text-red-800 uppercase tracking-wider mb-2 flex items-center gap-2">
+                      <AlertTriangle className="h-3.5 w-3.5 text-red-500" /> Alertas Académicas
+                    </h4>
+                    <div className="space-y-2">
+                      {selectedStats.alertas.length > 0 ? selectedStats.alertas.map((est, i) => (
+                        <div key={est.id} className="flex items-center justify-between text-sm">
+                          <span className="text-slate-700 truncate max-w-[180px]">{est.nombre}</span>
+                          <Badge variant="destructive" className="bg-red-500 text-white font-bold ml-2">
+                            {est.promedio.toFixed(1)}
+                          </Badge>
+                        </div>
+                      )) : <p className="text-[10px] text-slate-400">Sin alertas detectadas</p>}
+                    </div>
+                  </div>
+                </div>
+              </div>
             ) : (
-              <div className="h-full flex items-center justify-center text-slate-300 text-sm italic">
-                Sin datos de población
+              <div className="h-[300px] flex items-center justify-center text-slate-400 italic">
+                Cargando estadísticas...
               </div>
             )}
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm border-slate-100">
-          <CardHeader>
-            <CardTitle className="text-base text-slate-700">Promedios por Asignatura</CardTitle>
-            <CardDescription className="text-xs">Rendimiento académico actual del grado seleccionado</CardDescription>
-          </CardHeader>
-          <CardContent className="h-[250px]">
-            {promediosAsignaturas.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={promediosAsignaturas} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 9, fill: '#64748b' }} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} domain={[0, 10]} />
-                  <Tooltip 
-                    cursor={{fill: '#f1f5f9'}} 
-                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                  />
-                  <Bar dataKey="Cotidiana" fill="#0d9488" radius={[2, 2, 0, 0]} />
-                  <Bar dataKey="Integradora" fill="#3b82f6" radius={[2, 2, 0, 0]} />
-                  <Bar dataKey="Examen" fill="#f59e0b" radius={[2, 2, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-full flex items-center justify-center text-slate-300 text-sm italic">
-                Cargue un grado en "Calificaciones" para ver promedios
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+        {/* Accesos y Otros */}
+        <div className="flex flex-col gap-4">
+           {/* Info Docente si aplica */}
+          {usuario.rol === "docente" && asignaturasAsignadas && (
+             <Card className="shadow-sm border-slate-100">
+               <CardHeader className="py-3 px-4 border-b">
+                 <CardTitle className="text-xs font-bold text-slate-500 uppercase">Mis Asignaturas</CardTitle>
+               </CardHeader>
+               <CardContent className="p-3 max-h-[300px] overflow-y-auto">
+                 <div className="space-y-2">
+                   {asignaturasAsignadas.map(m => (
+                     <div key={m.id} className="p-2 bg-slate-50 rounded border text-xs flex justify-between items-center">
+                       <span className="font-medium text-slate-700">{m.nombre}</span>
+                       <Badge variant="secondary" className="text-[9px]">{m.grado?.numero}°{m.grado?.seccion}</Badge>
+                     </div>
+                   ))}
+                 </div>
+               </CardContent>
+             </Card>
+          )}
 
-      {/* Accesos Rápidos */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {(usuario.rol === "docente" || usuario.rol === "admin") && (
-          <Card className="lg:col-span-1 shadow-sm border-slate-100">
-            <CardHeader className="py-3 px-4">
-              <CardTitle className="text-sm font-semibold text-slate-700">Accesos Rápidos</CardTitle>
+          <Card className="shadow-sm border-slate-100 flex-1">
+            <CardHeader className="py-3 px-4 border-b">
+              <CardTitle className="text-xs font-bold text-slate-500 uppercase">Gestión Rápida</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 pb-4">
-              <div className="p-2.5 bg-teal-50/50 border border-teal-100 rounded-lg flex items-center gap-3 hover:bg-teal-50 transition-colors cursor-pointer" onClick={() => document.getElementById('tab-calificaciones')?.click()}>
-                <div className="p-1.5 bg-teal-100 text-teal-700 rounded-md"><ClipboardList className="h-4 w-4" /></div>
+            <CardContent className="p-4 space-y-3">
+              <div className="p-3 bg-teal-50/50 border border-teal-100 rounded-lg flex items-center gap-3 hover:bg-teal-50 transition-colors cursor-pointer group" onClick={() => document.getElementById('tab-calificaciones')?.click()}>
+                <div className="p-2 bg-teal-100 text-teal-700 rounded-md shrink-0 group-hover:scale-110 transition-transform"><ClipboardList className="h-4 w-4" /></div>
                 <div>
-                  <h4 className="text-xs font-semibold text-teal-900">Pasar Calificaciones</h4>
-                  <p className="text-[10px] text-teal-700/80">Notas por trimestre y asignatura.</p>
+                  <h4 className="text-xs font-bold text-teal-900">Pasar Notas</h4>
+                  <p className="text-[10px] text-teal-700/70">Ingreso rápido de calificaciones</p>
                 </div>
               </div>
-              <div className="p-2.5 bg-blue-50/50 border border-blue-100 rounded-lg flex items-center gap-3 hover:bg-blue-50 transition-colors cursor-pointer" onClick={() => document.getElementById('tab-asistencia')?.click()}>
-                <div className="p-1.5 bg-blue-100 text-blue-700 rounded-md"><CalendarDays className="h-4 w-4" /></div>
+              <div className="p-3 bg-blue-50/50 border border-blue-100 rounded-lg flex items-center gap-3 hover:bg-blue-50 transition-colors cursor-pointer group" onClick={() => document.getElementById('tab-asistencia')?.click()}>
+                <div className="p-2 bg-blue-100 text-blue-700 rounded-md shrink-0 group-hover:scale-110 transition-transform"><CalendarDays className="h-4 w-4" /></div>
                 <div>
-                  <h4 className="text-xs font-semibold text-blue-900">Control de Asistencia</h4>
-                  <p className="text-[10px] text-blue-700/80">Registro diario de asistencia.</p>
+                  <h4 className="text-xs font-bold text-blue-900">Asistencia</h4>
+                  <p className="text-[10px] text-blue-700/70">Control diario de alumnos</p>
                 </div>
               </div>
+              {usuario.rol === "admin" && (
+                <div className="p-3 bg-amber-50/50 border border-amber-100 rounded-lg flex items-center gap-3 hover:bg-amber-50 transition-colors cursor-pointer group">
+                  <div className="p-2 bg-amber-100 text-amber-700 rounded-md shrink-0 group-hover:scale-110 transition-transform"><GraduationCap className="h-4 w-4" /></div>
+                  <div>
+                    <h4 className="text-xs font-bold text-amber-900">Docentes</h4>
+                    <p className="text-[10px] text-amber-700/70">Administrar personal académico</p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
-        )}
-        
-        {usuario.rol === "admin" && (
-          <Card className="lg:col-span-2 shadow-sm border-slate-100">
-            <CardHeader className="py-3 px-4">
-               <CardTitle className="text-sm font-semibold text-slate-700">Resumen de Control</CardTitle>
-            </CardHeader>
-            <CardContent className="pb-4">
-               <div className="text-[10px] text-slate-500 bg-slate-50 p-3 rounded-lg border italic">
-                 El dashboard muestra promedios del grado consultado actualmente en la pestaña de Calificaciones. Use esta vista para monitorear el avance de las notas.
-               </div>
-            </CardContent>
-          </Card>
-        )}
+        </div>
       </div>
     </div>
   );

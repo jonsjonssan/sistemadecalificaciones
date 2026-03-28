@@ -7,31 +7,24 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const fechaParam = searchParams.get("fecha");
-    const fechaInicioParam = searchParams.get("fechaInicio");
-    const fechaFinParam = searchParams.get("fechaFin");
     const gradoId = searchParams.get("gradoId");
     const materiaId = searchParams.get("materiaId");
 
-    const whereClause: any = {};
-    if (gradoId) whereClause.gradoId = gradoId;
-    if (materiaId) whereClause.materiaId = materiaId;
+    if (!fechaParam || !gradoId) {
+      return NextResponse.json({ error: "Faltan parámetros requeridos" }, { status: 400 });
+    }
 
-    if (fechaParam) {
-      const fecha = new Date(fechaParam);
-      if (isNaN(fecha.getTime())) return NextResponse.json({ error: "Fecha inválida" }, { status: 400 });
-      whereClause.fecha = fecha;
-    } else if (fechaInicioParam && fechaFinParam) {
-      const inicio = new Date(fechaInicioParam);
-      const fin = new Date(fechaFinParam);
-      if (isNaN(inicio.getTime()) || isNaN(fin.getTime())) {
-        return NextResponse.json({ error: "Rango de fechas inválido" }, { status: 400 });
-      }
-      whereClause.fecha = {
-        gte: inicio,
-        lte: fin
-      };
-    } else if (!gradoId) {
-      return NextResponse.json({ error: "Faltan parámetros de búsqueda (fecha o rango + gradoId)" }, { status: 400 });
+    const fecha = new Date(fechaParam);
+    if (isNaN(fecha.getTime())) {
+      return NextResponse.json({ error: "Fecha inválida" }, { status: 400 });
+    }
+
+    const whereClause: any = {
+      fecha: fecha,
+      gradoId: gradoId,
+    };
+    if (materiaId) {
+      whereClause.materiaId = materiaId;
     }
 
     const asistencias = await prisma.asistencia.findMany({
@@ -40,8 +33,7 @@ export async function GET(req: Request) {
         estudiante: {
           select: { id: true, nombre: true, numero: true }
         }
-      },
-      orderBy: { fecha: 'asc' }
+      }
     });
 
     return NextResponse.json(asistencias);

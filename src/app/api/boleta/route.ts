@@ -58,25 +58,12 @@ export async function GET(request: NextRequest) {
         },
       });
 
-      // Obtener asistencia para todo el grado en el periodo (o año)
-      const asistenciasGrado = await db.asistencia.findMany({
-        where: {
-          gradoId,
-          // Si hay trimestre, podríamos filtrar por fechas, pero por ahora sumamos todo el año o filtramos por fecha si se definen rangos.
-          // Como no hay rangos oficiales por trimestre en la DB, sumamos el histórico.
-        }
-      });
-
       // Agrupar por estudiante
       const boletasPorEstudiante = estudiantes.map((est) => {
         const califEstudiante = calificaciones.filter(
           (c) => c.estudianteId === est.id
         );
         
-        const asistenciasEst = asistenciasGrado.filter(a => a.estudianteId === est.id);
-        const inasistencias = asistenciasEst.filter(a => a.estado === "ausente").length;
-        const justificaciones = asistenciasEst.filter(a => a.estado === "justificada").length;
-
         // Calcular promedio general
         const promediosValidos = califEstudiante
           .map((c) => c.promedioFinal)
@@ -88,9 +75,8 @@ export async function GET(request: NextRequest) {
 
         return {
           estudiante: est,
-          calificaciones: califEstudiante.map(c => ({...c, asignatura: c.materia, materia: undefined})),
+          calificaciones: califEstudiante,
           promedioGeneral,
-          asistencia: { inasistencias, justificaciones }
         };
       });
 
@@ -106,12 +92,6 @@ export async function GET(request: NextRequest) {
         orderBy: { materia: { nombre: "asc" } },
       });
 
-      const asistenciasEst = await db.asistencia.findMany({
-        where: { estudianteId: estudianteId as string }
-      });
-      const inasistencias = asistenciasEst.filter(a => a.estado === "ausente").length;
-      const justificaciones = asistenciasEst.filter(a => a.estado === "justificada").length;
-
       // Calcular promedio general
       const promediosValidos = calificaciones
         .map((c) => c.promedioFinal)
@@ -123,9 +103,8 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json({
         estudiante,
-        calificaciones: calificaciones.map(c => ({...c, asignatura: c.materia, materia: undefined})),
+        calificaciones,
         promedioGeneral,
-        asistencia: { inasistencias, justificaciones }
       });
     }
   } catch (error) {

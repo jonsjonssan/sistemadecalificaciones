@@ -29,13 +29,13 @@ interface Usuario {
   rol: string; 
   activo: boolean; 
   gradosComoTutor?: { id: string; numero: number; seccion: string; año: number; }[]; 
-  asignaturas?: AsignaturaConGrado[];
+  materias?: AsignaturaConGrado[];
 }
 interface Estudiante { id: string; numero: number; nombre: string; gradoId: string; activo: boolean; }
 interface Asignatura { id: string; nombre: string; gradoId: string; }
 interface ConfigActividad { id: string; materiaId: string; trimestre: number; numActividadesCotidianas: number; numActividadesIntegradoras: number; tieneExamen: boolean; porcentajeAC: number; porcentajeAI: number; porcentajeExamen: number; asignaturaNombre?: string; }
 interface Calificacion { id: string; estudianteId: string; materiaId: string; trimestre: number; actividadesCotidianas: string | null; calificacionAC: number | null; actividadesIntegradoras: string | null; calificacionAI: number | null; examenTrimestral: number | null; promedioFinal: number | null; recuperacion: number | null; estudiante?: Estudiante; asignatura?: Asignatura; config?: ConfigActividad; }
-interface Grado { id: string; numero: number; seccion: string; año: number; docenteId: string | null; docente?: { id: string; nombre: string; email: string; }; _count?: { estudiantes: number; asignaturas: number; }; }
+interface Grado { id: string; numero: number; seccion: string; año: number; docenteId: string | null; docente?: { id: string; nombre: string; email: string; }; _count?: { estudiantes: number; materias: number; }; }
 interface ConfiguracionSistema { id: string; añoEscolar: number; escuela: string; }
 
 // Utilidades
@@ -76,7 +76,6 @@ export default function Home() {
   const [configActual, setConfigActual] = useState<ConfigActividad | null>(null);
   const [configsGrado, setConfigsGrado] = useState<ConfigActividad[]>([]);
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
-  const [promediosAsignaturas, setPromediosAsignaturas] = useState<any[]>([]);
   
   // Selecciones
   const [gradoSeleccionado, setGradoSeleccionado] = useState<string>("");
@@ -106,7 +105,7 @@ export default function Home() {
     nombre: "", 
     rol: "docente", 
     gradosAsignados: [] as string[],
-    asignaturasAsignadas: [] as string[]
+    materiasAsignadas: [] as string[]
   });
   const [configuracion, setConfiguracion] = useState<ConfiguracionSistema | null>(null);
   const [nuevoAño, setNuevoAño] = useState(2026);
@@ -382,7 +381,7 @@ export default function Home() {
         body: JSON.stringify(nuevoUsuario),
       });
       if (res.ok) { 
-        setNuevoUsuario({ email: "", password: "", nombre: "", rol: "docente", gradosAsignados: [], asignaturasAsignadas: [] }); 
+        setNuevoUsuario({ email: "", password: "", nombre: "", rol: "docente", gradosAsignados: [], materiasAsignadas: [] }); 
         setUserDialogOpen(false); 
         loadUsuarios(); 
         toast({ title: "Usuario creado" }); 
@@ -454,36 +453,6 @@ export default function Home() {
   // Grados 6-9
   const gradosSuperiores = grados.filter(g => g.numero >= 6);
 
-  // Calcular promedios para el dashboard
-  useEffect(() => {
-    if (calificaciones.length > 0) {
-      const map = new Map();
-      calificaciones.forEach(c => {
-        const mId = c.materiaId;
-        if (!map.has(mId)) {
-          map.set(mId, { 
-            nombre: c.asignatura?.nombre || "Asignatura", 
-            ac: [] as number[], ai: [] as number[], ex: [] as number[] 
-          });
-        }
-        const data = map.get(mId);
-        if (c.calificacionAC !== null) data.ac.push(c.calificacionAC);
-        if (c.calificacionAI !== null) data.ai.push(c.calificacionAI);
-        if (c.examenTrimestral !== null) data.ex.push(c.examenTrimestral);
-      });
-
-      const result = Array.from(map.values()).map(d => ({
-        name: d.nombre,
-        Cotidiana: d.ac.length ? parseFloat((d.ac.reduce((a, b) => a + b, 0) / d.ac.length).toFixed(2)) : 0,
-        Integradora: d.ai.length ? parseFloat((d.ai.reduce((a, b) => a + b, 0) / d.ai.length).toFixed(2)) : 0,
-        Examen: d.ex.length ? parseFloat((d.ex.reduce((a, b) => a + b, 0) / d.ex.length).toFixed(2)) : 0
-      }));
-      setPromediosAsignaturas(result);
-    } else {
-      setPromediosAsignaturas([]);
-    }
-  }, [calificaciones]);
-
   // Effects
   useEffect(() => { checkAuth(); }, [checkAuth]);
   useEffect(() => { if (usuario) { loadGrados(); loadUsuarios(); loadTodasAsignaturas(); loadConfiguracion(); } }, [usuario, loadGrados, loadUsuarios, loadTodasAsignaturas, loadConfiguracion]);
@@ -525,7 +494,7 @@ export default function Home() {
     }
   }, [usuario, grados, gradoSeleccionado]);
 
-  // Filtrar asignaturas según el usuario
+  // Filtrar materias según el usuario
   useEffect(() => {
     if (!usuario || !gradoSeleccionado) {
       setAsignaturasFiltradas(asignaturas);
@@ -646,7 +615,6 @@ export default function Home() {
               totalEstudiantes={grados.reduce((sum, g) => sum + (g._count?.estudiantes || 0), 0)}
               totalAsignaturas={todasAsignaturas.length}
               totalDocentes={usuarios.filter(u => u.rol === "docente" && u.activo).length}
-              promediosAsignaturas={promediosAsignaturas}
             />
           </TabsContent>
 
@@ -756,7 +724,7 @@ export default function Home() {
                   <div className="flex-1"><Label className="text-xs">Grado</Label><Select value={gradoSeleccionado} onValueChange={setGradoSeleccionado}><SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger><SelectContent>{gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}"</SelectItem>)}</SelectContent></Select></div>
                   <div className="w-32"><Label className="text-xs">Trimestre</Label><Select value={trimestreSeleccionado} onValueChange={setTrimestreSeleccionado}><SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="1">I</SelectItem><SelectItem value="2">II</SelectItem><SelectItem value="3">III</SelectItem></SelectContent></Select></div>
                 </div>
-                {gradoSeleccionado && estudiantes.length > 0 && <BoletaList estudiantes={estudiantes} calificaciones={calificaciones} asignaturas={asignaturasFiltradas} grado={gradosFiltrados.find(g => g.id === gradoSeleccionado)} trimestre={parseInt(trimestreSeleccionado)} expandedBoleta={expandedBoleta} setExpandedBoleta={setExpandedBoleta} />}
+                {gradoSeleccionado && estudiantes.length > 0 && <BoletaList estudiantes={estudiantes} calificaciones={calificaciones} materias={asignaturasFiltradas} grado={gradosFiltrados.find(g => g.id === gradoSeleccionado)} trimestre={parseInt(trimestreSeleccionado)} expandedBoleta={expandedBoleta} setExpandedBoleta={setExpandedBoleta} />}
               </CardContent>
             </Card>
           </TabsContent>
@@ -817,12 +785,12 @@ export default function Home() {
                                         <label key={m.id} className="flex items-center gap-1 text-xs p-1 hover:bg-slate-50 rounded cursor-pointer">
                                           <input 
                                             type="checkbox" 
-                                            checked={nuevoUsuario.asignaturasAsignadas.includes(m.id)} 
+                                            checked={nuevoUsuario.materiasAsignadas.includes(m.id)} 
                                             onChange={e => setNuevoUsuario({
                                               ...nuevoUsuario, 
-                                              asignaturasAsignadas: e.target.checked 
-                                                ? [...nuevoUsuario.asignaturasAsignadas, m.id] 
-                                                : nuevoUsuario.asignaturasAsignadas.filter(id => id !== m.id)
+                                              materiasAsignadas: e.target.checked 
+                                                ? [...nuevoUsuario.materiasAsignadas, m.id] 
+                                                : nuevoUsuario.materiasAsignadas.filter(id => id !== m.id)
                                             })} 
                                             className="h-3 w-3" 
                                           />
@@ -857,10 +825,10 @@ export default function Home() {
                                 {u.gradosComoTutor && u.gradosComoTutor.length > 0 && (
                                   <div><span className="text-[10px] text-slate-500">Tutor: </span>{u.gradosComoTutor.map(g => `${g.numero}°${g.seccion}`).join(", ")}</div>
                                 )}
-                                {u.asignaturas && u.asignaturas.length > 0 && (
-                                  <div><span className="text-[10px] text-slate-500">Asignaturas: </span>{u.asignaturas.map(m => `${m.nombre} (${m.grado?.numero}º)`).join(", ")}</div>
+                                {u.materias && u.materias.length > 0 && (
+                                  <div><span className="text-[10px] text-slate-500">Asignaturas: </span>{u.materias.map(m => `${m.nombre} (${m.grado?.numero}º)`).join(", ")}</div>
                                 )}
-                                {(!u.gradosComoTutor || u.gradosComoTutor.length === 0) && (!u.asignaturas || u.asignaturas.length === 0) && "-"}
+                                {(!u.gradosComoTutor || u.gradosComoTutor.length === 0) && (!u.materias || u.materias.length === 0) && "-"}
                               </div>
                             </TableCell>
                             <TableCell className="text-center">
@@ -1007,7 +975,20 @@ function CalificacionRow({ estudiante, calificacion, config, onSave, saving }: {
   );
 }
 
-function BoletaList({ estudiantes, calificaciones, asignaturas, grado, trimestre, expandedBoleta, setExpandedBoleta }: { estudiantes: Estudiante[]; calificaciones: Calificacion[]; asignaturas: Asignatura[]; grado?: Grado; trimestre: number; expandedBoleta: string | null; setExpandedBoleta: (id: string | null) => void; }) {
+function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, expandedBoleta, setExpandedBoleta }: { estudiantes: Estudiante[]; calificaciones: Calificacion[]; materias: Asignatura[]; grado?: Grado; trimestre: number; expandedBoleta: string | null; setExpandedBoleta: (id: string | null) => void; }) {
+  const [resumenAsistencia, setResumenAsistencia] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchAsistencia = async () => {
+      if (!grado?.id) return;
+      try {
+        const res = await fetch(`/api/asistencia/resumen?gradoId=${grado.id}&trimestre=${trimestre}`);
+        if (res.ok) setResumenAsistencia(await res.json());
+      } catch (e) { console.error(e); }
+    };
+    fetchAsistencia();
+  }, [grado?.id, trimestre]);
+
   const getCalifs = (id: string) => calificaciones.filter(c => c.estudianteId === id && c.trimestre === trimestre);
   const calcProm = (c: Calificacion[]) => { const p = c.map(x => x.promedioFinal).filter((x): x is number => x !== null); return p.length ? p.reduce((a, b) => a + b, 0) / p.length : null; };
   
@@ -1021,28 +1002,19 @@ function BoletaList({ estudiantes, calificaciones, asignaturas, grado, trimestre
     return promedio >= 6 ? 'APROBADO' : 'REPROBADO';
   };
 
-  const imprimirBoleta = async (est: Estudiante) => {
-    const trimester = parseInt(trimestreSeleccionado);
-    let inasistencias = 0;
-    let justificaciones = 0;
-    
-    try {
-      const res = await fetch(`/api/boleta?estudianteId=${est.id}&trimestre=${trimester}`);
-      if (res.ok) {
-        const data = await res.json();
-        inasistencias = data.asistencia?.inasistencias || 0;
-        justificaciones = data.asistencia?.justificaciones || 0;
-      }
-    } catch { /* use 0 */ }
+  const getAsistInfo = (id: string) => resumenAsistencia.find(r => r.id === id) || { asistencias: 0, ausencias: 0, tardanzas: 0, total: 0 };
 
-    const califs = getCalifs(est.id);
+  const imprimir = async (id: string) => {
+    const est = estudiantes.find(e => e.id === id);
+    if (!est) return;
+    const califs = getCalifs(id);
     const prom = calcProm(califs);
     const estadoFinal = getEstadoFinal(prom);
     const año = grado?.año || new Date().getFullYear();
     const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
 
     // Crear tabla de asignaturas
-    let tablaAsignaturas = asignaturas.map(m => {
+    let tablaAsignaturas = materias.map(m => {
       const c = califs.find(x => x.materiaId === m.id);
       const notaFinal = c?.promedioFinal?.toFixed(1) ?? '-';
       const estado = c?.promedioFinal !== null && c?.promedioFinal !== undefined 
@@ -1057,6 +1029,8 @@ function BoletaList({ estudiantes, calificaciones, asignaturas, grado, trimestre
         <td style="font-weight:bold;color:${estado === 'A' ? '#059669' : estado === 'R' ? '#dc2626' : '#666'}">${estado}</td>
       </tr>`;
     }).join('');
+
+    const asist = getAsistInfo(id);
 
     const html = `<!DOCTYPE html>
 <html>
@@ -1092,6 +1066,15 @@ function BoletaList({ estudiantes, calificaciones, asignaturas, grado, trimestre
     .resumen-item .valor { font-size: 16pt; font-weight: bold; color: #059669; }
     .resumen-item.reprobado .valor { color: #dc2626; }
     .resumen-item .etiqueta { font-size: 9pt; color: #666; }
+    
+    .seccion-asistencia { margin: 15px 0; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; }
+    .seccion-asistencia-header { background: #f8fafc; padding: 6px 10px; border-bottom: 1px solid #ddd; font-weight: bold; font-size: 9pt; display: flex; justify-content: space-between; }
+    .asistencia-grid { display: grid; grid-template-columns: repeat(4, 1fr); padding: 10px; text-align: center; }
+    .asistencia-item .n { font-size: 12pt; font-weight: bold; }
+    .asistencia-item .l { font-size: 8pt; color: #666; text-transform: uppercase; }
+    .asistencia-asist { color: #059669; }
+    .asistencia-aus { color: #dc2626; }
+    .asistencia-tard { color: #d97706; }
     
     .firmas { display: flex; justify-content: space-between; margin-top: 40px; padding-top: 20px; }
     .firma { text-align: center; width: 45%; }
@@ -1151,6 +1134,31 @@ function BoletaList({ estudiantes, calificaciones, asignaturas, grado, trimestre
       </tbody>
     </table>
 
+    <div class="seccion-asistencia">
+      <div class="seccion-asistencia-header">
+        <span>RESUMEN DE ASISTENCIA</span>
+        <span>Período: Trimestre ${getTrimestreRomano(trimestre)}</span>
+      </div>
+      <div class="asistencia-grid">
+        <div class="asistencia-item">
+          <div class="n asistencia-asist">${asist.asistencias}</div>
+          <div class="l">Asistencias</div>
+        </div>
+        <div class="asistencia-item">
+          <div class="n asistencia-aus">${asist.ausencias}</div>
+          <div class="l">Inasistencias</div>
+        </div>
+        <div class="asistencia-item">
+          <div class="n asistencia-tard">${asist.tardanzas}</div>
+          <div class="l">Tardanzas</div>
+        </div>
+        <div class="asistencia-item">
+          <div class="n">${asist.total}</div>
+          <div class="l">Total Días</div>
+        </div>
+      </div>
+    </div>
+
     <div class="resumen">
       <div class="resumen-item">
         <div class="valor">${prom?.toFixed(2) ?? 'N/A'}</div>
@@ -1159,14 +1167,6 @@ function BoletaList({ estudiantes, calificaciones, asignaturas, grado, trimestre
       <div class="resumen-item ${estadoFinal === 'REPROBADO' ? 'reprobado' : ''}">
         <div class="valor">${estadoFinal}</div>
         <div class="etiqueta">Estado Final</div>
-      </div>
-      <div class="resumen-item">
-        <div class="valor">${inasistencias}</div>
-        <div class="etiqueta">Inasistencias</div>
-      </div>
-      <div class="resumen-item">
-        <div class="valor">${justificaciones}</div>
-        <div class="etiqueta">Permisos/Jus.</div>
       </div>
       <div class="resumen-item">
         <div class="valor">${getTrimestreRomano(trimestre)} Trimestre</div>
@@ -1213,20 +1213,13 @@ function BoletaList({ estudiantes, calificaciones, asignaturas, grado, trimestre
     const año = grado?.año || new Date().getFullYear();
     const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
 
-    let boletasData = [];
-    try {
-      const res = await fetch(`/api/boleta?gradoId=${gradoId}&trimestre=${trimestreSeleccionado}`);
-      if (res.ok) boletasData = await res.json();
-    } catch { /* use local */ }
-
     for (const est of estudiantes) {
-      const boletaEst = boletasData.find((b: any) => b.estudiante.id === est.id);
-      const inasistencias = boletaEst?.asistencia?.inasistencias || 0;
       const califs = getCalifs(est.id);
       const prom = calcProm(califs);
       const estadoFinal = getEstadoFinal(prom);
+      const asist = getAsistInfo(est.id);
 
-      let tablaAsignaturas = asignaturas.map(m => {
+      let tablaAsignaturas = materias.map(m => {
         const c = califs.find(x => x.materiaId === m.id);
         const notaFinal = c?.promedioFinal?.toFixed(1) ?? '-';
         const estado = c?.promedioFinal !== null && c?.promedioFinal !== undefined 
@@ -1285,6 +1278,31 @@ function BoletaList({ estudiantes, calificaciones, asignaturas, grado, trimestre
           </tbody>
         </table>
 
+        <div class="seccion-asistencia">
+          <div class="seccion-asistencia-header">
+            <span>RESUMEN DE ASISTENCIA</span>
+            <span>Período: Trimestre ${getTrimestreRomano(trimestre)}</span>
+          </div>
+          <div class="asistencia-grid">
+            <div class="asistencia-item">
+              <div class="n asistencia-asist">${asist.asistencias}</div>
+              <div class="l">Asistencias</div>
+            </div>
+            <div class="asistencia-item">
+              <div class="n asistencia-aus">${asist.ausencias}</div>
+              <div class="l">Inasistencias</div>
+            </div>
+            <div class="asistencia-item">
+              <div class="n asistencia-tard">${asist.tardanzas}</div>
+              <div class="l">Tardanzas</div>
+            </div>
+            <div class="asistencia-item">
+              <div class="n">${asist.total}</div>
+              <div class="l">Total Días</div>
+            </div>
+          </div>
+        </div>
+
         <div class="resumen">
           <div class="resumen-item">
             <div class="valor">${prom?.toFixed(2) ?? 'N/A'}</div>
@@ -1293,10 +1311,6 @@ function BoletaList({ estudiantes, calificaciones, asignaturas, grado, trimestre
           <div class="resumen-item ${estadoFinal === 'REPROBADO' ? 'reprobado' : ''}">
             <div class="valor">${estadoFinal}</div>
             <div class="etiqueta">Estado Final</div>
-          </div>
-          <div class="resumen-item">
-            <div class="valor">${inasistencias}</div>
-            <div class="etiqueta">Inasistencias</div>
           </div>
           <div class="resumen-item">
             <div class="valor">${getTrimestreRomano(trimestre)} Trimestre</div>
@@ -1403,9 +1417,9 @@ function BoletaList({ estudiantes, calificaciones, asignaturas, grado, trimestre
           <Card key={est.id} className="shadow-sm">
             <div className="p-2.5 flex items-center justify-between cursor-pointer hover:bg-slate-50" onClick={() => setExpandedBoleta(open ? null : est.id)}>
               <div className="flex items-center gap-2"><span className="text-xs text-slate-400 w-5">{est.numero}</span><span className="text-sm font-medium">{est.nombre}</span><Badge variant={prom !== null && prom >= 6 ? "default" : prom !== null ? "destructive" : "secondary"} className={`text-[10px] h-5 ${prom !== null && prom >= 6 ? 'bg-teal-600' : ''}`}>Prom: {prom !== null ? prom.toFixed(1) : "N/A"}</Badge></div>
-              <div className="flex items-center gap-1"><Button size="sm" variant="ghost" className="h-6 px-2" onClick={e => { e.stopPropagation(); imprimirBoleta(est); }}><Printer className="h-3 w-3 mr-1" />Imprimir</Button>{open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}</div>
+              <div className="flex items-center gap-1"><Button size="sm" variant="ghost" className="h-6 px-2" onClick={e => { e.stopPropagation(); imprimir(est.id); }}><Printer className="h-3 w-3 mr-1" />Imprimir</Button>{open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}</div>
             </div>
-            {open && <div className="border-t p-2 bg-slate-50"><Table className="text-xs"><TableHeader><TableRow className="bg-slate-100 h-7"><TableHead>Asignatura</TableHead><TableHead className="text-center">Prom. A.C.</TableHead><TableHead className="text-center">Prom. A.I.</TableHead><TableHead className="text-center">Examen</TableHead><TableHead className="text-center font-bold">Promedio</TableHead></TableRow></TableHeader><TableBody>{asignaturas.map(m => { const c = califs.find(x => x.materiaId === m.id); return <TableRow key={m.id} className="h-7"><TableCell className="font-medium">{m.nombre}</TableCell><TableCell className="text-center">{c?.calificacionAC?.toFixed(1) ?? "-"}</TableCell><TableCell className="text-center">{c?.calificacionAI?.toFixed(1) ?? "-"}</TableCell><TableCell className="text-center">{c?.examenTrimestral?.toFixed(1) ?? "-"}</TableCell><TableCell className="text-center"><Badge variant={c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= 6 ? "default" : "secondary"} className={`text-[10px] ${c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= 6 ? 'bg-teal-600' : ''}`}>{c?.promedioFinal?.toFixed(1) ?? "-"}</Badge></TableCell></TableRow>; })}</TableBody></Table></div>}
+            {open && <div className="border-t p-2 bg-slate-50"><Table className="text-xs"><TableHeader><TableRow className="bg-slate-100 h-7"><TableHead>Asignatura</TableHead><TableHead className="text-center">Prom. A.C.</TableHead><TableHead className="text-center">Prom. A.I.</TableHead><TableHead className="text-center">Examen</TableHead><TableHead className="text-center font-bold">Promedio</TableHead></TableRow></TableHeader><TableBody>{materias.map(m => { const c = califs.find(x => x.materiaId === m.id); return <TableRow key={m.id} className="h-7"><TableCell className="font-medium">{m.nombre}</TableCell><TableCell className="text-center">{c?.calificacionAC?.toFixed(1) ?? "-"}</TableCell><TableCell className="text-center">{c?.calificacionAI?.toFixed(1) ?? "-"}</TableCell><TableCell className="text-center">{c?.examenTrimestral?.toFixed(1) ?? "-"}</TableCell><TableCell className="text-center"><Badge variant={c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= 6 ? "default" : "secondary"} className={`text-[10px] ${c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= 6 ? 'bg-teal-600' : ''}`}>{c?.promedioFinal?.toFixed(1) ?? "-"}</Badge></TableCell></TableRow>; })}</TableBody></Table></div>}
           </Card>
         );
       })}

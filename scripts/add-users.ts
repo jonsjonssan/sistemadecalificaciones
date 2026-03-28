@@ -104,7 +104,12 @@ async function main() {
       password: "docente123",
       rol: "docente",
       tutorGrado: 3,
-      materias: []
+      materias: [
+        { grado: 3, mat: "Comunicación y Literatura" },
+        { grado: 3, mat: "Aritmética y Finanzas" },
+        { grado: 3, mat: "Ciudadanía y Valores" },
+        { grado: 3, mat: "Ciencia y Tecnología" }
+      ]
     },
     {
       nombre: "Silverio Mónico Mulato",
@@ -112,7 +117,12 @@ async function main() {
       password: "docente123",
       rol: "docente",
       tutorGrado: 4,
-      materias: []
+      materias: [
+        { grado: 4, mat: "Comunicación y Literatura" },
+        { grado: 4, mat: "Aritmética y Finanzas" },
+        { grado: 4, mat: "Ciudadanía y Valores" },
+        { grado: 4, mat: "Ciencia y Tecnología" }
+      ]
     },
     {
       nombre: "Emilia Etel Peraza",
@@ -120,7 +130,12 @@ async function main() {
       password: "docente123",
       rol: "docente",
       tutorGrado: 5,
-      materias: []
+      materias: [
+        { grado: 5, mat: "Comunicación y Literatura" },
+        { grado: 5, mat: "Aritmética y Finanzas" },
+        { grado: 5, mat: "Ciudadanía y Valores" },
+        { grado: 5, mat: "Ciencia y Tecnología" }
+      ]
     },
     {
       nombre: "Deysi Elizabeth Umanzor Cruz",
@@ -128,7 +143,12 @@ async function main() {
       password: "docente123",
       rol: "docente",
       tutorGrado: 2,
-      materias: []
+      materias: [
+        { grado: 2, mat: "Comunicación y Literatura" },
+        { grado: 2, mat: "Aritmética y Finanzas" },
+        { grado: 2, mat: "Ciudadanía y Valores" },
+        { grado: 2, mat: "Ciencia y Tecnología" }
+      ]
     },
     {
       nombre: "Helen Alicia Cabezas de Golcher",
