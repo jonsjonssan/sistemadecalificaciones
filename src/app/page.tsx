@@ -662,7 +662,7 @@ export default function Home() {
                         <th className="w-10 p-1.5 border-l border-slate-600"></th>
                       </tr></thead>
                       <tbody>
-                        {estudiantes.map(est => <CalificacionRow key={`${est.id}-${asignaturaSeleccionada}`} estudiante={est} calificacion={getCalificacion(est.id)} config={configActual} onSave={handleSaveCalificacion} saving={saving} />)}
+                        {estudiantes.map(est => <CalificacionRow key={`${est.id}-${asignaturaSeleccionada}-${trimestreSeleccionado}`} estudiante={est} calificacion={getCalificacion(est.id)} config={configActual} onSave={handleSaveCalificacion} saving={saving} />)}
                       </tbody>
                     </table>
                   </div>
@@ -907,6 +907,12 @@ export default function Home() {
                     </div>
                   </div>
                 </CardContent>
+                <CardFooter className="bg-slate-50 border-t justify-between py-3 px-4">
+                  <div className="text-xs text-slate-500">Versión 1.2.0 | © 2026 CEC San José de la Montaña</div>
+                  <Button variant="destructive" size="sm" onClick={handleResetSistema} className="h-8">
+                    <Trash2 className="h-4 w-4 mr-1" /> Finalizar Año y Reiniciar Datos
+                  </Button>
+                </CardFooter>
               </Card>
             </TabsContent>
           )}
@@ -977,6 +983,8 @@ function CalificacionRow({ estudiante, calificacion, config, onSave, saving }: {
 
 function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, expandedBoleta, setExpandedBoleta }: { estudiantes: Estudiante[]; calificaciones: Calificacion[]; materias: Asignatura[]; grado?: Grado; trimestre: number; expandedBoleta: string | null; setExpandedBoleta: (id: string | null) => void; }) {
   const [resumenAsistencia, setResumenAsistencia] = useState<any[]>([]);
+  const [todasCalificaciones, setTodasCalificaciones] = useState<Calificacion[]>([]);
+  const [resumenAsistenciaAnual, setResumenAsistenciaAnual] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchAsistencia = async () => {
@@ -988,6 +996,22 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
     };
     fetchAsistencia();
   }, [grado?.id, trimestre]);
+
+  useEffect(() => {
+    const fetchDatosAnuales = async () => {
+      if (!grado?.id) return;
+      try {
+        // Fetch todas las calificaciones del año
+        const resCal = await fetch(`/api/calificaciones?gradoId=${grado.id}&anual=true`);
+        if (resCal.ok) setTodasCalificaciones(await resCal.json());
+        
+        // Fetch asistencia consolidada de todo el año
+        const resAsist = await fetch(`/api/asistencia/resumen?gradoId=${grado.id}&anual=true`);
+        if (resAsist.ok) setResumenAsistenciaAnual(await resAsist.json());
+      } catch (e) { console.error(e); }
+    };
+    fetchDatosAnuales();
+  }, [grado?.id]);
 
   const getCalifs = (id: string) => calificaciones.filter(c => c.estudianteId === id && c.trimestre === trimestre);
   const calcProm = (c: Calificacion[]) => { const p = c.map(x => x.promedioFinal).filter((x): x is number => x !== null); return p.length ? p.reduce((a, b) => a + b, 0) / p.length : null; };
@@ -1404,11 +1428,252 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
     }
   };
 
+  const imprimirAnual = async (id: string) => {
+    const est = estudiantes.find(e => e.id === id);
+    if (!est) return;
+    
+    const año = grado?.año || new Date().getFullYear();
+    const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
+    const asistAnual = resumenAsistenciaAnual.find(r => r.id === id) || { asistencias: 0, ausencias: 0, tardanzas: 0, total: 0 };
+
+    // Filtrar calificaciones de este estudiante para todo el año
+    const califsEst = todasCalificaciones.filter(c => c.estudianteId === id);
+
+    let tablaAsignaturas = materias.map(m => {
+      const c1 = califsEst.find(c => c.materiaId === m.id && c.trimestre === 1);
+      const c2 = califsEst.find(c => c.materiaId === m.id && c.trimestre === 2);
+      const c3 = califsEst.find(c => c.materiaId === m.id && c.trimestre === 3);
+      
+      const n1 = c1?.promedioFinal;
+      const n2 = c2?.promedioFinal;
+      const n3 = c3?.promedioFinal;
+      
+      const notasValidas = [n1, n2, n3].filter((n): n is number => n !== null && n !== undefined);
+      const promAnual = notasValidas.length ? notasValidas.reduce((a, b) => a + b, 0) / notasValidas.length : null;
+      const estado = promAnual !== null ? (promAnual >= 6 ? 'APROBADO' : 'REPROBADO') : '-';
+
+      return `<tr>
+        <td style="text-align:left;padding:6px 8px">${m.nombre}</td>
+        <td>${n1?.toFixed(1) ?? '-'}</td>
+        <td>${n2?.toFixed(1) ?? '-'}</td>
+        <td>${n3?.toFixed(1) ?? '-'}</td>
+        <td style="font-weight:bold">${promAnual?.toFixed(1) ?? '-'}</td>
+        <td style="font-weight:bold;color:${estado === 'APROBADO' ? '#059669' : estado === 'REPROBADO' ? '#dc2626' : '#666'}">${estado}</td>
+      </tr>`;
+    }).join('');
+
+    const promGralAnual = () => {
+      const notasFinales = materias.map(m => {
+        const califs = califsEst.filter(c => c.materiaId === m.id);
+        const sums = califs.map(c => c.promedioFinal).filter((n): n is number => n !== null && n !== undefined);
+        return sums.length ? sums.reduce((a, b) => a + b, 0) / sums.length : null;
+      }).filter((n): n is number => n !== null);
+      return notasFinales.length ? notasFinales.reduce((a, b) => a + b, 0) / notasFinales.length : null;
+    };
+
+    const pFinal = promGralAnual();
+
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+  <title>Boleta Anual Consolidada - ${est.nombre}</title>
+  <style>
+    @page { size: letter; margin: 15mm; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Times New Roman', serif; font-size: 11pt; line-height: 1.4; color: #333; }
+    .boleta { max-width: 190mm; margin: 0 auto; padding: 5mm; }
+    .header { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 15px; }
+    .logo { width: 70px; height: 70px; object-fit: contain; }
+    .header-text { text-align: center; flex: 1; }
+    .header-text h1 { font-size: 13pt; font-weight: bold; margin-bottom: 3px; text-transform: uppercase; }
+    .titulo-boleta { text-align: center; background: #1e293b; color: white; padding: 8px; margin: 15px 0; border: 1px solid #333; }
+    .info-estudiante { display: flex; justify-content: space-between; margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; }
+    .info-estudiante .label { font-weight: bold; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+    th, td { border: 1px solid #333; padding: 6px; text-align: center; }
+    th { background: #e5e7eb; font-weight: bold; font-size: 9pt; }
+    .resumen-anual { display: flex; justify-content: space-between; margin: 20px 0; padding: 15px; background: #f8fafc; border: 2px solid #1e293b; }
+    .resumen-item .valor { font-size: 18pt; font-weight: bold; }
+    .seccion-asistencia { margin: 15px 0; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; }
+    .seccion-asistencia-header { background: #f8fafc; padding: 6px 10px; border-bottom: 1px solid #ddd; font-weight: bold; font-size: 9pt; }
+    .asistencia-grid { display: grid; grid-template-columns: repeat(4, 1fr); padding: 10px; text-align: center; }
+    .asistencia-item .n { font-size: 12pt; font-weight: bold; }
+    .asistencia-item .l { font-size: 8pt; color: #666; }
+    .firmas { display: flex; justify-content: space-between; margin-top: 50px; }
+    .firma { text-align: center; width: 45%; border-top: 1px solid #333; padding-top: 5px; }
+  </style>
+</head>
+<body>
+  <div class="boleta">
+    <div class="header">
+      <img src="${window.location.origin}/api/logo" alt="Logo" class="logo">
+      <div class="header-text">
+        <h1>Centro Escolar Católico San José de la Montaña</h1>
+        <p>Código: 88125 | San Salvador</p>
+      </div>
+      <img src="${window.location.origin}/api/logo" alt="Logo" class="logo">
+    </div>
+    <div class="titulo-boleta">
+      <h3>BOLETA DE CALIFICACIONES CONSOLIDADA - ANUAL</h3>
+    </div>
+    <div class="info-estudiante">
+      <div>
+        <p><span class="label">Estudiante:</span> ${est.nombre}</p>
+        <p><span class="label">Grado:</span> ${grado?.numero}° Grado "${grado?.seccion}"</p>
+      </div>
+      <div style="text-align: right;">
+        <p><span class="label">Año Lectivo:</span> ${año}</p>
+        <p><span class="label">N° Lista:</span> ${est.numero}</p>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 35%">Asignatura</th>
+          <th style="width: 12%">Trim. I</th>
+          <th style="width: 12%">Trim. II</th>
+          <th style="width: 12%">Trim. III</th>
+          <th style="width: 14%">Promedio Anual</th>
+          <th style="width: 15%">Resultado</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${tablaAsignaturas}
+      </tbody>
+    </table>
+    <div class="seccion-asistencia">
+      <div class="seccion-asistencia-header">RESUMEN DE ASISTENCIA ANUAL (TOTAL ACUMULADO)</div>
+      <div class="asistencia-grid">
+        <div class="asistencia-item"><div class="n" style="color:#059669">${asistAnual.asistencias}</div><div class="l">Asistencias</div></div>
+        <div class="asistencia-item"><div class="n" style="color:#dc2626">${asistAnual.ausencias}</div><div class="l">Inasistencias</div></div>
+        <div class="asistencia-item"><div class="n" style="color:#d97706">${asistAnual.tardanzas}</div><div class="l">Tardanzas</div></div>
+        <div class="asistencia-item"><div class="n">${asistAnual.total}</div><div class="l">Total Días</div></div>
+      </div>
+    </div>
+    <div class="resumen-anual">
+      <div class="resumen-item">
+        <div class="valor" style="color:#1e293b">${pFinal?.toFixed(2) ?? 'N/A'}</div>
+        <div class="etiqueta">PROMEDIO FINAL ANUAL</div>
+      </div>
+      <div class="resumen-item">
+        <div class="valor" style="color:${pFinal && pFinal >= 6 ? '#059669' : '#dc2626'}">${pFinal && pFinal >= 6 ? 'APROBADO' : 'REPROBADO'}</div>
+        <div class="etiqueta">ESTADO FINAL</div>
+      </div>
+    </div>
+    <div class="firmas">
+      <div class="firma"><p>Firma del Docente</p></div>
+      <div class="firma"><p>Firma de la Directora</p></div>
+    </div>
+  </div>
+</body>
+</html>`;
+
+    const w = window.open('', '_blank');
+    if (w) { w.document.write(html); w.document.close(); setTimeout(() => w.print(), 500); }
+  };
+
+  const imprimirTodasAnual = async () => {
+    if (!estudiantes.length) return;
+    
+    let allBoletasHtml = '';
+    const año = grado?.año || new Date().getFullYear();
+    const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
+
+    for (const est of estudiantes) {
+      const asistAnual = resumenAsistenciaAnual.find(r => r.id === est.id) || { asistencias: 0, ausencias: 0, tardanzas: 0, total: 0 };
+      const califsEst = todasCalificaciones.filter(c => c.estudianteId === est.id);
+
+      let tablaAsignaturas = materias.map(m => {
+        const c1 = califsEst.find(c => c.materiaId === m.id && c.trimestre === 1);
+        const c2 = califsEst.find(c => c.materiaId === m.id && c.trimestre === 2);
+        const c3 = califsEst.find(c => c.materiaId === m.id && c.trimestre === 3);
+        const n1 = c1?.promedioFinal, n2 = c2?.promedioFinal, n3 = c3?.promedioFinal;
+        const notasValidas = [n1, n2, n3].filter((n): n is number => n !== null && n !== undefined);
+        const promAnual = notasValidas.length ? notasValidas.reduce((a, b) => a + b, 0) / notasValidas.length : null;
+        const estado = promAnual !== null ? (promAnual >= 6 ? 'APROBADO' : 'REPROBADO') : '-';
+        return `<tr><td style="text-align:left;padding:6px 8px">${m.nombre}</td><td>${n1?.toFixed(1) ?? '-'}</td><td>${n2?.toFixed(1) ?? '-'}</td><td>${n3?.toFixed(1) ?? '-'}</td><td style="font-weight:bold">${promAnual?.toFixed(1) ?? '-'}</td><td style="font-weight:bold;color:${estado === 'APROBADO' ? '#059669' : estado === 'REPROBADO' ? '#dc2626' : '#666'}">${estado}</td></tr>`;
+      }).join('');
+
+      const notasFinales = materias.map(m => {
+        const califs = califsEst.filter(c => c.materiaId === m.id);
+        const sums = califs.map(c => c.promedioFinal).filter((n): n is number => n !== null && n !== undefined);
+        return sums.length ? sums.reduce((a, b) => a + b, 0) / sums.length : null;
+      }).filter((n): n is number => n !== null);
+      const pFinal = notasFinales.length ? notasFinales.reduce((a, b) => a + b, 0) / notasFinales.length : null;
+
+      allBoletasHtml += `
+      <div class="boleta" style="page-break-after: always;">
+        <div class="header">
+          <img src="${window.location.origin}/api/logo" alt="Logo" class="logo">
+          <div class="header-text"><h1>Centro Escolar Católico San José de la Montaña</h1><p>Código: 88125 | San Salvador</p></div>
+          <img src="${window.location.origin}/api/logo" alt="Logo" class="logo">
+        </div>
+        <div class="titulo-boleta"><h3>BOLETA DE CALIFICACIONES CONSOLIDADA - ANUAL</h3></div>
+        <div class="info-estudiante">
+          <div><p><span class="label">Estudiante:</span> ${est.nombre}</p><p><span class="label">Grado:</span> ${grado?.numero}° Grado "${grado?.seccion}"</p></div>
+          <div style="text-align: right;"><p><span class="label">Año Lectivo:</span> ${año}</p><p><span class="label">N° Lista:</span> ${est.numero}</p></div>
+        </div>
+        <table>
+          <thead><tr><th style="width: 35%">Asignatura</th><th style="width: 12%">Trim. I</th><th style="width: 12%">Trim. II</th><th style="width: 12%">Trim. III</th><th style="width: 14%">Promedio Anual</th><th style="width: 15%">Resultado</th></tr></thead>
+          <tbody>${tablaAsignaturas}</tbody>
+        </table>
+        <div class="seccion-asistencia">
+          <div class="seccion-asistencia-header">RESUMEN DE ASISTENCIA ANUAL (TOTAL ACUMULADO)</div>
+          <div class="asistencia-grid">
+            <div class="asistencia-item"><div class="n" style="color:#059669">${asistAnual.asistencias}</div><div class="l">Asistencias</div></div>
+            <div class="asistencia-item"><div class="n" style="color:#dc2626">${asistAnual.ausencias}</div><div class="l">Inasistencias</div></div>
+            <div class="asistencia-item"><div class="n" style="color:#d97706">${asistAnual.tardanzas}</div><div class="l">Tardanzas</div></div>
+            <div class="asistencia-item"><div class="n">${asistAnual.total}</div><div class="l">Total Días</div></div>
+          </div>
+        </div>
+        <div class="resumen-anual">
+          <div class="resumen-item"><div class="valor" style="color:#1e293b">${pFinal?.toFixed(2) ?? 'N/A'}</div><div class="etiqueta">PROMEDIO FINAL ANUAL</div></div>
+          <div class="resumen-item"><div class="valor" style="color:${pFinal && pFinal >= 6 ? '#059669' : '#dc2626'}">${pFinal && pFinal >= 6 ? 'APROBADO' : 'REPROBADO'}</div><div class="etiqueta">ESTADO FINAL</div></div>
+        </div>
+        <div class="firmas"><div class="firma"><p>Firma del Docente</p></div><div class="firma"><p>Firma de la Directora</p></div></div>
+      </div>`;
+    }
+
+    const html = `<!DOCTYPE html><html><head><title>Boletas Consolidadas - ${grado?.numero}° ${grado?.seccion}</title>
+    <style>
+      @page { size: letter; margin: 15mm; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font-family: 'Times New Roman', serif; font-size: 11pt; line-height: 1.4; color: #333; }
+      .boleta { max-width: 190mm; margin: 0 auto; padding: 5mm; }
+      .header { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 15px; }
+      .logo { width: 70px; height: 70px; object-fit: contain; }
+      .header-text { text-align: center; flex: 1; }
+      .header-text h1 { font-size: 13pt; font-weight: bold; margin-bottom: 3px; text-transform: uppercase; }
+      .titulo-boleta { text-align: center; background: #1e293b; color: white; padding: 8px; margin: 15px 0; border: 1px solid #333; }
+      .info-estudiante { display: flex; justify-content: space-between; margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; }
+      .info-estudiante .label { font-weight: bold; }
+      table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+      th, td { border: 1px solid #333; padding: 6px; text-align: center; }
+      th { background: #e5e7eb; font-weight: bold; font-size: 9pt; }
+      .resumen-anual { display: flex; justify-content: space-between; margin: 20px 0; padding: 15px; background: #f8fafc; border: 2px solid #1e293b; }
+      .resumen-item .valor { font-size: 18pt; font-weight: bold; }
+      .seccion-asistencia { margin: 15px 0; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; }
+      .seccion-asistencia-header { background: #f8fafc; padding: 6px 10px; border-bottom: 1px solid #ddd; font-weight: bold; font-size: 9pt; }
+      .asistencia-grid { display: grid; grid-template-columns: repeat(4, 1fr); padding: 10px; text-align: center; }
+      .asistencia-item .n { font-size: 12pt; font-weight: bold; }
+      .asistencia-item .l { font-size: 8pt; color: #666; }
+      .firmas { display: flex; justify-content: space-between; margin-top: 50px; }
+      .firma { text-align: center; width: 45%; border-top: 1px solid #333; padding-top: 5px; }
+      @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+    </style></head><body>${allBoletasHtml}</body></html>`;
+
+    const w = window.open('', '_blank');
+    if (w) { w.document.write(html); w.document.close(); setTimeout(() => w.print(), 500); }
+  };
+
   return (
     <div className="space-y-1.5">
-      <div className="flex justify-end mb-2">
+      <div className="flex justify-end gap-2 mb-2">
+         <Button onClick={imprimirTodasAnual} size="sm" variant="outline" className="text-teal-700 border-teal-200 hover:bg-teal-50">
+            <Printer className="h-4 w-4 mr-2" /> Consolidado Anual (Todos)
+         </Button>
          <Button onClick={imprimirTodas} size="sm" className="bg-teal-600 hover:bg-teal-700 text-white shadow-sm transition-colors">
-            <Printer className="h-4 w-4 mr-2" /> Imprimir Todas
+            <Printer className="h-4 w-4 mr-2" /> Imprimir Todas (Trimestre)
          </Button>
       </div>
       {estudiantes.map(est => {
@@ -1417,7 +1682,15 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
           <Card key={est.id} className="shadow-sm">
             <div className="p-2.5 flex items-center justify-between cursor-pointer hover:bg-slate-50" onClick={() => setExpandedBoleta(open ? null : est.id)}>
               <div className="flex items-center gap-2"><span className="text-xs text-slate-400 w-5">{est.numero}</span><span className="text-sm font-medium">{est.nombre}</span><Badge variant={prom !== null && prom >= 6 ? "default" : prom !== null ? "destructive" : "secondary"} className={`text-[10px] h-5 ${prom !== null && prom >= 6 ? 'bg-teal-600' : ''}`}>Prom: {prom !== null ? prom.toFixed(1) : "N/A"}</Badge></div>
-              <div className="flex items-center gap-1"><Button size="sm" variant="ghost" className="h-6 px-2" onClick={e => { e.stopPropagation(); imprimir(est.id); }}><Printer className="h-3 w-3 mr-1" />Imprimir</Button>{open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}</div>
+              <div className="flex items-center gap-1">
+                <Button size="sm" variant="ghost" title="Consolidado Anual" className="h-6 px-2 text-teal-600" onClick={e => { e.stopPropagation(); imprimirAnual(est.id); }}>
+                  <FileText className="h-3.5 w-3.5 mr-1" />Anual
+                </Button>
+                <Button size="sm" variant="ghost" title="Imprimir Trimestre" className="h-6 px-2" onClick={e => { e.stopPropagation(); imprimir(est.id); }}>
+                  <Printer className="h-3 w-3 mr-1" />Boleta
+                </Button>
+                {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </div>
             </div>
             {open && <div className="border-t p-2 bg-slate-50"><Table className="text-xs"><TableHeader><TableRow className="bg-slate-100 h-7"><TableHead>Asignatura</TableHead><TableHead className="text-center">Prom. A.C.</TableHead><TableHead className="text-center">Prom. A.I.</TableHead><TableHead className="text-center">Examen</TableHead><TableHead className="text-center font-bold">Promedio</TableHead></TableRow></TableHeader><TableBody>{materias.map(m => { const c = califs.find(x => x.materiaId === m.id); return <TableRow key={m.id} className="h-7"><TableCell className="font-medium">{m.nombre}</TableCell><TableCell className="text-center">{c?.calificacionAC?.toFixed(1) ?? "-"}</TableCell><TableCell className="text-center">{c?.calificacionAI?.toFixed(1) ?? "-"}</TableCell><TableCell className="text-center">{c?.examenTrimestral?.toFixed(1) ?? "-"}</TableCell><TableCell className="text-center"><Badge variant={c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= 6 ? "default" : "secondary"} className={`text-[10px] ${c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= 6 ? 'bg-teal-600' : ''}`}>{c?.promedioFinal?.toFixed(1) ?? "-"}</Badge></TableCell></TableRow>; })}</TableBody></Table></div>}
           </Card>

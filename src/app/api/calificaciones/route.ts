@@ -99,7 +99,8 @@ export async function GET(request: NextRequest) {
     const where: Record<string, unknown> = {};
     if (estudianteId) where.estudianteId = estudianteId;
     if (materiaId) where.materiaId = materiaId;
-    if (trimestre) where.trimestre = parseInt(trimestre);
+    const anual = searchParams.get("anual");
+    if (trimestre && anual !== "true") where.trimestre = parseInt(trimestre);
 
     let calificaciones;
 
