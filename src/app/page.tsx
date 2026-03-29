@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -114,12 +114,22 @@ export default function Home() {
 
   // Auth
   const checkAuth = useCallback(async () => {
+    // Timeout de seguridad de 10 segundos para no quedar atrapado en el spinner
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    
     try {
-      const res = await fetch("/api/auth/me");
+      const res = await fetch("/api/auth/me", { signal: controller.signal });
       const data = await res.json();
       setUsuario(data.usuario);
-    } catch { setUsuario(null); }
-    finally { setLoading(false); }
+    } catch (err) { 
+      console.error("Auth check failed:", err);
+      setUsuario(null); 
+    }
+    finally { 
+      clearTimeout(timeoutId);
+      setLoading(false); 
+    }
   }, []);
 
   const initSystem = async () => {
@@ -137,9 +147,8 @@ export default function Home() {
       const res = await fetch("/api/grados");
       const data = await res.json();
       setGrados(data);
-      if (data.length && !gradoSeleccionado) setGradoSeleccionado(data[0].id);
     } catch { toast({ title: "Error al cargar grados", variant: "destructive" }); }
-  }, [gradoSeleccionado, toast]);
+  }, [toast]);
 
   const loadEstudiantes = useCallback(async () => {
     if (!gradoSeleccionado) return;
@@ -155,9 +164,8 @@ export default function Home() {
       const res = await fetch(`/api/materias?gradoId=${gradoSeleccionado}`);
       const data = await res.json();
       setAsignaturas(data);
-      if (data.length && !asignaturaSeleccionada) setAsignaturaSeleccionada(data[0].id);
     } catch { toast({ title: "Error al cargar asignaturas", variant: "destructive" }); }
-  }, [gradoSeleccionado, asignaturaSeleccionada, toast]);
+  }, [gradoSeleccionado, toast]);
 
   const loadTodasAsignaturas = useCallback(async () => {
     try {
@@ -409,6 +417,32 @@ export default function Home() {
     } catch { toast({ title: "Error", variant: "destructive" }); }
   };
 
+  const handleResetSistema = async () => {
+    if (!confirm("⚠️ ADVERTENCIA: Esta acción eliminará TODAS las calificaciones, asistencias y asignaciones de docentes para reiniciar el sistema para el próximo año. ¿Estás seguro de continuar?")) {
+      return;
+    }
+    
+    setAñoLoading(true);
+    try {
+      const res = await fetch("/api/admin/reset-sistema", { method: "DELETE" });
+      const data = await res.json();
+      
+      if (res.ok) {
+        toast({ title: "Sistema reiniciado", description: data.message });
+        // Recargar datos esenciales
+        await checkAuth();
+        await loadConfiguracion();
+        await loadGrados();
+      } else {
+        toast({ title: "Error al reiniciar", description: data.error, variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Error de conexión", variant: "destructive" });
+    } finally {
+      setAñoLoading(false);
+    }
+  };
+
   const handleCambiarAño = async () => {
     setAñoLoading(true);
     try {
@@ -458,7 +492,14 @@ export default function Home() {
   useEffect(() => { if (usuario) { loadGrados(); loadUsuarios(); loadTodasAsignaturas(); loadConfiguracion(); } }, [usuario, loadGrados, loadUsuarios, loadTodasAsignaturas, loadConfiguracion]);
   useEffect(() => { loadEstudiantes(); loadAsignaturas(); loadConfigsGrado(); }, [loadEstudiantes, loadAsignaturas, loadConfigsGrado]);
   useEffect(() => { loadConfig(); loadCalificaciones(); }, [loadConfig, loadCalificaciones, asignaturaSeleccionada]);
-  // Solo cambiar la asignatura seleccionada si la actual no está en la nueva lista de asignaturas
+  // Auto-selección inicial de grado
+  useEffect(() => {
+    if (grados.length && !gradoSeleccionado) {
+      setGradoSeleccionado(grados[0].id);
+    }
+  }, [grados, gradoSeleccionado]);
+
+  // Auto-selección inicial de asignatura
   useEffect(() => {
     if (asignaturas.length) {
       const asignaturaActualEnLista = asignaturas.some(m => m.id === asignaturaSeleccionada);
@@ -466,7 +507,7 @@ export default function Home() {
         setAsignaturaSeleccionada(asignaturas[0].id);
       }
     }
-  }, [gradoSeleccionado, asignaturas, asignaturaSeleccionada]);
+  }, [asignaturas, asignaturaSeleccionada]);
 
   // Filtrar grados según el usuario
   useEffect(() => {
