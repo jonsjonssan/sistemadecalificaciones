@@ -1145,7 +1145,13 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
   }, [grado?.id]);
 
   const getCalifs = (id: string) => calificaciones.filter(c => c.estudianteId === id && c.trimestre === trimestre);
-  const calcProm = (c: Calificacion[]) => { const p = c.map(x => x.promedioFinal).filter((x): x is number => x !== null); return p.length ? p.reduce((a, b) => a + b, 0) / p.length : null; };
+  const calcProm = (c: Calificacion[]) => { 
+    const notas = materias.map(m => {
+      const cal = c.find(x => x.materiaId === m.id);
+      return cal?.promedioFinal ?? null;
+    }).filter((x): x is number => x !== null);
+    return notas.length ? notas.reduce((a, b) => a + b, 0) / notas.length : null; 
+  };
   
   const getTrimestreRomano = (t: number) => {
     const romanos = ['I', 'II', 'III'];
