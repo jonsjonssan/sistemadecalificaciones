@@ -56,21 +56,10 @@ export async function POST() {
       return materia;
     };
 
-    // ============================================
-    // LISTA OFICIAL DE USUARIOS
-    // ============================================
-    const users: {
-      nombre: string;
-      email: string;
-      password: string;
-      rol: string;
-      tutorGrado?: number;
-      materias: { grado: number; mat: string }[];
-    }[] = [
-      // ---- ADMINISTRADORES ----
+    const users = [
       {
         nombre: "Administrador General",
-        email: "admin@escuela.edu",
+        email: "jonathan.araujo.mendoza@clases.edu.sv",
         password: "admin",
         rol: "admin",
         materias: []
@@ -87,77 +76,38 @@ export async function POST() {
         email: "claudia.jasmin.arce@clases.edu.sv",
         password: "admin123",
         rol: "admin",
-        tutorGrado: 9,
-        materias: [
-          { grado: 6, mat: "Comunicación y Literatura" },
-          { grado: 7, mat: "Lenguaje y Literatura" },
-          { grado: 8, mat: "Lenguaje y Literatura" },
-          { grado: 9, mat: "Lenguaje y Literatura" }
-        ]
-      },
-
-      // ---- DOCENTES ----
-      {
-        nombre: "Jonathan Adonay Araujo Mendoza",
-        email: "jonathan.araujo.mendoza@clases.edu.sv",
-        password: "docente123",
-        rol: "docente",
-        materias: [
-          { grado: 4, mat: "Artes" },
-          { grado: 5, mat: "Artes" },
-          { grado: 6, mat: "Artes" }
-        ]
+        materias: []
       },
       {
         nombre: "Yessenia del Carmen Villafuerte Mejía",
         email: "yessenia.carmen.villafuerte@clases.edu.sv",
         password: "docente123",
         rol: "docente",
-        tutorGrado: 6,
-        materias: [
-          { grado: 6, mat: "Aritmética y Finanzas" },
-          { grado: 7, mat: "Matemática y Datos" },
-          { grado: 8, mat: "Matemática y Datos" },
-          { grado: 9, mat: "Matemática y Datos" }
-        ]
+        materias: [6, 7, 8, 9].flatMap(g => [
+          { grado: g, mat: "Aritmética y Finanzas" },
+          { grado: g, mat: "Matemática y Datos" }
+        ])
       },
       {
         nombre: "Mónica Gissel Montesino Najarro",
         email: "monica.montesino.najarro@clases.edu.sv",
         password: "docente123",
         rol: "docente",
-        materias: [
-          ...[2, 3, 4, 5, 6].map(g => ({ grado: g, mat: "Desarrollo Corporal" })),
-          { grado: 7, mat: "Educación Física y Deportes" },
-          { grado: 8, mat: "Educación Física y Deportes" },
-          { grado: 9, mat: "Educación Física y Deportes" }
-        ]
+        materias: [2, 3, 4, 5, 6, 7, 8, 9].map(g => ({ grado: g, mat: "Desarrollo Corporal y Educación Física" }))
       },
       {
         nombre: "Jaqueline Lissette Landaverde de Gómez",
         email: "jaqueline.lissette.landaverde@clases.edu.sv",
         password: "docente123",
         rol: "docente",
-        tutorGrado: 7,
-        materias: [
-          { grado: 6, mat: "Ciencia y Tecnología" },
-          { grado: 7, mat: "Ciencia y Tecnología" },
-          { grado: 8, mat: "Ciencia y Tecnología" },
-          { grado: 9, mat: "Ciencia y Tecnología" }
-        ]
+        materias: [6, 7, 8, 9].map(g => ({ grado: g, mat: "Ciencia y Tecnología" }))
       },
       {
         nombre: "Ana del Carmen Romero González",
         email: "ana.carmen.romero@clases.edu.sv",
         password: "docente123",
         rol: "docente",
-        tutorGrado: 8,
-        materias: [
-          { grado: 6, mat: "Ciudadanía y Valores" },
-          { grado: 7, mat: "Ciudadanía y Valores" },
-          { grado: 8, mat: "Ciudadanía y Valores" },
-          { grado: 9, mat: "Ciudadanía y Valores" }
-        ]
+        materias: [6, 7, 8, 9].map(g => ({ grado: g, mat: "Ciudadanía y Valores" }))
       },
       {
         nombre: "Yency Yesenia Mejía Nerio",
@@ -165,12 +115,12 @@ export async function POST() {
         password: "docente123",
         rol: "docente",
         tutorGrado: 3,
-        materias: [
-          { grado: 3, mat: "Comunicación y Literatura" },
-          { grado: 3, mat: "Aritmética y Finanzas" },
-          { grado: 3, mat: "Ciudadanía y Valores" },
-          { grado: 3, mat: "Ciencia y Tecnología" }
-        ]
+        materias: [3].flatMap(g => [
+          { grado: g, mat: "Comunicación y Literatura" },
+          { grado: g, mat: "Aritmética y Finanzas" },
+          { grado: g, mat: "Ciudadanía y Valores" },
+          { grado: g, mat: "Ciencia y Tecnología" }
+        ])
       },
       {
         nombre: "Silverio Mónico Mulato",
@@ -178,12 +128,12 @@ export async function POST() {
         password: "docente123",
         rol: "docente",
         tutorGrado: 4,
-        materias: [
-          { grado: 4, mat: "Comunicación y Literatura" },
-          { grado: 4, mat: "Aritmética y Finanzas" },
-          { grado: 4, mat: "Ciudadanía y Valores" },
-          { grado: 4, mat: "Ciencia y Tecnología" }
-        ]
+        materias: [4].flatMap(g => [
+          { grado: g, mat: "Comunicación y Literatura" },
+          { grado: g, mat: "Aritmética y Finanzas" },
+          { grado: g, mat: "Ciudadanía y Valores" },
+          { grado: g, mat: "Ciencia y Tecnología" }
+        ])
       },
       {
         nombre: "Emilia Etel Peraza",
@@ -191,12 +141,12 @@ export async function POST() {
         password: "docente123",
         rol: "docente",
         tutorGrado: 5,
-        materias: [
-          { grado: 5, mat: "Comunicación y Literatura" },
-          { grado: 5, mat: "Aritmética y Finanzas" },
-          { grado: 5, mat: "Ciudadanía y Valores" },
-          { grado: 5, mat: "Ciencia y Tecnología" }
-        ]
+        materias: [5].flatMap(g => [
+          { grado: g, mat: "Comunicación y Literatura" },
+          { grado: g, mat: "Aritmética y Finanzas" },
+          { grado: g, mat: "Ciudadanía y Valores" },
+          { grado: g, mat: "Ciencia y Tecnología" }
+        ])
       },
       {
         nombre: "Deysi Elizabeth Umanzor Cruz",
@@ -204,12 +154,12 @@ export async function POST() {
         password: "docente123",
         rol: "docente",
         tutorGrado: 2,
-        materias: [
-          { grado: 2, mat: "Comunicación y Literatura" },
-          { grado: 2, mat: "Aritmética y Finanzas" },
-          { grado: 2, mat: "Ciudadanía y Valores" },
-          { grado: 2, mat: "Ciencia y Tecnología" }
-        ]
+        materias: [2].flatMap(g => [
+          { grado: g, mat: "Comunicación y Literatura" },
+          { grado: g, mat: "Aritmética y Finanzas" },
+          { grado: g, mat: "Ciudadanía y Valores" },
+          { grado: g, mat: "Ciencia y Tecnología" }
+        ])
       },
       {
         nombre: "Helen Alicia Cabezas de Golcher",
@@ -230,10 +180,8 @@ export async function POST() {
           { grado: 8, mat: "Inglés" },
           { grado: 9, mat: "Inglés" }
         ]
-      },
+      }
     ];
-
-    const resultados: { nombre: string; email: string; rol: string }[] = [];
 
     for (const u of users) {
       // Upsert usuario
@@ -263,11 +211,6 @@ export async function POST() {
         }
       }
 
-      // Limpiar asignaciones previas de materias
-      await db.docenteMateria.deleteMany({
-        where: { docenteId: user.id }
-      });
-
       // Assign Materias
       if (u.materias && u.materias.length > 0) {
         for (const mat of u.materias) {
@@ -289,8 +232,6 @@ export async function POST() {
           }
         }
       }
-
-      resultados.push({ nombre: u.nombre, email: u.email, rol: u.rol });
     }
 
     // Inicializar configuración global si no existe
@@ -306,8 +247,7 @@ export async function POST() {
 
     return NextResponse.json({
       message: "Sistema cargado con usuarios y asignaciones exitosamente",
-      count: users.length,
-      usuarios: resultados
+      count: users.length
     });
   } catch (error) {
     console.error("Error al inicializar:", error);
