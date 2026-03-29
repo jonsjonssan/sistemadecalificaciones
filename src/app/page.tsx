@@ -594,26 +594,20 @@ export default function Home() {
       // Admin ve todas las asignaturas
       setAsignaturasFiltradas(asignaturas);
     } else {
-      // Verificar si es tutor del grado
-      const esTutor = usuario.gradosAsignados?.some(g => g.id === gradoSeleccionado);
+      // Filtrar solo las asignaturas explícitamente asignadas en este grado (sin excepciones)
+      const asignaturasDelGrado = new Set(
+        usuario.asignaturasAsignadas
+          ?.filter(m => m.gradoId === gradoSeleccionado)
+          ?.map(m => m.id) || []
+      );
+      const filtradas = asignaturas.filter(m => asignaturasDelGrado.has(m.id));
+      setAsignaturasFiltradas(filtradas);
       
-      if (esTutor) {
-        // Tutor ve todas las asignaturas del grado
-        setAsignaturasFiltradas(asignaturas);
-      } else {
-        // Filtrar solo las asignaturas asignadas en este grado
-        const asignaturasDelGrado = new Set(
-          usuario.asignaturasAsignadas
-            ?.filter(m => m.gradoId === gradoSeleccionado)
-            ?.map(m => m.id) || []
-        );
-        const filtradas = asignaturas.filter(m => asignaturasDelGrado.has(m.id));
-        setAsignaturasFiltradas(filtradas);
-        
-        // Si la asignatura seleccionada no está en las filtradas, seleccionar la primera
-        if (filtradas.length > 0 && !filtradas.some(m => m.id === asignaturaSeleccionada)) {
-          setAsignaturaSeleccionada(filtradas[0].id);
-        }
+      // Si la asignatura seleccionada no está en las filtradas, seleccionar la primera
+      if (filtradas.length > 0 && !filtradas.some(m => m.id === asignaturaSeleccionada)) {
+        setAsignaturaSeleccionada(filtradas[0].id);
+      } else if (filtradas.length === 0) {
+        setAsignaturaSeleccionada("");
       }
     }
   }, [usuario, gradoSeleccionado, asignaturas, asignaturaSeleccionada]);
@@ -921,9 +915,9 @@ export default function Home() {
                               </div>
                             </TableCell>
                             <TableCell className="text-center">
-                              {u.rol !== "admin" && <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-amber-500 mr-1" title="Editar" onClick={() => abrirEditarUsuario(u as Usuario)}><Settings className="h-3.5 w-3.5" /></Button>}
+                              <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-amber-500 mr-1" title="Editar" onClick={() => abrirEditarUsuario(u as Usuario)}><Settings className="h-3.5 w-3.5" /></Button>
                               <Button size="sm" variant="ghost" className="h-6 w-6 p-0 mr-1" title={u.activo ? "Bloquear" : "Desbloquear"} onClick={() => handleToggleUsuario(u.id, u.activo)}>{u.activo ? "🔒" : "🔓"}</Button>
-                              {u.rol !== "admin" && <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-red-500" title="Eliminar" onClick={() => handleDeleteUsuario(u.id)}><Trash2 className="h-3.5 w-3.5" /></Button>}
+                              <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-red-500" title="Eliminar" onClick={() => handleDeleteUsuario(u.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
                             </TableCell>
                           </TableRow>
                         ))}
