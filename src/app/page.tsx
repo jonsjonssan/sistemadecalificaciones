@@ -488,10 +488,38 @@ export default function Home() {
   const gradosSuperiores = grados.filter(g => g.numero >= 6);
 
   // Effects
+  // Auth
   useEffect(() => { checkAuth(); }, [checkAuth]);
-  useEffect(() => { if (usuario) { loadGrados(); loadUsuarios(); loadTodasAsignaturas(); loadConfiguracion(); } }, [usuario, loadGrados, loadUsuarios, loadTodasAsignaturas, loadConfiguracion]);
-  useEffect(() => { loadEstudiantes(); loadAsignaturas(); loadConfigsGrado(); }, [loadEstudiantes, loadAsignaturas, loadConfigsGrado]);
-  useEffect(() => { loadConfig(); loadCalificaciones(); }, [loadConfig, loadCalificaciones, asignaturaSeleccionada]);
+  
+  // Carga inicial de datos estructurales
+  useEffect(() => { 
+    if (usuario) { 
+      loadGrados(); 
+      loadUsuarios(); 
+      loadTodasAsignaturas(); 
+      loadConfiguracion(); 
+    } 
+  }, [usuario, loadGrados, loadUsuarios, loadTodasAsignaturas, loadConfiguracion]);
+  // Carga de datos base (estudiantes y materias del grado)
+  useEffect(() => { 
+    if (gradoSeleccionado) {
+      loadEstudiantes(); 
+      loadAsignaturas(); 
+    }
+  }, [gradoSeleccionado, loadEstudiantes, loadAsignaturas]);
+
+  // Carga de configuración y calificaciones sincronizada con grado, asignatura y trimestre
+  useEffect(() => { 
+    if (gradoSeleccionado && asignaturaSeleccionada && trimestreSeleccionado) {
+      // Limpiar datos previos para forzar refresco visual instantáneo
+      setConfigActual(null);
+      setCalificaciones([]);
+      
+      loadConfig(); 
+      loadCalificaciones(); 
+      loadConfigsGrado();
+    }
+  }, [gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado, loadConfig, loadCalificaciones, loadConfigsGrado]);
   // Auto-selección inicial de grado
   useEffect(() => {
     if (grados.length && !gradoSeleccionado) {
