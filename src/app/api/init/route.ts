@@ -56,7 +56,58 @@ export async function POST() {
       return materia;
     };
 
-    const users = [
+    // ============================================
+    // LISTA OFICIAL DE USUARIOS
+    // ============================================
+    const users: {
+      nombre: string;
+      email: string;
+      password: string;
+      rol: string;
+      tutorGrado?: number;
+      materias: { grado: number; mat: string }[];
+    }[] = [
+      // ---- ADMINISTRADORES ----
+      {
+        nombre: "Administrador General",
+        email: "admin@escuela.edu",
+        password: "admin",
+        rol: "admin",
+        materias: []
+      },
+      {
+        nombre: "Mónica Lissette Tobar Gómez",
+        email: "monica.lissette.tobar@clases.edu.sv",
+        password: "admin123",
+        rol: "admin",
+        materias: []
+      },
+      {
+        nombre: "Claudia Jasmin Arce Castillo",
+        email: "claudia.jasmin.arce@clases.edu.sv",
+        password: "admin123",
+        rol: "admin",
+        tutorGrado: 9,
+        materias: [
+          { grado: 6, mat: "Comunicación y Literatura" },
+          { grado: 7, mat: "Lenguaje y Literatura" },
+          { grado: 8, mat: "Lenguaje y Literatura" },
+          { grado: 9, mat: "Lenguaje y Literatura" }
+        ]
+      },
+
+      // ---- DOCENTES ----
+      {
+        nombre: "Jonathan Adonay Araujo Mendoza",
+        email: "jonathan.araujo.mendoza@clases.edu.sv",
+        password: "docente123",
+        rol: "docente",
+        materias: [
+          { grado: 4, mat: "Artes" },
+          { grado: 5, mat: "Artes" },
+          { grado: 6, mat: "Artes" }
+        ]
+      },
       {
         nombre: "Yessenia del Carmen Villafuerte Mejía",
         email: "yessenia.carmen.villafuerte@clases.edu.sv",
@@ -75,11 +126,12 @@ export async function POST() {
         email: "monica.montesino.najarro@clases.edu.sv",
         password: "docente123",
         rol: "docente",
-        materias: [2, 3, 4, 5, 6].map(g => ({ grado: g, mat: "Desarrollo Corporal" })).concat([
+        materias: [
+          ...[2, 3, 4, 5, 6].map(g => ({ grado: g, mat: "Desarrollo Corporal" })),
           { grado: 7, mat: "Educación Física y Deportes" },
           { grado: 8, mat: "Educación Física y Deportes" },
           { grado: 9, mat: "Educación Física y Deportes" }
-        ])
+        ]
       },
       {
         nombre: "Jaqueline Lissette Landaverde de Gómez",
@@ -179,49 +231,9 @@ export async function POST() {
           { grado: 9, mat: "Inglés" }
         ]
       },
-      {
-        nombre: "Mónica Lissette Tobar Gómez",
-        email: "monica.lissette.tobar@clases.edu.sv",
-        password: "admin123",
-        rol: "admin",
-        materias: [
-          { grado: 4, mat: "Artes" },
-          { grado: 5, mat: "Artes" },
-          { grado: 6, mat: "Artes" }
-        ]
-      },
-      {
-        nombre: "Claudia Jasmin Arce Castillo",
-        email: "claudia.jasmin.arce@clases.edu.sv",
-        password: "admin123",
-        rol: "admin",
-        tutorGrado: 9,
-        materias: [
-          { grado: 6, mat: "Comunicación y Literatura" },
-          { grado: 7, mat: "Lenguaje y Literatura" },
-          { grado: 8, mat: "Lenguaje y Literatura" },
-          { grado: 9, mat: "Lenguaje y Literatura" }
-        ]
-      },
-      {
-        nombre: "Jonathan Adonay Araujo Mendoza",
-        email: "jonathan.araujo.mendoza@clases.edu.sv",
-        password: "docente123",
-        rol: "docente",
-        materias: [
-          { grado: 4, mat: "Artes" },
-          { grado: 5, mat: "Artes" },
-          { grado: 6, mat: "Artes" }
-        ]
-      },
-      {
-        nombre: "Administrador General",
-        email: "admin@escuela.edu",
-        password: "admin",
-        rol: "admin",
-        materias: []
-      }
     ];
+
+    const resultados: { nombre: string; email: string; rol: string }[] = [];
 
     for (const u of users) {
       // Upsert usuario
@@ -251,6 +263,11 @@ export async function POST() {
         }
       }
 
+      // Limpiar asignaciones previas de materias
+      await db.docenteMateria.deleteMany({
+        where: { docenteId: user.id }
+      });
+
       // Assign Materias
       if (u.materias && u.materias.length > 0) {
         for (const mat of u.materias) {
@@ -272,6 +289,8 @@ export async function POST() {
           }
         }
       }
+
+      resultados.push({ nombre: u.nombre, email: u.email, rol: u.rol });
     }
 
     // Inicializar configuración global si no existe
@@ -287,7 +306,8 @@ export async function POST() {
 
     return NextResponse.json({
       message: "Sistema cargado con usuarios y asignaciones exitosamente",
-      count: users.length
+      count: users.length,
+      usuarios: resultados
     });
   } catch (error) {
     console.error("Error al inicializar:", error);

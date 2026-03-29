@@ -111,6 +111,9 @@ export default function Home() {
   const [nuevoAño, setNuevoAño] = useState(2026);
   const [añoDialogOpen, setAñoDialogOpen] = useState(false);
   const [añoLoading, setAñoLoading] = useState(false);
+  const [editUsuarioDialogOpen, setEditUsuarioDialogOpen] = useState(false);
+  const [editUsuarioData, setEditUsuarioData] = useState<{ id: string; nombre: string; email: string; rol: string; password: string; gradosAsignados: string[]; materiasAsignadas: string[]; } | null>(null);
+  const [seedLoading, setSeedLoading] = useState(false);
 
   // Auth
   const checkAuth = useCallback(async () => {
@@ -404,6 +407,66 @@ export default function Home() {
       await fetch(`/api/usuarios?id=${id}`, { method: "DELETE" });
       loadUsuarios(); toast({ title: "Usuario eliminado" });
     } catch { toast({ title: "Error", variant: "destructive" }); }
+  };
+
+  const handleEditUsuario = (u: Usuario) => {
+    setEditUsuarioData({
+      id: u.id,
+      nombre: u.nombre,
+      email: u.email,
+      rol: u.rol,
+      password: "",
+      gradosAsignados: u.gradosComoTutor?.map(g => g.id) || [],
+      materiasAsignadas: u.materias?.map(m => m.id) || [],
+    });
+    setEditUsuarioDialogOpen(true);
+  };
+
+  const handleSaveEditUsuario = async () => {
+    if (!editUsuarioData) return;
+    try {
+      const body: Record<string, unknown> = {
+        id: editUsuarioData.id,
+        nombre: editUsuarioData.nombre,
+        rol: editUsuarioData.rol,
+        gradosAsignados: editUsuarioData.gradosAsignados,
+        materiasAsignadas: editUsuarioData.materiasAsignadas,
+      };
+      if (editUsuarioData.password) body.password = editUsuarioData.password;
+      const res = await fetch("/api/usuarios", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (res.ok) {
+        setEditUsuarioDialogOpen(false);
+        setEditUsuarioData(null);
+        loadUsuarios();
+        loadGrados();
+        toast({ title: "Usuario actualizado" });
+      } else {
+        const d = await res.json();
+        toast({ title: d.error || "Error al actualizar", variant: "destructive" });
+      }
+    } catch { toast({ title: "Error de conexión", variant: "destructive" }); }
+  };
+
+  const handleSeedUsuarios = async () => {
+    if (!confirm("Esto actualizará/creará todos los usuarios oficiales con sus asignaciones. ¿Continuar?")) return;
+    setSeedLoading(true);
+    try {
+      const res = await fetch("/api/init", { method: "POST" });
+      const data = await res.json();
+      if (res.ok) {
+        toast({ title: "Usuarios cargados", description: `${data.count} usuarios procesados` });
+        loadUsuarios();
+        loadGrados();
+        loadTodasAsignaturas();
+      } else {
+        toast({ title: data.error || "Error", variant: "destructive" });
+      }
+    } catch { toast({ title: "Error de conexión", variant: "destructive" }); }
+    finally { setSeedLoading(false); }
   };
 
   const handleToggleUsuario = async (id: string, activo: boolean) => {
@@ -804,7 +867,12 @@ export default function Home() {
               {/* Gestión de Usuarios */}
               <Card className="shadow-sm">
                 <CardHeader className="py-3 px-4 flex-row items-center justify-between space-y-0">
-                  <div><CardTitle className="text-base">Gestión de Usuarios</CardTitle><CardDescription className="text-xs">Crea y administra usuarios del sistema</CardDescription></div>
+                  <div><CardTitle className="text-base">Gestión de Usuarios</CardTitle><CardDescription className="text-xs">Administra los accesos al sistema</CardDescription></div>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" className="h-7" onClick={handleSeedUsuarios} disabled={seedLoading}>
+                      <RefreshCw className={`h-3.5 w-3.5 mr-1 ${seedLoading ? 'animate-spin' : ''}`} />
+                      {seedLoading ? 'Cargando...' : 'Recargar Usuarios'}
+                    </Button>
                   <Dialog open={userDialogOpen} onOpenChange={setUserDialogOpen}>
                     <DialogTrigger asChild><Button size="sm" className="bg-teal-600 h-7"><UserPlus className="h-3.5 w-3.5 mr-1" />Nuevo Usuario</Button></DialogTrigger>
                     <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
@@ -877,6 +945,7 @@ export default function Home() {
                       <DialogFooter><Button variant="outline" size="sm" onClick={() => setUserDialogOpen(false)}>Cancelar</Button><Button size="sm" onClick={handleAddUsuario} className="bg-teal-600">Crear</Button></DialogFooter>
                     </DialogContent>
                   </Dialog>
+                  </div>
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="rounded border overflow-x-auto">
@@ -901,8 +970,9 @@ export default function Home() {
                               </div>
                             </TableCell>
                             <TableCell className="text-center">
-                              <Button size="sm" variant="ghost" className="h-6 w-6 p-0 mr-1" onClick={() => handleToggleUsuario(u.id, u.activo)}>{u.activo ? "🔒" : "🔓"}</Button>
-                              {u.rol !== "admin" && <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-red-500" onClick={() => handleDeleteUsuario(u.id)}><Trash2 className="h-3.5 w-3.5" /></Button>}
+                              <Button size="sm" variant="ghost" className="h-6 w-6 p-0 mr-1" onClick={() => handleEditUsuario(u)} title="Editar"><Settings className="h-3.5 w-3.5" /></Button>
+                              <Button size="sm" variant="ghost" className="h-6 w-6 p-0 mr-1" onClick={() => handleToggleUsuario(u.id, u.activo)} title={u.activo ? "Desactivar" : "Activar"}>{u.activo ? "🔒" : "🔓"}</Button>
+                              {u.rol !== "admin" && <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-red-500" onClick={() => handleDeleteUsuario(u.id)} title="Eliminar"><Trash2 className="h-3.5 w-3.5" /></Button>}
                             </TableCell>
                           </TableRow>
                         ))}
@@ -989,6 +1059,59 @@ export default function Home() {
       </main>
 
       {/* Dialogs */}
+
+      {/* --- Diálogo de Edición de Usuario --- */}
+      <Dialog open={editUsuarioDialogOpen} onOpenChange={setEditUsuarioDialogOpen}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Editar Usuario</DialogTitle></DialogHeader>
+          {editUsuarioData && <div className="space-y-3">
+            <div><Label className="text-xs">Nombre</Label><Input value={editUsuarioData.nombre} onChange={e => setEditUsuarioData({...editUsuarioData, nombre: e.target.value})} className="h-8" /></div>
+            <div><Label className="text-xs">Email (no editable)</Label><Input value={editUsuarioData.email} disabled className="h-8 bg-slate-100" /></div>
+            <div><Label className="text-xs">Nueva Contraseña (dejar vacío para no cambiar)</Label><Input type="password" value={editUsuarioData.password} onChange={e => setEditUsuarioData({...editUsuarioData, password: e.target.value})} className="h-8" placeholder="••••••" /></div>
+            <div><Label className="text-xs">Rol</Label>
+              <Select value={editUsuarioData.rol} onValueChange={v => setEditUsuarioData({...editUsuarioData, rol: v})}>
+                <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
+                <SelectContent><SelectItem value="admin">Administrador</SelectItem><SelectItem value="docente">Docente</SelectItem></SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-xs">Grados como Tutor (2° a 5°)</Label>
+              <p className="text-[10px] text-slate-500 mb-1">El tutor tiene acceso completo al grado</p>
+              <div className="flex flex-wrap gap-1">
+                {grados.filter(g => g.numero >= 2 && g.numero <= 5).map(g => (
+                  <label key={g.id} className="flex items-center gap-1 text-xs p-1.5 border rounded hover:bg-slate-50 cursor-pointer">
+                    <input type="checkbox" checked={editUsuarioData.gradosAsignados.includes(g.id)} onChange={e => setEditUsuarioData({...editUsuarioData, gradosAsignados: e.target.checked ? [...editUsuarioData.gradosAsignados, g.id] : editUsuarioData.gradosAsignados.filter(id => id !== g.id)})} className="h-3 w-3" />
+                    {g.numero}° "{g.seccion}"
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div>
+              <Label className="text-xs">Asignaturas Asignadas</Label>
+              <p className="text-[10px] text-slate-500 mb-1">El docente califica estas asignaturas específicas</p>
+              <div className="border rounded max-h-48 overflow-y-auto">
+                {grados.map(grado => (
+                  <div key={grado.id} className="border-b last:border-b-0">
+                    <div className="bg-slate-100 px-2 py-1 text-xs font-medium">{grado.numero}° "{grado.seccion}"</div>
+                    <div className="p-2 grid grid-cols-2 gap-1">
+                      {todasAsignaturas.filter(m => m.gradoId === grado.id).map(m => (
+                        <label key={m.id} className="flex items-center gap-1 text-xs p-1 hover:bg-slate-50 rounded cursor-pointer">
+                          <input type="checkbox" checked={editUsuarioData.materiasAsignadas.includes(m.id)} onChange={e => setEditUsuarioData({...editUsuarioData, materiasAsignadas: e.target.checked ? [...editUsuarioData.materiasAsignadas, m.id] : editUsuarioData.materiasAsignadas.filter(id => id !== m.id)})} className="h-3 w-3" />
+                          {m.nombre}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>}
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setEditUsuarioDialogOpen(false)}>Cancelar</Button>
+            <Button size="sm" onClick={handleSaveEditUsuario} className="bg-teal-600">Guardar Cambios</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <Dialog open={configDialogOpen} onOpenChange={setConfigDialogOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader><DialogTitle>Configurar Actividades</DialogTitle></DialogHeader>
@@ -1302,8 +1425,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
   const imprimirTodas = async () => {
     if (!estudiantes.length) return;
     
-    const trimestre = parseInt(trimestreSeleccionado);
-    let allBoletasHtml = '';
+        let allBoletasHtml = '';
     const año = grado?.año || new Date().getFullYear();
     const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
 
