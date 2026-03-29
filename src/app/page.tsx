@@ -327,14 +327,14 @@ export default function Home() {
     } catch { toast({ title: "Error", variant: "destructive" }); }
   };
 
-  const handleSaveCalificacion = async (estudianteId: string, data: { actividadesCotidianas: (number | null)[]; actividadesIntegradoras: (number | null)[]; examenTrimestral: number | null; recuperacion: number | null; }) => {
+  const handleSaveCalificacion = async (estudianteId: string, materiaId: string, data: { actividadesCotidianas: (number | null)[]; actividadesIntegradoras: (number | null)[]; examenTrimestral: number | null; recuperacion: number | null; }) => {
     if (!configActual) return;
     setSaving(true);
     try {
       await fetch("/api/calificaciones", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ estudianteId, materiaId: asignaturaSeleccionada, trimestre: parseInt(trimestreSeleccionado), actividadesCotidianas: JSON.stringify(data.actividadesCotidianas), actividadesIntegradoras: JSON.stringify(data.actividadesIntegradoras), examenTrimestral: data.examenTrimestral, recuperacion: data.recuperacion }),
+        body: JSON.stringify({ estudianteId, materiaId: materiaId, trimestre: parseInt(trimestreSeleccionado), actividadesCotidianas: JSON.stringify(data.actividadesCotidianas), actividadesIntegradoras: JSON.stringify(data.actividadesIntegradoras), examenTrimestral: data.examenTrimestral, recuperacion: data.recuperacion }),
       });
       loadCalificaciones();
     } catch { toast({ title: "Error", variant: "destructive" }); }
@@ -761,7 +761,10 @@ export default function Home() {
                         <th className="w-10 p-1.5 border-l border-slate-600"></th>
                       </tr></thead>
                       <tbody>
-                        {estudiantes.map(est => <CalificacionRow key={`${est.id}-${asignaturaSeleccionada}-${trimestreSeleccionado}`} estudiante={est} calificacion={getCalificacion(est.id)} config={configActual} onSave={handleSaveCalificacion} saving={saving} />)}
+                        {estudiantes.map(est => {
+                          const calif = getCalificacion(est.id);
+                          return <CalificacionRow key={`${est.id}-${asignaturaSeleccionada}-${trimestreSeleccionado}`} estudiante={est} materiaId={asignaturaSeleccionada} calificacion={calif} config={configActual} onSave={handleSaveCalificacion} saving={saving} />
+                        })}
                       </tbody>
                     </table>
                   </div>
@@ -1070,12 +1073,15 @@ export default function Home() {
 }
 
 // Componentes
-function CalificacionRow({ estudiante, calificacion, config, onSave, saving }: { estudiante: Estudiante; calificacion?: Calificacion; config: ConfigActividad; onSave: (id: string, data: { actividadesCotidianas: (number | null)[]; actividadesIntegradoras: (number | null)[]; examenTrimestral: number | null; recuperacion: number | null; }) => void; saving: boolean; }) {
+function CalificacionRow({ estudiante, materiaId, calificacion, config, onSave, saving }: { estudiante: Estudiante; materiaId: string; calificacion?: Calificacion; config: ConfigActividad; onSave: (id: string, matId: string, data: { actividadesCotidianas: (number | null)[]; actividadesIntegradoras: (number | null)[]; examenTrimestral: number | null; recuperacion: number | null; }) => void; saving: boolean; }) {
   const [acNotas, setAcNotas] = useState<(number | null)[]>(() => parseNotas(calificacion?.actividadesCotidianas ?? null, config.numActividadesCotidianas));
   const [aiNotas, setAiNotas] = useState<(number | null)[]>(() => parseNotas(calificacion?.actividadesIntegradoras ?? null, config.numActividadesIntegradoras));
   const [examen, setExamen] = useState<number | null>(() => calificacion?.examenTrimestral ?? null);
   const [recup, setRecup] = useState<number | null>(() => calificacion?.recuperacion ?? null);
   const [dirty, setDirty] = useState(false);
+  
+  const stateRef = useRef({ dirty, acNotas, aiNotas, examen, recup });
+  useEffect(() => { stateRef.current = { dirty, acNotas, aiNotas, examen, recup }; }, [dirty, acNotas, aiNotas, examen, recup]);
 
   const promAC = calcularPromedio(acNotas), promAI = calcularPromedio(aiNotas), promFinal = calcularPromedioFinal(promAC, promAI, examen, config, recup);
   const parseVal = (v: string): number | null => { const n = parseFloat(v); return isNaN(n) ? null : Math.min(10, Math.max(0, n)); };
@@ -1086,13 +1092,22 @@ function CalificacionRow({ estudiante, calificacion, config, onSave, saving }: {
   const handleRecup = (e: React.ChangeEvent<HTMLInputElement>) => { setRecup(parseVal(e.target.value)); setDirty(true); };
 
   useEffect(() => {
+    return () => {
+      // Flush immediately on unmount if it was dirty
+      if (stateRef.current.dirty) {
+        onSave(estudiante.id, materiaId, { actividadesCotidianas: stateRef.current.acNotas, actividadesIntegradoras: stateRef.current.aiNotas, examenTrimestral: stateRef.current.examen, recuperacion: stateRef.current.recup });
+      }
+    };
+  }, [estudiante.id, materiaId, onSave]);
+
+  useEffect(() => {
     if (!dirty) return;
     const handler = setTimeout(() => {
-      onSave(estudiante.id, { actividadesCotidianas: acNotas, actividadesIntegradoras: aiNotas, examenTrimestral: examen, recuperacion: recup });
+      onSave(estudiante.id, materiaId, { actividadesCotidianas: acNotas, actividadesIntegradoras: aiNotas, examenTrimestral: examen, recuperacion: recup });
       setDirty(false);
     }, 1500);
     return () => clearTimeout(handler);
-  }, [acNotas, aiNotas, examen, recup, dirty, estudiante.id, onSave]);
+  }, [acNotas, aiNotas, examen, recup, dirty, estudiante.id, materiaId, onSave]);
 
   return (
     <tr className="border-b hover:bg-slate-50">
