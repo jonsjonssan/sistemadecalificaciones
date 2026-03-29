@@ -45,7 +45,7 @@ export async function GET() {
         numero: g.numero,
         seccion: g.seccion
       })),
-      materiasAsignadas: usuarioCompleto.materiasAsignadas.map(m => ({
+      asignaturasAsignadas: usuarioCompleto.materiasAsignadas.map(m => ({
         id: m.materia.id,
         nombre: m.materia.nombre,
         gradoId: m.materia.gradoId,

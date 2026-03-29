@@ -89,6 +89,7 @@ export default function Home() {
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [listaDialogOpen, setListaDialogOpen] = useState(false);
   const [userDialogOpen, setUserDialogOpen] = useState(false);
+  const [editUsuarioId, setEditUsuarioId] = useState<string | null>(null);
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
   const [passwordForm, setPasswordForm] = useState({ actual: "", nueva: "", confirmar: "" });
   const [passwordLoading, setPasswordLoading] = useState(false);
@@ -381,21 +382,40 @@ export default function Home() {
   };
 
   const handleAddUsuario = async () => {
-    if (!nuevoUsuario.email || !nuevoUsuario.password || !nuevoUsuario.nombre) return;
+    // Si estamos editando y no hay password, está bien. Si es nuevo, exige password.
+    if (!nuevoUsuario.email || (!editUsuarioId && !nuevoUsuario.password) || !nuevoUsuario.nombre) {
+      toast({ title: "Complete los campos obligatorios", variant: "destructive" });
+      return;
+    }
     try {
+      const isEdit = !!editUsuarioId;
       const res = await fetch("/api/usuarios", {
-        method: "POST",
+        method: isEdit ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(nuevoUsuario),
+        body: JSON.stringify(isEdit ? { id: editUsuarioId, ...nuevoUsuario } : nuevoUsuario),
       });
       if (res.ok) { 
         setNuevoUsuario({ email: "", password: "", nombre: "", rol: "docente", gradosAsignados: [], materiasAsignadas: [] }); 
+        setEditUsuarioId(null);
         setUserDialogOpen(false); 
         loadUsuarios(); 
-        toast({ title: "Usuario creado" }); 
+        toast({ title: isEdit ? "Usuario actualizado" : "Usuario creado" }); 
       }
       else { const d = await res.json(); toast({ title: d.error, variant: "destructive" }); }
     } catch { toast({ title: "Error", variant: "destructive" }); }
+  };
+
+  const abrirEditarUsuario = (u: Usuario) => {
+    setNuevoUsuario({
+      email: u.email,
+      password: "",
+      nombre: u.nombre,
+      rol: u.rol,
+      gradosAsignados: u.gradosComoTutor?.map((g) => g.id) || [],
+      materiasAsignadas: u.materias?.map((m) => m.id) || []
+    });
+    setEditUsuarioId(u.id);
+    setUserDialogOpen(true);
   };
 
   const handleDeleteUsuario = async (id: string) => {
@@ -806,9 +826,9 @@ export default function Home() {
                 <CardHeader className="py-3 px-4 flex-row items-center justify-between space-y-0">
                   <div><CardTitle className="text-base">Gestión de Usuarios</CardTitle><CardDescription className="text-xs">Crea y administra usuarios del sistema</CardDescription></div>
                   <Dialog open={userDialogOpen} onOpenChange={setUserDialogOpen}>
-                    <DialogTrigger asChild><Button size="sm" className="bg-teal-600 h-7"><UserPlus className="h-3.5 w-3.5 mr-1" />Nuevo Usuario</Button></DialogTrigger>
+                    <DialogTrigger asChild><Button size="sm" className="bg-teal-600 h-7" onClick={() => { setEditUsuarioId(null); setNuevoUsuario({ email: "", password: "", nombre: "", rol: "docente", gradosAsignados: [], materiasAsignadas: [] }); }}><UserPlus className="h-3.5 w-3.5 mr-1" />Nuevo Usuario</Button></DialogTrigger>
                     <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-                      <DialogHeader><DialogTitle>Crear Usuario</DialogTitle></DialogHeader>
+                      <DialogHeader><DialogTitle>{editUsuarioId ? "Editar Usuario" : "Crear Usuario"}</DialogTitle></DialogHeader>
                       <div className="space-y-3">
                         <div><Label className="text-xs">Nombre</Label><Input value={nuevoUsuario.nombre} onChange={e => setNuevoUsuario({...nuevoUsuario, nombre: e.target.value})} placeholder="Nombre completo" /></div>
                         <div><Label className="text-xs">Email</Label><Input type="email" value={nuevoUsuario.email} onChange={e => setNuevoUsuario({...nuevoUsuario, email: e.target.value})} placeholder="correo@escuela.edu" /></div>
@@ -874,7 +894,7 @@ export default function Home() {
                           </>
                         )}
                       </div>
-                      <DialogFooter><Button variant="outline" size="sm" onClick={() => setUserDialogOpen(false)}>Cancelar</Button><Button size="sm" onClick={handleAddUsuario} className="bg-teal-600">Crear</Button></DialogFooter>
+                      <DialogFooter><Button variant="outline" size="sm" onClick={() => setUserDialogOpen(false)}>Cancelar</Button><Button size="sm" onClick={handleAddUsuario} className="bg-teal-600">{editUsuarioId ? "Guardar" : "Crear"}</Button></DialogFooter>
                     </DialogContent>
                   </Dialog>
                 </CardHeader>
@@ -901,8 +921,9 @@ export default function Home() {
                               </div>
                             </TableCell>
                             <TableCell className="text-center">
-                              <Button size="sm" variant="ghost" className="h-6 w-6 p-0 mr-1" onClick={() => handleToggleUsuario(u.id, u.activo)}>{u.activo ? "🔒" : "🔓"}</Button>
-                              {u.rol !== "admin" && <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-red-500" onClick={() => handleDeleteUsuario(u.id)}><Trash2 className="h-3.5 w-3.5" /></Button>}
+                              {u.rol !== "admin" && <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-amber-500 mr-1" title="Editar" onClick={() => abrirEditarUsuario(u as Usuario)}><Settings className="h-3.5 w-3.5" /></Button>}
+                              <Button size="sm" variant="ghost" className="h-6 w-6 p-0 mr-1" title={u.activo ? "Bloquear" : "Desbloquear"} onClick={() => handleToggleUsuario(u.id, u.activo)}>{u.activo ? "🔒" : "🔓"}</Button>
+                              {u.rol !== "admin" && <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-red-500" title="Eliminar" onClick={() => handleDeleteUsuario(u.id)}><Trash2 className="h-3.5 w-3.5" /></Button>}
                             </TableCell>
                           </TableRow>
                         ))}
