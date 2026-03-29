@@ -148,7 +148,7 @@ export default function Home() {
   // Carga de datos
   const loadGrados = useCallback(async () => {
     try {
-      const res = await fetch("/api/grados");
+      const res = await fetch("/api/grados", { cache: "no-store" });
       const data = await res.json();
       setGrados(data);
     } catch { console.error("Error al cargar grados"); }
@@ -157,7 +157,7 @@ export default function Home() {
   const loadEstudiantes = useCallback(async () => {
     if (!gradoSeleccionado) return;
     try {
-      const res = await fetch(`/api/estudiantes?gradoId=${gradoSeleccionado}`);
+      const res = await fetch(`/api/estudiantes?gradoId=${gradoSeleccionado}`, { cache: "no-store" });
       setEstudiantes(await res.json());
     } catch { console.error("Error al cargar estudiantes"); }
   }, [gradoSeleccionado]);
@@ -181,7 +181,7 @@ export default function Home() {
   const loadConfig = useCallback(async () => {
     if (!asignaturaSeleccionada || !trimestreSeleccionado) return;
     try {
-      const res = await fetch(`/api/config-actividades?materiaId=${asignaturaSeleccionada}&trimestre=${trimestreSeleccionado}`);
+      const res = await fetch(`/api/config-actividades?materiaId=${asignaturaSeleccionada}&trimestre=${trimestreSeleccionado}`, { cache: "no-store" });
       setConfigActual(await res.json());
     } catch { /* error toast */ }
   }, [asignaturaSeleccionada, trimestreSeleccionado]);
@@ -189,7 +189,7 @@ export default function Home() {
   const loadConfigsGrado = useCallback(async () => {
     if (!gradoSeleccionado || !trimestreSeleccionado) return;
     try {
-      const res = await fetch(`/api/config-actividades?gradoId=${gradoSeleccionado}&trimestre=${trimestreSeleccionado}`);
+      const res = await fetch(`/api/config-actividades?gradoId=${gradoSeleccionado}&trimestre=${trimestreSeleccionado}`, { cache: "no-store" });
       setConfigsGrado(await res.json());
     } catch { /* error toast */ }
   }, [gradoSeleccionado, trimestreSeleccionado]);
@@ -197,7 +197,7 @@ export default function Home() {
   const loadCalificaciones = useCallback(async () => {
     if (!gradoSeleccionado || !trimestreSeleccionado) return;
     try {
-      const res = await fetch(`/api/calificaciones?gradoId=${gradoSeleccionado}&trimestre=${trimestreSeleccionado}`);
+      const res = await fetch(`/api/calificaciones?gradoId=${gradoSeleccionado}&trimestre=${trimestreSeleccionado}`, { cache: "no-store" });
       setCalificaciones(await res.json());
     } catch { /* error toast */ }
   }, [gradoSeleccionado, trimestreSeleccionado]);
@@ -211,7 +211,7 @@ export default function Home() {
 
   const loadConfiguracion = useCallback(async () => {
     try {
-      const res = await fetch("/api/configuracion");
+      const res = await fetch("/api/configuracion", { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         setConfiguracion(data);
@@ -246,6 +246,16 @@ export default function Home() {
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     setUsuario(null);
+    setGrados([]);
+    setGradosFiltrados([]);
+    setAsignaturas([]);
+    setAsignaturasFiltradas([]);
+    setEstudiantes([]);
+    setCalificaciones([]);
+    setConfigActual(null);
+    setConfigsGrado([]);
+    setGradoSeleccionado("");
+    setAsignaturaSeleccionada("");
   };
 
   const handleChangePassword = async () => {
@@ -1153,6 +1163,18 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
     const est = estudiantes.find(e => e.id === id);
     if (!est) return;
     const califs = getCalifs(id);
+
+    // Validación de Recuperación
+    const faltasRecuperacion = materias.filter(m => {
+      const c = califs.find(x => x.materiaId === m.id);
+      return !c || c.recuperacion === null || c.recuperacion === undefined;
+    });
+
+    if (faltasRecuperacion.length > 0) {
+      alert(`Falta digitar el dato de "Recuperación" (0 si no aplica)\nEstudiante: ${est.nombre}\nMaterias:\n- ${faltasRecuperacion.map(m => m.nombre).join('\n- ')}`);
+      return;
+    }
+
     const prom = calcProm(califs);
     const estadoFinal = getEstadoFinal(prom);
     const año = grado?.año || new Date().getFullYear();
@@ -1162,6 +1184,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
     let tablaAsignaturas = materias.map(m => {
       const c = califs.find(x => x.materiaId === m.id);
       const notaFinal = c?.promedioFinal?.toFixed(1) ?? '-';
+      const recupVal = c?.recuperacion !== null && c?.recuperacion !== undefined ? c.recuperacion.toFixed(1) : '-';
       const estado = c?.promedioFinal !== null && c?.promedioFinal !== undefined 
         ? (c.promedioFinal >= 6 ? 'A' : 'R') 
         : '-';
@@ -1170,6 +1193,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
         <td>${c?.calificacionAC?.toFixed(1) ?? '-'}</td>
         <td>${c?.calificacionAI?.toFixed(1) ?? '-'}</td>
         <td>${c?.examenTrimestral?.toFixed(1) ?? '-'}</td>
+        <td>${recupVal}</td>
         <td style="font-weight:bold">${notaFinal}</td>
         <td style="font-weight:bold;color:${estado === 'A' ? '#059669' : estado === 'R' ? '#dc2626' : '#666'}">${estado}</td>
       </tr>`;
@@ -1266,12 +1290,13 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
     <table>
       <thead>
         <tr>
-          <th style="width: 35%">Asignatura</th>
-          <th style="width: 12%">Prom. A.C.<br><small>(35%)</small></th>
-          <th style="width: 12%">Prom. A.I.<br><small>(35%)</small></th>
-          <th style="width: 12%">Examen<br><small>(30%)</small></th>
-          <th style="width: 14%">Promedio<br>Final</th>
-          <th style="width: 15%">Estado</th>
+          <th style="width: 32%">Asignatura</th>
+          <th style="width: 11%">Prom. A.C.<br><small>(35%)</small></th>
+          <th style="width: 11%">Prom. A.I.<br><small>(35%)</small></th>
+          <th style="width: 11%">Examen<br><small>(30%)</small></th>
+          <th style="width: 10%">Recup.</th>
+          <th style="width: 12%">Promedio<br>Final</th>
+          <th style="width: 13%">Estado</th>
         </tr>
       </thead>
       <tbody>
@@ -1354,6 +1379,23 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
   const imprimirTodas = async () => {
     if (!estudiantes.length) return;
     
+    // Validación general antes de imprimir todas
+    const errores: string[] = [];
+    for (const est of estudiantes) {
+      const califs = getCalifs(est.id);
+      for (const m of materias) {
+        const c = califs.find(x => x.materiaId === m.id);
+        if (!c || c.recuperacion === null || c.recuperacion === undefined) {
+          errores.push(`- ${est.nombre} (${m.nombre})`);
+        }
+      }
+    }
+
+    if (errores.length > 0) {
+      alert(`No se puede imprimir el reporte múltiple. Falta digitar dato de "Recuperación" en:\n${errores.slice(0, 10).join('\n')}\n${errores.length > 10 ? '...y ' + (errores.length - 10) + ' más.' : ''}`);
+      return;
+    }
+
     let allBoletasHtml = '';
     const año = grado?.año || new Date().getFullYear();
     const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
@@ -1367,6 +1409,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
       let tablaAsignaturas = materias.map(m => {
         const c = califs.find(x => x.materiaId === m.id);
         const notaFinal = c?.promedioFinal?.toFixed(1) ?? '-';
+        const recupVal = c?.recuperacion !== null && c?.recuperacion !== undefined ? c.recuperacion.toFixed(1) : '-';
         const estado = c?.promedioFinal !== null && c?.promedioFinal !== undefined 
           ? (c.promedioFinal >= 6 ? 'A' : 'R') 
           : '-';
@@ -1375,6 +1418,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
           <td>${c?.calificacionAC?.toFixed(1) ?? '-'}</td>
           <td>${c?.calificacionAI?.toFixed(1) ?? '-'}</td>
           <td>${c?.examenTrimestral?.toFixed(1) ?? '-'}</td>
+          <td>${recupVal}</td>
           <td style="font-weight:bold">${notaFinal}</td>
           <td style="font-weight:bold;color:${estado === 'A' ? '#059669' : estado === 'R' ? '#dc2626' : '#666'}">${estado}</td>
         </tr>`;
@@ -1410,12 +1454,13 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
         <table>
           <thead>
             <tr>
-              <th style="width: 35%">Asignatura</th>
-              <th style="width: 12%">Prom. A.C.<br><small>(35%)</small></th>
-              <th style="width: 12%">Prom. A.I.<br><small>(35%)</small></th>
-              <th style="width: 12%">Examen<br><small>(30%)</small></th>
-              <th style="width: 14%">Promedio<br>Final</th>
-              <th style="width: 15%">Estado</th>
+              <th style="width: 32%">Asignatura</th>
+              <th style="width: 11%">Prom. A.C.<br><small>(35%)</small></th>
+              <th style="width: 11%">Prom. A.I.<br><small>(35%)</small></th>
+              <th style="width: 11%">Examen<br><small>(30%)</small></th>
+              <th style="width: 10%">Recup.</th>
+              <th style="width: 12%">Promedio<br>Final</th>
+              <th style="width: 13%">Estado</th>
             </tr>
           </thead>
           <tbody>
@@ -1813,7 +1858,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
                 {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
               </div>
             </div>
-            {open && <div className="border-t p-2 bg-slate-50"><Table className="text-xs"><TableHeader><TableRow className="bg-slate-100 h-7"><TableHead>Asignatura</TableHead><TableHead className="text-center">Prom. A.C.</TableHead><TableHead className="text-center">Prom. A.I.</TableHead><TableHead className="text-center">Examen</TableHead><TableHead className="text-center font-bold">Promedio</TableHead></TableRow></TableHeader><TableBody>{materias.map(m => { const c = califs.find(x => x.materiaId === m.id); return <TableRow key={m.id} className="h-7"><TableCell className="font-medium">{m.nombre}</TableCell><TableCell className="text-center">{c?.calificacionAC?.toFixed(1) ?? "-"}</TableCell><TableCell className="text-center">{c?.calificacionAI?.toFixed(1) ?? "-"}</TableCell><TableCell className="text-center">{c?.examenTrimestral?.toFixed(1) ?? "-"}</TableCell><TableCell className="text-center"><Badge variant={c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= 6 ? "default" : "secondary"} className={`text-[10px] ${c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= 6 ? 'bg-teal-600' : ''}`}>{c?.promedioFinal?.toFixed(1) ?? "-"}</Badge></TableCell></TableRow>; })}</TableBody></Table></div>}
+            {open && <div className="border-t p-2 bg-slate-50"><Table className="text-xs"><TableHeader><TableRow className="bg-slate-100 h-7"><TableHead>Asignatura</TableHead><TableHead className="text-center">Prom. A.C.</TableHead><TableHead className="text-center">Prom. A.I.</TableHead><TableHead className="text-center">Examen</TableHead><TableHead className="text-center">Recup.</TableHead><TableHead className="text-center font-bold">Promedio</TableHead></TableRow></TableHeader><TableBody>{materias.map(m => { const c = califs.find(x => x.materiaId === m.id); return <TableRow key={m.id} className="h-7"><TableCell className="font-medium">{m.nombre}</TableCell><TableCell className="text-center">{c?.calificacionAC?.toFixed(1) ?? "-"}</TableCell><TableCell className="text-center">{c?.calificacionAI?.toFixed(1) ?? "-"}</TableCell><TableCell className="text-center">{c?.examenTrimestral?.toFixed(1) ?? "-"}</TableCell><TableCell className="text-center">{c?.recuperacion !== null && c?.recuperacion !== undefined ? c.recuperacion.toFixed(1) : "-"}</TableCell><TableCell className="text-center"><Badge variant={c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= 6 ? "default" : "secondary"} className={`text-[10px] ${c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= 6 ? 'bg-teal-600' : ''}`}>{c?.promedioFinal?.toFixed(1) ?? "-"}</Badge></TableCell></TableRow>; })}</TableBody></Table></div>}
           </Card>
         );
       })}
