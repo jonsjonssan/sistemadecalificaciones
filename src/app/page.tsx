@@ -147,16 +147,16 @@ export default function Home() {
       const res = await fetch("/api/grados");
       const data = await res.json();
       setGrados(data);
-    } catch { toast({ title: "Error al cargar grados", variant: "destructive" }); }
-  }, [toast]);
+    } catch { console.error("Error al cargar grados"); }
+  }, []);
 
   const loadEstudiantes = useCallback(async () => {
     if (!gradoSeleccionado) return;
     try {
       const res = await fetch(`/api/estudiantes?gradoId=${gradoSeleccionado}`);
       setEstudiantes(await res.json());
-    } catch { toast({ title: "Error al cargar estudiantes", variant: "destructive" }); }
-  }, [gradoSeleccionado, toast]);
+    } catch { console.error("Error al cargar estudiantes"); }
+  }, [gradoSeleccionado]);
 
   const loadAsignaturas = useCallback(async () => {
     if (!gradoSeleccionado) return;
@@ -164,8 +164,8 @@ export default function Home() {
       const res = await fetch(`/api/materias?gradoId=${gradoSeleccionado}`);
       const data = await res.json();
       setAsignaturas(data);
-    } catch { toast({ title: "Error al cargar asignaturas", variant: "destructive" }); }
-  }, [gradoSeleccionado, toast]);
+    } catch { console.error("Error al cargar asignaturas"); }
+  }, [gradoSeleccionado]);
 
   const loadTodasAsignaturas = useCallback(async () => {
     try {
@@ -179,24 +179,24 @@ export default function Home() {
     try {
       const res = await fetch(`/api/config-actividades?materiaId=${asignaturaSeleccionada}&trimestre=${trimestreSeleccionado}`);
       setConfigActual(await res.json());
-    } catch { toast({ title: "Error al cargar configuración", variant: "destructive" }); }
-  }, [asignaturaSeleccionada, trimestreSeleccionado, toast]);
+    } catch { /* error toast */ }
+  }, [asignaturaSeleccionada, trimestreSeleccionado]);
 
   const loadConfigsGrado = useCallback(async () => {
     if (!gradoSeleccionado || !trimestreSeleccionado) return;
     try {
       const res = await fetch(`/api/config-actividades?gradoId=${gradoSeleccionado}&trimestre=${trimestreSeleccionado}`);
       setConfigsGrado(await res.json());
-    } catch { toast({ title: "Error al cargar configuraciones", variant: "destructive" }); }
-  }, [gradoSeleccionado, trimestreSeleccionado, toast]);
+    } catch { /* error toast */ }
+  }, [gradoSeleccionado, trimestreSeleccionado]);
 
   const loadCalificaciones = useCallback(async () => {
     if (!gradoSeleccionado || !trimestreSeleccionado) return;
     try {
       const res = await fetch(`/api/calificaciones?gradoId=${gradoSeleccionado}&trimestre=${trimestreSeleccionado}`);
       setCalificaciones(await res.json());
-    } catch { toast({ title: "Error al cargar calificaciones", variant: "destructive" }); }
-  }, [gradoSeleccionado, trimestreSeleccionado, toast]);
+    } catch { /* error toast */ }
+  }, [gradoSeleccionado, trimestreSeleccionado]);
 
   const loadUsuarios = useCallback(async () => {
     try {
@@ -1302,6 +1302,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
   const imprimirTodas = async () => {
     if (!estudiantes.length) return;
     
+    const trimestre = parseInt(trimestreSeleccionado);
     let allBoletasHtml = '';
     const año = grado?.año || new Date().getFullYear();
     const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
