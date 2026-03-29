@@ -679,9 +679,9 @@ export default function Home() {
         </DialogContent>
       </Dialog>
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-3 py-3">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-3 py-3 pb-24 md:pb-3">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-white shadow-sm h-9 overflow-x-auto rounded-none sm:rounded-md flex sm:inline-flex w-full sm:w-auto shrink-0 hide-scrollbar justify-start">
+          <TabsList className="bg-white shadow-sm h-10 overflow-x-auto rounded-md hidden md:inline-flex w-auto shrink-0 hide-scrollbar justify-start space-x-1">
             <TabsTrigger id="tab-dashboard" value="dashboard" className="text-base font-medium px-3 gap-1 shrink-0"><LayoutDashboard className="h-5 w-5" />Inicio</TabsTrigger>
             <TabsTrigger id="tab-calificaciones" value="calificaciones" className="text-base font-medium px-3 gap-1 shrink-0"><ClipboardList className="h-5 w-5" />Calificaciones</TabsTrigger>
             <TabsTrigger id="tab-asistencia" value="asistencia" className="text-base font-medium px-3 gap-1 shrink-0"><CalendarDays className="h-5 w-5" />Asistencia</TabsTrigger>
@@ -1033,7 +1033,18 @@ export default function Home() {
         </DialogContent>
       </Dialog>
 
-      <footer className="bg-slate-800 text-slate-400 py-2 text-center text-[10px]">© 2026 Centro Escolar Católico San José de la Montaña</footer>
+      <footer className="bg-slate-800 text-slate-400 py-2 text-center text-[10px] hidden md:block">© 2026 Centro Escolar Católico San José de la Montaña</footer>
+
+      {/* Bottom Nav Bar para Móviles */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around items-center px-1 py-2 z-50">
+        <button onClick={() => setActiveTab("dashboard")} className={`flex flex-col items-center p-1.5 px-3 rounded-xl transition-colors ${activeTab === "dashboard" ? "text-teal-700 bg-teal-50" : "text-slate-500"}`}><LayoutDashboard className="h-5 w-5 mb-1" /><span className="text-[10px] font-medium">Inicio</span></button>
+        <button onClick={() => setActiveTab("calificaciones")} className={`flex flex-col items-center p-1.5 px-3 rounded-xl transition-colors ${activeTab === "calificaciones" ? "text-teal-700 bg-teal-50" : "text-slate-500"}`}><ClipboardList className="h-5 w-5 mb-1" /><span className="text-[10px] font-medium">Notas</span></button>
+        <button onClick={() => setActiveTab("asistencia")} className={`flex flex-col items-center p-1.5 px-3 rounded-xl transition-colors ${activeTab === "asistencia" ? "text-teal-700 bg-teal-50" : "text-slate-500"}`}><CalendarDays className="h-5 w-5 mb-1" /><span className="text-[10px] font-medium">Lista</span></button>
+        <button onClick={() => setActiveTab("estudiantes")} className={`flex flex-col items-center p-1.5 px-3 rounded-xl transition-colors ${activeTab === "estudiantes" ? "text-teal-700 bg-teal-50" : "text-slate-500"}`}><Users className="h-5 w-5 mb-1" /><span className="text-[10px] font-medium">Alumnos</span></button>
+        {usuario.rol === "admin" && (
+          <button onClick={() => setActiveTab("admin")} className={`flex flex-col items-center p-1.5 px-3 rounded-xl transition-colors ${activeTab === "admin" ? "text-teal-700 bg-teal-50" : "text-slate-500"}`}><Settings className="h-5 w-5 mb-1" /><span className="text-[10px] font-medium">Admin</span></button>
+        )}
+      </nav>
     </div>
   );
 }
@@ -1044,23 +1055,39 @@ function CalificacionRow({ estudiante, calificacion, config, onSave, saving }: {
   const [aiNotas, setAiNotas] = useState<(number | null)[]>(() => parseNotas(calificacion?.actividadesIntegradoras ?? null, config.numActividadesIntegradoras));
   const [examen, setExamen] = useState<number | null>(() => calificacion?.examenTrimestral ?? null);
   const [recup, setRecup] = useState<number | null>(() => calificacion?.recuperacion ?? null);
+  const [dirty, setDirty] = useState(false);
+
   const promAC = calcularPromedio(acNotas), promAI = calcularPromedio(aiNotas), promFinal = calcularPromedioFinal(promAC, promAI, examen, config);
   const parseVal = (v: string): number | null => { const n = parseFloat(v); return isNaN(n) ? null : Math.min(10, Math.max(0, n)); };
-  const updateAC = (i: number, v: string) => { const n = [...acNotas]; n[i] = parseVal(v); setAcNotas(n); };
-  const updateAI = (i: number, v: string) => { const n = [...aiNotas]; n[i] = parseVal(v); setAiNotas(n); };
+  
+  const updateAC = (i: number, v: string) => { const n = [...acNotas]; n[i] = parseVal(v); setAcNotas(n); setDirty(true); };
+  const updateAI = (i: number, v: string) => { const n = [...aiNotas]; n[i] = parseVal(v); setAiNotas(n); setDirty(true); };
+  const handleExamen = (e: React.ChangeEvent<HTMLInputElement>) => { setExamen(parseVal(e.target.value)); setDirty(true); };
+  const handleRecup = (e: React.ChangeEvent<HTMLInputElement>) => { setRecup(parseVal(e.target.value)); setDirty(true); };
+
+  useEffect(() => {
+    if (!dirty) return;
+    const handler = setTimeout(() => {
+      onSave(estudiante.id, { actividadesCotidianas: acNotas, actividadesIntegradoras: aiNotas, examenTrimestral: examen, recuperacion: recup });
+      setDirty(false);
+    }, 1500);
+    return () => clearTimeout(handler);
+  }, [acNotas, aiNotas, examen, recup, dirty, estudiante.id, onSave]);
 
   return (
     <tr className="border-b hover:bg-slate-50">
       <td className="p-1.5 text-center font-medium bg-white sticky left-0 z-10">{estudiante.numero}</td>
       <td className="p-1.5 font-medium bg-white sticky left-8 z-10 whitespace-nowrap">{estudiante.nombre}</td>
-      {acNotas.map((n, i) => <td key={`ac-${i}`} className="p-0.5 border-l border-slate-200"><input type="number" min="0" max="10" step="0.1" className="w-10 h-6 text-center text-xs border-0 bg-transparent focus:bg-teal-50 rounded" value={n ?? ""} onChange={e => updateAC(i, e.target.value)} /></td>)}
-      <td className="p-1.5 text-center font-medium border-l border-slate-200 bg-slate-50">{promAC !== null ? promAC.toFixed(1) : "-"}</td>
-      {aiNotas.map((n, i) => <td key={`ai-${i}`} className="p-0.5 border-l border-slate-200"><input type="number" min="0" max="10" step="0.1" className="w-10 h-6 text-center text-xs border-0 bg-transparent focus:bg-teal-50 rounded" value={n ?? ""} onChange={e => updateAI(i, e.target.value)} /></td>)}
-      <td className="p-1.5 text-center font-medium border-l border-slate-200 bg-slate-50">{promAI !== null ? promAI.toFixed(1) : "-"}</td>
-      {config.tieneExamen && <td className="p-0.5 border-l border-slate-200"><input type="number" min="0" max="10" step="0.1" className="w-12 h-6 text-center text-xs border-0 bg-transparent focus:bg-teal-50 rounded" value={examen ?? ""} onChange={e => setExamen(parseVal(e.target.value))} /></td>}
-      <td className="p-1.5 text-center border-l border-slate-200 bg-teal-50"><span className={`inline-block px-1.5 py-0.5 rounded text-xs font-bold ${promFinal !== null && promFinal >= 6 ? 'bg-teal-500 text-white' : promFinal !== null ? 'bg-red-500 text-white' : 'bg-slate-200 text-slate-500'}`}>{promFinal !== null ? promFinal.toFixed(1) : "-"}</span></td>
-      <td className="p-0.5 border-l border-slate-200"><input type="number" min="0" max="10" step="0.1" className="w-10 h-6 text-center text-xs border-0 bg-transparent focus:bg-teal-50 rounded" value={recup ?? ""} onChange={e => setRecup(parseVal(e.target.value))} /></td>
-      <td className="p-1 border-l border-slate-200"><Button size="sm" onClick={() => onSave(estudiante.id, { actividadesCotidianas: acNotas, actividadesIntegradoras: aiNotas, examenTrimestral: examen, recuperacion: recup })} disabled={saving} className="h-6 w-6 p-0 bg-teal-600 hover:bg-teal-700"><Save className="h-3 w-3" /></Button></td>
+      {acNotas.map((n, i) => <td key={`ac-${i}`} className="p-0.5 border-l border-slate-200"><input type="number" min="0" max="10" step="0.1" className="w-10 h-6 text-base font-medium text-center border-0 bg-transparent focus:bg-teal-50 rounded" value={n ?? ""} onChange={e => updateAC(i, e.target.value)} /></td>)}
+      <td className="p-1.5 text-center font-bold border-l border-slate-200 bg-slate-50 text-base">{promAC !== null ? promAC.toFixed(1) : "-"}</td>
+      {aiNotas.map((n, i) => <td key={`ai-${i}`} className="p-0.5 border-l border-slate-200"><input type="number" min="0" max="10" step="0.1" className="w-10 h-6 text-base font-medium text-center border-0 bg-transparent focus:bg-teal-50 rounded" value={n ?? ""} onChange={e => updateAI(i, e.target.value)} /></td>)}
+      <td className="p-1.5 text-center font-bold border-l border-slate-200 bg-slate-50 text-base">{promAI !== null ? promAI.toFixed(1) : "-"}</td>
+      {config.tieneExamen && <td className="p-0.5 border-l border-slate-200"><input type="number" min="0" max="10" step="0.1" className="w-12 h-6 text-base font-medium text-center border-0 bg-transparent focus:bg-teal-50 rounded" value={examen ?? ""} onChange={handleExamen} /></td>}
+      <td className="p-1.5 text-center border-l border-slate-200 bg-teal-50"><span className={`inline-block px-1.5 py-0.5 rounded text-sm font-bold shadow-sm ${promFinal !== null && promFinal >= 6 ? 'bg-emerald-100 text-emerald-800' : promFinal !== null ? 'bg-rose-100 text-rose-800' : 'bg-slate-200 text-slate-500'}`}>{promFinal !== null ? promFinal.toFixed(1) : "-"}</span></td>
+      <td className="p-0.5 border-l border-slate-200"><input type="number" min="0" max="10" step="0.1" className="w-10 h-6 text-base font-medium text-center border-0 bg-transparent focus:bg-teal-50 rounded" value={recup ?? ""} onChange={handleRecup} /></td>
+      <td className="p-1 border-l border-slate-200 text-center">
+        {saving && dirty ? <RefreshCw className="h-4 w-4 text-teal-600 animate-spin mx-auto" /> : (!dirty && (acNotas.some(n=>n!==null) || aiNotas.some(n=>n!==null) || examen!==null)) ? <span title="Guardado automáticamente">✅</span> : <span className="text-slate-300">-</span>}
+      </td>
     </tr>
   );
 }
