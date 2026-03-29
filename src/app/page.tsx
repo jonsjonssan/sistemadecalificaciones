@@ -43,11 +43,13 @@ const calcularPromedio = (notas: (number | null)[]): number | null => {
   const validas = notas.filter(n => n !== null && !isNaN(n!)) as number[];
   return validas.length ? validas.reduce((a, b) => a + b, 0) / validas.length : null;
 };
-const calcularPromedioFinal = (ac: number | null, ai: number | null, et: number | null, cfg: ConfigActividad): number | null => {
+const calcularPromedioFinal = (ac: number | null, ai: number | null, et: number | null, cfg: ConfigActividad, recup: number | null = null): number | null => {
   if (ac === null && ai === null && et === null) return null;
   const t = (ac !== null ? cfg.porcentajeAC : 0) + (ai !== null ? cfg.porcentajeAI : 0) + (et !== null && cfg.tieneExamen ? cfg.porcentajeExamen : 0);
   if (!t) return null;
-  return ((ac ?? 0) * cfg.porcentajeAC / 100 + (ai ?? 0) * cfg.porcentajeAI / 100 + (et ?? 0) * cfg.porcentajeExamen / 100) / (t / 100);
+  let base = ((ac ?? 0) * cfg.porcentajeAC / 100 + (ai ?? 0) * cfg.porcentajeAI / 100 + (et ?? 0) * cfg.porcentajeExamen / 100) / (t / 100);
+  if (recup !== null) base = Math.min(10, base + recup);
+  return base;
 };
 const parseNotas = (json: string | null, count: number): (number | null)[] => {
   if (!json) return Array(count).fill(null);
@@ -99,6 +101,7 @@ export default function Home() {
   const [initialized, setInitialized] = useState(false);
   const [expandedBoleta, setExpandedBoleta] = useState<string | null>(null);
   const [editConfig, setEditConfig] = useState<ConfigActividad | null>(null);
+  const [configAplicarATodas, setConfigAplicarATodas] = useState(false);
   const [importData, setImportData] = useState("");
   const [nuevoUsuario, setNuevoUsuario] = useState({ 
     email: "", 
@@ -333,8 +336,11 @@ export default function Home() {
     const total = editConfig.porcentajeAC + editConfig.porcentajeAI + (editConfig.tieneExamen ? editConfig.porcentajeExamen : 0);
     if (Math.abs(total - 100) > 0.1) { toast({ title: `Porcentajes deben sumar 100% (${total.toFixed(1)}%)`, variant: "destructive" }); return; }
     try {
-      await fetch("/api/config-actividades", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(editConfig) });
-      setConfigActual(editConfig); setConfigDialogOpen(false); loadCalificaciones(); toast({ title: "Configuración guardada" });
+      await fetch("/api/config-actividades", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({...editConfig, aplicarATodasLasMateriasDelGrado: configAplicarATodas, gradoId: gradoSeleccionado}) });
+      if (!configAplicarATodas) setConfigActual(editConfig); 
+      setConfigDialogOpen(false); 
+      loadCalificaciones(); 
+      toast({ title: configAplicarATodas ? "Configuración aplicada a todas las materias del grado" : "Configuración guardada" });
     } catch { toast({ title: "Error", variant: "destructive" }); }
   };
 
@@ -1012,6 +1018,10 @@ export default function Home() {
             <div><Label className="text-xs">Actividades Integradoras</Label><div className="flex items-center gap-2 mt-1"><Input type="number" min="1" max="10" value={editConfig.numActividadesIntegradoras} onChange={e => setEditConfig({...editConfig, numActividadesIntegradoras: parseInt(e.target.value) || 1})} className="w-16 h-8" /><span className="text-xs">u.</span><Input type="number" min="0" max="100" value={editConfig.porcentajeAI} onChange={e => setEditConfig({...editConfig, porcentajeAI: parseFloat(e.target.value) || 0})} className="w-16 h-8 ml-auto" /><span className="text-xs">%</span></div></div>
             <div className="flex items-center justify-between"><Label className="text-xs">Examen</Label><div className="flex items-center gap-2"><input type="checkbox" checked={editConfig.tieneExamen} onChange={e => setEditConfig({...editConfig, tieneExamen: e.target.checked})} className="h-4 w-4" />{editConfig.tieneExamen && <><Input type="number" min="0" max="100" value={editConfig.porcentajeExamen} onChange={e => setEditConfig({...editConfig, porcentajeExamen: parseFloat(e.target.value) || 0})} className="w-16 h-8" /><span className="text-xs">%</span></>}</div></div>
             <div className="bg-slate-100 p-2 rounded text-xs flex justify-between"><span>Total:</span><span className={`font-bold ${Math.abs(editConfig.porcentajeAC + editConfig.porcentajeAI + (editConfig.tieneExamen ? editConfig.porcentajeExamen : 0) - 100) > 0.1 ? 'text-red-500' : 'text-teal-600'}`}>{(editConfig.porcentajeAC + editConfig.porcentajeAI + (editConfig.tieneExamen ? editConfig.porcentajeExamen : 0)).toFixed(1)}%</span></div>
+            <div className="flex items-center gap-2 mt-4 pt-4 border-t border-slate-200">
+              <input type="checkbox" id="aplicarATodas" checked={configAplicarATodas} onChange={e => setConfigAplicarATodas(e.target.checked)} className="h-4 w-4 text-teal-600" />
+              <Label htmlFor="aplicarATodas" className="text-sm font-medium">Aplicar a todas las materias de este grado</Label>
+            </div>
           </div>}
           <DialogFooter><Button variant="outline" size="sm" onClick={() => setConfigDialogOpen(false)}>Cancelar</Button><Button size="sm" onClick={handleSaveConfig} className="bg-teal-600">Guardar</Button></DialogFooter>
         </DialogContent>
@@ -1057,7 +1067,7 @@ function CalificacionRow({ estudiante, calificacion, config, onSave, saving }: {
   const [recup, setRecup] = useState<number | null>(() => calificacion?.recuperacion ?? null);
   const [dirty, setDirty] = useState(false);
 
-  const promAC = calcularPromedio(acNotas), promAI = calcularPromedio(aiNotas), promFinal = calcularPromedioFinal(promAC, promAI, examen, config);
+  const promAC = calcularPromedio(acNotas), promAI = calcularPromedio(aiNotas), promFinal = calcularPromedioFinal(promAC, promAI, examen, config, recup);
   const parseVal = (v: string): number | null => { const n = parseFloat(v); return isNaN(n) ? null : Math.min(10, Math.max(0, n)); };
   
   const updateAC = (i: number, v: string) => { const n = [...acNotas]; n[i] = parseVal(v); setAcNotas(n); setDirty(true); };

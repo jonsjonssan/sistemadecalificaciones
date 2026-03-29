@@ -223,6 +223,9 @@ export async function POST(request: NextRequest) {
           (calificacionAI ?? 0) * porcAI + 
           (examenTrimestral ?? 0) * porcExam;
         promedioFinal = suma / totalPonderacion;
+        if (recuperacion !== null) {
+          promedioFinal = Math.min(10, promedioFinal + recuperacion);
+        }
       }
     } else {
       // Usar porcentajes por defecto (35%, 35%, 30%)
@@ -237,6 +240,9 @@ export async function POST(request: NextRequest) {
           (calificacionAI ?? 0) * 0.35 + 
           (examenTrimestral ?? 0) * 0.30;
         promedioFinal = suma / totalPonderacion;
+        if (recuperacion !== null) {
+          promedioFinal = Math.min(10, promedioFinal + recuperacion);
+        }
       }
     }
 
@@ -305,7 +311,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const resultados = [];
+    const resultados: any[] = [];
 
     for (const data of calificaciones) {
       const {
@@ -354,6 +360,9 @@ export async function PUT(request: NextRequest) {
           (calificacionAI ?? 0) * 0.35 + 
           (examenTrimestral ?? 0) * 0.30;
         promedioFinal = suma / totalPonderacion;
+        if (recuperacion !== null) {
+          promedioFinal = Math.min(10, promedioFinal + recuperacion);
+        }
       }
 
       const resultado = await db.calificacion.upsert({

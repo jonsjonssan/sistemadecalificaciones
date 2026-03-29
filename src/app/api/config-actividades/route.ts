@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
       });
 
       // Para cada materia sin configuración, crear una por defecto
-      const result = [];
+      const result: any[] = [];
       for (const materia of materias) {
         const existingConfig = configs.find(c => c.materiaId === materia.id);
         if (existingConfig) {
@@ -121,73 +121,45 @@ export async function POST(request: NextRequest) {
   try {
     const cookieStore = await cookies();
     const session = cookieStore.get("session");
-    
-    if (!session) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
+    if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
     const data = await request.json();
-    const {
-      materiaId,
-      trimestre,
-      numActividadesCotidianas,
-      numActividadesIntegradoras,
-      tieneExamen,
-      porcentajeAC,
-      porcentajeAI,
-      porcentajeExamen,
-    } = data;
+    const { materiaId, gradoId, aplicarATodasLasMateriasDelGrado, trimestre, numActividadesCotidianas, numActividadesIntegradoras, tieneExamen, porcentajeAC, porcentajeAI, porcentajeExamen } = data;
 
-    if (!materiaId || !trimestre) {
-      return NextResponse.json(
-        { error: "materiaId y trimestre son requeridos" },
-        { status: 400 }
-      );
+    if (!trimestre) return NextResponse.json({ error: "Trimestre es requerido" }, { status: 400 });
+
+    const baseData = {
+      trimestre: parseInt(String(trimestre)),
+      numActividadesCotidianas: numActividadesCotidianas ?? 4,
+      numActividadesIntegradoras: numActividadesIntegradoras ?? 1,
+      tieneExamen: tieneExamen ?? true,
+      porcentajeAC: porcentajeAC ?? 35.0,
+      porcentajeAI: porcentajeAI ?? 35.0,
+      porcentajeExamen: porcentajeExamen ?? 30.0,
+    };
+
+    if (aplicarATodasLasMateriasDelGrado && gradoId) {
+      const materias = await db.materia.findMany({ where: { gradoId } });
+      const updates = materias.map(m => db.configActividad.upsert({
+        where: { materiaId_trimestre: { materiaId: m.id, trimestre: baseData.trimestre } },
+        create: { materiaId: m.id, ...baseData },
+        update: baseData
+      }));
+      await Promise.all(updates);
+      return NextResponse.json({ success: true, count: materias.length });
     }
 
+    if (!materiaId) return NextResponse.json({ error: "materiaId es requerido" }, { status: 400 });
+
     const config = await db.configActividad.upsert({
-      where: {
-        materiaId_trimestre: {
-          materiaId,
-          trimestre: parseInt(String(trimestre)),
-        },
-      },
-      create: {
-        materiaId,
-        trimestre: parseInt(String(trimestre)),
-        numActividadesCotidianas: numActividadesCotidianas ?? 4,
-        numActividadesIntegradoras: numActividadesIntegradoras ?? 1,
-        tieneExamen: tieneExamen ?? true,
-        porcentajeAC: porcentajeAC ?? 35.0,
-        porcentajeAI: porcentajeAI ?? 35.0,
-        porcentajeExamen: porcentajeExamen ?? 30.0,
-      },
-      update: {
-        numActividadesCotidianas: numActividadesCotidianas ?? 4,
-        numActividadesIntegradoras: numActividadesIntegradoras ?? 1,
-        tieneExamen: tieneExamen ?? true,
-        porcentajeAC: porcentajeAC ?? 35.0,
-        porcentajeAI: porcentajeAI ?? 35.0,
-        porcentajeExamen: porcentajeExamen ?? 30.0,
-      },
+      where: { materiaId_trimestre: { materiaId, trimestre: baseData.trimestre } },
+      create: { materiaId, ...baseData },
+      update: baseData,
     });
 
-    return NextResponse.json({
-      id: config.id,
-      materiaId: config.materiaId,
-      trimestre: config.trimestre,
-      numActividadesCotidianas: config.numActividadesCotidianas,
-      numActividadesIntegradoras: config.numActividadesIntegradoras,
-      tieneExamen: config.tieneExamen,
-      porcentajeAC: config.porcentajeAC,
-      porcentajeAI: config.porcentajeAI,
-      porcentajeExamen: config.porcentajeExamen,
-    });
+    return NextResponse.json(config);
   } catch (error) {
     console.error("Error al guardar configuración:", error);
-    return NextResponse.json(
-      { error: "Error al guardar configuración" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error al guardar configuración" }, { status: 500 });
   }
 }
