@@ -78,7 +78,7 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
       <h2 className="text-2xl font-bold text-slate-800 tracking-tight">
         Hola, {usuario.nombre} 👋
       </h2>
-      <p className="text-slate-500 text-sm mb-6">
+      <p className="text-slate-500 text-lg font-medium mb-6">
         {usuario.rol === "admin" 
           ? "Bienvenido al panel de administración del sistema." 
           : "Te damos la bienvenida al ciclo escolar."}
@@ -90,56 +90,56 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
           <Card className="shadow-sm border-teal-100 overflow-hidden">
             <div className="h-1 bg-teal-500 w-full" />
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600">Total Estudiantes</CardTitle>
-              <div className="h-8 w-8 rounded-full bg-teal-50 flex items-center justify-center">
-                <Users className="h-4 w-4 text-teal-600" />
+              <CardTitle className="text-lg font-medium font-medium text-slate-600">Total Estudiantes</CardTitle>
+              <div className="h-12 w-12 rounded-full bg-teal-50 flex items-center justify-center">
+                <Users className="h-8 w-8 text-teal-600" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-slate-800">{totalEstudiantes}</div>
-              <p className="text-xs text-slate-500 mt-1">Registrados en el sistema</p>
+              <p className="text-base font-medium text-slate-500 mt-1">Registrados en el sistema</p>
             </CardContent>
           </Card>
           
           <Card className="shadow-sm border-emerald-100 overflow-hidden">
             <div className="h-1 bg-emerald-500 w-full" />
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600">Grados Activos</CardTitle>
-              <div className="h-8 w-8 rounded-full bg-emerald-50 flex items-center justify-center">
-                <School className="h-4 w-4 text-emerald-600" />
+              <CardTitle className="text-lg font-medium font-medium text-slate-600">Grados Activos</CardTitle>
+              <div className="h-12 w-12 rounded-full bg-emerald-50 flex items-center justify-center">
+                <School className="h-8 w-8 text-emerald-600" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-slate-800">{grados.length}</div>
-              <p className="text-xs text-slate-500 mt-1">Secciones asignadas</p>
+              <p className="text-base font-medium text-slate-500 mt-1">Secciones asignadas</p>
             </CardContent>
           </Card>
 
           <Card className="shadow-sm border-blue-100 overflow-hidden">
             <div className="h-1 bg-blue-500 w-full" />
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600">Asignaturas impartidas</CardTitle>
-              <div className="h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center">
-                <BookOpen className="h-4 w-4 text-blue-600" />
+              <CardTitle className="text-lg font-medium font-medium text-slate-600">Asignaturas impartidas</CardTitle>
+              <div className="h-12 w-12 rounded-full bg-blue-50 flex items-center justify-center">
+                <BookOpen className="h-8 w-8 text-blue-600" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-slate-800">{totalAsignaturas}</div>
-              <p className="text-xs text-slate-500 mt-1">En todos los grados</p>
+              <p className="text-base font-medium text-slate-500 mt-1">En todos los grados</p>
             </CardContent>
           </Card>
 
           <Card className="shadow-sm border-amber-100 overflow-hidden">
             <div className="h-1 bg-amber-500 w-full" />
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600">Docentes</CardTitle>
-              <div className="h-8 w-8 rounded-full bg-amber-50 flex items-center justify-center">
-                <GraduationCap className="h-4 w-4 text-amber-600" />
+              <CardTitle className="text-lg font-medium font-medium text-slate-600">Docentes</CardTitle>
+              <div className="h-12 w-12 rounded-full bg-amber-50 flex items-center justify-center">
+                <GraduationCap className="h-8 w-8 text-amber-600" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-slate-800">{totalDocentes}</div>
-              <p className="text-xs text-slate-500 mt-1">Activos en el ciclo</p>
+              <p className="text-base font-medium text-slate-500 mt-1">Activos en el ciclo</p>
             </CardContent>
           </Card>
         </div>
@@ -151,19 +151,19 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
           <CardHeader className="flex flex-row items-center justify-between pb-2 border-b bg-slate-50/50">
             <div>
               <CardTitle className="text-base text-slate-700 flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-teal-600" />
+                <TrendingUp className="h-8 w-8 text-teal-600" />
                 Rendimiento Académico por Grado
               </CardTitle>
-              <CardDescription className="text-xs">Promedios por categoría evaluativa</CardDescription>
+              <CardDescription className="text-base font-medium">Promedios por categoría evaluativa</CardDescription>
             </div>
             <Select value={selectedGradoId} onValueChange={setSelectedGradoId}>
-              <SelectTrigger className="w-[180px] h-8 text-xs bg-white">
+              <SelectTrigger className="w-[180px] h-8 text-base font-medium bg-white">
                 <SelectValue placeholder="Seleccionar grado" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all" className="text-xs">Vista General</SelectItem>
+                <SelectItem value="all" className="text-base font-medium">Vista General</SelectItem>
                 {stats.map(s => (
-                  <SelectItem key={s.gradoId} value={s.gradoId} className="text-xs">
+                  <SelectItem key={s.gradoId} value={s.gradoId} className="text-base font-medium">
                     {s.nombre}
                   </SelectItem>
                 ))}
@@ -202,33 +202,33 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
                 </div>
                 <div className="space-y-4">
                   <div className="bg-teal-50/50 p-4 rounded-xl border border-teal-100">
-                    <h4 className="text-xs font-bold text-teal-800 uppercase tracking-wider mb-2 flex items-center gap-2">
-                       <Trophy className="h-3.5 w-3.5 text-amber-500" /> Cuadro de Honor
+                    <h4 className="text-base font-medium font-bold text-teal-800 uppercase tracking-wider mb-2 flex items-center gap-2">
+                       <Trophy className="h-6 w-6 text-amber-500" /> Cuadro de Honor
                     </h4>
                     <div className="space-y-2">
                       {selectedStats.topEstudiantes.length > 0 ? selectedStats.topEstudiantes.map((est, i) => (
-                        <div key={est.id} className="flex items-center justify-between text-sm">
+                        <div key={est.id} className="flex items-center justify-between text-lg font-medium">
                           <span className="text-slate-700 truncate max-w-[180px]">{i+1}. {est.nombre}</span>
                           <Badge variant="outline" className="bg-white text-teal-700 border-teal-200 font-bold ml-2">
                             {est.promedio.toFixed(1)}
                           </Badge>
                         </div>
-                      )) : <p className="text-[10px] text-slate-400">Sin promedios calculados</p>}
+                      )) : <p className="text-base text-slate-400">Sin promedios calculados</p>}
                     </div>
                   </div>
                   <div className="bg-red-50/50 p-4 rounded-xl border border-red-100">
-                    <h4 className="text-xs font-bold text-red-800 uppercase tracking-wider mb-2 flex items-center gap-2">
-                      <AlertTriangle className="h-3.5 w-3.5 text-red-500" /> Alertas Académicas
+                    <h4 className="text-base font-medium font-bold text-red-800 uppercase tracking-wider mb-2 flex items-center gap-2">
+                      <AlertTriangle className="h-6 w-6 text-red-500" /> Alertas Académicas
                     </h4>
                     <div className="space-y-2">
                       {selectedStats.alertas.length > 0 ? selectedStats.alertas.map((est, i) => (
-                        <div key={est.id} className="flex items-center justify-between text-sm">
+                        <div key={est.id} className="flex items-center justify-between text-lg font-medium">
                           <span className="text-slate-700 truncate max-w-[180px]">{est.nombre}</span>
                           <Badge variant="destructive" className="bg-red-500 text-white font-bold ml-2">
                             {est.promedio.toFixed(1)}
                           </Badge>
                         </div>
-                      )) : <p className="text-[10px] text-slate-400">Sin alertas detectadas</p>}
+                      )) : <p className="text-base text-slate-400">Sin alertas detectadas</p>}
                     </div>
                   </div>
                 </div>
@@ -247,14 +247,14 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
           {usuario.rol === "docente" && asignaturasAsignadas && (
              <Card className="shadow-sm border-slate-100">
                <CardHeader className="py-3 px-4 border-b">
-                 <CardTitle className="text-xs font-bold text-slate-500 uppercase">Mis Asignaturas</CardTitle>
+                 <CardTitle className="text-base font-medium font-bold text-slate-500 uppercase">Mis Asignaturas</CardTitle>
                </CardHeader>
                <CardContent className="p-3 max-h-[300px] overflow-y-auto">
                  <div className="space-y-2">
                    {asignaturasAsignadas.map(m => (
-                     <div key={m.id} className="p-2 bg-slate-50 rounded border text-xs flex justify-between items-center">
+                     <div key={m.id} className="p-2 bg-slate-50 rounded border text-base font-medium flex justify-between items-center">
                        <span className="font-medium text-slate-700">{m.nombre}</span>
-                       <Badge variant="secondary" className="text-[9px]">{m.grado?.numero}°{m.grado?.seccion}</Badge>
+                       <Badge variant="secondary" className="text-sm">{m.grado?.numero}°{m.grado?.seccion}</Badge>
                      </div>
                    ))}
                  </div>
@@ -264,29 +264,29 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
 
           <Card className="shadow-sm border-slate-100 flex-1">
             <CardHeader className="py-3 px-4 border-b">
-              <CardTitle className="text-xs font-bold text-slate-500 uppercase">Gestión Rápida</CardTitle>
+              <CardTitle className="text-base font-medium font-bold text-slate-500 uppercase">Gestión Rápida</CardTitle>
             </CardHeader>
             <CardContent className="p-4 space-y-3">
               <div className="p-3 bg-teal-50/50 border border-teal-100 rounded-lg flex items-center gap-3 hover:bg-teal-50 transition-colors cursor-pointer group" onClick={() => document.getElementById('tab-calificaciones')?.click()}>
-                <div className="p-2 bg-teal-100 text-teal-700 rounded-md shrink-0 group-hover:scale-110 transition-transform"><ClipboardList className="h-4 w-4" /></div>
+                <div className="p-2 bg-teal-100 text-teal-700 rounded-md shrink-0 group-hover:scale-110 transition-transform"><ClipboardList className="h-8 w-8" /></div>
                 <div>
-                  <h4 className="text-xs font-bold text-teal-900">Pasar Notas</h4>
-                  <p className="text-[10px] text-teal-700/70">Ingreso rápido de calificaciones</p>
+                  <h4 className="text-base font-medium font-bold text-teal-900">Pasar Notas</h4>
+                  <p className="text-base text-teal-700/70">Ingreso rápido de calificaciones</p>
                 </div>
               </div>
               <div className="p-3 bg-blue-50/50 border border-blue-100 rounded-lg flex items-center gap-3 hover:bg-blue-50 transition-colors cursor-pointer group" onClick={() => document.getElementById('tab-asistencia')?.click()}>
-                <div className="p-2 bg-blue-100 text-blue-700 rounded-md shrink-0 group-hover:scale-110 transition-transform"><CalendarDays className="h-4 w-4" /></div>
+                <div className="p-2 bg-blue-100 text-blue-700 rounded-md shrink-0 group-hover:scale-110 transition-transform"><CalendarDays className="h-8 w-8" /></div>
                 <div>
-                  <h4 className="text-xs font-bold text-blue-900">Asistencia</h4>
-                  <p className="text-[10px] text-blue-700/70">Control diario de alumnos</p>
+                  <h4 className="text-base font-medium font-bold text-blue-900">Asistencia</h4>
+                  <p className="text-base text-blue-700/70">Control diario de alumnos</p>
                 </div>
               </div>
               {usuario.rol === "admin" && (
                 <div className="p-3 bg-amber-50/50 border border-amber-100 rounded-lg flex items-center gap-3 hover:bg-amber-50 transition-colors cursor-pointer group">
-                  <div className="p-2 bg-amber-100 text-amber-700 rounded-md shrink-0 group-hover:scale-110 transition-transform"><GraduationCap className="h-4 w-4" /></div>
+                  <div className="p-2 bg-amber-100 text-amber-700 rounded-md shrink-0 group-hover:scale-110 transition-transform"><GraduationCap className="h-8 w-8" /></div>
                   <div>
-                    <h4 className="text-xs font-bold text-amber-900">Docentes</h4>
-                    <p className="text-[10px] text-amber-700/70">Administrar personal académico</p>
+                    <h4 className="text-base font-medium font-bold text-amber-900">Docentes</h4>
+                    <p className="text-base text-amber-700/70">Administrar personal académico</p>
                   </div>
                 </div>
               )}

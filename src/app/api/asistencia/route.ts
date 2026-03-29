@@ -16,6 +16,7 @@ export async function GET(req: Request) {
     if (isNaN(fecha.getTime())) {
       return NextResponse.json({ error: "Fecha inválida" }, { status: 400 });
     }
+    fecha.setUTCHours(0, 0, 0, 0);
 
     const whereClause: any = {
       fecha: fecha,
@@ -54,6 +55,7 @@ export async function POST(req: Request) {
     if (isNaN(fecha.getTime())) {
       return NextResponse.json({ error: "Fecha inválida" }, { status: 400 });
     }
+    fecha.setUTCHours(0, 0, 0, 0);
 
     // Guardar o actualizar asistenias en lote
     const resultados: any[] = [];

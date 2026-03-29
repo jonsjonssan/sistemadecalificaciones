@@ -111,9 +111,6 @@ export default function Home() {
   const [nuevoAño, setNuevoAño] = useState(2026);
   const [añoDialogOpen, setAñoDialogOpen] = useState(false);
   const [añoLoading, setAñoLoading] = useState(false);
-  const [editUsuarioDialogOpen, setEditUsuarioDialogOpen] = useState(false);
-  const [editUsuarioData, setEditUsuarioData] = useState<{ id: string; nombre: string; email: string; rol: string; password: string; gradosAsignados: string[]; materiasAsignadas: string[]; } | null>(null);
-  const [seedLoading, setSeedLoading] = useState(false);
 
   // Auth
   const checkAuth = useCallback(async () => {
@@ -409,66 +406,6 @@ export default function Home() {
     } catch { toast({ title: "Error", variant: "destructive" }); }
   };
 
-  const handleEditUsuario = (u: Usuario) => {
-    setEditUsuarioData({
-      id: u.id,
-      nombre: u.nombre,
-      email: u.email,
-      rol: u.rol,
-      password: "",
-      gradosAsignados: u.gradosComoTutor?.map(g => g.id) || [],
-      materiasAsignadas: u.materias?.map(m => m.id) || [],
-    });
-    setEditUsuarioDialogOpen(true);
-  };
-
-  const handleSaveEditUsuario = async () => {
-    if (!editUsuarioData) return;
-    try {
-      const body: Record<string, unknown> = {
-        id: editUsuarioData.id,
-        nombre: editUsuarioData.nombre,
-        rol: editUsuarioData.rol,
-        gradosAsignados: editUsuarioData.gradosAsignados,
-        materiasAsignadas: editUsuarioData.materiasAsignadas,
-      };
-      if (editUsuarioData.password) body.password = editUsuarioData.password;
-      const res = await fetch("/api/usuarios", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      if (res.ok) {
-        setEditUsuarioDialogOpen(false);
-        setEditUsuarioData(null);
-        loadUsuarios();
-        loadGrados();
-        toast({ title: "Usuario actualizado" });
-      } else {
-        const d = await res.json();
-        toast({ title: d.error || "Error al actualizar", variant: "destructive" });
-      }
-    } catch { toast({ title: "Error de conexión", variant: "destructive" }); }
-  };
-
-  const handleSeedUsuarios = async () => {
-    if (!confirm("Esto actualizará/creará todos los usuarios oficiales con sus asignaciones. ¿Continuar?")) return;
-    setSeedLoading(true);
-    try {
-      const res = await fetch("/api/init", { method: "POST" });
-      const data = await res.json();
-      if (res.ok) {
-        toast({ title: "Usuarios cargados", description: `${data.count} usuarios procesados` });
-        loadUsuarios();
-        loadGrados();
-        loadTodasAsignaturas();
-      } else {
-        toast({ title: data.error || "Error", variant: "destructive" });
-      }
-    } catch { toast({ title: "Error de conexión", variant: "destructive" }); }
-    finally { setSeedLoading(false); }
-  };
-
   const handleToggleUsuario = async (id: string, activo: boolean) => {
     try {
       await fetch("/api/usuarios", {
@@ -662,14 +599,14 @@ export default function Home() {
   }, [usuario, gradoSeleccionado, asignaturas, asignaturaSeleccionada]);
 
   // Loading
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-100"><RefreshCw className="h-8 w-8 animate-spin text-teal-600" /></div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-100"><RefreshCw className="h-12 w-8 animate-spin text-teal-600" /></div>;
 
   // Login
   if (!usuario) return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-600 to-emerald-700 p-4">
       <Card className="w-full max-w-md shadow-2xl">
         <CardHeader className="text-center pb-2">
-          <div className="mx-auto w-14 h-14 bg-white rounded-xl flex items-center justify-center mb-3 shadow-lg"><School className="h-7 w-7 text-teal-600" /></div>
+          <div className="mx-auto w-14 h-14 bg-white rounded-xl flex items-center justify-center mb-3 shadow-lg"><School className="h-10 w-7 text-teal-600" /></div>
           <CardTitle className="text-xl">Sistema de Calificaciones</CardTitle>
           <CardDescription>Centro Escolar Católico San José de la Montaña</CardDescription>
         </CardHeader>
@@ -685,7 +622,7 @@ export default function Home() {
               <div><Label>Contraseña</Label><Input type="password" value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} required /></div>
               {loginError && <p className="text-sm text-red-500 text-center">{loginError}</p>}
               <Button type="submit" className="w-full bg-teal-600 hover:bg-teal-700" disabled={loginLoading}>{loginLoading ? "Ingresando..." : "Ingresar"}</Button>
-              <p className="text-xs text-center text-muted-foreground">Ingrese sus credenciales para continuar</p>
+              <p className="text-base font-medium text-center text-muted-foreground">Ingrese sus credenciales para continuar</p>
             </form>
           )}
         </CardContent>
@@ -698,16 +635,16 @@ export default function Home() {
     <div className="min-h-screen flex flex-col bg-slate-100">
       <header className="bg-teal-600 text-white shadow-md">
         <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between">
-          <div className="flex items-center gap-2"><School className="h-6 w-6" /><div><h1 className="text-sm font-bold">Sistema de Calificaciones</h1><p className="text-[10px] text-teal-100">Centro Escolar Católico San José de la Montaña</p></div></div>
+          <div className="flex items-center gap-2"><School className="h-6 w-6" /><div><h1 className="text-sm font-bold">Sistema de Calificaciones</h1><p className="text-sm font-medium text-teal-100">Centro Escolar Católico San José de la Montaña</p></div></div>
           <div className="flex items-center gap-3">
             {configuracion && (
-              <Badge className="bg-teal-700 text-white text-[10px] px-2 py-0.5">
+              <Badge className="bg-teal-700 text-white text-sm font-medium px-2 py-0.5">
                 Año {configuracion.añoEscolar}
               </Badge>
             )}
-            <div className="text-right text-xs"><p className="font-medium">{usuario.nombre}</p><p className="text-teal-200 capitalize">{usuario.rol}</p></div>
-            <Button variant="ghost" size="sm" onClick={() => setPasswordDialogOpen(true)} className="text-white hover:bg-teal-700 h-7 px-2"><Key className="h-4 w-4 mr-1" />Clave</Button>
-            <Button variant="ghost" size="sm" onClick={handleLogout} className="text-white hover:bg-teal-700 h-7 px-2"><LogOut className="h-4 w-4 mr-1" />Salir</Button>
+            <div className="text-right text-base font-medium"><p className="font-medium">{usuario.nombre}</p><p className="text-teal-200 capitalize">{usuario.rol}</p></div>
+            <Button variant="ghost" size="sm" onClick={() => setPasswordDialogOpen(true)} className="text-white hover:bg-teal-700 h-10 px-2"><Key className="h-6 w-6 mr-1" />Clave</Button>
+            <Button variant="ghost" size="sm" onClick={handleLogout} className="text-white hover:bg-teal-700 h-10 px-2"><LogOut className="h-6 w-6 mr-1" />Salir</Button>
           </div>
         </div>
       </header>
@@ -717,9 +654,9 @@ export default function Home() {
         <DialogContent className="max-w-sm">
           <DialogHeader><DialogTitle>Cambiar Contraseña</DialogTitle></DialogHeader>
           <div className="space-y-3">
-            <div><Label className="text-xs">Contraseña Actual</Label><Input type="password" value={passwordForm.actual} onChange={e => setPasswordForm({...passwordForm, actual: e.target.value})} /></div>
-            <div><Label className="text-xs">Nueva Contraseña</Label><Input type="password" value={passwordForm.nueva} onChange={e => setPasswordForm({...passwordForm, nueva: e.target.value})} /></div>
-            <div><Label className="text-xs">Confirmar Nueva Contraseña</Label><Input type="password" value={passwordForm.confirmar} onChange={e => setPasswordForm({...passwordForm, confirmar: e.target.value})} /></div>
+            <div><Label className="text-base font-medium">Contraseña Actual</Label><Input type="password" value={passwordForm.actual} onChange={e => setPasswordForm({...passwordForm, actual: e.target.value})} /></div>
+            <div><Label className="text-base font-medium">Nueva Contraseña</Label><Input type="password" value={passwordForm.nueva} onChange={e => setPasswordForm({...passwordForm, nueva: e.target.value})} /></div>
+            <div><Label className="text-base font-medium">Confirmar Nueva Contraseña</Label><Input type="password" value={passwordForm.confirmar} onChange={e => setPasswordForm({...passwordForm, confirmar: e.target.value})} /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" size="sm" onClick={() => { setPasswordDialogOpen(false); setPasswordForm({ actual: "", nueva: "", confirmar: "" }); }}>Cancelar</Button>
@@ -731,12 +668,12 @@ export default function Home() {
       <main className="flex-1 max-w-7xl mx-auto w-full px-3 py-3">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="bg-white shadow-sm h-9 overflow-x-auto rounded-none sm:rounded-md flex sm:inline-flex w-full sm:w-auto shrink-0 hide-scrollbar justify-start">
-            <TabsTrigger id="tab-dashboard" value="dashboard" className="text-xs px-3 gap-1 shrink-0"><LayoutDashboard className="h-3.5 w-3.5" />Inicio</TabsTrigger>
-            <TabsTrigger id="tab-calificaciones" value="calificaciones" className="text-xs px-3 gap-1 shrink-0"><ClipboardList className="h-3.5 w-3.5" />Calificaciones</TabsTrigger>
-            <TabsTrigger id="tab-asistencia" value="asistencia" className="text-xs px-3 gap-1 shrink-0"><CalendarDays className="h-3.5 w-3.5" />Asistencia</TabsTrigger>
-            <TabsTrigger value="estudiantes" className="text-xs px-3 gap-1 shrink-0"><Users className="h-3.5 w-3.5" />Estudiantes</TabsTrigger>
-            <TabsTrigger value="boletas" className="text-xs px-3 gap-1 shrink-0"><FileText className="h-3.5 w-3.5" />Boletas</TabsTrigger>
-            {usuario.rol === "admin" && <TabsTrigger value="admin" className="text-xs px-3 gap-1 shrink-0"><Settings className="h-3.5 w-3.5" />Admin</TabsTrigger>}
+            <TabsTrigger id="tab-dashboard" value="dashboard" className="text-base font-medium px-3 gap-1 shrink-0"><LayoutDashboard className="h-5 w-5" />Inicio</TabsTrigger>
+            <TabsTrigger id="tab-calificaciones" value="calificaciones" className="text-base font-medium px-3 gap-1 shrink-0"><ClipboardList className="h-5 w-5" />Calificaciones</TabsTrigger>
+            <TabsTrigger id="tab-asistencia" value="asistencia" className="text-base font-medium px-3 gap-1 shrink-0"><CalendarDays className="h-5 w-5" />Asistencia</TabsTrigger>
+            <TabsTrigger value="estudiantes" className="text-base font-medium px-3 gap-1 shrink-0"><Users className="h-5 w-5" />Estudiantes</TabsTrigger>
+            <TabsTrigger value="boletas" className="text-base font-medium px-3 gap-1 shrink-0"><FileText className="h-5 w-5" />Boletas</TabsTrigger>
+            {usuario.rol === "admin" && <TabsTrigger value="admin" className="text-base font-medium px-3 gap-1 shrink-0"><Settings className="h-5 w-5" />Admin</TabsTrigger>}
           </TabsList>
 
           {/* Dashboard */}
@@ -766,12 +703,12 @@ export default function Home() {
             <Card className="shadow-sm">
               <CardContent className="p-3">
                 <div className="flex flex-wrap items-end gap-3">
-                  <div className="flex-1 min-w-[140px]"><Label className="text-xs mb-1 block">Grado</Label><Select value={gradoSeleccionado} onValueChange={setGradoSeleccionado}><SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger><SelectContent>{gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}" - {g.año}</SelectItem>)}</SelectContent></Select></div>
-                  <div className="flex-1 min-w-[180px]"><Label className="text-xs mb-1 block">Asignatura</Label><Select value={asignaturaSeleccionada} onValueChange={setAsignaturaSeleccionada}><SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger><SelectContent>{asignaturasFiltradas.map(m => <SelectItem key={m.id} value={m.id} className="text-sm">{m.nombre}</SelectItem>)}</SelectContent></Select></div>
-                  <div className="w-28"><Label className="text-xs mb-1 block">Trimestre</Label><Select value={trimestreSeleccionado} onValueChange={setTrimestreSeleccionado}><SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="1" className="text-sm">I</SelectItem><SelectItem value="2" className="text-sm">II</SelectItem><SelectItem value="3" className="text-sm">III</SelectItem></SelectContent></Select></div>
-                  {configActual && <div className="flex items-center gap-1 text-[10px] text-slate-500 bg-slate-50 px-2 py-1 rounded"><span>{configActual.numActividadesCotidianas} AC ({configActual.porcentajeAC}%)</span><span>•</span><span>{configActual.numActividadesIntegradoras} AI ({configActual.porcentajeAI}%)</span>{configActual.tieneExamen && <><span>•</span><span>Ex ({configActual.porcentajeExamen}%)</span></>}</div>}
-                  {usuario.rol === "admin" && <Button size="sm" variant="outline" className="h-8" onClick={() => { setEditConfig(configActual); setConfigDialogOpen(true); }}><Settings className="h-3.5 w-3.5 mr-1" />Config</Button>}
-                  <Button size="sm" variant="outline" className="h-8" onClick={() => setImportDialogOpen(true)}><Upload className="h-3.5 w-3.5 mr-1" />Importar</Button>
+                  <div className="flex-1 min-w-[140px]"><Label className="text-base font-medium mb-1 block">Grado</Label><Select value={gradoSeleccionado} onValueChange={setGradoSeleccionado}><SelectTrigger className="h-12 text-sm"><SelectValue /></SelectTrigger><SelectContent>{gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}" - {g.año}</SelectItem>)}</SelectContent></Select></div>
+                  <div className="flex-1 min-w-[180px]"><Label className="text-base font-medium mb-1 block">Asignatura</Label><Select value={asignaturaSeleccionada} onValueChange={setAsignaturaSeleccionada}><SelectTrigger className="h-12 text-sm"><SelectValue /></SelectTrigger><SelectContent>{asignaturasFiltradas.map(m => <SelectItem key={m.id} value={m.id} className="text-sm">{m.nombre}</SelectItem>)}</SelectContent></Select></div>
+                  <div className="w-28"><Label className="text-base font-medium mb-1 block">Trimestre</Label><Select value={trimestreSeleccionado} onValueChange={setTrimestreSeleccionado}><SelectTrigger className="h-12 text-sm"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="1" className="text-sm">I</SelectItem><SelectItem value="2" className="text-sm">II</SelectItem><SelectItem value="3" className="text-sm">III</SelectItem></SelectContent></Select></div>
+                  {configActual && <div className="flex items-center gap-1 text-sm font-medium text-slate-500 bg-slate-50 px-2 py-1 rounded"><span>{configActual.numActividadesCotidianas} AC ({configActual.porcentajeAC}%)</span><span>•</span><span>{configActual.numActividadesIntegradoras} AI ({configActual.porcentajeAI}%)</span>{configActual.tieneExamen && <><span>•</span><span>Ex ({configActual.porcentajeExamen}%)</span></>}</div>}
+                  {usuario.rol === "admin" && <Button size="sm" variant="outline" className="h-12" onClick={() => { setEditConfig(configActual); setConfigDialogOpen(true); }}><Settings className="h-5 w-5 mr-1" />Config</Button>}
+                  <Button size="sm" variant="outline" className="h-12" onClick={() => setImportDialogOpen(true)}><Upload className="h-5 w-5 mr-1" />Importar</Button>
                 </div>
               </CardContent>
             </Card>
@@ -780,7 +717,7 @@ export default function Home() {
               <Card className="shadow-sm">
                 <CardContent className="p-0">
                   <div className="overflow-x-auto">
-                    <table className="w-full text-xs border-collapse">
+                    <table className="w-full text-base font-medium border-collapse">
                       <thead><tr className="bg-slate-700 text-white">
                         <th className="w-8 p-1.5 text-center font-medium sticky left-0 bg-slate-700 z-10">N°</th>
                         <th className="min-w-[160px] p-1.5 text-left font-medium sticky left-8 bg-slate-700 z-10">Estudiante</th>
@@ -807,10 +744,10 @@ export default function Home() {
           <TabsContent value="estudiantes" className="mt-3">
             <Card className="shadow-sm">
               <CardHeader className="py-3 px-4 flex-row items-center justify-between space-y-0">
-                <div><CardTitle className="text-base">Lista de Estudiantes</CardTitle><CardDescription className="text-xs">Gestiona los estudiantes por grado</CardDescription></div>
+                <div><CardTitle className="text-base">Lista de Estudiantes</CardTitle><CardDescription className="text-base font-medium">Gestiona los estudiantes por grado</CardDescription></div>
                 <div className="flex gap-2">
                   <Dialog open={listaDialogOpen} onOpenChange={setListaDialogOpen}>
-                    <DialogTrigger asChild><Button size="sm" variant="outline" className="h-7"><ListPlus className="h-3.5 w-3.5 mr-1" />Lista</Button></DialogTrigger>
+                    <DialogTrigger asChild><Button size="sm" variant="outline" className="h-10"><ListPlus className="h-5 w-5 mr-1" />Lista</Button></DialogTrigger>
                     <DialogContent className="max-w-md">
                       <DialogHeader><DialogTitle>Agregar Lista de Estudiantes</DialogTitle></DialogHeader>
                       <div className="space-y-2"><Label>Un nombre por línea</Label><textarea className="w-full h-48 p-2 text-sm border rounded-md" value={listaEstudiantes} onChange={e => setListaEstudiantes(e.target.value)} placeholder="Apellido, Nombre&#10;Apellido, Nombre&#10;..." /></div>
@@ -818,7 +755,7 @@ export default function Home() {
                     </DialogContent>
                   </Dialog>
                   <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                    <DialogTrigger asChild><Button size="sm" className="bg-teal-600 h-7"><Plus className="h-3.5 w-3.5 mr-1" />Uno</Button></DialogTrigger>
+                    <DialogTrigger asChild><Button size="sm" className="bg-teal-600 h-10"><Plus className="h-5 w-5 mr-1" />Uno</Button></DialogTrigger>
                     <DialogContent className="max-w-sm">
                       <DialogHeader><DialogTitle>Agregar Estudiante</DialogTitle></DialogHeader>
                       <div className="space-y-2"><Label>Nombre completo</Label><Input value={nuevoEstudiante.nombre} onChange={e => setNuevoEstudiante({ nombre: e.target.value })} placeholder="Apellidos, Nombres" /></div>
@@ -828,17 +765,17 @@ export default function Home() {
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="mb-3"><Select value={gradoSeleccionado} onValueChange={setGradoSeleccionado}><SelectTrigger className="w-full md:w-[250px] h-8 text-sm"><SelectValue /></SelectTrigger><SelectContent>{gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}" ({g._count?.estudiantes || 0})</SelectItem>)}</SelectContent></Select></div>
+                <div className="mb-3"><Select value={gradoSeleccionado} onValueChange={setGradoSeleccionado}><SelectTrigger className="w-full md:w-[250px] h-12 text-sm"><SelectValue /></SelectTrigger><SelectContent>{gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}" ({g._count?.estudiantes || 0})</SelectItem>)}</SelectContent></Select></div>
                 <div className="rounded border">
-                  <Table className="text-xs">
-                    <TableHeader><TableRow className="bg-slate-100"><TableHead className="w-10 text-center h-8">N°</TableHead><TableHead>Nombre Completo</TableHead><TableHead className="w-16 text-center">Estado</TableHead><TableHead className="w-12 text-center">Acciones</TableHead></TableRow></TableHeader>
+                  <Table className="text-base font-medium">
+                    <TableHeader><TableRow className="bg-slate-100"><TableHead className="w-10 text-center h-12">N°</TableHead><TableHead>Nombre Completo</TableHead><TableHead className="w-16 text-center">Estado</TableHead><TableHead className="w-12 text-center">Acciones</TableHead></TableRow></TableHeader>
                     <TableBody>
                       {estudiantes.length === 0 ? <TableRow><TableCell colSpan={4} className="text-center text-slate-400 py-8">No hay estudiantes</TableCell></TableRow> :
                         estudiantes.map(est => <TableRow key={est.id}>
                           <TableCell className="text-center font-medium">{est.numero}</TableCell>
                           <TableCell>{est.nombre}</TableCell>
-                          <TableCell className="text-center"><Badge variant={est.activo ? "default" : "secondary"} className="text-[10px] h-5">{est.activo ? "Activo" : "Inactivo"}</Badge></TableCell>
-                          <TableCell className="text-center"><Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => handleDeleteEstudiante(est.id, est.nombre)}><Trash2 className="h-3.5 w-3.5" /></Button></TableCell>
+                          <TableCell className="text-center"><Badge variant={est.activo ? "default" : "secondary"} className="text-sm font-medium h-5">{est.activo ? "Activo" : "Inactivo"}</Badge></TableCell>
+                          <TableCell className="text-center"><Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => handleDeleteEstudiante(est.id, est.nombre)}><Trash2 className="h-5 w-5" /></Button></TableCell>
                         </TableRow>)}
                     </TableBody>
                   </Table>
@@ -853,8 +790,8 @@ export default function Home() {
               <CardHeader className="py-3 px-4"><CardTitle className="text-base">Generación de Boletas</CardTitle></CardHeader>
               <CardContent className="pt-0 space-y-3">
                 <div className="flex gap-3">
-                  <div className="flex-1"><Label className="text-xs">Grado</Label><Select value={gradoSeleccionado} onValueChange={setGradoSeleccionado}><SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger><SelectContent>{gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}"</SelectItem>)}</SelectContent></Select></div>
-                  <div className="w-32"><Label className="text-xs">Trimestre</Label><Select value={trimestreSeleccionado} onValueChange={setTrimestreSeleccionado}><SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="1">I</SelectItem><SelectItem value="2">II</SelectItem><SelectItem value="3">III</SelectItem></SelectContent></Select></div>
+                  <div className="flex-1"><Label className="text-base font-medium">Grado</Label><Select value={gradoSeleccionado} onValueChange={setGradoSeleccionado}><SelectTrigger className="h-12 text-sm"><SelectValue /></SelectTrigger><SelectContent>{gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}"</SelectItem>)}</SelectContent></Select></div>
+                  <div className="w-32"><Label className="text-base font-medium">Trimestre</Label><Select value={trimestreSeleccionado} onValueChange={setTrimestreSeleccionado}><SelectTrigger className="h-12 text-sm"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="1">I</SelectItem><SelectItem value="2">II</SelectItem><SelectItem value="3">III</SelectItem></SelectContent></Select></div>
                 </div>
                 {gradoSeleccionado && estudiantes.length > 0 && <BoletaList estudiantes={estudiantes} calificaciones={calificaciones} materias={asignaturasFiltradas} grado={gradosFiltrados.find(g => g.id === gradoSeleccionado)} trimestre={parseInt(trimestreSeleccionado)} expandedBoleta={expandedBoleta} setExpandedBoleta={setExpandedBoleta} />}
               </CardContent>
@@ -867,12 +804,7 @@ export default function Home() {
               {/* Gestión de Usuarios */}
               <Card className="shadow-sm">
                 <CardHeader className="py-3 px-4 flex-row items-center justify-between space-y-0">
-                  <div><CardTitle className="text-base">Gestión de Usuarios</CardTitle><CardDescription className="text-xs">Administra los accesos al sistema</CardDescription></div>
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline" className="h-7" onClick={handleSeedUsuarios} disabled={seedLoading}>
-                      <RefreshCw className={`h-3.5 w-3.5 mr-1 ${seedLoading ? 'animate-spin' : ''}`} />
-                      {seedLoading ? 'Cargando...' : 'Recargar Usuarios'}
-                    </Button>
+                  <div><CardTitle className="text-base">Gestión de Usuarios</CardTitle><CardDescription className="text-xs">Crea y administra usuarios del sistema</CardDescription></div>
                   <Dialog open={userDialogOpen} onOpenChange={setUserDialogOpen}>
                     <DialogTrigger asChild><Button size="sm" className="bg-teal-600 h-7"><UserPlus className="h-3.5 w-3.5 mr-1" />Nuevo Usuario</Button></DialogTrigger>
                     <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
@@ -945,7 +877,6 @@ export default function Home() {
                       <DialogFooter><Button variant="outline" size="sm" onClick={() => setUserDialogOpen(false)}>Cancelar</Button><Button size="sm" onClick={handleAddUsuario} className="bg-teal-600">Crear</Button></DialogFooter>
                     </DialogContent>
                   </Dialog>
-                  </div>
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="rounded border overflow-x-auto">
@@ -970,9 +901,8 @@ export default function Home() {
                               </div>
                             </TableCell>
                             <TableCell className="text-center">
-                              <Button size="sm" variant="ghost" className="h-6 w-6 p-0 mr-1" onClick={() => handleEditUsuario(u)} title="Editar"><Settings className="h-3.5 w-3.5" /></Button>
-                              <Button size="sm" variant="ghost" className="h-6 w-6 p-0 mr-1" onClick={() => handleToggleUsuario(u.id, u.activo)} title={u.activo ? "Desactivar" : "Activar"}>{u.activo ? "🔒" : "🔓"}</Button>
-                              {u.rol !== "admin" && <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-red-500" onClick={() => handleDeleteUsuario(u.id)} title="Eliminar"><Trash2 className="h-3.5 w-3.5" /></Button>}
+                              <Button size="sm" variant="ghost" className="h-6 w-6 p-0 mr-1" onClick={() => handleToggleUsuario(u.id, u.activo)}>{u.activo ? "🔒" : "🔓"}</Button>
+                              {u.rol !== "admin" && <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-red-500" onClick={() => handleDeleteUsuario(u.id)}><Trash2 className="h-3.5 w-3.5" /></Button>}
                             </TableCell>
                           </TableRow>
                         ))}
@@ -1059,59 +989,6 @@ export default function Home() {
       </main>
 
       {/* Dialogs */}
-
-      {/* --- Diálogo de Edición de Usuario --- */}
-      <Dialog open={editUsuarioDialogOpen} onOpenChange={setEditUsuarioDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>Editar Usuario</DialogTitle></DialogHeader>
-          {editUsuarioData && <div className="space-y-3">
-            <div><Label className="text-xs">Nombre</Label><Input value={editUsuarioData.nombre} onChange={e => setEditUsuarioData({...editUsuarioData, nombre: e.target.value})} className="h-8" /></div>
-            <div><Label className="text-xs">Email (no editable)</Label><Input value={editUsuarioData.email} disabled className="h-8 bg-slate-100" /></div>
-            <div><Label className="text-xs">Nueva Contraseña (dejar vacío para no cambiar)</Label><Input type="password" value={editUsuarioData.password} onChange={e => setEditUsuarioData({...editUsuarioData, password: e.target.value})} className="h-8" placeholder="••••••" /></div>
-            <div><Label className="text-xs">Rol</Label>
-              <Select value={editUsuarioData.rol} onValueChange={v => setEditUsuarioData({...editUsuarioData, rol: v})}>
-                <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
-                <SelectContent><SelectItem value="admin">Administrador</SelectItem><SelectItem value="docente">Docente</SelectItem></SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label className="text-xs">Grados como Tutor (2° a 5°)</Label>
-              <p className="text-[10px] text-slate-500 mb-1">El tutor tiene acceso completo al grado</p>
-              <div className="flex flex-wrap gap-1">
-                {grados.filter(g => g.numero >= 2 && g.numero <= 5).map(g => (
-                  <label key={g.id} className="flex items-center gap-1 text-xs p-1.5 border rounded hover:bg-slate-50 cursor-pointer">
-                    <input type="checkbox" checked={editUsuarioData.gradosAsignados.includes(g.id)} onChange={e => setEditUsuarioData({...editUsuarioData, gradosAsignados: e.target.checked ? [...editUsuarioData.gradosAsignados, g.id] : editUsuarioData.gradosAsignados.filter(id => id !== g.id)})} className="h-3 w-3" />
-                    {g.numero}° "{g.seccion}"
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div>
-              <Label className="text-xs">Asignaturas Asignadas</Label>
-              <p className="text-[10px] text-slate-500 mb-1">El docente califica estas asignaturas específicas</p>
-              <div className="border rounded max-h-48 overflow-y-auto">
-                {grados.map(grado => (
-                  <div key={grado.id} className="border-b last:border-b-0">
-                    <div className="bg-slate-100 px-2 py-1 text-xs font-medium">{grado.numero}° "{grado.seccion}"</div>
-                    <div className="p-2 grid grid-cols-2 gap-1">
-                      {todasAsignaturas.filter(m => m.gradoId === grado.id).map(m => (
-                        <label key={m.id} className="flex items-center gap-1 text-xs p-1 hover:bg-slate-50 rounded cursor-pointer">
-                          <input type="checkbox" checked={editUsuarioData.materiasAsignadas.includes(m.id)} onChange={e => setEditUsuarioData({...editUsuarioData, materiasAsignadas: e.target.checked ? [...editUsuarioData.materiasAsignadas, m.id] : editUsuarioData.materiasAsignadas.filter(id => id !== m.id)})} className="h-3 w-3" />
-                          {m.nombre}
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>}
-          <DialogFooter>
-            <Button variant="outline" size="sm" onClick={() => setEditUsuarioDialogOpen(false)}>Cancelar</Button>
-            <Button size="sm" onClick={handleSaveEditUsuario} className="bg-teal-600">Guardar Cambios</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
       <Dialog open={configDialogOpen} onOpenChange={setConfigDialogOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader><DialogTitle>Configurar Actividades</DialogTitle></DialogHeader>
@@ -1425,7 +1302,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
   const imprimirTodas = async () => {
     if (!estudiantes.length) return;
     
-        let allBoletasHtml = '';
+    let allBoletasHtml = '';
     const año = grado?.año || new Date().getFullYear();
     const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
 

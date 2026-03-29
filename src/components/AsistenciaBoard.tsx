@@ -184,13 +184,13 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
             <CalendarDays className="h-5 w-5 text-teal-600" />
             Control de Asistencia
           </CardTitle>
-          <CardDescription className="text-xs">Registro y visualización histórica</CardDescription>
+          <CardDescription className="text-base font-medium">Registro y visualización histórica</CardDescription>
         </div>
         <div className="flex bg-slate-200/50 p-1 rounded-lg gap-1">
           <Button 
             variant={view === "pass" ? "default" : "ghost"} 
             size="sm" 
-            className={`h-7 text-[10px] ${view === "pass" ? "bg-white text-slate-800 shadow-sm hover:bg-white" : "text-slate-500"}`}
+            className={`h-10 text-base ${view === "pass" ? "bg-white text-slate-800 shadow-sm hover:bg-white" : "text-slate-500"}`}
             onClick={() => setView("pass")}
           >
             Pasar Lista
@@ -198,7 +198,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
           <Button 
             variant={view === "summary" ? "default" : "ghost"} 
             size="sm" 
-            className={`h-7 text-[10px] ${view === "summary" ? "bg-white text-slate-800 shadow-sm hover:bg-white" : "text-slate-500"}`}
+            className={`h-10 text-base ${view === "summary" ? "bg-white text-slate-800 shadow-sm hover:bg-white" : "text-slate-500"}`}
             onClick={() => setView("summary")}
           >
             Ver Resumen
@@ -211,14 +211,14 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
           <>
             <div className="flex flex-wrap items-end gap-3 p-3 bg-slate-50 rounded-xl border">
               <div className="flex-1 min-w-[200px]">
-                 <Label className="text-xs mb-1 block">Grado</Label>
+                 <Label className="text-base font-medium mb-1 block">Grado</Label>
                  <Select value={gradoId} onValueChange={setGradoId}>
-                   <SelectTrigger className="h-9 text-sm bg-white">
+                   <SelectTrigger className="h-12 text-lg font-medium bg-white">
                      <SelectValue placeholder="Seleccione Grado" />
                    </SelectTrigger>
                    <SelectContent>
                      {grados.map(g => (
-                       <SelectItem key={g.id} value={g.id} className="text-sm">
+                       <SelectItem key={g.id} value={g.id} className="text-lg font-medium">
                          {g.numero}° "{g.seccion}"
                        </SelectItem>
                      ))}
@@ -227,15 +227,15 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
               </div>
               
               <div className="flex-1 min-w-[200px]">
-                 <Label className="text-xs mb-1 block text-slate-500">Asignatura (Opcional)</Label>
+                 <Label className="text-base font-medium mb-1 block text-slate-500">Asignatura (Opcional)</Label>
                  <Select value={asignaturaId || "ninguna"} onValueChange={(v) => setAsignaturaId(v === "ninguna" ? "" : v)}>
-                   <SelectTrigger className="h-9 text-sm bg-white">
+                   <SelectTrigger className="h-12 text-lg font-medium bg-white">
                      <SelectValue placeholder="General / Tutor" />
                    </SelectTrigger>
                    <SelectContent>
-                     <SelectItem value={"ninguna"} className="text-sm italic">Asistencia General</SelectItem>
+                     <SelectItem value={"ninguna"} className="text-lg font-medium italic">Asistencia General</SelectItem>
                      {asignaturas.map(m => (
-                       <SelectItem key={m.id} value={m.id} className="text-sm">
+                       <SelectItem key={m.id} value={m.id} className="text-lg font-medium">
                          {m.nombre}
                        </SelectItem>
                      ))}
@@ -244,10 +244,10 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
               </div>
 
               <div className="w-[160px]">
-                <Label className="text-xs mb-1 block">Fecha</Label>
+                <Label className="text-base font-medium mb-1 block">Fecha</Label>
                 <input 
                   type="date" 
-                  className="flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex h-12 w-full rounded-md border border-slate-200 bg-white px-3 py-1 text-lg font-medium shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
                   value={fecha}
                   onChange={e => setFecha(e.target.value)}
                   max={new Date().toISOString().split('T')[0]}
@@ -255,7 +255,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
               </div>
 
               <Button 
-                className="h-9 bg-teal-600 hover:bg-teal-700 text-white min-w-[120px]" 
+                className="h-12 bg-teal-600 hover:bg-teal-700 text-white min-w-[120px]" 
                 onClick={handleSave}
                 disabled={saving || activeStudents.length === 0}
               >
@@ -264,7 +264,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
               </Button>
             </div>
 
-            <div className="flex gap-2 text-xs font-medium">
+            <div className="flex gap-2 text-base font-medium font-medium">
               <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                 Presentes: {presentCount}
               </Badge>
@@ -279,7 +279,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
             {loading ? (
               <div className="py-12 flex justify-center items-center">
                 <RefreshCw className="h-8 w-8 animate-spin text-teal-600" />
-                <span className="ml-2 text-sm text-slate-500">Cargando asistencia...</span>
+                <span className="ml-2 text-lg font-medium text-slate-500">Cargando asistencia...</span>
               </div>
             ) : activeStudents.length === 0 ? (
               <div className="py-12 text-center text-slate-500 bg-slate-50 rounded-lg border border-slate-100 border-dashed">
@@ -287,7 +287,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
               </div>
             ) : (
               <div className="rounded-md border overflow-hidden">
-                <Table className="text-sm">
+                <Table className="text-lg font-medium">
                   <TableHeader className="bg-slate-50">
                     <TableRow>
                       <TableHead className="w-12 text-center">N°</TableHead>
@@ -310,39 +310,39 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                             <div className="flex justify-center p-1 rounded-lg bg-slate-100/50 w-full max-w-[280px] mx-auto border border-slate-200">
                               <button
                                 onClick={() => handleEstadoChange(est.id, "presente")}
-                                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md transition-all text-xs font-medium ${
+                                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md transition-all text-base font-medium font-medium ${
                                   estado === "presente" 
                                     ? "bg-white text-green-700 shadow-sm ring-1 ring-green-200" 
                                     : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
                                 }`}
                               >
-                                <CheckCircle2 className={`h-3.5 w-3.5 ${estado === "presente" ? "text-green-500" : ""}`} />
+                                <CheckCircle2 className={`h-6 w-6 ${estado === "presente" ? "text-green-500" : ""}`} />
                                 <span className="hidden sm:inline">Presente</span>
                                 <span className="sm:hidden">P</span>
                               </button>
                               
                               <button
                                 onClick={() => handleEstadoChange(est.id, "ausente")}
-                                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md transition-all text-xs font-medium ${
+                                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md transition-all text-base font-medium font-medium ${
                                   estado === "ausente" 
                                     ? "bg-white text-red-700 shadow-sm ring-1 ring-red-200" 
                                     : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
                                 }`}
                               >
-                                <XCircle className={`h-3.5 w-3.5 ${estado === "ausente" ? "text-red-500" : ""}`} />
+                                <XCircle className={`h-6 w-6 ${estado === "ausente" ? "text-red-500" : ""}`} />
                                 <span className="hidden sm:inline">Ausente</span>
                                 <span className="sm:hidden">A</span>
                               </button>
                               
                               <button
                                 onClick={() => handleEstadoChange(est.id, "justificada")}
-                                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md transition-all text-xs font-medium ${
+                                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-md transition-all text-base font-medium font-medium ${
                                   estado === "justificada" 
                                     ? "bg-white text-amber-700 shadow-sm ring-1 ring-amber-200" 
                                     : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"
                                 }`}
                               >
-                                <Clock className={`h-3.5 w-3.5 ${estado === "justificada" ? "text-amber-500" : ""}`} />
+                                <Clock className={`h-6 w-6 ${estado === "justificada" ? "text-amber-500" : ""}`} />
                                 <span className="hidden sm:inline">Permiso</span>
                                 <span className="sm:hidden">J</span>
                               </button>
@@ -360,31 +360,31 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <Label className="text-xs font-bold text-slate-500">Rango:</Label>
+                <Label className="text-base font-medium font-bold text-slate-500">Rango:</Label>
                 <div className="flex bg-slate-100 p-0.5 rounded-md">
                   <Button 
                     size="sm" variant="ghost" 
-                    className={`h-6 px-3 text-[10px] ${summaryRange === "all" ? "bg-white shadow-sm" : ""}`}
+                    className={`h-6 px-3 text-base ${summaryRange === "all" ? "bg-white shadow-sm" : ""}`}
                     onClick={() => setSummaryRange("all")}
                   >
                     Todo el año
                   </Button>
                   <Button 
                     size="sm" variant="ghost" 
-                    className={`h-6 px-3 text-[10px] ${summaryRange === "month" ? "bg-white shadow-sm" : ""}`}
+                    className={`h-6 px-3 text-base ${summaryRange === "month" ? "bg-white shadow-sm" : ""}`}
                     onClick={() => setSummaryRange("month")}
                   >
                     Este mes
                   </Button>
                 </div>
               </div>
-              <Button size="sm" variant="outline" className="h-8 text-xs border-teal-200 text-teal-700 hover:bg-teal-50" onClick={exportCSV}>
-                <Download className="h-3.5 w-3.5 mr-1" /> Exportar Reporte
+              <Button size="sm" variant="outline" className="h-8 text-base font-medium border-teal-200 text-teal-700 hover:bg-teal-50" onClick={exportCSV}>
+                <Download className="h-6 w-6 mr-1" /> Exportar Reporte
               </Button>
             </div>
 
             <div className="rounded-xl border overflow-hidden">
-              <Table className="text-xs">
+              <Table className="text-base font-medium">
                 <TableHeader>
                   <TableRow className="bg-slate-50 h-8">
                     <TableHead className="w-10 text-center">N°</TableHead>

@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
       orderBy: [{ numero: "desc" }],
     });
     
-    const nuevoNumero = ultimoEstudiante ? ultimoEstudiante.numero + 0 : 1;
+    const nuevoNumero = ultimoEstudiante ? ultimoEstudiante.numero + 1 : 1;
 
     const estudiante = await db.estudiante.create({
       data: {
@@ -110,7 +110,7 @@ export async function PUT(request: NextRequest) {
     
     const numeroInicial = ultimoEstudiante ? ultimoEstudiante.numero + 0 : 0;
 
-    const creados = [];
+    const creados: any[] = [];
     for (let i = 0; i < estudiantes.length; i++) {
       const estudiante = await db.estudiante.create({
         data: {
