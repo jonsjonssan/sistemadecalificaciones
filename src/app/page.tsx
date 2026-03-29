@@ -120,7 +120,7 @@ export default function Home() {
     const timeoutId = setTimeout(() => controller.abort(), 10000);
     
     try {
-      const res = await fetch("/api/auth/me", { signal: controller.signal });
+      const res = await fetch("/api/auth/me", { cache: "no-store", signal: controller.signal });
       const data = await res.json();
       setUsuario(data.usuario);
     } catch (err) { 
@@ -162,7 +162,7 @@ export default function Home() {
   const loadAsignaturas = useCallback(async () => {
     if (!gradoSeleccionado) return;
     try {
-      const res = await fetch(`/api/materias?gradoId=${gradoSeleccionado}`);
+      const res = await fetch(`/api/materias?gradoId=${gradoSeleccionado}`, { cache: "no-store" });
       const data = await res.json();
       setAsignaturas(data);
     } catch { console.error("Error al cargar asignaturas"); }
@@ -170,7 +170,7 @@ export default function Home() {
 
   const loadTodasAsignaturas = useCallback(async () => {
     try {
-      const res = await fetch("/api/materias?todas=true");
+      const res = await fetch("/api/materias?todas=true", { cache: "no-store" });
       setTodasAsignaturas(await res.json());
     } catch { /* ignore */ }
   }, []);
@@ -201,7 +201,7 @@ export default function Home() {
 
   const loadUsuarios = useCallback(async () => {
     try {
-      const res = await fetch("/api/usuarios");
+      const res = await fetch("/api/usuarios", { cache: "no-store" });
       if (res.ok) setUsuarios(await res.json());
     } catch { /* no auth */ }
   }, []);
