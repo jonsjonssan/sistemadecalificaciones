@@ -1058,64 +1058,60 @@ export default function Home() {
                         <div><Label className="text-xs">Contraseña</Label><Input type="password" value={nuevoUsuario.password} onChange={e => setNuevoUsuario({...nuevoUsuario, password: e.target.value})} placeholder="••••••••" /></div>
                         <div><Label className="text-xs">Rol</Label><Select value={nuevoUsuario.rol} onValueChange={v => setNuevoUsuario({...nuevoUsuario, rol: v})}><SelectTrigger className="h-8"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="admin">Administrador</SelectItem><SelectItem value="docente">Docente</SelectItem></SelectContent></Select></div>
                         
-                        {nuevoUsuario.rol === "docente" && (
-                          <>
-                            {/* Grados 2-5: Tutor */}
-                            <div>
-                              <Label className="text-xs">Tutor de Grados (2° a 5°)</Label>
-                              <p className="text-[10px] text-slate-500 mb-1">El docente será tutor del grado completo</p>
-                              <div className="grid grid-cols-4 gap-2">
-                                {gradosInferiores.map(g => (
-                                  <label key={g.id} className="flex items-center gap-1 text-xs p-1.5 border rounded cursor-pointer hover:bg-slate-50">
-                                    <input 
-                                      type="checkbox" 
-                                      checked={nuevoUsuario.gradosAsignados.includes(g.id)} 
-                                      onChange={e => setNuevoUsuario({
-                                        ...nuevoUsuario, 
-                                        gradosAsignados: e.target.checked 
-                                          ? [...nuevoUsuario.gradosAsignados, g.id] 
-                                          : nuevoUsuario.gradosAsignados.filter(id => id !== g.id)
-                                      })} 
-                                      className="h-3 w-3" 
-                                    />
-                                    {g.numero}°{g.seccion}
-                                  </label>
-                                ))}
+                        {/* Grados 2-5: Tutor */}
+                        <div>
+                          <Label className="text-xs">Tutor de Grados (2° a 5°)</Label>
+                          <p className="text-[10px] text-slate-500 mb-1">El usuario será tutor del grado completo</p>
+                          <div className="grid grid-cols-4 gap-2">
+                            {gradosInferiores.map(g => (
+                              <label key={g.id} className="flex items-center gap-1 text-xs p-1.5 border rounded cursor-pointer hover:bg-slate-50">
+                                <input 
+                                  type="checkbox" 
+                                  checked={nuevoUsuario.gradosAsignados.includes(g.id)} 
+                                  onChange={e => setNuevoUsuario({
+                                    ...nuevoUsuario, 
+                                    gradosAsignados: e.target.checked 
+                                      ? [...nuevoUsuario.gradosAsignados, g.id] 
+                                      : nuevoUsuario.gradosAsignados.filter(id => id !== g.id)
+                                  })} 
+                                  className="h-3 w-3" 
+                                />
+                                {g.numero}°{g.seccion}
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                        
+                        {/* Grados 6-9: Materias específicas */}
+                        <div>
+                          <Label className="text-xs">Asignaturas Asignadas (6° a 9°)</Label>
+                          <p className="text-[10px] text-slate-500 mb-1">El usuario califica estas asignaturas específicas</p>
+                          <div className="border rounded max-h-48 overflow-y-auto">
+                            {gradosSuperiores.map(grado => (
+                              <div key={grado.id} className="border-b last:border-b-0">
+                                <div className="bg-slate-100 px-2 py-1 text-xs font-medium">{grado.numero}° "{grado.seccion}"</div>
+                                <div className="p-2 grid grid-cols-2 gap-1">
+                                  {todasAsignaturas.filter(m => m.gradoId === grado.id).map(m => (
+                                    <label key={m.id} className="flex items-center gap-1 text-xs p-1 hover:bg-slate-50 rounded cursor-pointer">
+                                      <input 
+                                        type="checkbox" 
+                                        checked={nuevoUsuario.materiasAsignadas.includes(m.id)} 
+                                        onChange={e => setNuevoUsuario({
+                                          ...nuevoUsuario, 
+                                          materiasAsignadas: e.target.checked 
+                                            ? [...nuevoUsuario.materiasAsignadas, m.id] 
+                                            : nuevoUsuario.materiasAsignadas.filter(id => id !== m.id)
+                                        })} 
+                                        className="h-3 w-3" 
+                                      />
+                                      {m.nombre}
+                                    </label>
+                                  ))}
+                                </div>
                               </div>
-                            </div>
-                            
-                            {/* Grados 6-9: Materias específicas */}
-                            <div>
-                              <Label className="text-xs">Asignaturas Asignadas (6° a 9°)</Label>
-                              <p className="text-[10px] text-slate-500 mb-1">El docente califica estas asignaturas específicas</p>
-                              <div className="border rounded max-h-48 overflow-y-auto">
-                                {gradosSuperiores.map(grado => (
-                                  <div key={grado.id} className="border-b last:border-b-0">
-                                    <div className="bg-slate-100 px-2 py-1 text-xs font-medium">{grado.numero}° "{grado.seccion}"</div>
-                                    <div className="p-2 grid grid-cols-2 gap-1">
-                                      {todasAsignaturas.filter(m => m.gradoId === grado.id).map(m => (
-                                        <label key={m.id} className="flex items-center gap-1 text-xs p-1 hover:bg-slate-50 rounded cursor-pointer">
-                                          <input 
-                                            type="checkbox" 
-                                            checked={nuevoUsuario.materiasAsignadas.includes(m.id)} 
-                                            onChange={e => setNuevoUsuario({
-                                              ...nuevoUsuario, 
-                                              materiasAsignadas: e.target.checked 
-                                                ? [...nuevoUsuario.materiasAsignadas, m.id] 
-                                                : nuevoUsuario.materiasAsignadas.filter(id => id !== m.id)
-                                            })} 
-                                            className="h-3 w-3" 
-                                          />
-                                          {m.nombre}
-                                        </label>
-                                      ))}
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          </>
-                        )}
+                            ))}
+                          </div>
+                        </div>
                       </div>
                       <DialogFooter><Button variant="outline" size="sm" onClick={() => setUserDialogOpen(false)}>Cancelar</Button><Button size="sm" onClick={handleAddUsuario} className="bg-teal-600">{editUsuarioId ? "Guardar" : "Crear"}</Button></DialogFooter>
                     </DialogContent>

@@ -88,13 +88,13 @@ export async function POST(request: NextRequest) {
       RETURNING id, email, nombre, rol, activo
     `;
 
-    if (rol === "docente" && gradosAsignados && gradosAsignados.length > 0) {
+    if (gradosAsignados && gradosAsignados.length > 0) {
       for (const gradoId of gradosAsignados) {
         await sql`UPDATE "Grado" SET "docenteId" = ${nuevoUsuario[0].id} WHERE id = ${gradoId}`;
       }
     }
 
-    if (rol === "docente" && materiasAsignadas && materiasAsignadas.length > 0) {
+    if (materiasAsignadas && materiasAsignadas.length > 0) {
       for (const materiaId of materiasAsignadas) {
         await sql`
           INSERT INTO "DocenteMateria" ("docenteId", "materiaId")
