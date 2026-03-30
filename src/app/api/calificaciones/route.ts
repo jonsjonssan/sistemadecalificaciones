@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
         FROM "Calificacion" c
         JOIN "Estudiante" e ON c."estudianteId" = e.id
         JOIN "Materia" m ON c."materiaId" = m.id
-        WHERE e."gradoId" = ${gradoId}
+        WHERE (e."gradoId" = ${gradoId} OR c."gradoId" = ${gradoId})
           AND c."materiaId" = ${materiaId}
           AND c.trimestre = ${parseInt(trimestre!)}
         ORDER BY e.numero
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
         FROM "Calificacion" c
         JOIN "Estudiante" e ON c."estudianteId" = e.id
         JOIN "Materia" m ON c."materiaId" = m.id
-        WHERE e."gradoId" = ${gradoId}
+        WHERE (e."gradoId" = ${gradoId} OR c."gradoId" = ${gradoId})
         ORDER BY e.numero
       `;
     } else {
@@ -191,6 +191,19 @@ export async function POST(request: NextRequest) {
       WHERE "estudianteId" = ${estudianteId} AND "materiaId" = ${materiaId} AND trimestre = ${parseInt(String(trimestre))}
     `;
 
+    // Capturar contexto histórico para estabilidad de datos
+    const estudianteExtra = await sql`
+      SELECT e."gradoId", g.numero as grado_numero, g.año as grado_año 
+      FROM "Estudiante" e JOIN "Grado" g on e."gradoId" = g.id 
+      WHERE e.id = ${estudianteId}
+    `;
+    const materiaExtra = await sql`SELECT nombre FROM "Materia" WHERE id = ${materiaId}`;
+    
+    const gradoIdCapturado = estudianteExtra[0]?.gradoId || null;
+    const gradoNombreCapturado = estudianteExtra[0]?.grado_numero ? String(estudianteExtra[0].grado_numero) : null;
+    const añoEscolarCapturado = estudianteExtra[0]?.grado_año || null;
+    const materiaNombreCapturada = materiaExtra[0]?.nombre || null;
+
     let result;
     if (existResult.length > 0) {
       result = await sql`
@@ -202,6 +215,10 @@ export async function POST(request: NextRequest) {
             examenTrimestral = ${examenTrimestral},
             promedioFinal = ${promedioFinal},
             recuperacion = ${recuperacion},
+            "gradoId" = COALESCE("gradoId", ${gradoIdCapturado}),
+            "gradoNombre" = COALESCE("gradoNombre", ${gradoNombreCapturado}),
+            "añoEscolar" = COALESCE("añoEscolar", ${añoEscolarCapturado}),
+            "materiaNombre" = COALESCE("materiaNombre", ${materiaNombreCapturada}),
             "updatedAt" = NOW()
         WHERE id = ${existResult[0].id}
         RETURNING *
@@ -212,12 +229,14 @@ export async function POST(request: NextRequest) {
           "estudianteId", "materiaId", trimestre,
           actividadesCotidianas, calificacionAC,
           actividadesIntegradoras, calificacionAI,
-          examenTrimestral, promedioFinal, recuperacion
+          examenTrimestral, promedioFinal, recuperacion,
+          "gradoId", "gradoNombre", "añoEscolar", "materiaNombre"
         ) VALUES (
           ${estudianteId}, ${materiaId}, ${parseInt(String(trimestre))},
           ${JSON.stringify(acNotas)}, ${calificacionAC},
           ${JSON.stringify(aiNotas)}, ${calificacionAI},
-          ${examenTrimestral}, ${promedioFinal}, ${recuperacion}
+          ${examenTrimestral}, ${promedioFinal}, ${recuperacion},
+          ${gradoIdCapturado}, ${gradoNombreCapturado}, ${añoEscolarCapturado}, ${materiaNombreCapturada}
         )
         RETURNING *
       `;

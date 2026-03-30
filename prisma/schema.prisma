@@ -136,6 +136,12 @@ model Calificacion {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
+  // Datos históricos para estabilidad del registro (Snapshot)
+  gradoId       String?  // ID del grado al momento de la calificación
+  gradoNombre   String?  // Nombre/número del grado ej: "2", "3"
+  añoEscolar    Int?     // Año escolar en que se registró
+  materiaNombre String?  // Nombre de la materia en ese momento
+
   estudiante Estudiante @relation(fields: [estudianteId], references: [id])
   materia    Materia    @relation(fields: [materiaId], references: [id])
   
