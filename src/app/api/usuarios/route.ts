@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
         await sql`
           INSERT INTO "DocenteMateria" ("docenteId", "materiaId")
           VALUES (${nuevoUsuario[0].id}, ${materiaId})
-          ON CONFLICT ("docenteId", "materiaId") DO NOTHING
+          ON CONFLICT DO NOTHING
         `;
       }
     }
@@ -121,7 +121,10 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Solo administradores pueden modificar usuarios" }, { status: 403 });
     }
 
-    const { id, nombre, rol, activo, password, gradosAsignados, materiasAsignadas } = await request.json();
+    const body = await request.json();
+    const { id, nombre, rol, activo, password, gradoAsignados: gradoAsig, gradosAsignados, materiasAsignadas } = body;
+    const gradoDelFrontend = gradoAsig || gradosAsignados;
+
     if (!id) {
       return NextResponse.json({ error: "ID requerido" }, { status: 400 });
     }
@@ -147,10 +150,10 @@ export async function PUT(request: NextRequest) {
       `;
     }
 
-    if (gradosAsignados !== undefined) {
+    if (gradoDelFrontend !== undefined) {
       await sql`UPDATE "Grado" SET "docenteId" = NULL WHERE "docenteId" = ${id}`;
-      if (gradosAsignados && gradosAsignados.length > 0) {
-        for (const gradoId of gradosAsignados) {
+      if (gradoDelFrontend && gradoDelFrontend.length > 0) {
+        for (const gradoId of gradoDelFrontend) {
           await sql`UPDATE "Grado" SET "docenteId" = ${id} WHERE id = ${gradoId}`;
         }
       }
