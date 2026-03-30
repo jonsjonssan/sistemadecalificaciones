@@ -774,7 +774,7 @@ export default function Home() {
     }
     
     if (usuario.rol === "admin") {
-      setGradosFiltrados(grades);
+      setGradosFiltrados(gradoS);
     } else {
       const gradoIdsTutor = new Set((usuario.gradosAsignados || []).map((g: any) => g.id));
       const gradoIdsAsignaturas = new Set((usuario.asignaturasAsignadas || []).map((m: any) => m.gradoId));
