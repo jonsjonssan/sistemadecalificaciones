@@ -263,6 +263,29 @@ export default function Home() {
     } catch { /* ignore */ }
   }, []);
 
+  // Persistencia del estado del usuario
+  const getStorageKey = () => usuario ? `sis_state_${usuario.id}` : null;
+
+  const saveUserState = useCallback((state: { gradoSeleccionado?: string; asignaturaSeleccionada?: string; trimestreSeleccionado?: string }) => {
+    const key = getStorageKey();
+    if (!key) return;
+    try {
+      const existing = localStorage.getItem(key);
+      const currentState = existing ? JSON.parse(existing) : {};
+      const newState = { ...currentState, ...state, lastSaved: new Date().toISOString() };
+      localStorage.setItem(key, JSON.stringify(newState));
+    } catch (e) { console.error("Error saving user state:", e); }
+  }, [usuario]);
+
+  const loadUserState = useCallback(() => {
+    const key = getStorageKey();
+    if (!key) return null;
+    try {
+      const stored = localStorage.getItem(key);
+      return stored ? JSON.parse(stored) : null;
+    } catch { return null; }
+  }, [usuario]);
+
   // Handlers
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -287,6 +310,7 @@ export default function Home() {
   };
 
   const handleLogout = async () => {
+    saveUserState({ gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado });
     await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
     setUsuario(null);
     setGrados([]);
@@ -603,22 +627,54 @@ export default function Home() {
       loadConfigsGrado();
     }
   }, [gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado, loadConfig, loadCalificaciones, loadConfigsGrado]);
-  // Auto-selección inicial de grado
+  // Auto-selección inicial de grado - restaurar estado guardado o usar primero disponible
   useEffect(() => {
-    if (grados.length && !gradoSeleccionado) {
-      setGradoSeleccionado(grados[0].id);
-    }
-  }, [grados, gradoSeleccionado]);
-
-  // Auto-selección inicial de asignatura
-  useEffect(() => {
-    if (asignaturas.length) {
-      const asignaturaActualEnLista = asignaturas.some(m => m.id === asignaturaSeleccionada);
-      if (!asignaturaActualEnLista) {
-        setAsignaturaSeleccionada(asignaturas[0].id);
+    if (gradosFiltrados && gradosFiltrados.length > 0 && !gradoSeleccionado) {
+      const savedState = loadUserState();
+      if (savedState?.gradoSeleccionado && gradosFiltrados.some(g => g.id === savedState.gradoSeleccionado)) {
+        setGradoSeleccionado(savedState.gradoSeleccionado);
+        if (savedState.trimestreSeleccionado) {
+          setTrimestreSeleccionado(savedState.trimestreSeleccionado);
+        }
+      } else {
+        setGradoSeleccionado(gradosFiltrados[0].id);
       }
     }
-  }, [asignaturas, asignaturaSeleccionada]);
+  }, [ gradosFiltrados, gradoSeleccionado, loadUserState ]);
+
+  // Auto-selección de asignatura restaurada o primera disponible
+  useEffect(() => {
+    if (asignaturasFiltradas && asignaturasFiltradas.length > 0 && !asignaturaSeleccionada) {
+      const savedState = loadUserState();
+      if (savedState?.asignaturaSeleccionada && asignaturasFiltradas.some(m => m.id === savedState.asignaturaSeleccionada)) {
+        setAsignaturaSeleccionada(savedState.asignaturaSeleccionada);
+      } else {
+        setAsignaturaSeleccionada(asignaturasFiltradas[0].id);
+      }
+    }
+  }, [asignaturasFiltradas, asignaturaSeleccionada, loadUserState]);
+
+  // Guardar estado automáticamente cuando cambie la selección
+  useEffect(() => {
+    if (usuario && (gradoSeleccionado || asignaturaSeleccionada)) {
+      const timeoutId = setTimeout(() => {
+        saveUserState({ gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado });
+      }, 500);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado, usuario, saveUserState]);
+
+  // Guardar estado antes de cerrar la pestaña
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (usuario) {
+        saveUserState({ gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado });
+        localStorage.setItem(`sis_last_session_${usuario.id}`, new Date().toISOString());
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [usuario, gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado, saveUserState]);
 
   // Filtrar grados según el usuario
   useEffect(() => {
@@ -777,11 +833,24 @@ export default function Home() {
 
           {/* Calificaciones */}
           <TabsContent value="calificaciones" className="mt-3 space-y-3">
+            {(!gradosFiltrados || gradosFiltrados.length === 0) ? (
+              <Card className="shadow-sm">
+                <CardContent className="p-6 text-center">
+                  <School className="h-12 w-12 mx-auto text-slate-300 mb-3" />
+                  <h3 className="text-lg font-medium text-slate-600 mb-2">No hay grados disponibles</h3>
+                  <p className="text-slate-500">
+                    {usuario.rol === "admin" 
+                      ? "No existen grados registrados en el sistema. Crea un grado desde la pestaña Admin."
+                      : "No tienes grados o materias asignados. Contacta al administrador."}
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
             <Card className="shadow-sm">
               <CardContent className="p-3">
                 <div className="flex flex-wrap items-end gap-3">
-                  <div className="flex-1 min-w-[140px]"><Label className="text-base font-medium mb-1 block">Grado</Label><Select value={gradoSeleccionado} onValueChange={setGradoSeleccionado}><SelectTrigger className="h-12 text-sm"><SelectValue /></SelectTrigger><SelectContent>{gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}" - {g.año}</SelectItem>)}</SelectContent></Select></div>
-                  <div className="flex-1 min-w-[180px]"><Label className="text-base font-medium mb-1 block">Asignatura</Label><Select value={asignaturaSeleccionada} onValueChange={setAsignaturaSeleccionada}><SelectTrigger className="h-12 text-sm"><SelectValue /></SelectTrigger><SelectContent>{asignaturasFiltradas.map(m => <SelectItem key={m.id} value={m.id} className="text-sm">{m.nombre}</SelectItem>)}</SelectContent></Select></div>
+                  <div className="flex-1 min-w-[140px]"><Label className="text-base font-medium mb-1 block">Grado</Label><Select value={gradoSeleccionado || ""} onValueChange={(val) => { setGradoSeleccionado(val); saveUserState({ gradoSeleccionado: val }); }}><SelectTrigger className="h-12 text-sm"><SelectValue placeholder="Seleccionar grado" /></SelectTrigger><SelectContent>{ gradosFiltrados && gradosFiltrados.length > 0 ? gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}" - {g.año}</SelectItem>) : <SelectItem value="no-grados" disabled>No hay grados</SelectItem>}</SelectContent></Select></div>
+                  <div className="flex-1 min-w-[180px]"><Label className="text-base font-medium mb-1 block">Asignatura</Label><Select value={asignaturaSeleccionada || ""} onValueChange={(val) => { setAsignaturaSeleccionada(val); saveUserState({ asignaturaSeleccionada: val }); }}><SelectTrigger className="h-12 text-sm"><SelectValue placeholder="Seleccionar materia" /></SelectTrigger><SelectContent>{asignaturasFiltradas && asignaturasFiltradas.length > 0 ? asignaturasFiltradas.map(m => <SelectItem key={m.id} value={m.id} className="text-sm">{m.nombre}</SelectItem>) : <SelectItem value="no-materias" disabled>No hay materias</SelectItem>}</SelectContent></Select></div>
                   <div className="w-28"><Label className="text-base font-medium mb-1 block">Trimestre</Label><Select value={trimestreSeleccionado} onValueChange={setTrimestreSeleccionado}><SelectTrigger className="h-12 text-sm"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="1" className="text-sm">I</SelectItem><SelectItem value="2" className="text-sm">II</SelectItem><SelectItem value="3" className="text-sm">III</SelectItem></SelectContent></Select></div>
                   {configActual && <div className="flex items-center gap-1 text-sm font-medium text-slate-500 bg-slate-50 px-2 py-1 rounded"><span>{configActual.numActividadesCotidianas} AC ({configActual.porcentajeAC}%)</span><span>•</span><span>{configActual.numActividadesIntegradoras} AI ({configActual.porcentajeAI}%)</span>{configActual.tieneExamen && <><span>•</span><span>Ex ({configActual.porcentajeExamen}%)</span></>}</div>}
                   {usuario.rol === "admin" && <Button size="sm" variant="outline" className="h-12" onClick={() => { setEditConfig(configActual); setConfigDialogOpen(true); }}><Settings className="h-5 w-5 mr-1" />Config</Button>}
@@ -790,6 +859,7 @@ export default function Home() {
               </CardContent>
             </Card>
 
+            )}
             {gradoSeleccionado && asignaturaSeleccionada && configActual && (
               <Card className="shadow-sm">
                 <CardContent className="p-0">
