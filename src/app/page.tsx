@@ -117,6 +117,22 @@ export default function Home() {
   const [añoLoading, setAñoLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Persistence: Cargar de localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const tb = localStorage.getItem("ss_tab"); if (tb) setActiveTab(tb);
+      const gr = localStorage.getItem("ss_grado"); if (gr) setGradoSeleccionado(gr);
+      const mt = localStorage.getItem("ss_materia"); if (mt) setAsignaturaSeleccionada(mt);
+      const tr = localStorage.getItem("ss_trimestre"); if (tr) setTrimestreSeleccionado(tr);
+    }
+  }, []);
+
+  // Persistence: Guardar en localStorage
+  useEffect(() => { if (typeof window !== "undefined") localStorage.setItem("ss_tab", activeTab); }, [activeTab]);
+  useEffect(() => { if (typeof window !== "undefined" && gradoSeleccionado) localStorage.setItem("ss_grado", gradoSeleccionado); }, [gradoSeleccionado]);
+  useEffect(() => { if (typeof window !== "undefined" && asignaturaSeleccionada) localStorage.setItem("ss_materia", asignaturaSeleccionada); }, [asignaturaSeleccionada]);
+  useEffect(() => { if (typeof window !== "undefined" && trimestreSeleccionado) localStorage.setItem("ss_trimestre", trimestreSeleccionado); }, [trimestreSeleccionado]);
+
   // Auth
   const checkAuth = useCallback(async () => {
     // Timeout de seguridad de 10 segundos para no quedar atrapado en el spinner
