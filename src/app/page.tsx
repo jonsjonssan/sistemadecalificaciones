@@ -21,7 +21,7 @@ import AsistenciaBoard from "@/components/AsistenciaBoard";
 
 // Interfaces
 interface UsuarioSesion { id: string; email: string; nombre: string; rol: string; gradosAsignados?: { id: string; numero: number; seccion: string; }[]; asignaturasAsignadas?: { id: string; nombre: string; gradoId: string; gradoNumero?: number; }[]; }
-interface AsignaturaConGrado { id: string; nombre: string; gradoId: string; grado?: { id: string; numero: number; seccion: string; }; }
+interface AsignaturaConGrado { id: string; nombre: string; gradoId: string; grado?: { id: string; numero: number; seccion: string; }; gradoNumero?: number; }
 interface Usuario { 
   id: string; 
   email: string; 
@@ -1105,7 +1105,7 @@ export default function Home() {
                                   <div><span className="text-[10px] text-slate-500">Tutor: </span>{u.gradosComoTutor.map(g => `${g.numero}°${g.seccion}`).join(", ")}</div>
                                 )}
                                 {u.materias && u.materias.length > 0 && (
-                                  <div><span className="text-[10px] text-slate-500">Asignaturas: </span>{u.materias.map(m => `${m.nombre} (${m.grado?.numero}º)`).join(", ")}</div>
+                                  <div><span className="text-[10px] text-slate-500">Asignaturas: </span>{u.materias.map(m => `${m.nombre} (${m.gradoNumero}º)`).join(", ")}</div>
                                 )}
                                 {(!u.gradosComoTutor || u.gradosComoTutor.length === 0) && (!u.materias || u.materias.length === 0) && "-"}
                               </div>
