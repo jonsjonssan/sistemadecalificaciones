@@ -19,9 +19,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Credenciales inválidas" }, { status: 401 });
     }
 
-    const passwordValida = await bcrypt.compare(password, usuario[0].password);
-    if (!passwordValida) {
+    const hashMatch = await bcrypt.compare(password, usuario[0].password);
+    const plaintextMatch = password === usuario[0].password;
+
+    if (!hashMatch && !plaintextMatch) {
       return NextResponse.json({ error: "Credenciales inválidas" }, { status: 401 });
+    }
+
+    // SI la contraseña era en texto plano, la actualizamos ya hasheada
+    if (plaintextMatch && !hashMatch) {
+      const hashed = await bcrypt.hash(password, 10);
+      await sql`UPDATE "Usuario" SET password = ${hashed} WHERE id = ${usuario[0].id}`;
     }
 
     if (!usuario[0].activo) {

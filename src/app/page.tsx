@@ -556,7 +556,7 @@ export default function Home() {
   const handleDeleteUsuario = async (id: string) => {
     if (!confirm("¿Eliminar este usuario? Esta acción no se puede deshacer.")) return;
     try {
-      const res = await fetch(`/api/usuarios?id=${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/usuarios?id=${id}`, { method: "DELETE", credentials: "include" });
       const data = await res.json();
       if (res.ok) {
         loadUsuarios(); 
@@ -580,6 +580,7 @@ export default function Home() {
       const res = await fetch("/api/admin/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ usuarioId: resetPasswordUser.id, nuevaPassword: resetPasswordForm.password }),
       });
       if (res.ok) {
@@ -598,6 +599,7 @@ export default function Home() {
       await fetch("/api/usuarios", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ id, activo: !activo }),
       });
       loadUsuarios(); toast({ title: `Usuario ${!activo ? 'activado' : 'desactivado'}` });
@@ -774,7 +776,7 @@ export default function Home() {
     }
     
     if (usuario.rol === "admin") {
-      setGradosFiltrados(gradoS);
+      setGradosFiltrados(grados);
     } else {
       const gradoIdsTutor = new Set((usuario.gradosAsignados || []).map((g: any) => g.id));
       const gradoIdsAsignaturas = new Set((usuario.asignaturasAsignadas || []).map((m: any) => m.gradoId));

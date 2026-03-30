@@ -125,8 +125,9 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { id, nombre, rol, activo, password, gradoAsignados: gradoAsig, gradosAsignados, materiasAsignadas } = body;
-    const gradoDelFrontend = gradoAsig || gradosAsignados;
+    const { id, nombre, rol, activo, password, gradosAsignados, materiasAsignadas } = body;
+
+    const gradosReales = body.gradoAsignados || body.gradosAsignados || gradosAsignados;
 
     if (!id) {
       return NextResponse.json({ error: "ID requerido" }, { status: 400 });
@@ -136,27 +137,32 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "No puedes desactivarte a ti mismo" }, { status: 400 });
     }
 
-    if (nombre || rol || activo !== undefined || password) {
+    if (nombre !== undefined || rol !== undefined || activo !== undefined || password) {
       const current = await sql`SELECT * FROM "Usuario" WHERE id = ${id}`;
       if (current.length === 0) {
         return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
       }
       
+      let finalPassword = current[0].password;
+      if (password) {
+        finalPassword = await bcrypt.hash(password, 10);
+      }
+
       await sql`
         UPDATE "Usuario" SET
           nombre = ${nombre || current[0].nombre},
           rol = ${rol || current[0].rol},
           activo = ${activo !== undefined ? activo : current[0].activo},
-          password = ${password || current[0].password},
+          password = ${finalPassword},
           "updatedAt" = NOW()
         WHERE id = ${id}
       `;
     }
 
-    if (gradoDelFrontend !== undefined) {
+    if (gradosReales !== undefined) {
       await sql`UPDATE "Grado" SET "docenteId" = NULL WHERE "docenteId" = ${id}`;
-      if (gradoDelFrontend && gradoDelFrontend.length > 0) {
-        for (const gradoId of gradoDelFrontend) {
+      if (gradosReales && gradosReales.length > 0) {
+        for (const gradoId of gradosReales) {
           await sql`UPDATE "Grado" SET "docenteId" = ${id} WHERE id = ${gradoId}`;
         }
       }
@@ -169,7 +175,7 @@ export async function PUT(request: NextRequest) {
           await sql`
             INSERT INTO "DocenteMateria" ("docenteId", "materiaId")
             VALUES (${id}, ${materiaId})
-            ON CONFLICT ("docenteId", "materiaId") DO NOTHING
+            ON CONFLICT DO NOTHING
           `;
         }
       }
