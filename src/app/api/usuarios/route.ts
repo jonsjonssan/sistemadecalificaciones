@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/neon";
 import { cookies } from "next/headers";
+import bcrypt from "bcryptjs";
 
 async function getUsuarioSession() {
   const cookieStore = await cookies();
@@ -80,9 +81,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "El email ya está registrado" }, { status: 400 });
     }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const nuevoUsuario = await sql`
       INSERT INTO "Usuario" (email, password, nombre, rol)
-      VALUES (${email}, ${password}, ${nombre}, ${rol})
+      VALUES (${email}, ${hashedPassword}, ${nombre}, ${rol})
       RETURNING id, email, nombre, rol, activo
     `;
 

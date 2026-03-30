@@ -136,6 +136,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     await sql`DELETE FROM "Calificacion" WHERE "estudianteId" = ${id}`;
+    await sql`DELETE FROM "Asistencia" WHERE "estudianteId" = ${id}`;
     await sql`DELETE FROM "Estudiante" WHERE id = ${id}`;
 
     return NextResponse.json({ message: "Estudiante eliminado" });

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/neon";
 import { cookies } from "next/headers";
+import bcrypt from "bcryptjs";
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,7 +15,12 @@ export async function POST(request: NextRequest) {
       SELECT * FROM "Usuario" WHERE email = ${email}
     `;
 
-    if (usuario.length === 0 || usuario[0].password !== password) {
+    if (usuario.length === 0) {
+      return NextResponse.json({ error: "Credenciales inválidas" }, { status: 401 });
+    }
+
+    const passwordValida = await bcrypt.compare(password, usuario[0].password);
+    if (!passwordValida) {
       return NextResponse.json({ error: "Credenciales inválidas" }, { status: 401 });
     }
 

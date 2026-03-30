@@ -1,61 +1,50 @@
 import { NextResponse } from "next/server";
-import { db as prisma } from "@/lib/db";
+import { sql } from "@/lib/neon";
 
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const trimestre = parseInt(searchParams.get("trimestre") || "1");
     
-    // Obtener todos los grados
-    const grados = await prisma.grado.findMany({
-      include: {
-        estudiantes: true,
-        materias: true
-      }
-    });
+    const grados = await sql`
+      SELECT g.*, 
+        (SELECT COUNT(*) FROM "Estudiante" e WHERE e."gradoId" = g.id) as estudiantes_count,
+        (SELECT COUNT(*) FROM "Materia" m WHERE m."gradoId" = g.id) as materias_count
+      FROM "Grado" g
+      ORDER BY g.numero, g.seccion
+    `;
 
-    const statsPorGrado = await Promise.all(grados.map(async (grado) => {
-      // Obtener todas las calificaciones del grado y trimestre
-      const calificaciones = await prisma.calificacion.findMany({
-        where: {
-          trimestre,
-          estudiante: {
-            gradoId: grado.id
-          }
-        },
-        include: {
-          estudiante: true
-        }
-      });
+    const statsPorGrado = await Promise.all(grados.map(async (grado: any) => {
+      const calificaciones = await sql`
+        SELECT c.*, e.nombre as estudiante_nombre, e.numero as estudiante_numero
+        FROM "Calificacion" c
+        JOIN "Estudiante" e ON c."estudianteId" = e.id
+        WHERE c.trimestre = ${trimestre} AND e."gradoId" = ${grado.id}
+      `;
 
-      // Calcular promedios por categoría
-      // Nota: En la DB las calificaciones se guardan como JSON string para las actividades individuales, 
-      // pero también tenemos los campos consolidados calificacionAC, calificacionAI y examenTrimestral.
-      
       let sumAC = 0, countAC = 0;
       let sumAI = 0, countAI = 0;
       let sumEx = 0, countEx = 0;
 
-      // Mapa para promedios de estudiantes
       const studentAverages: Record<string, { id: string, nombre: string, numero: number, suma: number, cuenta: number }> = {};
 
-      calificaciones.forEach(c => {
-        if (c.calificacionAC !== null) { sumAC += c.calificacionAC; countAC++; }
-        if (c.calificacionAI !== null) { sumAI += c.calificacionAI; countAI++; }
-        if (c.examenTrimestral !== null) { sumEx += c.examenTrimestral; countEx++; }
+      calificaciones.forEach((c: any) => {
+        if (c.calificacionAC !== null) { sumAC += Number(c.calificacionAC); countAC++; }
+        if (c.calificacionAI !== null) { sumAI += Number(c.calificacionAI); countAI++; }
+        if (c.examenTrimestral !== null) { sumEx += Number(c.examenTrimestral); countEx++; }
 
         if (!studentAverages[c.estudianteId]) {
           studentAverages[c.estudianteId] = { 
             id: c.estudianteId, 
-            nombre: c.estudiante.nombre, 
-            numero: c.estudiante.numero,
+            nombre: c.estudiante_nombre, 
+            numero: c.estudiante_numero,
             suma: 0, 
             cuenta: 0 
           };
         }
         
         if (c.promedioFinal !== null) {
-          studentAverages[c.estudianteId].suma += c.promedioFinal;
+          studentAverages[c.estudianteId].suma += Number(c.promedioFinal);
           studentAverages[c.estudianteId].cuenta++;
         }
       });
@@ -68,7 +57,7 @@ export async function GET(req: Request) {
           numero: s.numero,
           promedio: s.suma / s.cuenta
         }))
-        .sort((a, b) => b.promedio - a.promedio);
+        .sort((a: any, b: any) => b.promedio - a.promedio);
 
       return {
         gradoId: grado.id,
@@ -81,7 +70,7 @@ export async function GET(req: Request) {
           examen: countEx > 0 ? sumEx / countEx : 0
         },
         topEstudiantes: ranking.slice(0, 3),
-        alertas: ranking.slice(-3).reverse() // Los 3 más bajos
+        alertas: ranking.slice(-3).reverse()
       };
     }));
 

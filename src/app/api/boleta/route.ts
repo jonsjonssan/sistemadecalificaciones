@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { sql } from "@/lib/neon";
 import { cookies } from "next/headers";
 
 export async function GET(request: NextRequest) {
@@ -23,90 +23,113 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Obtener información del estudiante y su grado
-    let estudiante;
     if (estudianteId) {
-      estudiante = await db.estudiante.findUnique({
-        where: { id: estudianteId },
-        include: { grado: { include: { docente: true } } },
-      });
-    }
+      const estudiante = await sql`
+        SELECT e.*, g.numero as grado_numero, g.seccion as grado_seccion, g.año as grado_año,
+               d.nombre as docente_nombre
+        FROM "Estudiante" e
+        JOIN "Grado" g ON e."gradoId" = g.id
+        LEFT JOIN "Usuario" d ON g."docenteId" = d.id
+        WHERE e.id = ${estudianteId}
+      `;
 
-    // Obtener todas las calificaciones
-    const where: Record<string, unknown> = {};
-    if (estudianteId) where.estudianteId = estudianteId;
-    if (trimestre) where.trimestre = parseInt(trimestre);
+      let calificaciones;
+      if (trimestre) {
+        calificaciones = await sql`
+          SELECT c.*, m.nombre as materia_nombre
+          FROM "Calificacion" c
+          JOIN "Materia" m ON c."materiaId" = m.id
+          WHERE c."estudianteId" = ${estudianteId} AND c.trimestre = ${parseInt(trimestre)}
+          ORDER BY m.nombre
+        `;
+      } else {
+        calificaciones = await sql`
+          SELECT c.*, m.nombre as materia_nombre
+          FROM "Calificacion" c
+          JOIN "Materia" m ON c."materiaId" = m.id
+          WHERE c."estudianteId" = ${estudianteId}
+          ORDER BY m.nombre
+        `;
+      }
 
-    let calificaciones;
-
-    if (gradoId && !estudianteId) {
-      // Boletas de todos los estudiantes del grado
-      const estudiantes = await db.estudiante.findMany({
-        where: { gradoId },
-        include: { grado: { include: { docente: true } } },
-        orderBy: { numero: "asc" },
-      });
-
-      calificaciones = await db.calificacion.findMany({
-        where: {
-          estudiante: { gradoId },
-          ...(trimestre ? { trimestre: parseInt(trimestre) } : {}),
-        },
-        include: {
-          estudiante: { include: { grado: { include: { docente: true } } } },
-          materia: true,
-        },
-      });
-
-      // Agrupar por estudiante
-      const boletasPorEstudiante = estudiantes.map((est) => {
-        const califEstudiante = calificaciones.filter(
-          (c) => c.estudianteId === est.id
-        );
-        
-        // Calcular promedio general
-        const promediosValidos = califEstudiante
-          .map((c) => c.promedioFinal)
-          .filter((p): p is number => p !== null);
-        
-        const promedioGeneral = promediosValidos.length > 0
-          ? promediosValidos.reduce((a, b) => a + b, 0) / promediosValidos.length
-          : null;
-
-        return {
-          estudiante: est,
-          calificaciones: califEstudiante,
-          promedioGeneral,
-        };
-      });
-
-      return NextResponse.json(boletasPorEstudiante);
-    } else {
-      // Boleta de un solo estudiante
-      calificaciones = await db.calificacion.findMany({
-        where,
-        include: {
-          estudiante: { include: { grado: { include: { docente: true } } } },
-          materia: true,
-        },
-        orderBy: { materia: { nombre: "asc" } },
-      });
-
-      // Calcular promedio general
       const promediosValidos = calificaciones
-        .map((c) => c.promedioFinal)
-        .filter((p): p is number => p !== null);
+        .map((c: any) => c.promedioFinal)
+        .filter((p: number | null): p is number => p !== null);
       
       const promedioGeneral = promediosValidos.length > 0
-        ? promediosValidos.reduce((a, b) => a + b, 0) / promediosValidos.length
+        ? promediosValidos.reduce((a: number, b: number) => a + b, 0) / promediosValidos.length
         : null;
 
       return NextResponse.json({
-        estudiante,
-        calificaciones,
+        estudiante: estudiante[0],
+        calificaciones: calificaciones.map((c: any) => ({
+          id: c.id,
+          materiaId: c.materiaId,
+          materia: c.materia_nombre,
+          trimestre: c.trimestre,
+          promedioFinal: c.promedioFinal,
+          calificacionAC: c.calificacionAC,
+          calificacionAI: c.calificacionAI,
+          examenTrimestral: c.examenTrimestral,
+          recuperacion: c.recuperacion,
+        })),
         promedioGeneral,
       });
     }
+
+    const estudiantes = await sql`
+      SELECT e.*, g.numero as grado_numero, g.seccion as grado_seccion, g.año as grado_año,
+             d.nombre as docente_nombre
+      FROM "Estudiante" e
+      JOIN "Grado" g ON e."gradoId" = g.id
+      LEFT JOIN "Usuario" d ON g."docenteId" = d.id
+      WHERE e."gradoId" = ${gradoId}
+      ORDER BY e.numero
+    `;
+
+    let calificaciones;
+    if (trimestre) {
+      calificaciones = await sql`
+        SELECT c.*, m.nombre as materia_nombre, c."estudianteId"
+        FROM "Calificacion" c
+        JOIN "Materia" m ON c."materiaId" = m.id
+        WHERE c."estudianteId" IN (SELECT id FROM "Estudiante" WHERE "gradoId" = ${gradoId})
+          AND c.trimestre = ${parseInt(trimestre)}
+      `;
+    } else {
+      calificaciones = await sql`
+        SELECT c.*, m.nombre as materia_nombre, c."estudianteId"
+        FROM "Calificacion" c
+        JOIN "Materia" m ON c."materiaId" = m.id
+        WHERE c."estudianteId" IN (SELECT id FROM "Estudiante" WHERE "gradoId" = ${gradoId})
+      `;
+    }
+
+    const boletasPorEstudiante = estudiantes.map((est: any) => {
+      const califEstudiante = calificaciones.filter((c: any) => c.estudianteId === est.id);
+      
+      const promediosValidos = califEstudiante
+        .map((c: any) => c.promedioFinal)
+        .filter((p: number | null): p is number => p !== null);
+      
+      const promedioGeneral = promediosValidos.length > 0
+        ? promediosValidos.reduce((a: number, b: number) => a + b, 0) / promediosValidos.length
+        : null;
+
+      return {
+        estudiante: est,
+        calificaciones: califEstudiante.map((c: any) => ({
+          id: c.id,
+          materiaId: c.materiaId,
+          materia: c.materia_nombre,
+          trimestre: c.trimestre,
+          promedioFinal: c.promedioFinal,
+        })),
+        promedioGeneral,
+      };
+    });
+
+    return NextResponse.json(boletasPorEstudiante);
   } catch (error) {
     console.error("Error al generar boleta:", error);
     return NextResponse.json(

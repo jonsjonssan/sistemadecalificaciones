@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { sql } from "@/lib/neon";
 import { cookies } from "next/headers";
+import bcrypt from "bcryptjs";
 
-// API para cambiar contraseña
 export async function POST(request: NextRequest) {
   try {
     const cookieStore = await cookies();
@@ -23,25 +23,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "La nueva contraseña debe tener al menos 6 caracteres" }, { status: 400 });
     }
 
-    // Obtener usuario
-    const usuario = await db.usuario.findUnique({
-      where: { id: sessionData.id }
-    });
+    const usuario = await sql`SELECT * FROM "Usuario" WHERE id = ${sessionData.id}`;
 
-    if (!usuario) {
+    if (usuario.length === 0) {
       return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
     }
 
-    // Verificar contraseña actual
-    if (usuario.password !== passwordActual) {
+    const passwordValida = await bcrypt.compare(passwordActual, usuario[0].password);
+    if (!passwordValida) {
       return NextResponse.json({ error: "La contraseña actual es incorrecta" }, { status: 400 });
     }
 
-    // Actualizar contraseña
-    await db.usuario.update({
-      where: { id: usuario.id },
-      data: { password: passwordNuevo }
-    });
+    const hashedPassword = await bcrypt.hash(passwordNuevo, 10);
+
+    await sql`
+      UPDATE "Usuario" SET password = ${hashedPassword}, "updatedAt" = NOW()
+      WHERE id = ${sessionData.id}
+    `;
 
     return NextResponse.json({ message: "Contraseña actualizada correctamente" });
   } catch (error) {

@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { sql } from "@/lib/neon";
 import { cookies } from "next/headers";
 
-// Nómina de estudiantes por grado
 const estudiantesPorGrado: Record<number, string[]> = {
   2: [
     "Ayala Mercado, Ariana Valentina",
@@ -90,83 +89,6 @@ const estudiantesPorGrado: Record<number, string[]> = {
     "Serrano Hernández, Cristian Kenneth",
     "Urbina Macías, Leticia Guadalupe",
   ],
-  6: [
-    "Ávalos Quijada, Santiago Adalberto",
-    "Carrillo Ruiz, Josué Emmanuel",
-    "Clímaco Sánchez, Sofía Celeste",
-    "Cortez Hernández, Ana Camila",
-    "Gálvez Carrión, Rocati Yaax",
-    "Marroquín Vásquez, Mónica Ivonne",
-    "Mejía Mira, Alicia Camila",
-    "Molina Mata, Allison Valentina",
-    "Mulato Sánchez, Raúl Alessandro",
-    "Oviedo Cubías, Elena Sofía",
-    "Rivera Deleón, Mateo Zaid",
-    "Rodríguez López, Alejandro Enrique",
-    "Serrano Martínez, María José",
-  ],
-  7: [
-    "Abarca Medina, Mariana Guadalupe",
-    "Aguirre Maravilla, Fernanda Paola",
-    "Cabrera Guzmán, Henry Stanley",
-    "Callejas Flores, Emanuel Alexander",
-    "Calles Quijano, Mateo Alejandro",
-    "Corvera Castro, Sofía Isabella",
-    "García Escobar, Moises Eduardo",
-    "González Hernández, Cristian Damián",
-    "Guardado Mejía, Christian Ariel",
-    "Hernández Hernández, Julia Milagro",
-    "Marroquín Meléndez, Santiago Alexander",
-    "Melara Martínez, Julio Ernesto",
-    "Mena Marroquín, Diego Leonardo",
-    "Méndez Martínez, Ashly Nicole",
-    "Mónico Henríquez, Rocío Arianna",
-    "Munguía Vega, Lissué Jael",
-    "Nerio Contreras, Kimberly Camila",
-    "Rivera Cedillos, Alexis Elías",
-    "Serrano Martínez, María Isabel",
-    "Siliezar Albayero, Nallely Ivonne",
-    "Vásquez Sasso, Mateo Sebastián",
-  ],
-  8: [
-    "Aguilar Jovel, Luis Anibal",
-    "Alvarenga Guevara, Axel Santiago",
-    "Aragón Santos, Kenedy Ediberto",
-    "Ávalos Quijada, Mateo Alejandro",
-    "Hernández Hernández, Jillian Juliette",
-    "Luna Aguilar, Melanie Nicole",
-    "Méndez Aquino, Sharon Marisol",
-    "Méndez Martínez, Michael Stanley",
-    "Quezada López, Valeria Celeste",
-    "Rivera Domínguez, Kevin Adonay",
-    "Rivera Guardado, Sofía Nathalia",
-    "Rodríguez Navarrete, Celia Marianela",
-    "Rojas Flores, Elías Geovanni",
-  ],
-  9: [
-    "Abarca Medina, José Luis",
-    "Alvarado Lemus, Daniela Nicole",
-    "Araujo Beza, Gabriel Ernesto",
-    "Deleón Zavaleta, Melany Guadalupe",
-    "Deodanes Jorge, Samanta Elizabeth",
-    "Fernández Moreira, Nelson Armando",
-    "García Palacios, Hazel Abigail",
-    "Hernández Martínez, Jennifer Jeannette",
-    "Leiva Figueroa, Christopher Emilio",
-    "Martell Campos, Christopher Steven",
-    "Martínez Pérez, Camila Alessandra",
-    "Melara Jorge, Valeria Alejandra",
-    "Méndez Ponce, Diego Alejandro",
-    "Mercedes López, María José",
-    "Molina Zaldaña, Daniel Aldair",
-    "Ortiz Tobar, Aarón Emmanuel",
-    "Pineda Alfaro, Carlos Alberto",
-    "Ramírez García, André Emiliano",
-    "Reyes Mejía, Mónica Guadalupe",
-    "Romero Coto, Zoe Tamara",
-    "Vásquez Miranda, Carlos Daniel",
-    "Zarco Reyes, Mauricio Elías",
-  ],
 };
 
 export async function POST(request: NextRequest) {
@@ -183,13 +105,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Solo administradores pueden ejecutar esta acción" }, { status: 403 });
     }
 
-    // Obtener todos los grados
-    const grados = await db.grado.findMany();
-    const gradoMap = new Map(grados.map(g => [g.numero, g]));
+    const grados = await sql`SELECT * FROM "Grado"`;
+    const gradoMap = new Map(grados.map((g: any) => [g.numero, g]));
 
     const resultados: { grado: number; agregados: number; existentes: number }[] = [];
 
-    // Cargar estudiantes por grado
     for (const [gradoNum, estudiantes] of Object.entries(estudiantesPorGrado)) {
       const grado = gradoMap.get(parseInt(gradoNum));
       if (!grado) continue;
@@ -200,21 +120,17 @@ export async function POST(request: NextRequest) {
       for (let i = 0; i < estudiantes.length; i++) {
         const nombre = estudiantes[i];
         
-        // Verificar si ya existe
-        const existente = await db.estudiante.findFirst({
-          where: { nombre, gradoId: grado.id }
-        });
+        const existente = await sql`
+          SELECT id FROM "Estudiante" WHERE nombre = ${nombre} AND "gradoId" = ${grado.id}
+        `;
 
-        if (existente) {
+        if (existente.length > 0) {
           existentes++;
         } else {
-          await db.estudiante.create({
-            data: {
-              numero: i + 1,
-              nombre,
-              gradoId: grado.id,
-            },
-          });
+          await sql`
+            INSERT INTO "Estudiante" (numero, nombre, "gradoId")
+            VALUES (${i + 1}, ${nombre}, ${grado.id})
+          `;
           agregados++;
         }
       }
@@ -226,7 +142,6 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Calcular totales
     const totalAgregados = resultados.reduce((sum, r) => sum + r.agregados, 0);
     const totalExistentes = resultados.reduce((sum, r) => sum + r.existentes, 0);
 
