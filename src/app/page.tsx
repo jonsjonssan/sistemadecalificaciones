@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -149,26 +149,51 @@ export default function Home() {
   const loadGrados = useCallback(async () => {
     try {
       const res = await fetch("/api/grados", { cache: "no-store" });
-      const data = await res.json();
-      setGrados(data);
-    } catch { console.error("Error al cargar grados"); }
+      if (res.ok) {
+        const data = await res.json();
+        setGrados(data);
+      } else {
+        console.error("Error al cargar grados:", res.status);
+        setGrados([]);
+      }
+    } catch { 
+      console.error("Error al cargar grados"); 
+      setGrados([]);
+    }
   }, []);
 
   const loadEstudiantes = useCallback(async () => {
     if (!gradoSeleccionado) return;
     try {
       const res = await fetch(`/api/estudiantes?gradoId=${gradoSeleccionado}`, { cache: "no-store" });
-      setEstudiantes(await res.json());
-    } catch { console.error("Error al cargar estudiantes"); }
+      if (res.ok) {
+        const data = await res.json();
+        setEstudiantes(data);
+      } else {
+        console.error("Error al cargar estudiantes:", res.status);
+        setEstudiantes([]);
+      }
+    } catch { 
+      console.error("Error al cargar estudiantes"); 
+      setEstudiantes([]);
+    }
   }, [gradoSeleccionado]);
 
   const loadAsignaturas = useCallback(async () => {
     if (!gradoSeleccionado) return;
     try {
       const res = await fetch(`/api/materias?gradoId=${gradoSeleccionado}`, { cache: "no-store" });
-      const data = await res.json();
-      setAsignaturas(data);
-    } catch { console.error("Error al cargar asignaturas"); }
+      if (res.ok) {
+        const data = await res.json();
+        setAsignaturas(data);
+      } else {
+        console.error("Error al cargar asignaturas:", res.status);
+        setAsignaturas([]);
+      }
+    } catch { 
+      console.error("Error al cargar asignaturas"); 
+      setAsignaturas([]);
+    }
   }, [gradoSeleccionado]);
 
   const loadTodasAsignaturas = useCallback(async () => {
@@ -182,8 +207,17 @@ export default function Home() {
     if (!asignaturaSeleccionada || !trimestreSeleccionado) return;
     try {
       const res = await fetch(`/api/config-actividades?materiaId=${asignaturaSeleccionada}&trimestre=${trimestreSeleccionado}`, { cache: "no-store" });
-      setConfigActual(await res.json());
-    } catch { /* error toast */ }
+      if (res.ok) {
+        const data = await res.json();
+        setConfigActual(data);
+      } else {
+        console.error("Error al cargar config:", res.status);
+        setConfigActual(null);
+      }
+    } catch { 
+      console.error("Error al cargar config"); 
+      setConfigActual(null);
+    }
   }, [asignaturaSeleccionada, trimestreSeleccionado]);
 
   const loadConfigsGrado = useCallback(async () => {
@@ -198,8 +232,17 @@ export default function Home() {
     if (!gradoSeleccionado || !trimestreSeleccionado) return;
     try {
       const res = await fetch(`/api/calificaciones?gradoId=${gradoSeleccionado}&trimestre=${trimestreSeleccionado}`, { cache: "no-store" });
-      setCalificaciones(await res.json());
-    } catch { /* error toast */ }
+      if (res.ok) {
+        const data = await res.json();
+        setCalificaciones(data);
+      } else {
+        console.error("Error al cargar calificaciones:", res.status);
+        setCalificaciones([]);
+      }
+    } catch { 
+      console.error("Error al cargar calificaciones"); 
+      setCalificaciones([]);
+    }
   }, [gradoSeleccionado, trimestreSeleccionado]);
 
   const loadUsuarios = useCallback(async () => {
@@ -761,7 +804,7 @@ export default function Home() {
                         <th className="w-10 p-1.5 border-l border-slate-600"></th>
                       </tr></thead>
                       <tbody>
-                        {estudiantes.map(est => {
+                        {(estudiantes || []).map(est => {
                           const calif = getCalificacion(est.id);
                           return <CalificacionRow key={`${est.id}-${asignaturaSeleccionada}-${trimestreSeleccionado}`} estudiante={est} materiaId={asignaturaSeleccionada} calificacion={calif} config={configActual} onSave={handleSaveCalificacion} saving={saving} />
                         })}
@@ -803,7 +846,7 @@ export default function Home() {
                   <Table className="text-base font-medium">
                     <TableHeader><TableRow className="bg-slate-100"><TableHead className="w-10 text-center h-12">N°</TableHead><TableHead>Nombre Completo</TableHead><TableHead className="w-16 text-center">Estado</TableHead><TableHead className="w-12 text-center">Acciones</TableHead></TableRow></TableHeader>
                     <TableBody>
-                      {estudiantes.length === 0 ? <TableRow><TableCell colSpan={4} className="text-center text-slate-400 py-8">No hay estudiantes</TableCell></TableRow> :
+                      {!estudiantes || estudiantes.length === 0 ? <TableRow><TableCell colSpan={4} className="text-center text-slate-400 py-8">No hay estudiantes</TableCell></TableRow> :
                         estudiantes.map(est => <TableRow key={est.id}>
                           <TableCell className="text-center font-medium">{est.numero}</TableCell>
                           <TableCell>{est.nombre}</TableCell>
@@ -1862,8 +1905,8 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
          <Button onClick={imprimirTodas} size="sm" className="bg-teal-600 hover:bg-teal-700 text-white shadow-sm transition-colors">
             <Printer className="h-4 w-4 mr-2" /> Imprimir Todas (Trimestre)
          </Button>
-      </div>
-      {estudiantes.map(est => {
+       </div>
+      {(estudiantes || []).map(est => {
         const califs = getCalifs(est.id), prom = calcProm(califs), open = expandedBoleta === est.id;
         return (
           <Card key={est.id} className="shadow-sm">
