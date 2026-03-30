@@ -93,7 +93,7 @@ export async function POST() {
         email: "monica.montesino.najarro@clases.edu.sv",
         password: "docente123",
         rol: "docente",
-        materias: [2, 3, 4, 5, 6, 7, 8, 9].map(g => ({ grado: g, mat: "Desarrollo Corporal y Educación Física" }))
+        materias: [2, 3, 4, 5, 6].map(g => ({ grado: g, mat: "Desarrollo Corporal" })).concat([7, 8, 9].map(g => ({ grado: g, mat: "Educación Física y Deportes" })))
       },
       {
         nombre: "Jaqueline Lissette Landaverde de Gómez",

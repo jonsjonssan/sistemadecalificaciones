@@ -84,13 +84,15 @@ export async function POST(request: NextRequest) {
     `;
     const grado = gradoResult[0];
 
+    const materia6ta = numero >= 7 ? "Educación Física y Deportes" : "Desarrollo Corporal";
+    
     const materiasNombres = [
       "Comunicación",
       "Números y Formas",
       "Ciencia y Tecnología",
       "Ciudadanía y Valores",
       "Artes",
-      "Desarrollo Corporal",
+      materia6ta,
       "Educación en la Fe",
     ];
 

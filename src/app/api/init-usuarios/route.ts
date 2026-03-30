@@ -220,10 +220,13 @@ export async function POST(request: NextRequest) {
       ]
     ));
 
-    // 12. Mónica Gissel Montesino Najarro - Desarrollo Corporal 2°-9°
+    // 12. Mónica Gissel Montesino Najarro - Desarrollo Corporal 2°-6°, Educación Física 7°-9°
     const materiasDesarrollo = [];
-    for (let i = 2; i <= 9; i++) {
+    for (let i = 2; i <= 6; i++) {
       materiasDesarrollo.push({ grado: i, materia: "Desarrollo Corporal" });
+    }
+    for (let i = 7; i <= 9; i++) {
+      materiasDesarrollo.push({ grado: i, materia: "Educación Física y Deportes" });
     }
     resultados.push(await crearUsuario(
       "Mónica Gissel Montesino Najarro",
