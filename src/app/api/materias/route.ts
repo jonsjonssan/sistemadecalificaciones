@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { sql } from "@/lib/neon";
 import { cookies } from "next/headers";
 
-// Listar materias
+async function getUsuarioSession() {
+  const cookieStore = await cookies();
+  const session = cookieStore.get("session");
+  if (!session) return null;
+  return JSON.parse(session.value);
+}
+
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const session = cookieStore.get("session");
-    
+    const session = await getUsuarioSession();
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
@@ -15,76 +19,61 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const gradoId = searchParams.get("gradoId");
     const todas = searchParams.get("todas");
-    const año = searchParams.get("año") ? parseInt(searchParams.get("año")!) : null;
+    const año = searchParams.get("año") ? parseInt(searchParams.get("año")!) : 2026;
 
-    // Obtener año actual de la configuración si no se especifica
-    let añoActual = año;
-    if (!añoActual) {
-      const config = await db.configuracionSistema.findFirst();
-      añoActual = config?.añoEscolar || 2026;
-    }
-
-    // Si se piden todas las materias con info de grado
+    let materias;
     if (todas === "true") {
-      const materias = await db.materia.findMany({
-        where: {
-          grado: {
-            año: añoActual
-          }
-        },
-        include: {
-          grado: {
-            select: {
-              id: true,
-              numero: true,
-              seccion: true,
-            },
-          },
-        },
-        orderBy: [
-          { grado: { numero: "asc" } },
-          { nombre: "asc" },
-        ],
-      });
-      return NextResponse.json(materias);
-    }
-
-    // Si se proporciona gradoId, filtrar por grado
-    if (gradoId) {
-      const materias = await db.materia.findMany({
-        where: { gradoId },
-        orderBy: { nombre: "asc" },
-      });
-      return NextResponse.json(materias);
-    }
-
-    // Por defecto, retornar todas del año actual
-    const materias = await db.materia.findMany({
-      where: {
+      materias = await sql`
+        SELECT m.*, g.id as grado_id, g.numero as grado_numero, g.seccion as grado_seccion
+        FROM "Materia" m
+        JOIN "Grado" g ON m."gradoId" = g.id
+        WHERE g.año = ${año}
+        ORDER BY g.numero, m.nombre
+      `;
+      
+      const formatted = materias.map((m: any) => ({
+        id: m.id,
+        nombre: m.nombre,
+        gradoId: m.gradoId,
         grado: {
-          año: añoActual
+          id: m.grado_id,
+          numero: m.grado_numero,
+          seccion: m.grado_seccion
         }
-      },
-      include: {
-        grado: {
-          select: {
-            id: true,
-            numero: true,
-            seccion: true,
-          },
-        },
-      },
-      orderBy: [
-        { grado: { numero: "asc" } },
-        { nombre: "asc" },
-      ],
-    });
-    return NextResponse.json(materias);
+      }));
+      return NextResponse.json(formatted);
+    }
+
+    if (gradoId) {
+      materias = await sql`
+        SELECT * FROM "Materia" 
+        WHERE "gradoId" = ${gradoId}
+        ORDER BY nombre
+      `;
+      return NextResponse.json(materias);
+    }
+
+    materias = await sql`
+      SELECT m.*, g.id as grado_id, g.numero as grado_numero, g.seccion as grado_seccion
+      FROM "Materia" m
+      JOIN "Grado" g ON m."gradoId" = g.id
+      WHERE g.año = ${año}
+      ORDER BY g.numero, m.nombre
+    `;
+    
+    const formatted = materias.map((m: any) => ({
+      id: m.id,
+      nombre: m.nombre,
+      gradoId: m.gradoId,
+      grado: {
+        id: m.grado_id,
+        numero: m.grado_numero,
+        seccion: m.grado_seccion
+      }
+    }));
+    return NextResponse.json(formatted);
   } catch (error) {
     console.error("Error al obtener materias:", error);
-    return NextResponse.json(
-      { error: "Error al obtener materias" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error al obtener materias" }, { status: 500 });
   }
 }

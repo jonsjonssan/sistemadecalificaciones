@@ -1,48 +1,56 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { sql } from "@/lib/neon";
 import { cookies } from "next/headers";
 
-// Listar estudiantes por grado
+async function getUsuarioSession() {
+  const cookieStore = await cookies();
+  const session = cookieStore.get("session");
+  if (!session) return null;
+  return JSON.parse(session.value);
+}
+
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const session = cookieStore.get("session");
-    
+    const session = await getUsuarioSession();
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
     const gradoId = searchParams.get("gradoId");
-
     const activos = searchParams.get("activos");
 
-    const where: Record<string, unknown> = {};
-    if (gradoId) where.gradoId = gradoId;
-    if (activos === "true") where.activo = true;
-    else if (activos === "false") where.activo = false;
-
-    const estudiantes = await db.estudiante.findMany({
-      where,
-      orderBy: [{ numero: "asc" }],
-    });
+    let estudiantes;
+    if (activos === "true") {
+      estudiantes = await sql`
+        SELECT * FROM "Estudiante" 
+        WHERE "gradoId" = ${gradoId} AND activo = true
+        ORDER BY numero
+      `;
+    } else if (activos === "false") {
+      estudiantes = await sql`
+        SELECT * FROM "Estudiante" 
+        WHERE "gradoId" = ${gradoId} AND activo = false
+        ORDER BY numero
+      `;
+    } else {
+      estudiantes = await sql`
+        SELECT * FROM "Estudiante" 
+        WHERE "gradoId" = ${gradoId}
+        ORDER BY numero
+      `;
+    }
 
     return NextResponse.json(estudiantes);
   } catch (error) {
     console.error("Error al obtener estudiantes:", error);
-    return NextResponse.json(
-      { error: "Error al obtener estudiantes" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error al obtener estudiantes" }, { status: 500 });
   }
 }
 
-// Crear estudiante
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const session = cookieStore.get("session");
-    
+    const session = await getUsuarioSession();
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
@@ -51,44 +59,33 @@ export async function POST(request: NextRequest) {
     const { nombre, gradoId } = data;
 
     if (!nombre || !gradoId) {
-      return NextResponse.json(
-      { error: "Nombre y grado son requeridos" },
-      { status: 400 }
-    );
+      return NextResponse.json({ error: "Nombre y grado son requeridos" }, { status: 400 });
     }
 
-    // Obtener el último número de lista
-    const ultimoEstudiante = await db.estudiante.findFirst({
-      where: { gradoId },
-      orderBy: [{ numero: "desc" }],
-    });
-    
-    const nuevoNumero = ultimoEstudiante ? ultimoEstudiante.numero + 1 : 1;
+    const ultimo = await sql`
+      SELECT numero FROM "Estudiante" 
+      WHERE "gradoId" = ${gradoId}
+      ORDER BY numero DESC LIMIT 1
+    `;
 
-    const estudiante = await db.estudiante.create({
-      data: {
-        numero: nuevoNumero,
-        nombre,
-        gradoId,
-      },
-    });
+    const nuevoNumero = ultimo.length > 0 ? ultimo[0].numero + 1 : 1;
 
-    return NextResponse.json(estudiante);
+    const result = await sql`
+      INSERT INTO "Estudiante" (numero, nombre, "gradoId")
+      VALUES (${nuevoNumero}, ${nombre}, ${gradoId})
+      RETURNING *
+    `;
+
+    return NextResponse.json(result[0]);
   } catch (error) {
     console.error("Error al crear estudiante:", error);
-    return NextResponse.json(
-      { error: "Error al crear estudiante" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error al crear estudiante" }, { status: 500 });
   }
 }
 
-// Crear múltiples estudiantes
 export async function PUT(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const session = cookieStore.get("session");
-    
+    const session = await getUsuarioSession();
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
@@ -96,51 +93,37 @@ export async function PUT(request: NextRequest) {
     const { estudiantes, gradoId } = await request.json();
 
     if (!estudiantes || !Array.isArray(estudiantes)) {
-      return NextResponse.json(
-        { error: "Se requiere un array de nombres" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Se requiere un array de nombres" }, { status: 400 });
     }
 
-    // Obtener el último número de lista
-    const ultimoEstudiante = await db.estudiante.findFirst({
-      where: { gradoId },
-      orderBy: [{ numero: "desc" }],
-    });
-    
-    const numeroInicial = ultimoEstudiante ? ultimoEstudiante.numero + 0 : 0;
+    const ultimo = await sql`
+      SELECT numero FROM "Estudiante" 
+      WHERE "gradoId" = ${gradoId}
+      ORDER BY numero DESC LIMIT 1
+    `;
+
+    const numeroInicial = ultimo.length > 0 ? ultimo[0].numero : 0;
 
     const creados: any[] = [];
     for (let i = 0; i < estudiantes.length; i++) {
-      const estudiante = await db.estudiante.create({
-        data: {
-          numero: numeroInicial + i + 1,
-          nombre: estudiantes[i],
-          gradoId,
-        },
-      });
-      creados.push(estudiante);
+      const result = await sql`
+        INSERT INTO "Estudiante" (numero, nombre, "gradoId")
+        VALUES (${numeroInicial + i + 1}, ${estudiantes[i]}, ${gradoId})
+        RETURNING *
+      `;
+      creados.push(result[0]);
     }
 
-    return NextResponse.json({ 
-      message: `${creados.length} estudiantes creados`,
-      estudiantes: creados,
-    });
+    return NextResponse.json({ message: `${creados.length} estudiantes creados`, estudiantes: creados });
   } catch (error) {
     console.error("Error al crear estudiantes:", error);
-    return NextResponse.json(
-      { error: "Error al crear estudiantes" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error al crear estudiantes" }, { status: 500 });
   }
 }
 
-// Eliminar estudiante (y sus calificaciones)
 export async function DELETE(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const session = cookieStore.get("session");
-    
+    const session = await getUsuarioSession();
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
@@ -152,22 +135,12 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "ID requerido" }, { status: 400 });
     }
 
-    // Eliminar calificaciones del estudiante
-    await db.calificacion.deleteMany({
-      where: { estudianteId: id },
-    });
-
-    // Eliminar estudiante
-    await db.estudiante.delete({
-      where: { id },
-    });
+    await sql`DELETE FROM "Calificacion" WHERE "estudianteId" = ${id}`;
+    await sql`DELETE FROM "Estudiante" WHERE id = ${id}`;
 
     return NextResponse.json({ message: "Estudiante eliminado" });
   } catch (error) {
     console.error("Error al eliminar estudiante:", error);
-    return NextResponse.json(
-      { error: "Error al eliminar estudiante" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error al eliminar estudiante" }, { status: 500 });
   }
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db as prisma } from "@/lib/db";
+import { sql } from "@/lib/neon";
 
 export async function GET(req: Request) {
   try {
@@ -18,24 +18,40 @@ export async function GET(req: Request) {
     }
     fecha.setUTCHours(0, 0, 0, 0);
 
-    const whereClause: any = {
-      fecha: fecha,
-      gradoId: gradoId,
-    };
+    let asistibilidades;
     if (materiaId) {
-      whereClause.materiaId = materiaId;
+      asistibilidades = await sql`
+        SELECT a.*, e.id as estudiante_id, e.nombre as estudiante_nombre, e.numero as estudiante_numero
+        FROM "Asistencia" a
+        JOIN "Estudiante" e ON a."estudianteId" = e.id
+        WHERE a.fecha = ${fecha} AND a."gradoId" = ${gradoId} AND a."materiaId" = ${materiaId}
+        ORDER BY e.numero
+      `;
+    } else {
+      asistibilidades = await sql`
+        SELECT a.*, e.id as estudiante_id, e.nombre as estudiante_nombre, e.numero as estudiante_numero
+        FROM "Asistencia" a
+        JOIN "Estudiante" e ON a."estudianteId" = e.id
+        WHERE a.fecha = ${fecha} AND a."gradoId" = ${gradoId}
+        ORDER BY e.numero
+      `;
     }
 
-    const asistencias = await prisma.asistencia.findMany({
-      where: whereClause,
-      include: {
-        estudiante: {
-          select: { id: true, nombre: true, numero: true }
-        }
+    const formatted = asistibilidades.map((a: any) => ({
+      id: a.id,
+      estudianteId: a.estudianteId,
+      fecha: a.fecha,
+      estado: a.estado,
+      gradoId: a.gradoId,
+      materiaId: a.materiaId,
+      estudiante: {
+        id: a.estudiante_id,
+        nombre: a.estudiante_nombre,
+        numero: a.estudiante_numero
       }
-    });
+    }));
 
-    return NextResponse.json(asistencias);
+    return NextResponse.json(formatted);
   } catch (error) {
     console.error("Error obteniendo asistencia:", error);
     return NextResponse.json({ error: "Error del servidor al obtener asistencia" }, { status: 500 });
@@ -57,37 +73,29 @@ export async function POST(req: Request) {
     }
     fecha.setUTCHours(0, 0, 0, 0);
 
-    // Guardar o actualizar asistenias en lote
     const resultados: any[] = [];
     for (const record of asistencias) {
       const { estudianteId, estado } = record;
       
-      const existente = await prisma.asistencia.findFirst({
-        where: {
-          estudianteId,
-          fecha,
-          gradoId,
-          materiaId: materiaId || null
-        }
-      });
+      const existente = await sql`
+        SELECT id FROM "Asistencia"
+        WHERE "estudianteId" = ${estudianteId} AND fecha = ${fecha} AND "gradoId" = ${gradoId} AND ("materiaId" = ${materiaId} OR (${materiaId} IS NULL AND "materiaId" IS NULL))
+        LIMIT 1
+      `;
 
-      if (existente) {
-        const actualizado = await prisma.asistencia.update({
-          where: { id: existente.id },
-          data: { estado }
-        });
-        resultados.push(actualizado);
+      if (existente.length > 0) {
+        await sql`
+          UPDATE "Asistencia" SET estado = ${estado}, "updatedAt" = NOW()
+          WHERE id = ${existente[0].id}
+        `;
+        resultados.push({ id: existente[0].id, estudianteId, estado });
       } else {
-        const nuevo = await prisma.asistencia.create({
-          data: {
-            estudianteId,
-            fecha,
-            estado,
-            gradoId,
-            materiaId: materiaId || null
-          }
-        });
-        resultados.push(nuevo);
+        const nuevo = await sql`
+          INSERT INTO "Asistencia" ("estudianteId", fecha, estado, "gradoId", "materiaId")
+          VALUES (${estudianteId}, ${fecha}, ${estado}, ${gradoId}, ${materiaId || null})
+          RETURNING *
+        `;
+        resultados.push(nuevo[0]);
       }
     }
 

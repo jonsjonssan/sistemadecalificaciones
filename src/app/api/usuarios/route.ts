@@ -1,83 +1,65 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { sql } from "@/lib/neon";
 import { cookies } from "next/headers";
 
-// Listar usuarios
+async function getUsuarioSession() {
+  const cookieStore = await cookies();
+  const session = cookieStore.get("session");
+  if (!session) return null;
+  return JSON.parse(session.value);
+}
+
 export async function GET() {
   try {
-    const cookieStore = await cookies();
-    const session = cookieStore.get("session");
-    
+    const session = await getUsuarioSession();
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const usuarios = await db.usuario.findMany({
-      select: {
-        id: true,
-        email: true,
-        nombre: true,
-        rol: true,
-        activo: true,
-        createdAt: true,
-        gradosComoTutor: {
-          select: {
-            id: true,
-            numero: true,
-            seccion: true,
-            año: true,
-          },
-        },
-        materiasAsignadas: {
-          select: {
-            id: true,
-            materia: {
-              select: {
-                id: true,
-                nombre: true,
-                grado: {
-                  select: {
-                    id: true,
-                    numero: true,
-                    seccion: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+    const usuarios = await sql`
+      SELECT u.id, u.email, u.nombre, u.rol, u.activo, u."createdAt"
+      FROM "Usuario" u
+      ORDER BY u."createdAt" DESC
+    `;
 
-    // Transformar la respuesta para incluir materias formateadas
-    const usuariosFormateados = usuarios.map(u => ({
-      ...u,
-      materias: u.materiasAsignadas?.map(m => ({
-        id: m.materia.id,
-        nombre: m.materia.nombre,
-        gradoId: m.materia.grado.id,
-        gradoNumero: m.materia.grado.numero,
-        gradoSeccion: m.materia.grado.seccion,
-      })) || [],
+    const usuariosFormateados = await Promise.all(usuarios.map(async (u: any) => {
+      const grados = await sql`
+        SELECT g.id, g.numero, g.seccion, g.año
+        FROM "Grado" g WHERE g."docenteId" = ${u.id}
+      `;
+
+      const materiasRaw = await sql`
+        SELECT dm.id, m.id as materia_id, m.nombre as materia_nombre, 
+               g.id as grado_id, g.numero as grado_numero, g.seccion as grado_seccion
+        FROM "DocenteMateria" dm
+        JOIN "Materia" m ON dm."materiaId" = m.id
+        JOIN "Grado" g ON m."gradoId" = g.id
+        WHERE dm."docenteId" = ${u.id}
+      `;
+
+      return {
+        ...u,
+        gradosComoTutor: grados,
+        materias: materiasRaw.map((m: any) => ({
+          id: m.materia_id,
+          nombre: m.materia_nombre,
+          gradoId: m.grado_id,
+          gradoNumero: m.grado_numero,
+          gradoSeccion: m.grado_seccion,
+        })),
+      };
     }));
 
     return NextResponse.json(usuariosFormateados);
   } catch (error) {
     console.error("Error al obtener usuarios:", error);
-    return NextResponse.json(
-      { error: "Error al obtener usuarios" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error al obtener usuarios" }, { status: 500 });
   }
 }
 
-// Crear usuario
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const session = cookieStore.get("session");
-    
+    const session = await getUsuarioSession();
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
@@ -90,74 +72,46 @@ export async function POST(request: NextRequest) {
     const { email, password, nombre, rol, gradosAsignados, materiasAsignadas } = await request.json();
 
     if (!email || !password || !nombre || !rol) {
-      return NextResponse.json(
-        { error: "Todos los campos son requeridos" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Todos los campos son requeridos" }, { status: 400 });
     }
 
-    const existeEmail = await db.usuario.findUnique({
-      where: { email },
-    });
-
-    if (existeEmail) {
-      return NextResponse.json(
-        { error: "El email ya está registrado" },
-        { status: 400 }
-      );
+    const existeEmail = await sql`SELECT id FROM "Usuario" WHERE email = ${email}`;
+    if (existeEmail.length > 0) {
+      return NextResponse.json({ error: "El email ya está registrado" }, { status: 400 });
     }
 
-    // Crear usuario
-    const nuevoUsuario = await db.usuario.create({
-      data: {
-        email,
-        password,
-        nombre,
-        rol,
-      },
-    });
+    const nuevoUsuario = await sql`
+      INSERT INTO "Usuario" (email, password, nombre, rol)
+      VALUES (${email}, ${password}, ${nombre}, ${rol})
+      RETURNING id, email, nombre, rol, activo
+    `;
 
-    // Si es docente y hay grados asignados (para grados 2-5, tutor)
     if (rol === "docente" && gradosAsignados && gradosAsignados.length > 0) {
-      await db.grado.updateMany({
-        where: { id: { in: gradosAsignados } },
-        data: { docenteId: nuevoUsuario.id },
-      });
+      for (const gradoId of gradosAsignados) {
+        await sql`UPDATE "Grado" SET "docenteId" = ${nuevoUsuario[0].id} WHERE id = ${gradoId}`;
+      }
     }
 
-    // Si es docente y hay materias asignadas (para grados 6-9, especialista)
     if (rol === "docente" && materiasAsignadas && materiasAsignadas.length > 0) {
-      await db.docenteMateria.createMany({
-        data: materiasAsignadas.map((materiaId: string) => ({
-          docenteId: nuevoUsuario.id,
-          materiaId,
-        })),
-        skipDuplicates: true,
-      });
+      for (const materiaId of materiasAsignadas) {
+        await sql`
+          INSERT INTO "DocenteMateria" ("docenteId", "materiaId")
+          VALUES (${nuevoUsuario[0].id}, ${materiaId})
+          ON CONFLICT DO NOTHING
+        `;
+      }
     }
 
-    return NextResponse.json({
-      id: nuevoUsuario.id,
-      email: nuevoUsuario.email,
-      nombre: nuevoUsuario.nombre,
-      rol: nuevoUsuario.rol,
-      activo: nuevoUsuario.activo,
-    });
+    return NextResponse.json(nuevoUsuario[0]);
   } catch (error) {
     console.error("Error al crear usuario:", error);
-    return NextResponse.json(
-      { error: "Error al crear usuario" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error al crear usuario" }, { status: 500 });
   }
 }
 
-// Actualizar usuario (incluyendo asignación de grados y materias)
 export async function PUT(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const session = cookieStore.get("session");
-    
+    const session = await getUsuarioSession();
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
@@ -173,82 +127,60 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "ID requerido" }, { status: 400 });
     }
 
-    // Prevenir que el admin se desactive a sí mismo
     if (id === usuarioActual.id && activo === false) {
       return NextResponse.json({ error: "No puedes desactivarte a ti mismo" }, { status: 400 });
     }
 
-    // Construir data de actualización
-    const updateData: Record<string, unknown> = {};
-    if (nombre) updateData.nombre = nombre;
-    if (rol) updateData.rol = rol;
-    if (activo !== undefined) updateData.activo = activo;
-    if (password) updateData.password = password;
-
-    // Actualizar usuario
-    const usuarioActualizado = await db.usuario.update({
-      where: { id },
-      data: updateData,
-    });
-
-    // Si es docente, actualizar grados asignados (tutor para grados 2-5)
-    if (gradosAsignados !== undefined) {
-      // Primero quitar asignaciones anteriores de este docente
-      await db.grado.updateMany({
-        where: { docenteId: id },
-        data: { docenteId: null },
-      });
+    if (nombre || rol || activo !== undefined || password) {
+      const current = await sql`SELECT * FROM "Usuario" WHERE id = ${id}`;
+      if (current.length === 0) {
+        return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+      }
       
-      // Asignar nuevos grados
-      if (gradosAsignados && gradosAsignados.length > 0) {
-        await db.grado.updateMany({
-          where: { id: { in: gradosAsignados } },
-          data: { docenteId: id },
-        });
+      await sql`
+        UPDATE "Usuario" SET
+          nombre = ${nombre || current[0].nombre},
+          rol = ${rol || current[0].rol},
+          activo = ${activo !== undefined ? activo : current[0].activo},
+          password = ${password || current[0].password},
+          "updatedAt" = NOW()
+        WHERE id = ${id}
+      `;
+    }
+
+    if (gradoAsignados !== undefined) {
+      await sql`UPDATE "Grado" SET "docenteId" = NULL WHERE "docenteId" = ${id}`;
+      if (gradoAsignados && gradoAsignados.length > 0) {
+        for (const gradoId of gradoAsignados) {
+          await sql`UPDATE "Grado" SET "docenteId" = ${id} WHERE id = ${gradoId}`;
+        }
       }
     }
 
-    // Si es docente, actualizar materias asignadas (especialista para grados 6-9)
     if (materiasAsignadas !== undefined) {
-      // Primero eliminar todas las asignaciones anteriores
-      await db.docenteMateria.deleteMany({
-        where: { docenteId: id },
-      });
-      
-      // Crear nuevas asignaciones
+      await sql`DELETE FROM "DocenteMateria" WHERE "docenteId" = ${id}`;
       if (materiasAsignadas && materiasAsignadas.length > 0) {
-        await db.docenteMateria.createMany({
-          data: materiasAsignadas.map((materiaId: string) => ({
-            docenteId: id,
-            materiaId,
-          })),
-          skipDuplicates: true,
-        });
+        for (const materiaId of materiasAsignadas) {
+          await sql`
+            INSERT INTO "DocenteMateria" ("docenteId", "materiaId")
+            VALUES (${id}, ${materiaId})
+            ON CONFLICT DO NOTHING
+          `;
+        }
       }
     }
 
-    return NextResponse.json({
-      id: usuarioActualizado.id,
-      email: usuarioActualizado.email,
-      nombre: usuarioActualizado.nombre,
-      rol: usuarioActualizado.rol,
-      activo: usuarioActualizado.activo,
-    });
+    const usuarioActualizado = await sql`SELECT id, email, nombre, rol, activo FROM "Usuario" WHERE id = ${id}`;
+    return NextResponse.json(usuarioActualizado[0]);
   } catch (error) {
     console.error("Error al actualizar usuario:", error);
-    return NextResponse.json(
-      { error: "Error al actualizar usuario" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error al actualizar usuario" }, { status: 500 });
   }
 }
 
-// Eliminar usuario
 export async function DELETE(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const session = cookieStore.get("session");
-    
+    const session = await getUsuarioSession();
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
@@ -265,33 +197,17 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "ID requerido" }, { status: 400 });
     }
 
-    // Prevenir que el admin se elimine a sí mismo
     if (id === usuarioActual.id) {
       return NextResponse.json({ error: "No puedes eliminarte a ti mismo" }, { status: 400 });
     }
 
-    // Quitar asignaciones de grados del usuario
-    await db.grado.updateMany({
-      where: { docenteId: id },
-      data: { docenteId: null },
-    });
-
-    // Eliminar asignaciones de materias
-    await db.docenteMateria.deleteMany({
-      where: { docenteId: id },
-    });
-
-    // Eliminar usuario
-    await db.usuario.delete({
-      where: { id },
-    });
+    await sql`UPDATE "Grado" SET "docenteId" = NULL WHERE "docenteId" = ${id}`;
+    await sql`DELETE FROM "DocenteMateria" WHERE "docenteId" = ${id}`;
+    await sql`DELETE FROM "Usuario" WHERE id = ${id}`;
 
     return NextResponse.json({ message: "Usuario eliminado" });
   } catch (error) {
     console.error("Error al eliminar usuario:", error);
-    return NextResponse.json(
-      { error: "Error al eliminar usuario" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error al eliminar usuario" }, { status: 500 });
   }
 }

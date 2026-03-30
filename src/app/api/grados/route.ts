@@ -1,56 +1,67 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { sql } from "@/lib/neon";
 import { cookies } from "next/headers";
 
-// Listar grados
+async function getUsuarioSession() {
+  const cookieStore = await cookies();
+  const session = cookieStore.get("session");
+  if (!session) return null;
+  return JSON.parse(session.value);
+}
+
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const session = cookieStore.get("session");
-    
+    const session = await getUsuarioSession();
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    // Obtener el año de la query o usar la configuración del sistema
     const { searchParams } = new URL(request.url);
-    let año = searchParams.get("año") ? parseInt(searchParams.get("año")!) : null;
-    
-    // Si no se especifica año, obtener el año actual de la configuración
-    if (!año) {
-      const config = await db.configuracionSistema.findFirst();
-      año = config?.añoEscolar || 2026;
+    let año = searchParams.get("año") ? parseInt(searchParams.get("año")!) : 2026;
+
+    const configResult = await sql`SELECT "añoEscolar" FROM "ConfiguracionSistema" LIMIT 1`;
+    if (configResult.length > 0 && !searchParams.get("año")) {
+      año = configResult[0].añoEscolar;
     }
 
-    const grados = await db.grado.findMany({
-      where: { año },
-      include: {
-        docente: {
-          select: { id: true, nombre: true, email: true },
-        },
-        _count: {
-          select: { estudiantes: true, materias: true },
-        },
-      },
-      orderBy: [{ numero: "asc" }, { seccion: "asc" }],
-    });
+    const grados = await sql`
+      SELECT g.*, 
+             d.id as docente_id, d.nombre as docente_nombre, d.email as docente_email,
+             (SELECT COUNT(*) FROM "Estudiante" e WHERE e."gradoId" = g.id) as estudiantes_count,
+             (SELECT COUNT(*) FROM "Materia" m WHERE m."gradoId" = g.id) as materias_count
+      FROM "Grado" g
+      LEFT JOIN "Usuario" d ON g."docenteId" = d.id
+      WHERE g.año = ${año}
+      ORDER BY g.numero, g.seccion
+    `;
 
-    return NextResponse.json(grados);
+    const formatted = grados.map((g: any) => ({
+      id: g.id,
+      numero: g.numero,
+      seccion: g.seccion,
+      año: g.año,
+      docenteId: g.docenteId,
+      docente: g.docente_id ? {
+        id: g.docente_id,
+        nombre: g.docente_nombre,
+        email: g.docente_email
+      } : null,
+      _count: {
+        estudiantes: parseInt(g.estudiantes_count) || 0,
+        materias: parseInt(g.materias_count) || 0
+      }
+    }));
+
+    return NextResponse.json(formatted);
   } catch (error) {
     console.error("Error al obtener grados:", error);
-    return NextResponse.json(
-      { error: "Error al obtener grados" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error al obtener grados" }, { status: 500 });
   }
 }
 
-// Crear grado
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const session = cookieStore.get("session");
-    
+    const session = await getUsuarioSession();
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
@@ -63,23 +74,16 @@ export async function POST(request: NextRequest) {
     const { numero, seccion, año, docenteId } = await request.json();
 
     if (!numero || numero < 2 || numero > 9) {
-      return NextResponse.json(
-        { error: "El grado debe estar entre 2 y 9" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "El grado debe estar entre 2 y 9" }, { status: 400 });
     }
 
-    const grado = await db.grado.create({
-      data: {
-        numero,
-        seccion: seccion || "A",
-        año: año || 2026,
-        docenteId,
-      },
-      include: { docente: true },
-    });
+    const gradoResult = await sql`
+      INSERT INTO "Grado" (numero, seccion, año, "docenteId")
+      VALUES (${numero}, ${seccion || "A"}, ${año || 2026}, ${docenteId})
+      RETURNING *
+    `;
+    const grado = gradoResult[0];
 
-    // Crear las 7 materias por defecto
     const materiasNombres = [
       "Comunicación",
       "Números y Formas",
@@ -91,33 +95,37 @@ export async function POST(request: NextRequest) {
     ];
 
     for (const nombre of materiasNombres) {
-      const materia = await db.materia.create({
-        data: { nombre, gradoId: grado.id },
-      });
+      const materiaResult = await sql`
+        INSERT INTO "Materia" (nombre, "gradoId")
+        VALUES (${nombre}, ${grado.id})
+        RETURNING *
+      `;
+      const materia = materiaResult[0];
       
-      // Crear configuración para cada trimestre
       for (let trimestre = 1; trimestre <= 3; trimestre++) {
-        await db.configActividad.create({
-          data: {
-            materiaId: materia.id,
-            trimestre,
-            numActividadesCotidianas: 4,
-            numActividadesIntegradoras: 1,
-            tieneExamen: true,
-            porcentajeAC: 35.0,
-            porcentajeAI: 35.0,
-            porcentajeExamen: 30.0,
-          },
-        });
+        await sql`
+          INSERT INTO "ConfigActividad" (
+            "materiaId", trimestre, 
+            "numActividadesCotidianas", "numActividadesIntegradoras", 
+            "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen"
+          ) VALUES (
+            ${materia.id}, ${trimestre},
+            4, 1, true, 35.0, 35.0, 30.0
+          )
+        `;
       }
     }
 
-    return NextResponse.json(grado);
+    const gradoConDocente = await sql`
+      SELECT g.*, d.id as docente_id, d.nombre as docente_nombre, d.email as docente_email
+      FROM "Grado" g
+      LEFT JOIN "Usuario" d ON g."docenteId" = d.id
+      WHERE g.id = ${grado.id}
+    `;
+
+    return NextResponse.json(gradoConDocente[0]);
   } catch (error) {
     console.error("Error al crear grado:", error);
-    return NextResponse.json(
-      { error: "Error al crear grado" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error al crear grado" }, { status: 500 });
   }
 }

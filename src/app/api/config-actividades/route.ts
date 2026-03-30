@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { sql } from "@/lib/neon";
 import { cookies } from "next/headers";
 
-// Obtener configuración
+async function getUsuarioSession() {
+  const cookieStore = await cookies();
+  const session = cookieStore.get("session");
+  if (!session) return null;
+  return JSON.parse(session.value);
+}
+
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const session = cookieStore.get("session");
-    
+    const session = await getUsuarioSession();
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
@@ -17,34 +21,28 @@ export async function GET(request: NextRequest) {
     const gradoId = searchParams.get("gradoId");
     const trimestre = searchParams.get("trimestre");
 
-    // Si se proporciona materiaId, obtener configuración específica
     if (materiaId && trimestre) {
-      let config = await db.configActividad.findUnique({
-        where: {
-          materiaId_trimestre: {
-            materiaId,
-            trimestre: parseInt(trimestre),
-          },
-        },
-      });
+      let configResult = await sql`
+        SELECT * FROM "ConfigActividad"
+        WHERE "materiaId" = ${materiaId} AND trimestre = ${parseInt(trimestre!)}
+      `;
 
-      // Si no existe, crear una configuración por defecto
-      if (!config) {
-        config = await db.configActividad.create({
-          data: {
-            materiaId,
-            trimestre: parseInt(trimestre),
-            numActividadesCotidianas: 4,
-            numActividadesIntegradoras: 1,
-            tieneExamen: true,
-            porcentajeAC: 35.0,
-            porcentajeAI: 35.0,
-            porcentajeExamen: 30.0,
-          },
-        });
+      if (configResult.length === 0) {
+        const newConfig = await sql`
+          INSERT INTO "ConfigActividad" (
+            "materiaId", trimestre, 
+            "numActividadesCotidianas", "numActividadesIntegradoras", 
+            "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen"
+          ) VALUES (
+            ${materiaId}, ${parseInt(trimestre!)},
+            4, 1, true, 35.0, 35.0, 30.0
+          )
+          RETURNING *
+        `;
+        configResult = newConfig;
       }
 
-      // Transformar al formato esperado por el frontend
+      const config = configResult[0];
       return NextResponse.json({
         id: config.id,
         materiaId: config.materiaId,
@@ -58,48 +56,33 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Si se proporciona gradoId, obtener todas las configuraciones del grado
     if (gradoId && trimestre) {
-      const materias = await db.materia.findMany({
-        where: { gradoId },
-        select: { id: true, nombre: true },
-      });
+      const materias = await sql`
+        SELECT id, nombre FROM "Materia" WHERE "gradoId" = ${gradoId}
+      `;
 
-      const materiaIds = materias.map(m => m.id);
-
-      const configs = await db.configActividad.findMany({
-        where: {
-          materiaId: { in: materiaIds },
-          trimestre: parseInt(trimestre),
-        },
-      });
-
-      // Para cada materia sin configuración, crear una por defecto
       const result: any[] = [];
       for (const materia of materias) {
-        const existingConfig = configs.find(c => c.materiaId === materia.id);
-        if (existingConfig) {
-          result.push({
-            ...existingConfig,
-            materiaNombre: materia.nombre,
-          });
+        let configResult = await sql`
+          SELECT * FROM "ConfigActividad"
+          WHERE "materiaId" = ${materia.id} AND trimestre = ${parseInt(trimestre!)}
+        `;
+
+        if (configResult.length === 0) {
+          const newConfig = await sql`
+            INSERT INTO "ConfigActividad" (
+              "materiaId", trimestre, 
+              "numActividadesCotidianas", "numActividadesIntegradoras", 
+              "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen"
+            ) VALUES (
+              ${materia.id}, ${parseInt(trimestre!)},
+              4, 1, true, 35.0, 35.0, 30.0
+            )
+            RETURNING *
+          `;
+          result.push({ ...newConfig[0], materiaNombre: materia.nombre });
         } else {
-          const newConfig = await db.configActividad.create({
-            data: {
-              materiaId: materia.id,
-              trimestre: parseInt(trimestre),
-              numActividadesCotidianas: 4,
-              numActividadesIntegradoras: 1,
-              tieneExamen: true,
-              porcentajeAC: 35.0,
-              porcentajeAI: 35.0,
-              porcentajeExamen: 30.0,
-            },
-          });
-          result.push({
-            ...newConfig,
-            materiaNombre: materia.nombre,
-          });
+          result.push({ ...configResult[0], materiaNombre: materia.nombre });
         }
       }
 
@@ -109,18 +92,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(null);
   } catch (error) {
     console.error("Error al obtener configuración:", error);
-    return NextResponse.json(
-      { error: "Error al obtener configuración" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error al obtener configuración" }, { status: 500 });
   }
 }
 
-// Crear o actualizar configuración
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const session = cookieStore.get("session");
+    const session = await getUsuarioSession();
     if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
     const data = await request.json();
@@ -139,25 +117,80 @@ export async function POST(request: NextRequest) {
     };
 
     if (aplicarATodasLasMateriasDelGrado && gradoId) {
-      const materias = await db.materia.findMany({ where: { gradoId } });
-      const updates = materias.map(m => db.configActividad.upsert({
-        where: { materiaId_trimestre: { materiaId: m.id, trimestre: baseData.trimestre } },
-        create: { materiaId: m.id, ...baseData },
-        update: baseData
-      }));
-      await Promise.all(updates);
+      const materias = await sql`SELECT id FROM "Materia" WHERE "gradoId" = ${gradoId}`;
+      
+      for (const materia of materias) {
+        const exist = await sql`
+          SELECT id FROM "ConfigActividad"
+          WHERE "materiaId" = ${materia.id} AND trimestre = ${baseData.trimestre}
+        `;
+
+        if (exist.length > 0) {
+          await sql`
+            UPDATE "ConfigActividad" SET
+              "numActividadesCotidianas" = ${baseData.numActividadesCotidianas},
+              "numActividadesIntegradoras" = ${baseData.numActividadesIntegradoras},
+              "tieneExamen" = ${baseData.tieneExamen},
+              "porcentajeAC" = ${baseData.porcentajeAC},
+              "porcentajeAI" = ${baseData.porcentajeAI},
+              "porcentajeExamen" = ${baseData.porcentajeExamen},
+              "updatedAt" = NOW()
+            WHERE "materiaId" = ${materia.id} AND trimestre = ${baseData.trimestre}
+          `;
+        } else {
+          await sql`
+            INSERT INTO "ConfigActividad" (
+              "materiaId", trimestre, 
+              "numActividadesCotidianas", "numActividadesIntegradoras", 
+              "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen"
+            ) VALUES (
+              ${materia.id}, ${baseData.trimestre},
+              ${baseData.numActividadesCotidianas}, ${baseData.numActividadesIntegradoras},
+              ${baseData.tieneExamen}, ${baseData.porcentajeAC}, ${baseData.porcentajeAI}, ${baseData.porcentajeExamen}
+            )
+          `;
+        }
+      }
       return NextResponse.json({ success: true, count: materias.length });
     }
 
     if (!materiaId) return NextResponse.json({ error: "materiaId es requerido" }, { status: 400 });
 
-    const config = await db.configActividad.upsert({
-      where: { materiaId_trimestre: { materiaId, trimestre: baseData.trimestre } },
-      create: { materiaId, ...baseData },
-      update: baseData,
-    });
+    const exist = await sql`
+      SELECT id FROM "ConfigActividad"
+      WHERE "materiaId" = ${materiaId} AND trimestre = ${baseData.trimestre}
+    `;
 
-    return NextResponse.json(config);
+    let result;
+    if (exist.length > 0) {
+      result = await sql`
+        UPDATE "ConfigActividad" SET
+          "numActividadesCotidianas" = ${baseData.numActividadesCotidianas},
+          "numActividadesIntegradoras" = ${baseData.numActividadesIntegradoras},
+          "tieneExamen" = ${baseData.tieneExamen},
+          "porcentajeAC" = ${baseData.porcentajeAC},
+          "porcentajeAI" = ${baseData.porcentajeAI},
+          "porcentajeExamen" = ${baseData.porcentajeExamen},
+          "updatedAt" = NOW()
+        WHERE "materiaId" = ${materiaId} AND trimestre = ${baseData.trimestre}
+        RETURNING *
+      `;
+    } else {
+      result = await sql`
+        INSERT INTO "ConfigActividad" (
+          "materiaId", trimestre, 
+          "numActividadesCotidianas", "numActividadesIntegradoras", 
+          "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen"
+        ) VALUES (
+          ${materiaId}, ${baseData.trimestre},
+          ${baseData.numActividadesCotidianas}, ${baseData.numActividadesIntegradoras},
+          ${baseData.tieneExamen}, ${baseData.porcentajeAC}, ${baseData.porcentajeAI}, ${baseData.porcentajeExamen}
+        )
+        RETURNING *
+      `;
+    }
+
+    return NextResponse.json(result[0]);
   } catch (error) {
     console.error("Error al guardar configuración:", error);
     return NextResponse.json({ error: "Error al guardar configuración" }, { status: 500 });

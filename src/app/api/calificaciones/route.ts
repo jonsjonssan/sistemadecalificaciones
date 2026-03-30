@@ -1,152 +1,108 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { sql } from "@/lib/neon";
 import { cookies } from "next/headers";
 
-// Calcular promedio de actividades
 function calcularPromedioActividades(notas: (number | null)[]): number | null {
   const notasValidas = notas.filter((n) => n !== null && n !== undefined) as number[];
   if (notasValidas.length === 0) return null;
   return notasValidas.reduce((a, b) => a + b, 0) / notasValidas.length;
 }
 
-// Verificar si el usuario tiene acceso a una materia
-async function verificarAccesoMateria(usuarioId: string, materiaId: string): Promise<boolean> {
-  const usuario = await db.usuario.findUnique({
-    where: { id: usuarioId },
-    include: {
-      gradosComoTutor: { select: { id: true } },
-      materiasAsignadas: { select: { materiaId: true } },
-    },
-  });
-  
-  if (!usuario) return false;
-  if (usuario.rol === "admin") return true;
-  
-  // Verificar si es tutor del grado de la materia
-  const materia = await db.materia.findUnique({
-    where: { id: materiaId },
-    include: { grado: true },
-  });
-  
-  if (!materia) return false;
-  
-  // Si es tutor del grado
-  if (usuario.gradosComoTutor.some(g => g.id === materia.gradoId)) return true;
-  
-  // Si tiene asignada la materia específica
-  if (usuario.materiasAsignadas.some(m => m.materiaId === materiaId)) return true;
-  
-  return false;
+async function getUsuarioSession() {
+  const cookieStore = await cookies();
+  const session = cookieStore.get("session");
+  if (!session) return null;
+  return JSON.parse(session.value);
 }
 
-// Verificar si el usuario tiene acceso a un grado
-async function verificarAccesoGrado(usuarioId: string, gradoId: string): Promise<boolean> {
-  const usuario = await db.usuario.findUnique({
-    where: { id: usuarioId },
-    include: {
-      gradosComoTutor: { select: { id: true } },
-      materiasAsignadas: { 
-        select: { materia: { select: { gradoId: true } } } 
-      },
-    },
-  });
-  
-  if (!usuario) return false;
-  if (usuario.rol === "admin") return true;
-  
-  // Si es tutor del grado
-  if (usuario.gradosComoTutor.some(g => g.id === gradoId)) return true;
-  
-  // Si tiene alguna materia en ese grado
-  if (usuario.materiasAsignadas.some(m => m.materia.gradoId === gradoId)) return true;
-  
-  return false;
-}
-
-// Listar calificaciones
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const session = cookieStore.get("session");
-    
+    const session = await getUsuarioSession();
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const sessionData = JSON.parse(session.value);
     const { searchParams } = new URL(request.url);
-    const estudianteId = searchParams.get("estudianteId");
-    const materiaId = searchParams.get("materiaId");
     const gradoId = searchParams.get("gradoId");
+    const materiaId = searchParams.get("materiaId");
     const trimestre = searchParams.get("trimestre");
-
-    // Verificar acceso si se especifica un grado
-    if (gradoId) {
-      const tieneAcceso = await verificarAccesoGrado(sessionData.id, gradoId);
-      if (!tieneAcceso) {
-        return NextResponse.json({ error: "No tiene acceso a este grado" }, { status: 403 });
-      }
-    }
-
-    // Verificar acceso si se especifica una materia
-    if (materiaId) {
-      const tieneAcceso = await verificarAccesoMateria(sessionData.id, materiaId);
-      if (!tieneAcceso) {
-        return NextResponse.json({ error: "No tiene acceso a esta materia" }, { status: 403 });
-      }
-    }
-
-    const where: Record<string, unknown> = {};
-    if (estudianteId) where.estudianteId = estudianteId;
-    if (materiaId) where.materiaId = materiaId;
-    const anual = searchParams.get("anual");
-    if (trimestre && anual !== "true") where.trimestre = parseInt(trimestre);
+    const estudianteId = searchParams.get("estudianteId");
 
     let calificaciones;
-
-    if (gradoId && !estudianteId) {
-      // Obtener calificaciones de todos los estudiantes del grado
-      calificaciones = await db.calificacion.findMany({
-        where: {
-          ...where,
-          estudiante: { gradoId },
-        },
-        include: {
-          estudiante: true,
-          materia: true,
-        },
-      });
+    if (materiaId && trimestre) {
+      calificaciones = await sql`
+        SELECT c.*, e.id as estudiante_id, e.numero as estudiante_numero, e.nombre as estudiante_nombre, 
+               m.nombre as materia_nombre, m.id as materia_id
+        FROM "Calificacion" c
+        JOIN "Estudiante" e ON c."estudianteId" = e.id
+        JOIN "Materia" m ON c."materiaId" = m.id
+        WHERE e."gradoId" = ${gradoId}
+          AND c."materiaId" = ${materiaId}
+          AND c.trimestre = ${parseInt(trimestre!)}
+        ORDER BY e.numero
+      `;
+    } else if (estudianteId) {
+      calificaciones = await sql`
+        SELECT c.*, e.id as estudiante_id, e.numero as estudiante_numero, e.nombre as estudiante_nombre, 
+               m.nombre as materia_nombre, m.id as materia_id
+        FROM "Calificacion" c
+        JOIN "Estudiante" e ON c."estudianteId" = e.id
+        JOIN "Materia" m ON c."materiaId" = m.id
+        WHERE c."estudianteId" = ${estudianteId}
+        ORDER BY e.numero
+      `;
+    } else if (gradoId) {
+      calificaciones = await sql`
+        SELECT c.*, e.id as estudiante_id, e.numero as estudiante_numero, e.nombre as estudiante_nombre, 
+               m.nombre as materia_nombre, m.id as materia_id
+        FROM "Calificacion" c
+        JOIN "Estudiante" e ON c."estudianteId" = e.id
+        JOIN "Materia" m ON c."materiaId" = m.id
+        WHERE e."gradoId" = ${gradoId}
+        ORDER BY e.numero
+      `;
     } else {
-      calificaciones = await db.calificacion.findMany({
-        where,
-        include: {
-          estudiante: true,
-          materia: true,
-        },
-      });
+      calificaciones = [];
     }
 
-    return NextResponse.json(calificaciones);
+    const formatted = calificaciones.map((c: any) => ({
+      id: c.id,
+      estudianteId: c.estudianteId,
+      materiaId: c.materiaId,
+      trimestre: c.trimestre,
+      actividadesCotidianas: c.actividadesCotidianas,
+      calificacionAC: c.calificacionAC,
+      actividadesIntegradoras: c.actividadesIntegradoras,
+      calificacionAI: c.calificacionAI,
+      examenTrimestral: c.examenTrimestral,
+      promedioFinal: c.promedioFinal,
+      recuperacion: c.recuperacion,
+      estudiante: {
+        id: c.estudiante_id,
+        numero: c.estudiante_numero,
+        nombre: c.estudiante_nombre,
+        gradoId: gradoId
+      },
+      materia: {
+        id: c.materia_id,
+        nombre: c.materia_nombre
+      }
+    }));
+
+    return NextResponse.json(formatted);
   } catch (error) {
     console.error("Error al obtener calificaciones:", error);
-    return NextResponse.json(
-      { error: "Error al obtener calificaciones" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error al obtener calificaciones" }, { status: 500 });
   }
 }
 
-// Crear o actualizar calificación
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const session = cookieStore.get("session");
-    
+    const session = await getUsuarioSession();
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const sessionData = JSON.parse(session.value);
     const data = await request.json();
     const {
       estudianteId,
@@ -159,19 +115,9 @@ export async function POST(request: NextRequest) {
     } = data;
 
     if (!estudianteId || !materiaId || !trimestre) {
-      return NextResponse.json(
-        { error: "Estudiante, materia y trimestre son requeridos" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Estudiante, materia y trimestre son requeridos" }, { status: 400 });
     }
 
-    // Verificar acceso a la materia
-    const tieneAcceso = await verificarAccesoMateria(sessionData.id, materiaId);
-    if (!tieneAcceso) {
-      return NextResponse.json({ error: "No tiene acceso a esta materia" }, { status: 403 });
-    }
-
-    // Parsear arrays JSON
     let acNotas: (number | null)[] = [];
     let aiNotas: (number | null)[] = [];
     
@@ -191,23 +137,18 @@ export async function POST(request: NextRequest) {
       } catch { aiNotas = []; }
     }
 
-    // Obtener configuración de la materia para calcular promedios
-    const config = await db.configActividad.findUnique({
-      where: {
-        materiaId_trimestre: {
-          materiaId,
-          trimestre: parseInt(String(trimestre)),
-        },
-      },
-    });
-
-    // Calcular promedios
     const calificacionAC = calcularPromedioActividades(acNotas);
     const calificacionAI = calcularPromedioActividades(aiNotas);
 
-    // Calcular promedio final con porcentajes de configuración
+    const configResult = await sql`
+      SELECT "porcentajeAC", "porcentajeAI", "tieneExamen", "porcentajeExamen"
+      FROM "ConfigActividad"
+      WHERE "materiaId" = ${materiaId} AND trimestre = ${parseInt(String(trimestre))}
+    `;
+
     let promedioFinal: number | null = null;
-    if (config) {
+    if (configResult.length > 0) {
+      const config = configResult[0];
       const porcAC = config.porcentajeAC / 100;
       const porcAI = config.porcentajeAI / 100;
       const porcExam = config.tieneExamen ? config.porcentajeExamen / 100 : 0;
@@ -228,7 +169,6 @@ export async function POST(request: NextRequest) {
         }
       }
     } else {
-      // Usar porcentajes por defecto (35%, 35%, 30%)
       const totalPonderacion = 
         (calificacionAC !== null ? 0.35 : 0) + 
         (calificacionAI !== null ? 0.35 : 0) + 
@@ -246,165 +186,64 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Usar upsert para crear o actualizar
-    const calificacion = await db.calificacion.upsert({
-      where: {
-        estudianteId_materiaId_trimestre: {
-          estudianteId,
-          materiaId,
-          trimestre: parseInt(String(trimestre)),
-        },
-      },
-      create: {
-        estudianteId,
-        materiaId,
-        trimestre: parseInt(String(trimestre)),
-        actividadesCotidianas: JSON.stringify(acNotas),
-        calificacionAC,
-        actividadesIntegradoras: JSON.stringify(aiNotas),
-        calificacionAI,
-        examenTrimestral,
-        promedioFinal,
-        recuperacion,
-      },
-      update: {
-        actividadesCotidianas: JSON.stringify(acNotas),
-        calificacionAC,
-        actividadesIntegradoras: JSON.stringify(aiNotas),
-        calificacionAI,
-        examenTrimestral,
-        promedioFinal,
-        recuperacion,
-      },
-      include: {
-        estudiante: true,
-        materia: true,
-      },
-    });
+    const existResult = await sql`
+      SELECT id FROM "Calificacion"
+      WHERE "estudianteId" = ${estudianteId} AND "materiaId" = ${materiaId} AND trimestre = ${parseInt(String(trimestre))}
+    `;
 
-    return NextResponse.json(calificacion);
+    let result;
+    if (existResult.length > 0) {
+      result = await sql`
+        UPDATE "Calificacion" 
+        SET actividadesCotidianas = ${JSON.stringify(acNotas)},
+            calificacionAC = ${calificacionAC},
+            actividadesIntegradoras = ${JSON.stringify(aiNotas)},
+            calificacionAI = ${calificacionAI},
+            examenTrimestral = ${examenTrimestral},
+            promedioFinal = ${promedioFinal},
+            recuperacion = ${recuperacion},
+            "updatedAt" = NOW()
+        WHERE id = ${existResult[0].id}
+        RETURNING *
+      `;
+    } else {
+      result = await sql`
+        INSERT INTO "Calificacion" (
+          "estudianteId", "materiaId", trimestre,
+          actividadesCotidianas, calificacionAC,
+          actividadesIntegradoras, calificacionAI,
+          examenTrimestral, promedioFinal, recuperacion
+        ) VALUES (
+          ${estudianteId}, ${materiaId}, ${parseInt(String(trimestre))},
+          ${JSON.stringify(acNotas)}, ${calificacionAC},
+          ${JSON.stringify(aiNotas)}, ${calificacionAI},
+          ${examenTrimestral}, ${promedioFinal}, ${recuperacion}
+        )
+        RETURNING *
+      `;
+    }
+
+    const calif = result[0];
+    const estudiante = await sql`SELECT id, numero, nombre, "gradoId" FROM "Estudiante" WHERE id = ${estudianteId}`;
+    const materia = await sql`SELECT id, nombre FROM "Materia" WHERE id = ${materiaId}`;
+
+    return NextResponse.json({
+      id: calif.id,
+      estudianteId: calif.estudianteId,
+      materiaId: calif.materiaId,
+      trimestre: calif.trimestre,
+      actividadesCotidianas: calif.actividadesCotidianas,
+      calificacionAC: calif.calificacionAC,
+      actividadesIntegradoras: calif.actividadesIntegradoras,
+      calificacionAI: calif.calificacionAI,
+      examenTrimestral: calif.examenTrimestral,
+      promedioFinal: calif.promedioFinal,
+      recuperacion: calif.recuperacion,
+      estudiante: estudiante[0],
+      materia: materia[0]
+    });
   } catch (error) {
     console.error("Error al guardar calificación:", error);
-    return NextResponse.json(
-      { error: "Error al guardar calificación" },
-      { status: 500 }
-    );
-  }
-}
-
-// Actualizar múltiples calificaciones
-export async function PUT(request: NextRequest) {
-  try {
-    const cookieStore = await cookies();
-    const session = cookieStore.get("session");
-    
-    if (!session) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
-
-    const { calificaciones } = await request.json();
-
-    if (!Array.isArray(calificaciones)) {
-      return NextResponse.json(
-        { error: "Se requiere un array de calificaciones" },
-        { status: 400 }
-      );
-    }
-
-    const resultados: any[] = [];
-
-    for (const data of calificaciones) {
-      const {
-        estudianteId,
-        materiaId,
-        trimestre,
-        actividadesCotidianas,
-        actividadesIntegradoras,
-        examenTrimestral,
-        recuperacion,
-      } = data;
-
-      // Parsear arrays
-      let acNotas: (number | null)[] = [];
-      let aiNotas: (number | null)[] = [];
-      
-      if (actividadesCotidianas) {
-        try {
-          acNotas = typeof actividadesCotidianas === 'string' 
-            ? JSON.parse(actividadesCotidianas) 
-            : actividadesCotidianas;
-        } catch { acNotas = []; }
-      }
-      
-      if (actividadesIntegradoras) {
-        try {
-          aiNotas = typeof actividadesIntegradoras === 'string' 
-            ? JSON.parse(actividadesIntegradoras) 
-            : actividadesIntegradoras;
-        } catch { aiNotas = []; }
-      }
-
-      const calificacionAC = calcularPromedioActividades(acNotas);
-      const calificacionAI = calcularPromedioActividades(aiNotas);
-
-      // Calcular promedio final (porcentajes por defecto)
-      const totalPonderacion = 
-        (calificacionAC !== null ? 0.35 : 0) + 
-        (calificacionAI !== null ? 0.35 : 0) + 
-        (examenTrimestral !== null ? 0.30 : 0);
-
-      let promedioFinal: number | null = null;
-      if (totalPonderacion > 0) {
-        const suma = 
-          (calificacionAC ?? 0) * 0.35 + 
-          (calificacionAI ?? 0) * 0.35 + 
-          (examenTrimestral ?? 0) * 0.30;
-        promedioFinal = suma / totalPonderacion;
-        if (recuperacion !== null) {
-          promedioFinal = Math.min(10, promedioFinal + recuperacion);
-        }
-      }
-
-      const resultado = await db.calificacion.upsert({
-        where: {
-          estudianteId_materiaId_trimestre: {
-            estudianteId,
-            materiaId,
-            trimestre,
-          },
-        },
-        create: {
-          estudianteId,
-          materiaId,
-          trimestre,
-          actividadesCotidianas: JSON.stringify(acNotas),
-          calificacionAC,
-          actividadesIntegradoras: JSON.stringify(aiNotas),
-          calificacionAI,
-          examenTrimestral,
-          promedioFinal,
-          recuperacion,
-        },
-        update: {
-          actividadesCotidianas: JSON.stringify(acNotas),
-          calificacionAC,
-          actividadesIntegradoras: JSON.stringify(aiNotas),
-          calificacionAI,
-          examenTrimestral,
-          promedioFinal,
-          recuperacion,
-        },
-      });
-
-      resultados.push(resultado);
-    }
-
-    return NextResponse.json({ message: "Calificaciones guardadas", count: resultados.length });
-  } catch (error) {
-    console.error("Error al guardar calificaciones:", error);
-    return NextResponse.json(
-      { error: "Error al guardar calificaciones" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error al guardar calificación" }, { status: 500 });
   }
 }
