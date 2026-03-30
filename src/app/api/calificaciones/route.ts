@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
         FROM "Calificacion" c
         JOIN "Estudiante" e ON c."estudianteId" = e.id
         JOIN "Materia" m ON c."materiaId" = m.id
-        WHERE (e."gradoId" = ${gradoId} OR c."gradoId" = ${gradoId})
+        WHERE e."gradoId" = ${gradoId}
           AND c."materiaId" = ${materiaId}
           AND c.trimestre = ${parseInt(trimestre!)}
         ORDER BY e.numero
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
         FROM "Calificacion" c
         JOIN "Estudiante" e ON c."estudianteId" = e.id
         JOIN "Materia" m ON c."materiaId" = m.id
-        WHERE (e."gradoId" = ${gradoId} OR c."gradoId" = ${gradoId})
+        WHERE e."gradoId" = ${gradoId}
         ORDER BY e.numero
       `;
     } else {
@@ -215,10 +215,6 @@ export async function POST(request: NextRequest) {
             examenTrimestral = ${examenTrimestral},
             promedioFinal = ${promedioFinal},
             recuperacion = ${recuperacion},
-            "gradoId" = COALESCE("gradoId", ${gradoIdCapturado}),
-            "gradoNombre" = COALESCE("gradoNombre", ${gradoNombreCapturado}),
-            "añoEscolar" = COALESCE("añoEscolar", ${añoEscolarCapturado}),
-            "materiaNombre" = COALESCE("materiaNombre", ${materiaNombreCapturada}),
             "updatedAt" = NOW()
         WHERE id = ${existResult[0].id}
         RETURNING *
@@ -229,14 +225,12 @@ export async function POST(request: NextRequest) {
           "estudianteId", "materiaId", trimestre,
           actividadesCotidianas, calificacionAC,
           actividadesIntegradoras, calificacionAI,
-          examenTrimestral, promedioFinal, recuperacion,
-          "gradoId", "gradoNombre", "añoEscolar", "materiaNombre"
+          examenTrimestral, promedioFinal, recuperacion
         ) VALUES (
           ${estudianteId}, ${materiaId}, ${parseInt(String(trimestre))},
           ${JSON.stringify(acNotas)}, ${calificacionAC},
           ${JSON.stringify(aiNotas)}, ${calificacionAI},
-          ${examenTrimestral}, ${promedioFinal}, ${recuperacion},
-          ${gradoIdCapturado}, ${gradoNombreCapturado}, ${añoEscolarCapturado}, ${materiaNombreCapturada}
+          ${examenTrimestral}, ${promedioFinal}, ${recuperacion}
         )
         RETURNING *
       `;
