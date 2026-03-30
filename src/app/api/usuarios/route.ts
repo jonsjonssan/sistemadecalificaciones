@@ -121,7 +121,8 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Solo administradores pueden modificar usuarios" }, { status: 403 });
     }
 
-    const { id, nombre, rol, activo, password, gradosAsignados, materiasAsignadas } = await request.json();
+    const { id, nombre, rol, activo, password, gradoAsignados: gradoAsig, gradoAsignados, materiasAsignadas } = await request.json();
+    const gradosDelFrontend = gradoAsig || gradoAsignados;
 
     if (!id) {
       return NextResponse.json({ error: "ID requerido" }, { status: 400 });
@@ -148,10 +149,10 @@ export async function PUT(request: NextRequest) {
       `;
     }
 
-    if (gradoAsignados !== undefined) {
+    if (gradoDelFrontend !== undefined) {
       await sql`UPDATE "Grado" SET "docenteId" = NULL WHERE "docenteId" = ${id}`;
-      if (gradoAsignados && gradoAsignados.length > 0) {
-        for (const gradoId of gradoAsignados) {
+      if (gradoDelFrontend && gradoDelFrontend.length > 0) {
+        for (const gradoId of gradoDelFrontend) {
           await sql`UPDATE "Grado" SET "docenteId" = ${id} WHERE id = ${gradoId}`;
         }
       }
