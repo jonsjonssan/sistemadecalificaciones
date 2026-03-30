@@ -319,6 +319,7 @@ export default function Home() {
       const res = await fetch("/api/cambiar-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ passwordActual: passwordForm.actual, passwordNuevo: passwordForm.nueva }),
       });
       const data = await res.json();
@@ -342,6 +343,7 @@ export default function Home() {
       const res = await fetch("/api/estudiantes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ nombre: nuevoEstudiante.nombre, gradoId: gradoSeleccionado }),
       });
       if (res.ok) { setNuevoEstudiante({ nombre: "" }); setDialogOpen(false); loadEstudiantes(); toast({ title: "Estudiante agregado" }); }
@@ -356,6 +358,7 @@ export default function Home() {
       const res = await fetch("/api/estudiantes", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ estudiantes: nombres, gradoId: gradoSeleccionado }),
       });
       if (res.ok) { setListaEstudiantes(""); setListaDialogOpen(false); loadEstudiantes(); loadGrados(); toast({ title: `${nombres.length} estudiantes agregados` }); }
@@ -365,7 +368,7 @@ export default function Home() {
   const handleDeleteEstudiante = async (id: string, nombre: string) => {
     if (!confirm(`¿Eliminar a ${nombre}?`)) return;
     try {
-      const res = await fetch(`/api/estudiantes?id=${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/estudiantes?id=${id}`, { method: "DELETE", credentials: "include" });
       if (res.ok) { loadEstudiantes(); loadCalificaciones(); loadGrados(); toast({ title: "Estudiante eliminado" }); }
     } catch { toast({ title: "Error", variant: "destructive" }); }
   };
@@ -377,6 +380,7 @@ export default function Home() {
       await fetch("/api/calificaciones", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ estudianteId, materiaId: materiaId, trimestre: parseInt(trimestreSeleccionado), actividadesCotidianas: JSON.stringify(data.actividadesCotidianas), actividadesIntegradoras: JSON.stringify(data.actividadesIntegradoras), examenTrimestral: data.examenTrimestral, recuperacion: data.recuperacion }),
       });
       loadCalificaciones();
