@@ -527,6 +527,7 @@ export default function Home() {
       const res = await fetch("/api/usuarios", {
         method: isEdit ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(isEdit ? { id: editUsuarioId, ...nuevoUsuario } : nuevoUsuario),
       });
       if (res.ok) { 

@@ -65,8 +65,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const usuario = JSON.parse(session.value);
-    if (usuario.rol !== "admin") {
+    if (session.rol !== "admin") {
       return NextResponse.json({ error: "Solo administradores pueden crear usuarios" }, { status: 403 });
     }
 
@@ -106,9 +105,9 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(nuevoUsuario[0]);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error al crear usuario:", error);
-    return NextResponse.json({ error: "Error al crear usuario" }, { status: 500 });
+    return NextResponse.json({ error: error.message || "Error al crear usuario" }, { status: 500 });
   }
 }
 
@@ -119,8 +118,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const usuarioActual = JSON.parse(session.value);
-    if (usuarioActual.rol !== "admin") {
+    if (session.rol !== "admin") {
       return NextResponse.json({ error: "Solo administradores pueden modificar usuarios" }, { status: 403 });
     }
 
@@ -133,7 +131,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "ID requerido" }, { status: 400 });
     }
 
-    if (id === usuarioActual.id && activo === false) {
+    if (id === session.id && activo === false) {
       return NextResponse.json({ error: "No puedes desactivarte a ti mismo" }, { status: 400 });
     }
 
@@ -183,23 +181,20 @@ export async function PUT(request: NextRequest) {
 
     const usuarioActualizado = await sql`SELECT id, email, nombre, rol, activo FROM "Usuario" WHERE id = ${id}`;
     return NextResponse.json(usuarioActualizado[0]);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error al actualizar usuario:", error);
-    return NextResponse.json({ error: "Error al actualizar usuario" }, { status: 500 });
+    return NextResponse.json({ error: error.message || "Error al actualizar usuario" }, { status: 500 });
   }
 }
 
 export async function DELETE(request: NextRequest) {
   try {
     const session = await getUsuarioSession();
-    console.log("DELETE session:", session);
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const usuarioActual = JSON.parse(session.value);
-    console.log("DELETE usuarioActual:", usuarioActual);
-    if (usuarioActual.rol !== "admin") {
+    if (session.rol !== "admin") {
       return NextResponse.json({ error: "Solo administradores pueden eliminar usuarios" }, { status: 403 });
     }
 
@@ -210,7 +205,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "ID requerido" }, { status: 400 });
     }
 
-    if (id === usuarioActual.id) {
+    if (id === session.id) {
       return NextResponse.json({ error: "No puedes eliminarte a ti mismo" }, { status: 400 });
     }
 
@@ -219,8 +214,8 @@ export async function DELETE(request: NextRequest) {
     await sql`DELETE FROM "Usuario" WHERE id = ${id}`;
 
     return NextResponse.json({ message: "Usuario eliminado" });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error al eliminar usuario:", error);
-    return NextResponse.json({ error: "Error al eliminar usuario" }, { status: 500 });
+    return NextResponse.json({ error: error.message || "Error al eliminar usuario" }, { status: 500 });
   }
 }
