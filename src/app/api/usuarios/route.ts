@@ -186,11 +186,13 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const session = await getUsuarioSession();
+    console.log("DELETE session:", session);
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const usuarioActual = JSON.parse(session.value);
+    const usuarioActual = session;
+    console.log("DELETE usuarioActual:", usuarioActual);
     if (usuarioActual.rol !== "admin") {
       return NextResponse.json({ error: "Solo administradores pueden eliminar usuarios" }, { status: 403 });
     }
