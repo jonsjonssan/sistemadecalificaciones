@@ -123,7 +123,7 @@ export default function Home() {
     const timeoutId = setTimeout(() => controller.abort(), 10000);
     
     try {
-      const res = await fetch("/api/auth/me", { cache: "no-store", signal: controller.signal });
+      const res = await fetch("/api/auth/me", { cache: "no-store", signal: controller.signal, credentials: "include" });
       const data = await res.json();
       setUsuario(data.usuario);
     } catch (err) { 
@@ -148,7 +148,7 @@ export default function Home() {
   // Carga de datos
   const loadGrados = useCallback(async () => {
     try {
-      const res = await fetch("/api/grados", { cache: "no-store" });
+      const res = await fetch("/api/grados", { cache: "no-store", credentials: "include" });
       if (res.ok) {
         const data = await res.json();
         setGrados(data);
@@ -165,7 +165,7 @@ export default function Home() {
   const loadEstudiantes = useCallback(async () => {
     if (!gradoSeleccionado) return;
     try {
-      const res = await fetch(`/api/estudiantes?gradoId=${gradoSeleccionado}`, { cache: "no-store" });
+      const res = await fetch(`/api/estudiantes?gradoId=${gradoSeleccionado}`, { cache: "no-store", credentials: "include" });
       if (res.ok) {
         const data = await res.json();
         setEstudiantes(data);
@@ -182,7 +182,7 @@ export default function Home() {
   const loadAsignaturas = useCallback(async () => {
     if (!gradoSeleccionado) return;
     try {
-      const res = await fetch(`/api/materias?gradoId=${gradoSeleccionado}`, { cache: "no-store" });
+      const res = await fetch(`/api/materias?gradoId=${gradoSeleccionado}`, { cache: "no-store", credentials: "include" });
       if (res.ok) {
         const data = await res.json();
         setAsignaturas(data);
@@ -198,7 +198,7 @@ export default function Home() {
 
   const loadTodasAsignaturas = useCallback(async () => {
     try {
-      const res = await fetch("/api/materias?todas=true", { cache: "no-store" });
+      const res = await fetch("/api/materias?todas=true", { cache: "no-store", credentials: "include" });
       setTodasAsignaturas(await res.json());
     } catch { /* ignore */ }
   }, []);
@@ -206,7 +206,7 @@ export default function Home() {
   const loadConfig = useCallback(async () => {
     if (!asignaturaSeleccionada || !trimestreSeleccionado) return;
     try {
-      const res = await fetch(`/api/config-actividades?materiaId=${asignaturaSeleccionada}&trimestre=${trimestreSeleccionado}`, { cache: "no-store" });
+      const res = await fetch(`/api/config-actividades?materiaId=${asignaturaSeleccionada}&trimestre=${trimestreSeleccionado}`, { cache: "no-store", credentials: "include" });
       if (res.ok) {
         const data = await res.json();
         setConfigActual(data);
@@ -223,7 +223,7 @@ export default function Home() {
   const loadConfigsGrado = useCallback(async () => {
     if (!gradoSeleccionado || !trimestreSeleccionado) return;
     try {
-      const res = await fetch(`/api/config-actividades?gradoId=${gradoSeleccionado}&trimestre=${trimestreSeleccionado}`, { cache: "no-store" });
+      const res = await fetch(`/api/config-actividades?gradoId=${gradoSeleccionado}&trimestre=${trimestreSeleccionado}`, { cache: "no-store", credentials: "include" });
       setConfigsGrado(await res.json());
     } catch { /* error toast */ }
   }, [gradoSeleccionado, trimestreSeleccionado]);
@@ -231,7 +231,7 @@ export default function Home() {
   const loadCalificaciones = useCallback(async () => {
     if (!gradoSeleccionado || !trimestreSeleccionado || !asignaturaSeleccionada) return;
     try {
-      const res = await fetch(`/api/calificaciones?gradoId=${gradoSeleccionado}&materiaId=${asignaturaSeleccionada}&trimestre=${trimestreSeleccionado}`, { cache: "no-store" });
+      const res = await fetch(`/api/calificaciones?gradoId=${gradoSeleccionado}&materiaId=${asignaturaSeleccionada}&trimestre=${trimestreSeleccionado}`, { cache: "no-store", credentials: "include" });
       if (res.ok) {
         const data = await res.json();
         setCalificaciones(data);
@@ -247,14 +247,14 @@ export default function Home() {
 
   const loadUsuarios = useCallback(async () => {
     try {
-      const res = await fetch("/api/usuarios", { cache: "no-store" });
+      const res = await fetch("/api/usuarios", { cache: "no-store", credentials: "include" });
       if (res.ok) setUsuarios(await res.json());
     } catch { /* no auth */ }
   }, []);
 
   const loadConfiguracion = useCallback(async () => {
     try {
-      const res = await fetch("/api/configuracion", { cache: "no-store" });
+      const res = await fetch("/api/configuracion", { cache: "no-store", credentials: "include" });
       if (res.ok) {
         const data = await res.json();
         setConfiguracion(data);
@@ -287,7 +287,7 @@ export default function Home() {
   };
 
   const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
+    await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
     setUsuario(null);
     setGrados([]);
     setGradosFiltrados([]);
