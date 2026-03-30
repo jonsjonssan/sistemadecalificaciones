@@ -293,7 +293,7 @@ export default function Home() {
   // Persistencia del estado del usuario
   const getStorageKey = () => usuario ? `sis_state_${usuario.id}` : null;
 
-  const saveUserState = useCallback((state: { gradoSeleccionado?: string; asignaturaSeleccionada?: string; trimestreSeleccionado?: string }) => {
+  const saveUserState = useCallback((state: { gradoSeleccionado?: string; asignaturaSeleccionada?: string; trimestreSeleccionado?: string; activeTab?: string }) => {
     const key = getStorageKey();
     if (!key) return;
     try {
@@ -533,11 +533,17 @@ export default function Home() {
   };
 
   const handleDeleteUsuario = async (id: string) => {
-    if (!confirm("¿Eliminar este usuario?")) return;
+    if (!confirm("¿Eliminar este usuario? Esta acción no se puede deshacer.")) return;
     try {
-      await fetch(`/api/usuarios?id=${id}`, { method: "DELETE" });
-      loadUsuarios(); toast({ title: "Usuario eliminado" });
-    } catch { toast({ title: "Error", variant: "destructive" }); }
+      const res = await fetch(`/api/usuarios?id=${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (res.ok) {
+        loadUsuarios(); 
+        toast({ title: "Usuario eliminado correctamente" });
+      } else {
+        toast({ title: data.error || "Error al eliminar usuario", variant: "destructive" });
+      }
+    } catch { toast({ title: "Error de conexión", variant: "destructive" }); }
   };
 
   const handleToggleUsuario = async (id: string, activo: boolean) => {
@@ -683,19 +689,29 @@ export default function Home() {
 
   // Guardar estado automáticamente cuando cambie la selección
   useEffect(() => {
-    if (usuario && (gradoSeleccionado || asignaturaSeleccionada)) {
+    if (usuario && (gradoSeleccionado || asignaturaSeleccionada || activeTab)) {
       const timeoutId = setTimeout(() => {
-        saveUserState({ gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado });
+        saveUserState({ gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado, activeTab });
       }, 500);
       return () => clearTimeout(timeoutId);
     }
-  }, [gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado, usuario, saveUserState]);
+  }, [gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado, activeTab, usuario, saveUserState]);
+
+  // Cargar tab activo al iniciar sesión
+  useEffect(() => {
+    if (usuario) {
+      const savedState = loadUserState();
+      if (savedState?.activeTab) {
+        setActiveTab(savedState.activeTab);
+      }
+    }
+  }, [usuario, loadUserState]);
 
   // Guardar estado antes de cerrar la pestaña
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (usuario) {
-        saveUserState({ gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado });
+        saveUserState({ gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado, activeTab });
         localStorage.setItem(`sis_last_session_${usuario.id}`, new Date().toISOString());
       }
     };
@@ -826,7 +842,7 @@ export default function Home() {
       </Dialog>
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-3 py-3 pb-24 md:pb-3">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <Tabs value={activeTab} onValueChange={(val) => { setActiveTab(val); saveUserState({ activeTab: val }); }}>
           <TabsList className="bg-white shadow-sm h-10 overflow-x-auto rounded-md hidden md:inline-flex w-auto shrink-0 hide-scrollbar justify-start space-x-1">
             <TabsTrigger id="tab-dashboard" value="dashboard" className="text-base font-medium px-3 gap-1 shrink-0"><LayoutDashboard className="h-5 w-5" />Inicio</TabsTrigger>
             <TabsTrigger id="tab-calificaciones" value="calificaciones" className="text-base font-medium px-3 gap-1 shrink-0"><ClipboardList className="h-5 w-5" />Calificaciones</TabsTrigger>
@@ -1205,12 +1221,12 @@ export default function Home() {
 
       {/* Bottom Nav Bar para Móviles */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around items-center px-1 py-2 z-50">
-        <button onClick={() => setActiveTab("dashboard")} className={`flex flex-col items-center p-1.5 px-3 rounded-xl transition-colors ${activeTab === "dashboard" ? "text-teal-700 bg-teal-50" : "text-slate-500"}`}><LayoutDashboard className="h-5 w-5 mb-1" /><span className="text-[10px] font-medium">Inicio</span></button>
-        <button onClick={() => setActiveTab("calificaciones")} className={`flex flex-col items-center p-1.5 px-3 rounded-xl transition-colors ${activeTab === "calificaciones" ? "text-teal-700 bg-teal-50" : "text-slate-500"}`}><ClipboardList className="h-5 w-5 mb-1" /><span className="text-[10px] font-medium">Notas</span></button>
-        <button onClick={() => setActiveTab("asistencia")} className={`flex flex-col items-center p-1.5 px-3 rounded-xl transition-colors ${activeTab === "asistencia" ? "text-teal-700 bg-teal-50" : "text-slate-500"}`}><CalendarDays className="h-5 w-5 mb-1" /><span className="text-[10px] font-medium">Lista</span></button>
-        <button onClick={() => setActiveTab("estudiantes")} className={`flex flex-col items-center p-1.5 px-3 rounded-xl transition-colors ${activeTab === "estudiantes" ? "text-teal-700 bg-teal-50" : "text-slate-500"}`}><Users className="h-5 w-5 mb-1" /><span className="text-[10px] font-medium">Alumnos</span></button>
+        <button onClick={() => { setActiveTab("dashboard"); saveUserState({ activeTab: "dashboard" }); }} className={`flex flex-col items-center p-1.5 px-3 rounded-xl transition-colors ${activeTab === "dashboard" ? "text-teal-700 bg-teal-50" : "text-slate-500"}`}><LayoutDashboard className="h-5 w-5 mb-1" /><span className="text-[10px] font-medium">Inicio</span></button>
+        <button onClick={() => { setActiveTab("calificaciones"); saveUserState({ activeTab: "calificaciones" }); }} className={`flex flex-col items-center p-1.5 px-3 rounded-xl transition-colors ${activeTab === "calificaciones" ? "text-teal-700 bg-teal-50" : "text-slate-500"}`}><ClipboardList className="h-5 w-5 mb-1" /><span className="text-[10px] font-medium">Notas</span></button>
+        <button onClick={() => { setActiveTab("asistencia"); saveUserState({ activeTab: "asistencia" }); }} className={`flex flex-col items-center p-1.5 px-3 rounded-xl transition-colors ${activeTab === "asistencia" ? "text-teal-700 bg-teal-50" : "text-slate-500"}`}><CalendarDays className="h-5 w-5 mb-1" /><span className="text-[10px] font-medium">Lista</span></button>
+        <button onClick={() => { setActiveTab("estudiantes"); saveUserState({ activeTab: "estudiantes" }); }} className={`flex flex-col items-center p-1.5 px-3 rounded-xl transition-colors ${activeTab === "estudiantes" ? "text-teal-700 bg-teal-50" : "text-slate-500"}`}><Users className="h-5 w-5 mb-1" /><span className="text-[10px] font-medium">Alumnos</span></button>
         {usuario.rol === "admin" && (
-          <button onClick={() => setActiveTab("admin")} className={`flex flex-col items-center p-1.5 px-3 rounded-xl transition-colors ${activeTab === "admin" ? "text-teal-700 bg-teal-50" : "text-slate-500"}`}><Settings className="h-5 w-5 mb-1" /><span className="text-[10px] font-medium">Admin</span></button>
+          <button onClick={() => { setActiveTab("admin"); saveUserState({ activeTab: "admin" }); }} className={`flex flex-col items-center p-1.5 px-3 rounded-xl transition-colors ${activeTab === "admin" ? "text-teal-700 bg-teal-50" : "text-slate-500"}`}><Settings className="h-5 w-5 mb-1" /><span className="text-[10px] font-medium">Admin</span></button>
         )}
       </nav>
     </div>
