@@ -229,9 +229,9 @@ export default function Home() {
   }, [gradoSeleccionado, trimestreSeleccionado]);
 
   const loadCalificaciones = useCallback(async () => {
-    if (!gradoSeleccionado || !trimestreSeleccionado) return;
+    if (!gradoSeleccionado || !trimestreSeleccionado || !asignaturaSeleccionada) return;
     try {
-      const res = await fetch(`/api/calificaciones?gradoId=${gradoSeleccionado}&trimestre=${trimestreSeleccionado}`, { cache: "no-store" });
+      const res = await fetch(`/api/calificaciones?gradoId=${gradoSeleccionado}&materiaId=${asignaturaSeleccionada}&trimestre=${trimestreSeleccionado}`, { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
         setCalificaciones(data);
