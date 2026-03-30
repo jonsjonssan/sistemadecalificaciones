@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const usuario = session;
+    const usuario = JSON.parse(session.value);
     if (usuario.rol !== "admin") {
       return NextResponse.json({ error: "Solo administradores pueden crear usuarios" }, { status: 403 });
     }
@@ -119,7 +119,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const usuarioActual = session;
+    const usuarioActual = JSON.parse(session.value);
     if (usuarioActual.rol !== "admin") {
       return NextResponse.json({ error: "Solo administradores pueden modificar usuarios" }, { status: 403 });
     }
@@ -191,7 +191,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const usuarioActual = session;
+    const usuarioActual = JSON.parse(session.value);
     console.log("DELETE usuarioActual:", usuarioActual);
     if (usuarioActual.rol !== "admin") {
       return NextResponse.json({ error: "Solo administradores pueden eliminar usuarios" }, { status: 403 });
