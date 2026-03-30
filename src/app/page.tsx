@@ -774,19 +774,17 @@ export default function Home() {
     }
     
     if (usuario.rol === "admin") {
-      // Admin ve todos los grados
-      setGradosFiltrados(grados);
+      setGradosFiltrados(grades);
     } else {
-      // Docente: filtrar según sus asignaciones
-      const gradosIdsTutor = new Set(usuario.gradosAsignados?.map(g => g.id) || []);
-      const gradosIdsAsignaturas = new Set(usuario.asignaturasAsignadas?.map(m => m.gradoId) || []);
-      const todosIds = new Set([...gradosIdsTutor, ...gradosIdsAsignaturas]);
+      const gradoIdsTutor = new Set((usuario.gradosAsignados || []).map((g: any) => g.id));
+      const gradoIdsAsignaturas = new Set((usuario.asignaturasAsignadas || []).map((m: any) => m.gradoId));
+      const todosIds = new Set([...gradoIdsTutor, ...gradoIdsAsignaturas]);
       
-      const filtrados = grados.filter(g => todosIds.has(g.id));
+      const filtrados = grados.filter((g: any) => todosIds.has(g.id));
+      
       setGradosFiltrados(filtrados);
       
-      // Si el grado seleccionado no está en los filtrados, seleccionar el primero
-      if (filtrados.length > 0 && !filtrados.some(g => g.id === gradoSeleccionado)) {
+      if (filtrados.length > 0 && !filtrados.some((g: any) => g.id === gradoSeleccionado)) {
         setGradoSeleccionado(filtrados[0].id);
       }
     }
