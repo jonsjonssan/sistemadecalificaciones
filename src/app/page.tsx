@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { 
-  LogOut, Users, ClipboardList, FileText, Plus, RefreshCw,
+  LogOut, Users, User, ClipboardList, FileText, Plus, RefreshCw,
   School, Save, Printer, ChevronDown, ChevronUp, Settings, Upload,
   Download, Trash2, ListPlus, UserPlus, Key, Calendar, LayoutDashboard, CalendarDays
 } from "lucide-react";
@@ -120,6 +120,7 @@ export default function Home() {
   const [resetPasswordUser, setResetPasswordUser] = useState<{id: string; nombre: string} | null>(null);
   const [resetPasswordForm, setResetPasswordForm] = useState({ password: "docente123" });
   const [resetPasswordLoading, setResetPasswordLoading] = useState(false);
+  const [perfilDialogOpen, setPerfilDialogOpen] = useState(false);
 
   // Persistence: Cargar de localStorage
   useEffect(() => {
@@ -864,7 +865,8 @@ export default function Home() {
                 Año {configuracion.añoEscolar}
               </Badge>
             )}
-            <div className="text-right text-base font-medium"><p className="font-medium">{usuario.nombre}</p><p className="text-teal-200 capitalize">{usuario.rol}</p></div>
+            <div className="text-right text-base font-medium"><p className="font-medium cursor-pointer hover:underline" onClick={() => setPerfilDialogOpen(true)}>{usuario.nombre}</p><p className="text-teal-200 capitalize">{usuario.rol}</p></div>
+            <Button variant="ghost" size="sm" onClick={() => setPerfilDialogOpen(true)} className="text-white hover:bg-teal-700 h-10 px-2"><User className="h-6 w-6 mr-1" />Perfil</Button>
             <Button variant="ghost" size="sm" onClick={() => setPasswordDialogOpen(true)} className="text-white hover:bg-teal-700 h-10 px-2"><Key className="h-6 w-6 mr-1" />Clave</Button>
             <Button variant="ghost" size="sm" onClick={handleLogout} className="text-white hover:bg-teal-700 h-10 px-2"><LogOut className="h-6 w-6 mr-1" />Salir</Button>
           </div>
@@ -1288,6 +1290,61 @@ export default function Home() {
             <Button onClick={handleResetPassword} disabled={resetPasswordLoading || !resetPasswordForm.password} className="bg-teal-600">
               {resetPasswordLoading ? "Guardando..." : "Guardar"}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialogo de perfil de usuario */}
+      <Dialog open={perfilDialogOpen} onOpenChange={setPerfilDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><User className="h-5 w-5" /> Mi Perfil</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="bg-slate-50 p-4 rounded-lg space-y-3">
+              <div>
+                <p className="text-xs text-slate-500">Nombre</p>
+                <p className="font-medium text-lg">{usuario.nombre}</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">Email</p>
+                <p className="font-medium">{usuario.email}</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">Rol</p>
+                <p className="font-medium capitalize">{usuario.rol}</p>
+              </div>
+            </div>
+            
+            {usuario.gradosAsignados && usuario.gradosAsignados.length > 0 && (
+              <div>
+                <p className="text-xs text-slate-500 mb-1">Grados como Tutor</p>
+                <div className="flex flex-wrap gap-1">
+                  {usuario.gradosAsignados.map((g: any) => (
+                    <Badge key={g.id} variant="outline" className="bg-teal-50">{g.numero}° "{g.seccion}"</Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {usuario.asignaturasAsignadas && usuario.asignaturasAsignadas.length > 0 && (
+              <div>
+                <p className="text-xs text-slate-500 mb-1">Materias Asignadas</p>
+                <div className="flex flex-wrap gap-1">
+                  {usuario.asignaturasAsignadas.map((m: any) => (
+                    <Badge key={m.id} variant="outline">{m.nombre} ({m.gradoNumero}°)</Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {(!usuario.gradosAsignados || usuario.gradosAsignados.length === 0) && 
+             (!usuario.asignaturasAsignadas || usuario.asignaturasAsignadas.length === 0) && (
+              <p className="text-sm text-slate-500 italic">No tienes grados o materias asignados. Contacta al administrador.</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setPerfilDialogOpen(false)} className="bg-teal-600">Cerrar</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
