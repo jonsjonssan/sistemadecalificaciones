@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { 
   LogOut, Users, ClipboardList, FileText, Plus, RefreshCw,
@@ -116,6 +116,10 @@ export default function Home() {
   const [añoDialogOpen, setAñoDialogOpen] = useState(false);
   const [añoLoading, setAñoLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [resetPasswordDialogOpen, setResetPasswordDialogOpen] = useState(false);
+  const [resetPasswordUser, setResetPasswordUser] = useState<{id: string; nombre: string} | null>(null);
+  const [resetPasswordForm, setResetPasswordForm] = useState({ password: "docente123" });
+  const [resetPasswordLoading, setResetPasswordLoading] = useState(false);
 
   // Persistence: Cargar de localStorage
   useEffect(() => {
@@ -560,6 +564,32 @@ export default function Home() {
         toast({ title: data.error || "Error al eliminar usuario", variant: "destructive" });
       }
     } catch { toast({ title: "Error de conexión", variant: "destructive" }); }
+  };
+
+  const openResetPassword = (u: { id: string; nombre: string }) => {
+    setResetPasswordUser(u);
+    setResetPasswordForm({ password: u.nombre.includes("Admin") || u.nombre.includes("Administrador") ? "admin123" : "docente123" });
+    setResetPasswordDialogOpen(true);
+  };
+
+  const handleResetPassword = async () => {
+    if (!resetPasswordUser) return;
+    setResetPasswordLoading(true);
+    try {
+      const res = await fetch("/api/admin/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ usuarioId: resetPasswordUser.id, nuevaPassword: resetPasswordForm.password }),
+      });
+      if (res.ok) {
+        toast({ title: "Contraseña restablecida correctamente" });
+        setResetPasswordDialogOpen(false);
+      } else {
+        const data = await res.json();
+        toast({ title: data.error || "Error", variant: "destructive" });
+      }
+    } catch { toast({ title: "Error de conexión", variant: "destructive" }); }
+    finally { setResetPasswordLoading(false); }
   };
 
   const handleToggleUsuario = async (id: string, activo: boolean) => {
@@ -1113,6 +1143,7 @@ export default function Home() {
                             <TableCell className="text-center">
                               <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-amber-500 mr-1" title="Editar" onClick={() => abrirEditarUsuario(u as Usuario)}><Settings className="h-3.5 w-3.5" /></Button>
                               <Button size="sm" variant="ghost" className="h-6 w-6 p-0 mr-1" title={u.activo ? "Bloquear" : "Desbloquear"} onClick={() => handleToggleUsuario(u.id, u.activo)}>{u.activo ? "🔒" : "🔓"}</Button>
+                              <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-blue-500 mr-1" title="Restablecer contraseña" onClick={() => openResetPassword({ id: u.id, nombre: u.nombre })}>🔑</Button>
                               <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-red-500" title="Eliminar" onClick={() => handleDeleteUsuario(u.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
                             </TableCell>
                           </TableRow>
@@ -1230,6 +1261,34 @@ export default function Home() {
             <p className="text-[10px] text-slate-500">Primera fila: Estudiante, AC1, AC2... AI1... Examen. Filas siguientes: datos.</p>
           </div>
           <DialogFooter><Button variant="outline" size="sm" onClick={() => { setImportDialogOpen(false); setImportData(""); }}>Cancelar</Button><Button size="sm" onClick={handleImport} disabled={!importData} className="bg-teal-600">Importar</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialogo para restablecer contraseña */}
+      <Dialog open={resetPasswordDialogOpen} onOpenChange={setResetPasswordDialogOpen}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Restablecer Contraseña</DialogTitle>
+            <DialogDescription>
+              Nueva contraseña para: <strong>{resetPasswordUser?.nombre}</strong>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Label>Nueva Contraseña</Label>
+            <Input 
+              type="password"
+              value={resetPasswordForm.password}
+              onChange={(e) => setResetPasswordForm({ password: e.target.value })}
+              placeholder="Ingresa la nueva contraseña"
+              className="mt-1"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setResetPasswordDialogOpen(false)}>Cancelar</Button>
+            <Button onClick={handleResetPassword} disabled={resetPasswordLoading || !resetPasswordForm.password} className="bg-teal-600">
+              {resetPasswordLoading ? "Guardando..." : "Guardar"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
