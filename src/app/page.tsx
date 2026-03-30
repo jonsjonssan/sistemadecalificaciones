@@ -115,6 +115,7 @@ export default function Home() {
   const [nuevoAño, setNuevoAño] = useState(2026);
   const [añoDialogOpen, setAñoDialogOpen] = useState(false);
   const [añoLoading, setAñoLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Auth
   const checkAuth = useCallback(async () => {
@@ -244,6 +245,32 @@ export default function Home() {
       setCalificaciones([]);
     }
   }, [gradoSeleccionado, trimestreSeleccionado, asignaturaSeleccionada]);
+
+  const refreshCalificaciones = useCallback(async () => {
+    if (!gradoSeleccionado || !trimestreSeleccionado || !asignaturaSeleccionada) return;
+    setRefreshing(true);
+    setCalificaciones([]);
+    setConfigActual(null);
+    try {
+      const [configRes, califRes] = await Promise.all([
+        fetch(`/api/config-actividades?materiaId=${asignaturaSeleccionada}&trimestre=${trimestreSeleccionado}`, { cache: "no-store", credentials: "include" }),
+        fetch(`/api/calificaciones?gradoId=${gradoSeleccionado}&materiaId=${asignaturaSeleccionada}&trimestre=${trimestreSeleccionado}`, { cache: "no-store", credentials: "include" })
+      ]);
+      if (configRes.ok) {
+        const configData = await configRes.json();
+        setConfigActual(configData);
+      }
+      if (califRes.ok) {
+        const califData = await califRes.json();
+        setCalificaciones(califData);
+      }
+    } catch (err) {
+      console.error("Error refreshing:", err);
+      toast({ title: "Error al refrescar datos", variant: "destructive" });
+    } finally {
+      setRefreshing(false);
+    }
+  }, [gradoSeleccionado, trimestreSeleccionado, asignaturaSeleccionada, toast]);
 
   const loadUsuarios = useCallback(async () => {
     try {
@@ -853,6 +880,7 @@ export default function Home() {
                   <div className="flex-1 min-w-[180px]"><Label className="text-base font-medium mb-1 block">Asignatura</Label><Select value={asignaturaSeleccionada || ""} onValueChange={(val) => { setAsignaturaSeleccionada(val); saveUserState({ asignaturaSeleccionada: val }); }}><SelectTrigger className="h-12 text-sm"><SelectValue placeholder="Seleccionar materia" /></SelectTrigger><SelectContent>{asignaturasFiltradas && asignaturasFiltradas.length > 0 ? asignaturasFiltradas.map(m => <SelectItem key={m.id} value={m.id} className="text-sm">{m.nombre}</SelectItem>) : <SelectItem value="no-materias" disabled>No hay materias</SelectItem>}</SelectContent></Select></div>
                   <div className="w-28"><Label className="text-base font-medium mb-1 block">Trimestre</Label><Select value={trimestreSeleccionado} onValueChange={setTrimestreSeleccionado}><SelectTrigger className="h-12 text-sm"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="1" className="text-sm">I</SelectItem><SelectItem value="2" className="text-sm">II</SelectItem><SelectItem value="3" className="text-sm">III</SelectItem></SelectContent></Select></div>
                   {configActual && <div className="flex items-center gap-1 text-sm font-medium text-slate-500 bg-slate-50 px-2 py-1 rounded"><span>{configActual.numActividadesCotidianas} AC ({configActual.porcentajeAC}%)</span><span>•</span><span>{configActual.numActividadesIntegradoras} AI ({configActual.porcentajeAI}%)</span>{configActual.tieneExamen && <><span>•</span><span>Ex ({configActual.porcentajeExamen}%)</span></>}</div>}
+                  <Button size="sm" variant="outline" className="h-12" onClick={refreshCalificaciones} disabled={refreshing}><RefreshCw className={`h-5 w-5 mr-1 ${refreshing ? 'animate-spin' : ''}`} />{refreshing ? 'Cargando...' : 'Refrescar'}</Button>
                   {usuario.rol === "admin" && <Button size="sm" variant="outline" className="h-12" onClick={() => { setEditConfig(configActual); setConfigDialogOpen(true); }}><Settings className="h-5 w-5 mr-1" />Config</Button>}
                   <Button size="sm" variant="outline" className="h-12" onClick={() => setImportDialogOpen(true)}><Upload className="h-5 w-5 mr-1" />Importar</Button>
                 </div>
