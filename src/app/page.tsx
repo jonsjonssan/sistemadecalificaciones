@@ -243,7 +243,7 @@ export default function Home() {
       console.error("Error al cargar calificaciones"); 
       setCalificaciones([]);
     }
-  }, [gradoSeleccionado, trimestreSeleccionado]);
+  }, [gradoSeleccionado, trimestreSeleccionado, asignaturaSeleccionada]);
 
   const loadUsuarios = useCallback(async () => {
     try {
