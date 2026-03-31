@@ -157,21 +157,23 @@ export async function POST(request: NextRequest) {
       const suma = 
         (calificacionAC ?? 0) * porcAC + 
         (calificacionAI ?? 0) * porcAI + 
-        (examenTrimestral ?? 0) * porcExam;
+        ((examenTrimestral ?? 0)) * porcExam;
 
-      promedioFinal = suma;
-      if (recuperacion !== null) {
-        promedioFinal = Math.min(10, (promedioFinal ?? 0) + recuperacion);
+      promedioFinal = isNaN(suma) ? null : suma;
+      const recupVal = recuperacion ?? null;
+      if (recupVal !== null) {
+        promedioFinal = Math.min(10, (promedioFinal ?? 0) + recupVal);
       }
     } else {
       const suma = 
         (calificacionAC ?? 0) * 0.35 + 
         (calificacionAI ?? 0) * 0.30 + 
-        (examenTrimestral ?? 0) * 0.35;
+        ((examenTrimestral ?? 0)) * 0.35;
 
-      promedioFinal = suma;
-      if (recuperacion !== null) {
-        promedioFinal = Math.min(10, (promedioFinal ?? 0) + recuperacion);
+      promedioFinal = isNaN(suma) ? null : suma;
+      const recupVal = recuperacion ?? null;
+      if (recupVal !== null) {
+        promedioFinal = Math.min(10, (promedioFinal ?? 0) + recupVal);
       }
     }
 
@@ -180,7 +182,6 @@ export async function POST(request: NextRequest) {
       WHERE "estudianteId" = ${estudianteId} AND "materiaId" = ${materiaId} AND trimestre = ${parseInt(String(trimestre))}
     `;
 
-    // Capturar contexto histórico para estabilidad de datos
     const estudianteExtra = await sql`
       SELECT e."gradoId", g.numero as grado_numero, g.año as grado_año 
       FROM "Estudiante" e JOIN "Grado" g on e."gradoId" = g.id 
@@ -193,17 +194,23 @@ export async function POST(request: NextRequest) {
     const añoEscolarCapturado = estudianteExtra[0]?.grado_año || null;
     const materiaNombreCapturada = materiaExtra[0]?.nombre || null;
 
+    const examenVal = (examenTrimestral !== undefined && examenTrimestral !== null && !isNaN(examenTrimestral)) ? examenTrimestral : null;
+    const recupVal = (recuperacion !== undefined && recuperacion !== null && !isNaN(recuperacion)) ? recuperacion : null;
+    const acFinal = (calificacionAC !== null && !isNaN(calificacionAC)) ? calificacionAC : null;
+    const aiFinal = (calificacionAI !== null && !isNaN(calificacionAI)) ? calificacionAI : null;
+    const promFinal = (promedioFinal !== null && !isNaN(promedioFinal)) ? promedioFinal : null;
+
     let result;
     if (existResult.length > 0) {
       result = await sql`
         UPDATE "Calificacion" 
         SET actividadesCotidianas = ${JSON.stringify(acNotas)},
-            calificacionAC = ${calificacionAC},
+            calificacionAC = ${acFinal},
             actividadesIntegradoras = ${JSON.stringify(aiNotas)},
-            calificacionAI = ${calificacionAI},
-            examenTrimestral = ${examenTrimestral},
-            promedioFinal = ${promedioFinal},
-            recuperacion = ${recuperacion},
+            calificacionAI = ${aiFinal},
+            examenTrimestral = ${examenVal},
+            promedioFinal = ${promFinal},
+            recuperacion = ${recupVal},
             "updatedAt" = NOW()
         WHERE id = ${existResult[0].id}
         RETURNING *
@@ -217,9 +224,9 @@ export async function POST(request: NextRequest) {
           examenTrimestral, promedioFinal, recuperacion
         ) VALUES (
           ${randomUUID()}, ${estudianteId}, ${materiaId}, ${parseInt(String(trimestre))},
-          ${JSON.stringify(acNotas)}, ${calificacionAC},
-          ${JSON.stringify(aiNotas)}, ${calificacionAI},
-          ${examenTrimestral}, ${promedioFinal}, ${recuperacion}
+          ${JSON.stringify(acNotas)}, ${acFinal},
+          ${JSON.stringify(aiNotas)}, ${aiFinal},
+          ${examenVal}, ${promFinal}, ${recupVal}
         )
         RETURNING *
       `;
@@ -246,6 +253,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error al guardar calificación:", error);
-    return NextResponse.json({ error: "Error al guardar calificación" }, { status: 500 });
+    const errMsg = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: "Error al guardar calificación", details: errMsg }, { status: 500 });
   }
 }
