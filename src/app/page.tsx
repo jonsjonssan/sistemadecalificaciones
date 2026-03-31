@@ -923,7 +923,7 @@ export default function Home() {
           ) : (
             <form onSubmit={handleLogin} className="space-y-3">
               <div><Label>Email</Label><Input type="email" value={loginForm.email} onChange={e => setLoginForm({...loginForm, email: e.target.value})} placeholder="correo@ejemplo.edu" required /></div>
-              <div><Label>Contraseña</Label><Input type="password" value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} required /></div>
+              <div><Label>Contraseña</Label><Input type="password" autoComplete="current-password" value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} required /></div>
               {loginError && <p className="text-sm text-red-500 text-center">{loginError}</p>}
               <Button type="submit" className="w-full bg-teal-600 hover:bg-teal-700" disabled={loginLoading}>{loginLoading ? "Ingresando..." : "Ingresar"}</Button>
               <p className="text-sm sm:text-base font-medium text-center text-muted-foreground">Ingrese sus credenciales para continuar</p>
