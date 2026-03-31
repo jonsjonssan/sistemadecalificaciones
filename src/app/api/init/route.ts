@@ -57,6 +57,35 @@ export async function POST() {
       return materia;
     };
 
+    // Limpiar materias duplicadas o con nombres incorrectos
+    const nombresValidosPorGrado: Record<number, string[]> = {};
+    for (let num = 2; num <= 9; num++) {
+      const materia6ta = num >= 7 ? "Educación Física y Deportes" : "Desarrollo Corporal";
+      nombresValidosPorGrado[num] = [
+        "Comunicación",
+        "Números y Formas",
+        "Ciencia y Tecnología",
+        "Ciudadanía y Valores",
+        "Artes",
+        materia6ta,
+        "Educación en la Fe",
+      ];
+    }
+
+    // Eliminar materias que no corresponden al grado
+    const todasMaterias = await db.materia.findMany();
+    for (const m of todasMaterias) {
+      const grado = gradosDb.find(g => g.id === m.gradoId);
+      if (!grado) continue;
+      const validos = nombresValidosPorGrado[grado.numero] || [];
+      if (!validos.includes(m.nombre)) {
+        await db.configActividad.deleteMany({ where: { materiaId: m.id } });
+        await db.docenteMateria.deleteMany({ where: { materiaId: m.id } });
+        await db.calificacion.deleteMany({ where: { materiaId: m.id } });
+        await db.materia.delete({ where: { id: m.id } });
+      }
+    }
+
     const users = [
       {
         nombre: "Administrador General",
