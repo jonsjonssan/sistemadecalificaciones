@@ -165,7 +165,7 @@ export default function Home() {
 
   const initSystem = async () => {
     try {
-      const res = await fetch("/api/init", { method: "POST" });
+      const res = await fetch("/api/init", { method: "POST", credentials: "include" });
       const data = await res.json();
       toast({ title: "Sistema inicializado", description: "Usuario administrador creado correctamente" });
       setInitialized(true);
@@ -348,6 +348,7 @@ export default function Home() {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(loginForm),
       });
       const data = await res.json();
@@ -478,10 +479,17 @@ export default function Home() {
     const total = editConfig.porcentajeAC + editConfig.porcentajeAI + (editConfig.tieneExamen ? editConfig.porcentajeExamen : 0);
     if (Math.abs(total - 100) > 0.1) { toast({ title: `Porcentajes deben sumar 100% (${total.toFixed(1)}%)`, variant: "destructive" }); return; }
     try {
-      await fetch("/api/config-actividades", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({...editConfig, aplicarATodasLasMateriasDelGrado: configAplicarATodas, gradoId: gradoSeleccionado}) });
-      if (!configAplicarATodas) setConfigActual(editConfig); 
-      setConfigDialogOpen(false); 
-      loadCalificaciones(); 
+      const res = await fetch("/api/config-actividades", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({...editConfig, aplicarATodasLasMateriasDelGrado: configAplicarATodas, gradoId: gradoSeleccionado})
+      });
+      if (!res.ok) { toast({ title: "Error al guardar configuración", variant: "destructive" }); return; }
+      setConfigDialogOpen(false);
+      loadConfig();
+      loadConfigsGrado();
+      loadCalificaciones();
       toast({ title: configAplicarATodas ? "Configuración aplicada a todas las materias del grado" : "Configuración guardada" });
     } catch { toast({ title: "Error", variant: "destructive" }); }
   };
@@ -506,11 +514,13 @@ export default function Home() {
       if (!est) continue;
       const acNotas: (number | null)[] = Array(configActual.numActividadesCotidianas).fill(null);
       const aiNotas: (number | null)[] = Array(configActual.numActividadesIntegradoras).fill(null);
-      await fetch("/api/calificaciones", {
+      const res = await fetch("/api/calificaciones", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ estudianteId: est.id, materiaId: asignaturaSeleccionada, trimestre: parseInt(trimestreSeleccionado), actividadesCotidianas: JSON.stringify(acNotas), actividadesIntegradoras: JSON.stringify(aiNotas) }),
       });
+      if (!res.ok) { toast({ title: "Error al importar calificación", variant: "destructive" }); return; }
       importados++;
     }
     setImportDialogOpen(false); setImportData(""); loadCalificaciones(); toast({ title: `${importados} calificaciones importadas` });
@@ -970,41 +980,41 @@ export default function Home() {
 
             )}
             {gradoSeleccionado && asignaturaSeleccionada && (
-              <Card className={`shadow-xl border ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-slate-200'}`}>
+              <Card className={`shadow-xl border overflow-hidden ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-slate-200'}`}>
                 <CardContent className="p-0">
                   <div className="overflow-x-auto">
                     <table className="w-full text-base font-medium border-collapse">
-                      <thead><tr className={darkMode ? 'bg-gray-800 text-gray-100' : 'bg-slate-700 text-white'}>
-                        <th className={`w-8 p-1.5 text-center font-medium sticky left-0 z-10 border-r ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-slate-700 border-slate-600'}`}>N°</th>
-                        <th className={`min-w-[160px] p-1.5 text-left font-medium sticky left-8 z-10 border-r ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-slate-700 border-slate-600'}`}>Estudiante</th>
+                      <thead><tr className={darkMode ? 'bg-gradient-to-r from-gray-800 to-gray-850 text-gray-100' : 'bg-gradient-to-r from-slate-700 to-slate-600 text-white'}>
+                        <th className={`w-10 p-2 text-center font-semibold sticky left-0 z-20 border-r border-b ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-slate-700 border-slate-500'}`}>N°</th>
+                        <th className={`min-w-[180px] p-2 text-left font-semibold sticky left-10 z-20 border-r border-b ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-slate-700 border-slate-500'}`}>Estudiante</th>
                         {configActual ? (
                           <>
-                            <th colSpan={configActual.numActividadesCotidianas} className={`p-1.5 text-center font-medium border-l ${darkMode ? 'border-gray-700' : 'border-slate-600'}`}>Act. Cotidianas</th>
-                            <th className={`w-14 p-1.5 text-center font-medium border-l ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-slate-700/50 border-slate-600'}`}>Prom AC</th>
-                            <th colSpan={configActual.numActividadesIntegradoras} className={`p-1.5 text-center font-medium border-l ${darkMode ? 'border-gray-700' : 'border-slate-600'}`}>Act. Integradoras</th>
-                            <th className={`w-14 p-1.5 text-center font-medium border-l ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-slate-700/50 border-slate-600'}`}>Prom AI</th>
-                            {configActual.tieneExamen && <th className={`w-14 p-1.5 text-center font-medium border-l ${darkMode ? 'border-gray-700' : 'border-slate-600'}`}>Examen</th>}
-                            {configActual.tieneExamen && <th className={`w-14 p-1.5 text-center font-medium border-l ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-slate-700/50 border-slate-600'}`}>Prom Ex</th>}
-                            <th className={`w-16 p-1.5 text-center font-medium border-l ${darkMode ? 'bg-emerald-800 border-emerald-700 text-emerald-100' : 'bg-emerald-600 border-emerald-500'}`}>Prom. Final</th>
+                            <th colSpan={configActual.numActividadesCotidianas} className={`p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-gray-700' : 'border-slate-500'}`}>Act. Cotidianas</th>
+                            <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-blue-950/50 border-gray-700 text-blue-300' : 'bg-blue-50 border-slate-500 text-blue-700'}`}>Prom AC</th>
+                            <th colSpan={configActual.numActividadesIntegradoras} className={`p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-gray-700' : 'border-slate-500'}`}>Act. Integradoras</th>
+                            <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-purple-950/50 border-gray-700 text-purple-300' : 'bg-purple-50 border-slate-500 text-purple-700'}`}>Prom AI</th>
+                            {configActual.tieneExamen && <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-gray-700' : 'border-slate-500'}`}>Examen</th>}
+                            {configActual.tieneExamen && <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-amber-950/50 border-gray-700 text-amber-300' : 'bg-amber-50 border-slate-500 text-amber-700'}`}>Prom Ex</th>}
+                            <th className={`w-18 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-emerald-900/60 border-emerald-800 text-emerald-200' : 'bg-emerald-600 border-emerald-500'}`}>Prom. Final</th>
                           </>
                         ) : (
                           <>
-                            <th colSpan={4} className={`p-1.5 text-center font-medium border-l ${darkMode ? 'border-gray-700' : 'border-slate-600'}`}>Act. Cotidianas</th>
-                            <th className={`w-14 p-1.5 text-center font-medium border-l ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-slate-700/50 border-slate-600'}`}>Prom AC</th>
-                            <th colSpan={1} className={`p-1.5 text-center font-medium border-l ${darkMode ? 'border-gray-700' : 'border-slate-600'}`}>Act. Integradoras</th>
-                            <th className={`w-14 p-1.5 text-center font-medium border-l ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-slate-700/50 border-slate-600'}`}>Prom AI</th>
-                            <th className={`w-14 p-1.5 text-center font-medium border-l ${darkMode ? 'border-gray-700' : 'border-slate-600'}`}>Examen</th>
-                            <th className={`w-14 p-1.5 text-center font-medium border-l ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-slate-700/50 border-slate-600'}`}>Prom Ex</th>
-                            <th className={`w-16 p-1.5 text-center font-medium border-l ${darkMode ? 'bg-emerald-800 border-emerald-700 text-emerald-100' : 'bg-emerald-600 border-emerald-500'}`}>Prom. Final</th>
+                            <th colSpan={4} className={`p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-gray-700' : 'border-slate-500'}`}>Act. Cotidianas</th>
+                            <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-blue-950/50 border-gray-700 text-blue-300' : 'bg-blue-50 border-slate-500 text-blue-700'}`}>Prom AC</th>
+                            <th colSpan={1} className={`p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-gray-700' : 'border-slate-500'}`}>Act. Integradoras</th>
+                            <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-purple-950/50 border-gray-700 text-purple-300' : 'bg-purple-50 border-slate-500 text-purple-700'}`}>Prom AI</th>
+                            <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-gray-700' : 'border-slate-500'}`}>Examen</th>
+                            <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-amber-950/50 border-gray-700 text-amber-300' : 'bg-amber-50 border-slate-500 text-amber-700'}`}>Prom Ex</th>
+                            <th className={`w-18 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-emerald-900/60 border-emerald-800 text-emerald-200' : 'bg-emerald-600 border-emerald-500'}`}>Prom. Final</th>
                           </>
                         )}
-                        <th className={`w-12 p-1.5 text-center font-medium border-l ${darkMode ? 'border-gray-700' : 'border-slate-600'}`}>Rec.</th>
-                        <th className={`w-10 p-1.5 border-l ${darkMode ? 'border-gray-700' : 'border-slate-600'}`}></th>
+                        <th className={`w-14 p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-gray-700' : 'border-slate-500'}`}>Rec.</th>
+                        <th className={`w-12 p-2 border-l border-b ${darkMode ? 'border-gray-700' : 'border-slate-500'}`}></th>
                       </tr></thead>
                       <tbody>
-                        {(estudiantes || []).map(est => {
+                        {(estudiantes || []).map((est, idx) => {
                           const calif = getCalificacion(est.id);
-                          return <CalificacionRow key={`${est.id}-${asignaturaSeleccionada}-${trimestreSeleccionado}`} estudiante={est} materiaId={asignaturaSeleccionada} calificacion={calif} config={configActual} onSave={handleSaveCalificacion} saving={saving} darkMode={darkMode} />
+                          return <CalificacionRow key={`${est.id}-${asignaturaSeleccionada}-${trimestreSeleccionado}`} estudiante={est} materiaId={asignaturaSeleccionada} calificacion={calif} config={configActual} onSave={handleSaveCalificacion} saving={saving} darkMode={darkMode} evenRow={idx % 2 === 0} />
                         })}
                       </tbody>
                     </table>
@@ -1394,7 +1404,7 @@ export default function Home() {
 }
 
 // Componentes
-function CalificacionRow({ estudiante, materiaId, calificacion, config, onSave, saving, darkMode }: { estudiante: Estudiante; materiaId: string; calificacion?: Calificacion; config: ConfigActividad | null; onSave: (id: string, matId: string, data: { actividadesCotidianas: (number | null)[]; actividadesIntegradoras: (number | null)[]; examenTrimestral: number | null; recuperacion: number | null; }) => void; saving: boolean; darkMode: boolean; }) {
+function CalificacionRow({ estudiante, materiaId, calificacion, config, onSave, saving, darkMode, evenRow }: { estudiante: Estudiante; materiaId: string; calificacion?: Calificacion; config: ConfigActividad | null; onSave: (id: string, matId: string, data: { actividadesCotidianas: (number | null)[]; actividadesIntegradoras: (number | null)[]; examenTrimestral: number | null; recuperacion: number | null; }) => void; saving: boolean; darkMode: boolean; evenRow: boolean; }) {
   const numAC = config?.numActividadesCotidianas ?? 4;
   const numAI = config?.numActividadesIntegradoras ?? 1;
   const tieneExamen = config?.tieneExamen ?? true;
@@ -1448,48 +1458,54 @@ function CalificacionRow({ estudiante, materiaId, calificacion, config, onSave, 
     return () => clearTimeout(handler);
   }, [acNotas, aiNotas, examen, recup, dirty, estudiante.id, materiaId, onSave]);
 
-  const rowBg = darkMode ? 'bg-gray-900 hover:bg-gray-800' : 'bg-white hover:bg-slate-50';
-  const cellBorder = darkMode ? 'border-gray-800' : 'border-slate-200';
-  const stickyBg = darkMode ? 'bg-gray-900' : 'bg-white';
-  const promBg = darkMode ? 'bg-gray-800' : 'bg-slate-50';
-  const finalBg = darkMode ? 'bg-emerald-900/30' : 'bg-emerald-50';
-  const inputBg = darkMode ? 'focus:bg-gray-700 text-gray-100' : 'focus:bg-teal-50';
-  const inputBase = `w-12 h-6 text-base font-medium text-center border-0 bg-transparent rounded ${inputBg}`;
+  const rowBg = evenRow
+    ? (darkMode ? 'bg-gray-900 hover:bg-gray-800/80' : 'bg-white hover:bg-slate-50')
+    : (darkMode ? 'bg-gray-900/80 hover:bg-gray-800/80' : 'bg-slate-50/50 hover:bg-slate-100');
+  const cellBorder = darkMode ? 'border-gray-700/60' : 'border-slate-200';
+  const stickyBg = evenRow
+    ? (darkMode ? 'bg-gray-900' : 'bg-white')
+    : (darkMode ? 'bg-gray-900/80' : 'bg-slate-50/50');
+  const promACBg = darkMode ? 'bg-blue-950/40' : 'bg-blue-50/70';
+  const promAIBg = darkMode ? 'bg-purple-950/40' : 'bg-purple-50/70';
+  const promExBg = darkMode ? 'bg-amber-950/40' : 'bg-amber-50/70';
+  const finalBg = darkMode ? 'bg-emerald-950/50' : 'bg-emerald-50/80';
+  const inputBg = darkMode ? 'focus:bg-gray-700/60 text-gray-100 placeholder-gray-600' : 'focus:bg-teal-50/60 placeholder-slate-300';
+  const inputBase = `w-12 h-7 text-base font-medium text-center border border-transparent focus:border-teal-400/50 bg-transparent rounded-md transition-all ${inputBg}`;
 
   if (!config) {
     return (
-      <tr className={`border-b ${rowBg}`}>
-        <td className={`p-1.5 text-center font-medium sticky left-0 z-10 ${stickyBg} ${cellBorder}`}>{estudiante.numero}</td>
-        <td className={`p-1.5 font-medium sticky left-8 z-10 whitespace-nowrap ${stickyBg} ${cellBorder}`}>{estudiante.nombre}</td>
-        {Array.from({ length: numAC }).map((_, i) => <td key={`ac-${i}`} className={`p-0.5 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={inputBase} value={acNotas[i] ?? ""} onChange={e => updateAC(i, e.target.value)} /></td>)}
-        <td className={`p-1.5 text-center font-bold border-l ${cellBorder} ${promBg} text-base`}>{promACPeso !== null ? promACPeso.toFixed(2) : "-"}</td>
-        {Array.from({ length: numAI }).map((_, i) => <td key={`ai-${i}`} className={`p-0.5 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={inputBase} value={aiNotas[i] ?? ""} onChange={e => updateAI(i, e.target.value)} /></td>)}
-        <td className={`p-1.5 text-center font-bold border-l ${cellBorder} ${promBg} text-base`}>{promAIPeso !== null ? promAIPeso.toFixed(2) : "-"}</td>
-        {tieneExamen && <td className={`p-0.5 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={`w-12 h-6 text-base font-medium text-center border-0 bg-transparent rounded ${inputBg}`} value={examen ?? ""} onChange={handleExamen} /></td>}
-        {tieneExamen && <td className={`p-1.5 text-center font-bold border-l ${cellBorder} ${promBg} text-base`}>{promExPeso !== null ? promExPeso.toFixed(2) : "-"}</td>}
-        <td className={`p-1.5 text-center border-l ${cellBorder} ${finalBg}`}><span className={`inline-block px-1.5 py-0.5 rounded text-sm font-bold shadow-sm ${promFinal !== null && promFinal >= 6 ? (darkMode ? 'bg-emerald-900 text-emerald-300' : 'bg-emerald-100 text-emerald-800') : promFinal !== null ? (darkMode ? 'bg-rose-900 text-rose-300' : 'bg-rose-100 text-rose-800') : (darkMode ? 'bg-gray-800 text-gray-500' : 'bg-slate-200 text-slate-500')}`}>{promFinal !== null ? promFinal.toFixed(2) : "-"}</span></td>
-        <td className={`p-0.5 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={`w-10 h-6 text-base font-medium text-center border-0 bg-transparent rounded ${inputBg}`} value={recup ?? ""} onChange={handleRecup} /></td>
-        <td className={`p-1 border-l ${cellBorder} text-center`}>
-          {saving && dirty ? <RefreshCw className="h-4 w-4 text-teal-500 animate-spin mx-auto" /> : (!dirty && (acNotas.some(n=>n!==null) || aiNotas.some(n=>n!==null) || examen!==null)) ? <span title="Guardado automáticamente">{darkMode ? '💾' : '✅'}</span> : <span className={darkMode ? 'text-gray-600' : 'text-slate-300'}>-</span>}
+      <tr className={`border-b transition-colors ${rowBg}`}>
+        <td className={`p-2 text-center font-semibold sticky left-0 z-10 border-r ${stickyBg} ${cellBorder}`}>{estudiante.numero}</td>
+        <td className={`p-2 font-medium sticky left-10 z-10 whitespace-nowrap border-r ${stickyBg} ${cellBorder}`}>{estudiante.nombre}</td>
+        {Array.from({ length: numAC }).map((_, i) => <td key={`ac-${i}`} className={`p-1 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={inputBase} value={acNotas[i] ?? ""} onChange={e => updateAC(i, e.target.value)} /></td>)}
+        <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promACBg} text-base`}>{promACPeso !== null ? promACPeso.toFixed(2) : "-"}</td>
+        {Array.from({ length: numAI }).map((_, i) => <td key={`ai-${i}`} className={`p-1 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={inputBase} value={aiNotas[i] ?? ""} onChange={e => updateAI(i, e.target.value)} /></td>)}
+        <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promAIBg} text-base`}>{promAIPeso !== null ? promAIPeso.toFixed(2) : "-"}</td>
+        {tieneExamen && <td className={`p-1 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={`w-12 h-7 text-base font-medium text-center border border-transparent focus:border-teal-400/50 bg-transparent rounded-md transition-all ${inputBg}`} value={examen ?? ""} onChange={handleExamen} /></td>}
+        {tieneExamen && <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promExBg} text-base`}>{promExPeso !== null ? promExPeso.toFixed(2) : "-"}</td>}
+        <td className={`p-2 text-center border-l ${cellBorder} ${finalBg}`}><span className={`inline-block px-2 py-0.5 rounded-md text-sm font-bold shadow ${promFinal !== null && promFinal >= 6 ? (darkMode ? 'bg-emerald-800/60 text-emerald-200 ring-1 ring-emerald-700' : 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-200') : promFinal !== null ? (darkMode ? 'bg-rose-800/60 text-rose-200 ring-1 ring-rose-700' : 'bg-rose-100 text-rose-800 ring-1 ring-rose-200') : (darkMode ? 'bg-gray-800 text-gray-500' : 'bg-slate-100 text-slate-400')}`}>{promFinal !== null ? promFinal.toFixed(2) : "-"}</span></td>
+        <td className={`p-1 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={`w-10 h-7 text-base font-medium text-center border border-transparent focus:border-teal-400/50 bg-transparent rounded-md transition-all ${inputBg}`} value={recup ?? ""} onChange={handleRecup} /></td>
+        <td className={`p-2 border-l ${cellBorder} text-center`}>
+          {saving && dirty ? <RefreshCw className="h-4 w-4 text-teal-500 animate-spin mx-auto" /> : (!dirty && (acNotas.some(n=>n!==null) || aiNotas.some(n=>n!==null) || examen!==null)) ? <span title="Guardado">{darkMode ? '✅' : '✅'}</span> : <span className={darkMode ? 'text-gray-700' : 'text-slate-300'}>-</span>}
         </td>
       </tr>
     );
   }
 
   return (
-    <tr className={`border-b ${rowBg}`}>
-      <td className={`p-1.5 text-center font-medium sticky left-0 z-10 ${stickyBg} ${cellBorder}`}>{estudiante.numero}</td>
-      <td className={`p-1.5 font-medium sticky left-8 z-10 whitespace-nowrap ${stickyBg} ${cellBorder}`}>{estudiante.nombre}</td>
-      {acNotas.map((n, i) => <td key={`ac-${i}`} className={`p-0.5 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={inputBase} value={n ?? ""} onChange={e => updateAC(i, e.target.value)} /></td>)}
-      <td className={`p-1.5 text-center font-bold border-l ${cellBorder} ${promBg} text-base`}>{promACPeso !== null ? promACPeso.toFixed(2) : "-"}</td>
-      {aiNotas.map((n, i) => <td key={`ai-${i}`} className={`p-0.5 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={inputBase} value={n ?? ""} onChange={e => updateAI(i, e.target.value)} /></td>)}
-      <td className={`p-1.5 text-center font-bold border-l ${cellBorder} ${promBg} text-base`}>{promAIPeso !== null ? promAIPeso.toFixed(2) : "-"}</td>
-      {config.tieneExamen && <td className={`p-0.5 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={`w-12 h-6 text-base font-medium text-center border-0 bg-transparent rounded ${inputBg}`} value={examen ?? ""} onChange={handleExamen} /></td>}
-      {config.tieneExamen && <td className={`p-1.5 text-center font-bold border-l ${cellBorder} ${promBg} text-base`}>{promExPeso !== null ? promExPeso.toFixed(2) : "-"}</td>}
-      <td className={`p-1.5 text-center border-l ${cellBorder} ${finalBg}`}><span className={`inline-block px-1.5 py-0.5 rounded text-sm font-bold shadow-sm ${promFinal !== null && promFinal >= 6 ? (darkMode ? 'bg-emerald-900 text-emerald-300' : 'bg-emerald-100 text-emerald-800') : promFinal !== null ? (darkMode ? 'bg-rose-900 text-rose-300' : 'bg-rose-100 text-rose-800') : (darkMode ? 'bg-gray-800 text-gray-500' : 'bg-slate-200 text-slate-500')}`}>{promFinal !== null ? promFinal.toFixed(2) : "-"}</span></td>
-      <td className={`p-0.5 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={`w-10 h-6 text-base font-medium text-center border-0 bg-transparent rounded ${inputBg}`} value={recup ?? ""} onChange={handleRecup} /></td>
-      <td className={`p-1 border-l ${cellBorder} text-center`}>
-        {saving && dirty ? <RefreshCw className="h-4 w-4 text-teal-500 animate-spin mx-auto" /> : (!dirty && (acNotas.some(n=>n!==null) || aiNotas.some(n=>n!==null) || examen!==null)) ? <span title="Guardado automáticamente">{darkMode ? '💾' : '✅'}</span> : <span className={darkMode ? 'text-gray-600' : 'text-slate-300'}>-</span>}
+    <tr className={`border-b transition-colors ${rowBg}`}>
+      <td className={`p-2 text-center font-semibold sticky left-0 z-10 border-r ${stickyBg} ${cellBorder}`}>{estudiante.numero}</td>
+      <td className={`p-2 font-medium sticky left-10 z-10 whitespace-nowrap border-r ${stickyBg} ${cellBorder}`}>{estudiante.nombre}</td>
+      {acNotas.map((n, i) => <td key={`ac-${i}`} className={`p-1 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={inputBase} value={n ?? ""} onChange={e => updateAC(i, e.target.value)} /></td>)}
+      <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promACBg} text-base`}>{promACPeso !== null ? promACPeso.toFixed(2) : "-"}</td>
+      {aiNotas.map((n, i) => <td key={`ai-${i}`} className={`p-1 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={inputBase} value={n ?? ""} onChange={e => updateAI(i, e.target.value)} /></td>)}
+      <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promAIBg} text-base`}>{promAIPeso !== null ? promAIPeso.toFixed(2) : "-"}</td>
+      {config.tieneExamen && <td className={`p-1 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={`w-12 h-7 text-base font-medium text-center border border-transparent focus:border-teal-400/50 bg-transparent rounded-md transition-all ${inputBg}`} value={examen ?? ""} onChange={handleExamen} /></td>}
+      {config.tieneExamen && <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promExBg} text-base`}>{promExPeso !== null ? promExPeso.toFixed(2) : "-"}</td>}
+      <td className={`p-2 text-center border-l ${cellBorder} ${finalBg}`}><span className={`inline-block px-2 py-0.5 rounded-md text-sm font-bold shadow ${promFinal !== null && promFinal >= 6 ? (darkMode ? 'bg-emerald-800/60 text-emerald-200 ring-1 ring-emerald-700' : 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-200') : promFinal !== null ? (darkMode ? 'bg-rose-800/60 text-rose-200 ring-1 ring-rose-700' : 'bg-rose-100 text-rose-800 ring-1 ring-rose-200') : (darkMode ? 'bg-gray-800 text-gray-500' : 'bg-slate-100 text-slate-400')}`}>{promFinal !== null ? promFinal.toFixed(2) : "-"}</span></td>
+      <td className={`p-1 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={`w-10 h-7 text-base font-medium text-center border border-transparent focus:border-teal-400/50 bg-transparent rounded-md transition-all ${inputBg}`} value={recup ?? ""} onChange={handleRecup} /></td>
+      <td className={`p-2 border-l ${cellBorder} text-center`}>
+        {saving && dirty ? <RefreshCw className="h-4 w-4 text-teal-500 animate-spin mx-auto" /> : (!dirty && (acNotas.some(n=>n!==null) || aiNotas.some(n=>n!==null) || examen!==null)) ? <span title="Guardado">✅</span> : <span className={darkMode ? 'text-gray-700' : 'text-slate-300'}>-</span>}
       </td>
     </tr>
   );
