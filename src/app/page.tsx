@@ -45,9 +45,7 @@ const calcularPromedio = (notas: (number | null)[]): number | null => {
 };
 const calcularPromedioFinal = (ac: number | null, ai: number | null, et: number | null, cfg: ConfigActividad, recup: number | null = null): number | null => {
   if (ac === null && ai === null && et === null) return null;
-  const t = (ac !== null ? cfg.porcentajeAC : 0) + (ai !== null ? cfg.porcentajeAI : 0) + (et !== null && cfg.tieneExamen ? cfg.porcentajeExamen : 0);
-  if (!t) return null;
-  let base = ((ac ?? 0) * cfg.porcentajeAC / 100 + (ai ?? 0) * cfg.porcentajeAI / 100 + (et ?? 0) * cfg.porcentajeExamen / 100) / (t / 100);
+  let base = (ac ?? 0) * cfg.porcentajeAC / 100 + (ai ?? 0) * cfg.porcentajeAI / 100 + (et ?? 0) * cfg.porcentajeExamen / 100;
   if (recup !== null) base = Math.min(10, base + recup);
   return base;
 };
@@ -968,22 +966,22 @@ export default function Home() {
                         {configActual ? (
                           <>
                             <th colSpan={configActual.numActividadesCotidianas} className="p-1.5 text-center font-medium border-l border-slate-600">Act. Cotidianas</th>
-                            <th className="w-14 p-1.5 text-center font-medium border-l border-slate-600">Prom AC ({configActual.porcentajeAC}%)</th>
+                            <th className="w-16 p-1.5 text-center font-medium border-l border-slate-600">Prom AC (max {(configActual.porcentajeAC / 10).toFixed(1)})</th>
                             <th colSpan={configActual.numActividadesIntegradoras} className="p-1.5 text-center font-medium border-l border-slate-600">Act. Integradoras</th>
-                            <th className="w-14 p-1.5 text-center font-medium border-l border-slate-600">Prom AI ({configActual.porcentajeAI}%)</th>
+                            <th className="w-16 p-1.5 text-center font-medium border-l border-slate-600">Prom AI (max {(configActual.porcentajeAI / 10).toFixed(1)})</th>
                             {configActual.tieneExamen && <th className="w-14 p-1.5 text-center font-medium border-l border-slate-600">Examen</th>}
-                            {configActual.tieneExamen && <th className="w-14 p-1.5 text-center font-medium border-l border-slate-600">Prom Ex ({configActual.porcentajeExamen}%)</th>}
-                            <th className="w-14 p-1.5 text-center font-medium border-l border-slate-600 bg-emerald-600">Promedio Final</th>
+                            {configActual.tieneExamen && <th className="w-16 p-1.5 text-center font-medium border-l border-slate-600">Prom Ex (max {(configActual.porcentajeExamen / 10).toFixed(1)})</th>}
+                            <th className="w-16 p-1.5 text-center font-medium border-l border-slate-600 bg-emerald-600">Prom. Final (/10)</th>
                           </>
                         ) : (
                           <>
                             <th colSpan={4} className="p-1.5 text-center font-medium border-l border-slate-600">Act. Cotidianas</th>
-                            <th className="w-14 p-1.5 text-center font-medium border-l border-slate-600">Prom AC</th>
+                            <th className="w-16 p-1.5 text-center font-medium border-l border-slate-600">Prom AC (max 3.5)</th>
                             <th colSpan={1} className="p-1.5 text-center font-medium border-l border-slate-600">Act. Integradoras</th>
-                            <th className="w-14 p-1.5 text-center font-medium border-l border-slate-600">Prom AI</th>
+                            <th className="w-16 p-1.5 text-center font-medium border-l border-slate-600">Prom AI (max 3.0)</th>
                             <th className="w-14 p-1.5 text-center font-medium border-l border-slate-600">Examen</th>
-                            <th className="w-14 p-1.5 text-center font-medium border-l border-slate-600">Prom Ex</th>
-                            <th className="w-14 p-1.5 text-center font-medium border-l border-slate-600 bg-emerald-600">Promedio Final</th>
+                            <th className="w-16 p-1.5 text-center font-medium border-l border-slate-600">Prom Ex (max 3.5)</th>
+                            <th className="w-16 p-1.5 text-center font-medium border-l border-slate-600 bg-emerald-600">Prom. Final (/10)</th>
                           </>
                         )}
                         <th className="w-12 p-1.5 text-center font-medium border-l border-slate-600">Rec.</th>
@@ -1408,8 +1406,10 @@ function CalificacionRow({ estudiante, materiaId, calificacion, config, onSave, 
   useEffect(() => { stateRef.current = { dirty, acNotas, aiNotas, examen, recup }; }, [dirty, acNotas, aiNotas, examen, recup]);
 
   const promAC = calcularPromedio(acNotas), promAI = calcularPromedio(aiNotas);
-  const promExVal = config && config.tieneExamen && examen !== null ? examen * (config.porcentajeExamen / 100) : examen;
-  const promFinal = config ? calcularPromedioFinal(promAC, promAI, examen, config, recup) : (promAC !== null || promAI !== null || examen !== null ? ((promAC ?? 0) * 0.35 + (promAI ?? 0) * 0.35 + (examen ?? 0) * 0.30) / ((promAC !== null ? 0.35 : 0) + (promAI !== null ? 0.35 : 0) + (examen !== null ? 0.30 : 0)) || null : null);
+  const promACPeso = config && promAC !== null ? promAC * (config.porcentajeAC / 100) : (promAC !== null ? promAC * 0.35 : null);
+  const promAIPeso = config && promAI !== null ? promAI * (config.porcentajeAI / 100) : (promAI !== null ? promAI * 0.30 : null);
+  const promExPeso = config && config.tieneExamen && examen !== null ? examen * (config.porcentajeExamen / 100) : (examen !== null ? examen * 0.35 : null);
+  const promFinal = config ? calcularPromedioFinal(promAC, promAI, examen, config, recup) : (promAC !== null || promAI !== null || examen !== null ? ((promAC ?? 0) * 0.35 + (promAI ?? 0) * 0.30 + (examen ?? 0) * 0.35) : null);
   const parseVal = (v: string): number | null => { const n = parseFloat(v); return isNaN(n) ? null : Math.min(10, Math.max(0, n)); };
   
   const updateAC = (i: number, v: string) => { const n = [...acNotas]; n[i] = parseVal(v); setAcNotas(n); setDirty(true); };
@@ -1444,7 +1444,7 @@ function CalificacionRow({ estudiante, materiaId, calificacion, config, onSave, 
         {Array.from({ length: numAI }).map((_, i) => <td key={`ai-${i}`} className="p-0.5 border-l border-slate-200"><input type="number" min="0" max="10" step="0.1" className="w-12 h-6 text-base font-medium text-center border-0 bg-transparent focus:bg-teal-50 rounded" value={aiNotas[i] ?? ""} onChange={e => updateAI(i, e.target.value)} /></td>)}
         <td className="p-1.5 text-center font-bold border-l border-slate-200 bg-slate-50 text-base">{promAI !== null ? promAI.toFixed(1) : "-"}</td>
         {tieneExamen && <td className="p-0.5 border-l border-slate-200"><input type="number" min="0" max="10" step="0.1" className="w-12 h-6 text-base font-medium text-center border-0 bg-transparent focus:bg-teal-50 rounded" value={examen ?? ""} onChange={handleExamen} /></td>}
-        {tieneExamen && <td className="p-1.5 text-center font-bold border-l border-slate-200 bg-slate-50 text-base">{promExVal !== null ? promExVal.toFixed(1) : "-"}</td>}
+        {tieneExamen && <td className="p-1.5 text-center font-bold border-l border-slate-200 bg-slate-50 text-base">{promExPeso !== null ? promExPeso.toFixed(2) : "-"}</td>}
         <td className="p-1.5 text-center border-l border-slate-200 bg-emerald-50"><span className={`inline-block px-1.5 py-0.5 rounded text-sm font-bold shadow-sm ${promFinal !== null && promFinal >= 6 ? 'bg-emerald-100 text-emerald-800' : promFinal !== null ? 'bg-rose-100 text-rose-800' : 'bg-slate-200 text-slate-500'}`}>{promFinal !== null ? promFinal.toFixed(1) : "-"}</span></td>
         <td className="p-0.5 border-l border-slate-200"><input type="number" min="0" max="10" step="0.1" className="w-10 h-6 text-base font-medium text-center border-0 bg-transparent focus:bg-teal-50 rounded" value={recup ?? ""} onChange={handleRecup} /></td>
         <td className="p-1 border-l border-slate-200 text-center">
@@ -1463,7 +1463,7 @@ function CalificacionRow({ estudiante, materiaId, calificacion, config, onSave, 
       {aiNotas.map((n, i) => <td key={`ai-${i}`} className="p-0.5 border-l border-slate-200"><input type="number" min="0" max="10" step="0.1" className="w-12 h-6 text-base font-medium text-center border-0 bg-transparent focus:bg-teal-50 rounded" value={n ?? ""} onChange={e => updateAI(i, e.target.value)} /></td>)}
       <td className="p-1.5 text-center font-bold border-l border-slate-200 bg-slate-50 text-base">{promAI !== null ? promAI.toFixed(1) : "-"}</td>
       {config.tieneExamen && <td className="p-0.5 border-l border-slate-200"><input type="number" min="0" max="10" step="0.1" className="w-12 h-6 text-base font-medium text-center border-0 bg-transparent focus:bg-teal-50 rounded" value={examen ?? ""} onChange={handleExamen} /></td>}
-      {config.tieneExamen && <td className="p-1.5 text-center font-bold border-l border-slate-200 bg-slate-50 text-base">{promExVal !== null ? promExVal.toFixed(1) : "-"}</td>}
+      {config.tieneExamen && <td className="p-1.5 text-center font-bold border-l border-slate-200 bg-slate-50 text-base">{promExPeso !== null ? promExPeso.toFixed(2) : "-"}</td>}
       <td className="p-1.5 text-center border-l border-slate-200 bg-emerald-50"><span className={`inline-block px-1.5 py-0.5 rounded text-sm font-bold shadow-sm ${promFinal !== null && promFinal >= 6 ? 'bg-emerald-100 text-emerald-800' : promFinal !== null ? 'bg-rose-100 text-rose-800' : 'bg-slate-200 text-slate-500'}`}>{promFinal !== null ? promFinal.toFixed(1) : "-"}</span></td>
       <td className="p-0.5 border-l border-slate-200"><input type="number" min="0" max="10" step="0.1" className="w-10 h-6 text-base font-medium text-center border-0 bg-transparent focus:bg-teal-50 rounded" value={recup ?? ""} onChange={handleRecup} /></td>
       <td className="p-1 border-l border-slate-200 text-center">

@@ -154,33 +154,25 @@ export async function POST(request: NextRequest) {
       const porcAI = config.porcentajeAI / 100;
       const porcExam = config.tieneExamen ? config.porcentajeExamen / 100 : 0;
 
-      const totalPonderacion = 
-        (calificacionAC !== null ? porcAC : 0) + 
-        (calificacionAI !== null ? porcAI : 0) + 
-        (examenTrimestral !== null && config.tieneExamen ? porcExam : 0);
+      const suma = 
+        (calificacionAC ?? 0) * porcAC + 
+        (calificacionAI ?? 0) * porcAI + 
+        (examenTrimestral ?? 0) * porcExam;
 
-      if (totalPonderacion > 0) {
-        const suma = 
-          (calificacionAC ?? 0) * porcAC + 
-          (calificacionAI ?? 0) * porcAI + 
-          (examenTrimestral ?? 0) * porcExam;
-        promedioFinal = suma / totalPonderacion;
+      if (suma > 0) {
+        promedioFinal = suma;
         if (recuperacion !== null) {
           promedioFinal = Math.min(10, promedioFinal + recuperacion);
         }
       }
     } else {
-      const totalPonderacion = 
-        (calificacionAC !== null ? 0.35 : 0) + 
-        (calificacionAI !== null ? 0.35 : 0) + 
-        (examenTrimestral !== null ? 0.30 : 0);
+      const suma = 
+        (calificacionAC ?? 0) * 0.35 + 
+        (calificacionAI ?? 0) * 0.30 + 
+        (examenTrimestral ?? 0) * 0.35;
 
-      if (totalPonderacion > 0) {
-        const suma = 
-          (calificacionAC ?? 0) * 0.35 + 
-          (calificacionAI ?? 0) * 0.35 + 
-          (examenTrimestral ?? 0) * 0.30;
-        promedioFinal = suma / totalPonderacion;
+      if (suma > 0) {
+        promedioFinal = suma;
         if (recuperacion !== null) {
           promedioFinal = Math.min(10, promedioFinal + recuperacion);
         }
