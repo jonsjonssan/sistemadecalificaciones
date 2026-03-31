@@ -445,7 +445,7 @@ export default function Home() {
     } catch { toast({ title: "Error", variant: "destructive" }); }
   };
 
-  const handleSaveCalificacion = async (estudianteId: string, materiaId: string, data: { actividadesCotidianas: (number | null)[]; actividadesIntegradoras: (number | null)[]; examenTrimestral: number | null; recuperacion: number | null; }) => {
+  const handleSaveCalificacion = useCallback(async (estudianteId: string, materiaId: string, data: { actividadesCotidianas: (number | null)[]; actividadesIntegradoras: (number | null)[]; examenTrimestral: number | null; recuperacion: number | null; }) => {
     setSaving(true);
     try {
       const res = await fetch("/api/calificaciones", {
@@ -458,13 +458,15 @@ export default function Home() {
         const err = await res.json();
         console.error("Error al guardar calificación:", err);
         toast({ title: "Error al guardar: " + (err.error || "Error desconocido"), variant: "destructive" });
+      } else {
+        loadCalificaciones();
       }
     } catch (e) {
       console.error("Error de conexión al guardar:", e);
       toast({ title: "Error de conexión al guardar", variant: "destructive" });
     }
     finally { setSaving(false); }
-  };
+  }, [trimestreSeleccionado, toast, loadCalificaciones]);
 
   const handleSaveConfig = async () => {
     if (!editConfig) return;
