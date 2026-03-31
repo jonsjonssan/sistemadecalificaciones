@@ -116,7 +116,6 @@ export default function Home() {
   const [nuevoAño, setNuevoAño] = useState(2026);
   const [añoDialogOpen, setAñoDialogOpen] = useState(false);
   const [añoLoading, setAñoLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
   const [resetPasswordDialogOpen, setResetPasswordDialogOpen] = useState(false);
   const [resetPasswordUser, setResetPasswordUser] = useState<{id: string; nombre: string} | null>(null);
   const [resetPasswordForm, setResetPasswordForm] = useState({ password: "docente123" });
@@ -267,36 +266,6 @@ export default function Home() {
       setCalificaciones([]);
     }
   }, [gradoSeleccionado, trimestreSeleccionado, asignaturaSeleccionada]);
-
-  const refreshCalificaciones = useCallback(async () => {
-    if (!gradoSeleccionado || !trimestreSeleccionado || !asignaturaSeleccionada) return;
-    setRefreshing(true);
-    try {
-      const [configRes, califRes] = await Promise.all([
-        fetch(`/api/config-actividades?materiaId=${asignaturaSeleccionada}&trimestre=${trimestreSeleccionado}`, { cache: "no-store", credentials: "include" }),
-        fetch(`/api/calificaciones?gradoId=${gradoSeleccionado}&materiaId=${asignaturaSeleccionada}&trimestre=${trimestreSeleccionado}`, { cache: "no-store", credentials: "include" })
-      ]);
-      if (configRes.ok) {
-        const configData = await configRes.json();
-        setConfigActual(configData);
-      } else {
-        console.error("Error config:", configRes.status);
-      }
-      if (califRes.ok) {
-        const califData = await califRes.json();
-        setCalificaciones(califData);
-      } else {
-        console.error("Error calif:", califRes.status);
-        const errText = await califRes.text();
-        console.error("Error body:", errText);
-      }
-    } catch (err) {
-      console.error("Error refreshing:", err);
-      toast({ title: "Error al refrescar datos", variant: "destructive" });
-    } finally {
-      setRefreshing(false);
-    }
-  }, [gradoSeleccionado, trimestreSeleccionado, asignaturaSeleccionada, toast]);
 
   const loadUsuarios = useCallback(async () => {
     try {
@@ -815,6 +784,7 @@ export default function Home() {
   // Carga de configuración y calificaciones sincronizada
   useEffect(() => { 
     if (gradoSeleccionado && asignaturaSeleccionada && trimestreSeleccionado) {
+      setCalificaciones([]);
       loadConfig(); 
       loadCalificaciones(); 
       loadConfigsGrado();
@@ -1065,8 +1035,7 @@ export default function Home() {
                   <div className="w-20 sm:w-28"><Label className={`text-sm sm:text-base font-medium mb-1 block ${darkMode ? 'text-slate-300' : ''}`}>Trimestre</Label><Select value={trimestreSeleccionado} onValueChange={setTrimestreSeleccionado}><SelectTrigger className={`h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="1" className="text-sm">I</SelectItem><SelectItem value="2" className="text-sm">II</SelectItem><SelectItem value="3" className="text-sm">III</SelectItem></SelectContent></Select></div>
                   {configActual && <div className={`flex items-center gap-1 text-xs sm:text-sm font-medium px-2 py-1 rounded ${darkMode ? 'text-slate-400 bg-slate-800' : 'text-slate-500 bg-slate-50'}`}><span>{configActual.numActividadesCotidianas} AC ({configActual.porcentajeAC}%)</span><span>•</span><span>{configActual.numActividadesIntegradoras} AI ({configActual.porcentajeAI}%)</span>{configActual.tieneExamen && <><span>•</span><span>Ex ({configActual.porcentajeExamen}%)</span></>}</div>}
                   <Button size="sm" className={`h-10 sm:h-12 font-semibold text-xs sm:text-sm ${darkMode ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white'}`} onClick={handleGuardarTodo} disabled={saving}><Save className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">{saving ? 'Guardando...' : 'Guardar Todo'}</span><span className="sm:hidden">{saving ? '...' : 'Guardar'}</span></Button>
-                  <Button size="sm" variant="outline" className={`h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''}`} onClick={refreshCalificaciones} disabled={refreshing}><RefreshCw className={`h-4 w-4 sm:h-5 sm:w-5 sm:mr-1 ${refreshing ? 'animate-spin' : ''}`} /><span className="hidden sm:inline">{refreshing ? 'Cargando...' : 'Refrescar'}</span><span className="sm:hidden">↻</span></Button>
-                  {usuario.rol === "admin" && <Button size="sm" variant="outline" className={`h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''}`} onClick={() => { setEditConfig(configActual); setConfigDialogOpen(true); }}><Settings className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Config</span></Button>}
+                  <Button size="sm" variant="outline" className={`h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''}`} onClick={() => { setEditConfig(configActual); setConfigDialogOpen(true); }}><Settings className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Config</span></Button>
                   <Button size="sm" variant="outline" className={`h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''}`} onClick={() => setImportDialogOpen(true)}><Upload className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Importar</span></Button>
                 </div>
               </CardContent>
