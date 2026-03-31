@@ -1152,42 +1152,40 @@ export default function Home() {
                   <>
                     {usuario.rol === "admin" && (
                       <div className="space-y-2 mb-2">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <Label className="text-xs sm:text-sm font-medium whitespace-nowrap">Asignaturas en boleta:</Label>
                           <Select value={materiasEnBoleta.length === 0 ? "todas" : "personalizado"} onValueChange={(v) => { if (v === "todas") { setMateriasEnBoleta([]); if (typeof window !== "undefined") localStorage.setItem("ss_materiasBoleta", JSON.stringify([])); } }}>
                             <SelectTrigger className={`w-32 h-8 text-xs ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue /></SelectTrigger>
                             <SelectContent>
                               <SelectItem value="todas" className="text-xs">Todas ({asignaturasFiltradas.length})</SelectItem>
-                              <SelectItem value="personalizado" className="text-xs">Personalizado</SelectItem>
+                              <SelectItem value="personalizado" className="text-xs">Seleccionar...</SelectItem>
                             </SelectContent>
                           </Select>
                           <span className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                            {materiasEnBoleta.length > 0 ? `${materiasEnBoleta.length} seleccionada(s)` : 'Mostrando todas'}
+                            {materiasEnBoleta.length > 0 ? `${materiasEnBoleta.length} seleccionada(s)` : 'Todas las asignaturas'}
                           </span>
                         </div>
-                        {materiasEnBoleta.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5">
-                            {asignaturasFiltradas.map(m => (
-                              <button
-                                key={m.id}
-                                onClick={() => {
-                                  const next = materiasEnBoleta.includes(m.id)
-                                    ? materiasEnBoleta.filter(id => id !== m.id)
-                                    : [...materiasEnBoleta, m.id];
-                                  setMateriasEnBoleta(next);
-                                  if (typeof window !== "undefined") localStorage.setItem("ss_materiasBoleta", JSON.stringify(next));
-                                }}
-                                className={`px-2 py-0.5 rounded-full text-xs font-medium border transition-colors ${
-                                  materiasEnBoleta.includes(m.id)
-                                    ? (darkMode ? 'bg-teal-700 text-white border-teal-600' : 'bg-teal-600 text-white border-teal-600')
-                                    : (darkMode ? 'bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-500' : 'bg-slate-100 text-slate-500 border-slate-200 hover:border-slate-400')
-                                }`}
-                              >
-                                {m.nombre}
-                              </button>
-                            ))}
-                          </div>
-                        )}
+                        <div className="flex flex-wrap gap-1.5">
+                          {asignaturasFiltradas.map(m => (
+                            <button
+                              key={m.id}
+                              onClick={() => {
+                                const next = materiasEnBoleta.includes(m.id)
+                                  ? materiasEnBoleta.filter(id => id !== m.id)
+                                  : [...materiasEnBoleta, m.id];
+                                setMateriasEnBoleta(next);
+                                if (typeof window !== "undefined") localStorage.setItem("ss_materiasBoleta", JSON.stringify(next));
+                              }}
+                              className={`px-2 py-0.5 rounded-full text-xs font-medium border transition-colors ${
+                                materiasEnBoleta.length > 0 && materiasEnBoleta.includes(m.id)
+                                  ? (darkMode ? 'bg-teal-700 text-white border-teal-600' : 'bg-teal-600 text-white border-teal-600')
+                                  : (darkMode ? 'bg-slate-800 text-slate-300 border-slate-600 hover:border-teal-600' : 'bg-white text-slate-700 border-slate-300 hover:border-teal-400')
+                              }`}
+                            >
+                              {m.nombre}
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     )}
                     <BoletaList estudiantes={estudiantes} calificaciones={calificaciones} materias={materiasEnBoleta.length > 0 ? asignaturasFiltradas.filter(m => materiasEnBoleta.includes(m.id)) : asignaturasFiltradas} grado={gradosFiltrados.find(g => g.id === gradoSeleccionado)} trimestre={parseInt(trimestreSeleccionado)} expandedBoleta={expandedBoleta} setExpandedBoleta={setExpandedBoleta} darkMode={darkMode} />
@@ -1673,8 +1671,9 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
   const calcProm = (c: Calificacion[]) => { 
     const notas = materias.map(m => {
       const cal = c.find(x => x.materiaId === m.id);
-      return cal?.promedioFinal ?? null;
-    }).filter((x): x is number => x !== null);
+      if (!cal || cal.promedioFinal === null || cal.promedioFinal === undefined) return null;
+      return cal.promedioFinal;
+    }).filter((x): x is number => x !== null && x > 0);
     return notas.length ? notas.reduce((a, b) => a + b, 0) / notas.length : null; 
   };
   
