@@ -446,17 +446,23 @@ export default function Home() {
   };
 
   const handleSaveCalificacion = async (estudianteId: string, materiaId: string, data: { actividadesCotidianas: (number | null)[]; actividadesIntegradoras: (number | null)[]; examenTrimestral: number | null; recuperacion: number | null; }) => {
-    if (!configActual) return;
     setSaving(true);
     try {
-      await fetch("/api/calificaciones", {
+      const res = await fetch("/api/calificaciones", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ estudianteId, materiaId: materiaId, trimestre: parseInt(trimestreSeleccionado), actividadesCotidianas: JSON.stringify(data.actividadesCotidianas), actividadesIntegradoras: JSON.stringify(data.actividadesIntegradoras), examenTrimestral: data.examenTrimestral, recuperacion: data.recuperacion }),
       });
-      loadCalificaciones();
-    } catch { toast({ title: "Error", variant: "destructive" }); }
+      if (!res.ok) {
+        const err = await res.json();
+        console.error("Error al guardar calificación:", err);
+        toast({ title: "Error al guardar: " + (err.error || "Error desconocido"), variant: "destructive" });
+      }
+    } catch (e) {
+      console.error("Error de conexión al guardar:", e);
+      toast({ title: "Error de conexión al guardar", variant: "destructive" });
+    }
     finally { setSaving(false); }
   };
 
@@ -701,10 +707,6 @@ export default function Home() {
   // Carga de configuración y calificaciones sincronizada con grado, asignatura y trimestre
   useEffect(() => { 
     if (gradoSeleccionado && asignaturaSeleccionada && trimestreSeleccionado) {
-      // Limpiar datos previos para forzar refresco visual instantáneo
-      setConfigActual(null);
-      setCalificaciones([]);
-      
       loadConfig(); 
       loadCalificaciones(); 
       loadConfigsGrado();
@@ -953,7 +955,7 @@ export default function Home() {
             </Card>
 
             )}
-            {gradoSeleccionado && asignaturaSeleccionada && configActual && (
+            {gradoSeleccionado && asignaturaSeleccionada && (
               <Card className="shadow-sm">
                 <CardContent className="p-0">
                   <div className="overflow-x-auto">
@@ -961,11 +963,23 @@ export default function Home() {
                       <thead><tr className="bg-slate-700 text-white">
                         <th className="w-8 p-1.5 text-center font-medium sticky left-0 bg-slate-700 z-10">N°</th>
                         <th className="min-w-[160px] p-1.5 text-left font-medium sticky left-8 bg-slate-700 z-10">Estudiante</th>
-                        <th colSpan={configActual.numActividadesCotidianas} className="p-1.5 text-center font-medium border-l border-slate-600">Act. Cotidianas ({configActual.porcentajeAC}%)</th>
-                        <th className="w-12 p-1.5 text-center font-medium border-l border-slate-600">Prom</th>
-                        <th colSpan={configActual.numActividadesIntegradoras} className="p-1.5 text-center font-medium border-l border-slate-600">Act. Integradoras ({configActual.porcentajeAI}%)</th>
-                        <th className="w-12 p-1.5 text-center font-medium border-l border-slate-600">Prom</th>
-                        {configActual.tieneExamen && <th className="w-14 p-1.5 text-center font-medium border-l border-slate-600">Ex. ({configActual.porcentajeExamen}%)</th>}
+                        {configActual ? (
+                          <>
+                            <th colSpan={configActual.numActividadesCotidianas} className="p-1.5 text-center font-medium border-l border-slate-600">Act. Cotidianas ({configActual.porcentajeAC}%)</th>
+                            <th className="w-12 p-1.5 text-center font-medium border-l border-slate-600">Prom</th>
+                            <th colSpan={configActual.numActividadesIntegradoras} className="p-1.5 text-center font-medium border-l border-slate-600">Act. Integradoras ({configActual.porcentajeAI}%)</th>
+                            <th className="w-12 p-1.5 text-center font-medium border-l border-slate-600">Prom</th>
+                            {configActual.tieneExamen && <th className="w-14 p-1.5 text-center font-medium border-l border-slate-600">Ex. ({configActual.porcentajeExamen}%)</th>}
+                          </>
+                        ) : (
+                          <>
+                            <th colSpan={4} className="p-1.5 text-center font-medium border-l border-slate-600">Act. Cotidianas</th>
+                            <th className="w-12 p-1.5 text-center font-medium border-l border-slate-600">Prom</th>
+                            <th colSpan={1} className="p-1.5 text-center font-medium border-l border-slate-600">Act. Integradoras</th>
+                            <th className="w-12 p-1.5 text-center font-medium border-l border-slate-600">Prom</th>
+                            <th className="w-14 p-1.5 text-center font-medium border-l border-slate-600">Ex.</th>
+                          </>
+                        )}
                         <th className="w-14 p-1.5 text-center font-medium border-l border-slate-600 bg-teal-600">Final</th>
                         <th className="w-12 p-1.5 text-center font-medium border-l border-slate-600">Rec.</th>
                         <th className="w-10 p-1.5 border-l border-slate-600"></th>
@@ -1363,17 +1377,32 @@ export default function Home() {
 }
 
 // Componentes
-function CalificacionRow({ estudiante, materiaId, calificacion, config, onSave, saving }: { estudiante: Estudiante; materiaId: string; calificacion?: Calificacion; config: ConfigActividad; onSave: (id: string, matId: string, data: { actividadesCotidianas: (number | null)[]; actividadesIntegradoras: (number | null)[]; examenTrimestral: number | null; recuperacion: number | null; }) => void; saving: boolean; }) {
-  const [acNotas, setAcNotas] = useState<(number | null)[]>(() => parseNotas(calificacion?.actividadesCotidianas ?? null, config.numActividadesCotidianas));
-  const [aiNotas, setAiNotas] = useState<(number | null)[]>(() => parseNotas(calificacion?.actividadesIntegradoras ?? null, config.numActividadesIntegradoras));
+function CalificacionRow({ estudiante, materiaId, calificacion, config, onSave, saving }: { estudiante: Estudiante; materiaId: string; calificacion?: Calificacion; config: ConfigActividad | null; onSave: (id: string, matId: string, data: { actividadesCotidianas: (number | null)[]; actividadesIntegradoras: (number | null)[]; examenTrimestral: number | null; recuperacion: number | null; }) => void; saving: boolean; }) {
+  const numAC = config?.numActividadesCotidianas ?? 4;
+  const numAI = config?.numActividadesIntegradoras ?? 1;
+  const tieneExamen = config?.tieneExamen ?? true;
+  
+  const [acNotas, setAcNotas] = useState<(number | null)[]>(() => parseNotas(calificacion?.actividadesCotidianas ?? null, numAC));
+  const [aiNotas, setAiNotas] = useState<(number | null)[]>(() => parseNotas(calificacion?.actividadesIntegradoras ?? null, numAI));
   const [examen, setExamen] = useState<number | null>(() => calificacion?.examenTrimestral ?? null);
   const [recup, setRecup] = useState<number | null>(() => calificacion?.recuperacion ?? null);
   const [dirty, setDirty] = useState(false);
   
+  useEffect(() => {
+    if (!dirty && calificacion) {
+      const newAC = parseNotas(calificacion.actividadesCotidianas ?? null, numAC);
+      const newAI = parseNotas(calificacion.actividadesIntegradoras ?? null, numAI);
+      if (JSON.stringify(newAC) !== JSON.stringify(acNotas)) setAcNotas(newAC);
+      if (JSON.stringify(newAI) !== JSON.stringify(aiNotas)) setAiNotas(newAI);
+      if (calificacion.examenTrimestral !== examen) setExamen(calificacion.examenTrimestral ?? null);
+      if (calificacion.recuperacion !== recup) setRecup(calificacion.recuperacion ?? null);
+    }
+  }, [calificacion?.id]);
+  
   const stateRef = useRef({ dirty, acNotas, aiNotas, examen, recup });
   useEffect(() => { stateRef.current = { dirty, acNotas, aiNotas, examen, recup }; }, [dirty, acNotas, aiNotas, examen, recup]);
 
-  const promAC = calcularPromedio(acNotas), promAI = calcularPromedio(aiNotas), promFinal = calcularPromedioFinal(promAC, promAI, examen, config, recup);
+  const promAC = calcularPromedio(acNotas), promAI = calcularPromedio(aiNotas), promFinal = config ? calcularPromedioFinal(promAC, promAI, examen, config, recup) : (promAC !== null || promAI !== null || examen !== null ? ((promAC ?? 0) * 0.35 + (promAI ?? 0) * 0.35 + (examen ?? 0) * 0.30) / ((promAC !== null ? 0.35 : 0) + (promAI !== null ? 0.35 : 0) + (examen !== null ? 0.30 : 0)) || null : null);
   const parseVal = (v: string): number | null => { const n = parseFloat(v); return isNaN(n) ? null : Math.min(10, Math.max(0, n)); };
   
   const updateAC = (i: number, v: string) => { const n = [...acNotas]; n[i] = parseVal(v); setAcNotas(n); setDirty(true); };
@@ -1383,7 +1412,6 @@ function CalificacionRow({ estudiante, materiaId, calificacion, config, onSave, 
 
   useEffect(() => {
     return () => {
-      // Flush immediately on unmount if it was dirty
       if (stateRef.current.dirty) {
         onSave(estudiante.id, materiaId, { actividadesCotidianas: stateRef.current.acNotas, actividadesIntegradoras: stateRef.current.aiNotas, examenTrimestral: stateRef.current.examen, recuperacion: stateRef.current.recup });
       }
@@ -1398,6 +1426,25 @@ function CalificacionRow({ estudiante, materiaId, calificacion, config, onSave, 
     }, 1500);
     return () => clearTimeout(handler);
   }, [acNotas, aiNotas, examen, recup, dirty, estudiante.id, materiaId, onSave]);
+
+  if (!config) {
+    return (
+      <tr className="border-b hover:bg-slate-50">
+        <td className="p-1.5 text-center font-medium bg-white sticky left-0 z-10">{estudiante.numero}</td>
+        <td className="p-1.5 font-medium bg-white sticky left-8 z-10 whitespace-nowrap">{estudiante.nombre}</td>
+        {Array.from({ length: numAC }).map((_, i) => <td key={`ac-${i}`} className="p-0.5 border-l border-slate-200"><input type="number" min="0" max="10" step="0.1" className="w-10 h-6 text-base font-medium text-center border-0 bg-transparent focus:bg-teal-50 rounded" value={acNotas[i] ?? ""} onChange={e => updateAC(i, e.target.value)} /></td>)}
+        <td className="p-1.5 text-center font-bold border-l border-slate-200 bg-slate-50 text-base">{promAC !== null ? promAC.toFixed(1) : "-"}</td>
+        {Array.from({ length: numAI }).map((_, i) => <td key={`ai-${i}`} className="p-0.5 border-l border-slate-200"><input type="number" min="0" max="10" step="0.1" className="w-10 h-6 text-base font-medium text-center border-0 bg-transparent focus:bg-teal-50 rounded" value={aiNotas[i] ?? ""} onChange={e => updateAI(i, e.target.value)} /></td>)}
+        <td className="p-1.5 text-center font-bold border-l border-slate-200 bg-slate-50 text-base">{promAI !== null ? promAI.toFixed(1) : "-"}</td>
+        {tieneExamen && <td className="p-0.5 border-l border-slate-200"><input type="number" min="0" max="10" step="0.1" className="w-12 h-6 text-base font-medium text-center border-0 bg-transparent focus:bg-teal-50 rounded" value={examen ?? ""} onChange={handleExamen} /></td>}
+        <td className="p-1.5 text-center border-l border-slate-200 bg-teal-50"><span className={`inline-block px-1.5 py-0.5 rounded text-sm font-bold shadow-sm ${promFinal !== null && promFinal >= 6 ? 'bg-emerald-100 text-emerald-800' : promFinal !== null ? 'bg-rose-100 text-rose-800' : 'bg-slate-200 text-slate-500'}`}>{promFinal !== null ? promFinal.toFixed(1) : "-"}</span></td>
+        <td className="p-0.5 border-l border-slate-200"><input type="number" min="0" max="10" step="0.1" className="w-10 h-6 text-base font-medium text-center border-0 bg-transparent focus:bg-teal-50 rounded" value={recup ?? ""} onChange={handleRecup} /></td>
+        <td className="p-1 border-l border-slate-200 text-center">
+          {saving && dirty ? <RefreshCw className="h-4 w-4 text-teal-600 animate-spin mx-auto" /> : (!dirty && (acNotas.some(n=>n!==null) || aiNotas.some(n=>n!==null) || examen!==null)) ? <span title="Guardado automáticamente">✅</span> : <span className="text-slate-300">-</span>}
+        </td>
+      </tr>
+    );
+  }
 
   return (
     <tr className="border-b hover:bg-slate-50">
