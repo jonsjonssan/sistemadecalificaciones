@@ -458,17 +458,31 @@ export default function Home() {
   const dirtyRowsRef = useRef<Map<string, { estudianteId: string; materiaId: string; data: any }>>(new Map());
   const trimestreRef = useRef(trimestreSeleccionado);
   useEffect(() => { trimestreRef.current = trimestreSeleccionado; }, [trimestreSeleccionado]);
+  const materiaRef = useRef(asignaturaSeleccionada);
+  useEffect(() => { materiaRef.current = asignaturaSeleccionada; }, [asignaturaSeleccionada]);
 
   const handleSaveCalificacion = useCallback(async (estudianteId: string, materiaId: string, data: { actividadesCotidianas: (number | null)[]; actividadesIntegradoras: (number | null)[]; examenTrimestral: number | null; recuperacion: number | null; }) => {
     setSaving(true);
+    const trimestre = parseInt(trimestreRef.current);
     try {
       const res = await fetch("/api/calificaciones", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ estudianteId, materiaId, trimestre: parseInt(trimestreRef.current), actividadesCotidianas: JSON.stringify(data.actividadesCotidianas), actividadesIntegradoras: JSON.stringify(data.actividadesIntegradoras), examenTrimestral: data.examenTrimestral, recuperacion: data.recuperacion }),
+        body: JSON.stringify({ estudianteId, materiaId, trimestre, actividadesCotidianas: JSON.stringify(data.actividadesCotidianas), actividadesIntegradoras: JSON.stringify(data.actividadesIntegradoras), examenTrimestral: data.examenTrimestral, recuperacion: data.recuperacion }),
       });
-      if (!res.ok) {
+      if (res.ok) {
+        const saved = await res.json();
+        setCalificaciones(prev => {
+          const idx = prev.findIndex(c => c.estudianteId === estudianteId && c.materiaId === materiaId && c.trimestre === trimestre);
+          if (idx >= 0) {
+            const next = [...prev];
+            next[idx] = { ...saved, estudiante: prev[idx].estudiante, asignatura: prev[idx].asignatura };
+            return next;
+          }
+          return [...prev, { ...saved, estudiante: undefined, asignatura: undefined }];
+        });
+      } else {
         const err = await res.json();
         console.error("Error API:", err);
       }
@@ -483,8 +497,9 @@ export default function Home() {
       return;
     }
     setSaving(true);
+    const trimestre = parseInt(trimestreSeleccionado);
     const saves = estudiantes.map(async (est) => {
-      const calif = calificaciones.find(c => c.estudianteId === est.id && c.materiaId === asignaturaSeleccionada && c.trimestre === parseInt(trimestreSeleccionado));
+      const calif = calificaciones.find(c => c.estudianteId === est.id && c.materiaId === asignaturaSeleccionada && c.trimestre === trimestre);
       if (!calif) return null;
       return fetch("/api/calificaciones", {
         method: "POST",
@@ -493,7 +508,7 @@ export default function Home() {
         body: JSON.stringify({
           estudianteId: est.id,
           materiaId: asignaturaSeleccionada,
-          trimestre: parseInt(trimestreSeleccionado),
+          trimestre,
           actividadesCotidianas: calif.actividadesCotidianas,
           actividadesIntegradoras: calif.actividadesIntegradoras,
           examenTrimestral: calif.examenTrimestral,
