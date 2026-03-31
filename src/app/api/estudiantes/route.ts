@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { sql } from "@/lib/neon";
+import { PrismaClient } from "@prisma/client";
 import { cookies } from "next/headers";
 
 async function getUsuarioSession() {
@@ -18,33 +18,29 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const gradoId = searchParams.get("gradoId");
-    const activos = searchParams.get("activos");
 
-    let estudiantes;
-    if (activos === "true") {
-      estudiantes = await sql`
-        SELECT * FROM "Estudiante" 
-        WHERE "gradoId" = ${gradoId} AND activo = true
-        ORDER BY numero
-      `;
-    } else if (activos === "false") {
-      estudiantes = await sql`
-        SELECT * FROM "Estudiante" 
-        WHERE "gradoId" = ${gradoId} AND activo = false
-        ORDER BY numero
-      `;
-    } else {
-      estudiantes = await sql`
-        SELECT * FROM "Estudiante" 
-        WHERE "gradoId" = ${gradoId}
-        ORDER BY numero
-      `;
+    if (!gradoId) {
+      return NextResponse.json({ error: "gradoId requerido" }, { status: 400 });
     }
+
+    const prisma = new PrismaClient();
+
+    const where: any = { gradoId };
+    const activos = searchParams.get("activos");
+    if (activos === "true") where.activo = true;
+    else if (activos === "false") where.activo = false;
+
+    const estudiantes = await prisma.estudiante.findMany({
+      where,
+      orderBy: { numero: "asc" },
+    });
+
+    await prisma.$disconnect();
 
     return NextResponse.json(estudiantes);
   } catch (error) {
     console.error("Error al obtener estudiantes:", error);
-    return NextResponse.json({ error: "Error al obtener estudiantes" }, { status: 500 });
+    return NextResponse.json({ error: "Error al obtener estudiantes", details: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }
 
@@ -62,24 +58,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Nombre y grado son requeridos" }, { status: 400 });
     }
 
-    const ultimo = await sql`
-      SELECT numero FROM "Estudiante" 
-      WHERE "gradoId" = ${gradoId}
-      ORDER BY numero DESC LIMIT 1
-    `;
+    const prisma = new PrismaClient();
 
-    const nuevoNumero = ultimo.length > 0 ? ultimo[0].numero + 1 : 1;
+    const ultimo = await prisma.estudiante.findFirst({
+      where: { gradoId },
+      orderBy: { numero: "desc" },
+      select: { numero: true },
+    });
 
-    const result = await sql`
-      INSERT INTO "Estudiante" (numero, nombre, "gradoId")
-      VALUES (${nuevoNumero}, ${nombre}, ${gradoId})
-      RETURNING *
-    `;
+    const nuevoNumero = ultimo ? ultimo.numero + 1 : 1;
 
-    return NextResponse.json(result[0]);
+    const result = await prisma.estudiante.create({
+      data: { numero: nuevoNumero, nombre, gradoId },
+    });
+
+    await prisma.$disconnect();
+
+    return NextResponse.json(result);
   } catch (error) {
     console.error("Error al crear estudiante:", error);
-    return NextResponse.json({ error: "Error al crear estudiante" }, { status: 500 });
+    return NextResponse.json({ error: "Error al crear estudiante", details: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }
 
@@ -96,28 +94,30 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Se requiere un array de nombres" }, { status: 400 });
     }
 
-    const ultimo = await sql`
-      SELECT numero FROM "Estudiante" 
-      WHERE "gradoId" = ${gradoId}
-      ORDER BY numero DESC LIMIT 1
-    `;
+    const prisma = new PrismaClient();
 
-    const numeroInicial = ultimo.length > 0 ? ultimo[0].numero : 0;
+    const ultimo = await prisma.estudiante.findFirst({
+      where: { gradoId },
+      orderBy: { numero: "desc" },
+      select: { numero: true },
+    });
+
+    const numeroInicial = ultimo ? ultimo.numero : 0;
 
     const creados: any[] = [];
     for (let i = 0; i < estudiantes.length; i++) {
-      const result = await sql`
-        INSERT INTO "Estudiante" (numero, nombre, "gradoId")
-        VALUES (${numeroInicial + i + 1}, ${estudiantes[i]}, ${gradoId})
-        RETURNING *
-      `;
-      creados.push(result[0]);
+      const result = await prisma.estudiante.create({
+        data: { numero: numeroInicial + i + 1, nombre: estudiantes[i], gradoId },
+      });
+      creados.push(result);
     }
+
+    await prisma.$disconnect();
 
     return NextResponse.json({ message: `${creados.length} estudiantes creados`, estudiantes: creados });
   } catch (error) {
     console.error("Error al crear estudiantes:", error);
-    return NextResponse.json({ error: "Error al crear estudiantes" }, { status: 500 });
+    return NextResponse.json({ error: "Error al crear estudiantes", details: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }
 
@@ -135,13 +135,17 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "ID requerido" }, { status: 400 });
     }
 
-    await sql`DELETE FROM "Calificacion" WHERE "estudianteId" = ${id}`;
-    await sql`DELETE FROM "Asistencia" WHERE "estudianteId" = ${id}`;
-    await sql`DELETE FROM "Estudiante" WHERE id = ${id}`;
+    const prisma = new PrismaClient();
+
+    await prisma.calificacion.deleteMany({ where: { estudianteId: id } });
+    await prisma.asistencia.deleteMany({ where: { estudianteId: id } });
+    await prisma.estudiante.delete({ where: { id } });
+
+    await prisma.$disconnect();
 
     return NextResponse.json({ message: "Estudiante eliminado" });
   } catch (error) {
     console.error("Error al eliminar estudiante:", error);
-    return NextResponse.json({ error: "Error al eliminar estudiante" }, { status: 500 });
+    return NextResponse.json({ error: "Error al eliminar estudiante", details: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }
