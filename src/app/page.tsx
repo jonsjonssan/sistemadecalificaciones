@@ -119,6 +119,12 @@ export default function Home() {
   const [resetPasswordForm, setResetPasswordForm] = useState({ password: "docente123" });
   const [resetPasswordLoading, setResetPasswordLoading] = useState(false);
   const [perfilDialogOpen, setPerfilDialogOpen] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("ss_dark") === "true";
+    }
+    return false;
+  });
 
   // Persistence: Cargar de localStorage
   useEffect(() => {
@@ -135,6 +141,7 @@ export default function Home() {
   useEffect(() => { if (typeof window !== "undefined" && gradoSeleccionado) localStorage.setItem("ss_grado", gradoSeleccionado); }, [gradoSeleccionado]);
   useEffect(() => { if (typeof window !== "undefined" && asignaturaSeleccionada) localStorage.setItem("ss_materia", asignaturaSeleccionada); }, [asignaturaSeleccionada]);
   useEffect(() => { if (typeof window !== "undefined" && trimestreSeleccionado) localStorage.setItem("ss_trimestre", trimestreSeleccionado); }, [trimestreSeleccionado]);
+  useEffect(() => { if (typeof window !== "undefined") localStorage.setItem("ss_dark", String(darkMode)); }, [darkMode]);
 
   // Auth
   const checkAuth = useCallback(async () => {
@@ -858,20 +865,27 @@ export default function Home() {
 
   // Main
   return (
-    <div className="min-h-screen flex flex-col bg-slate-100">
-      <header className="bg-teal-600 text-white shadow-md">
+    <div className={`min-h-screen flex flex-col transition-colors duration-300 ${darkMode ? 'bg-gray-950 text-gray-100' : 'bg-slate-100 text-slate-900'}`}>
+      <header className={`shadow-lg ${darkMode ? 'bg-gray-900 text-gray-100 border-b border-gray-800' : 'bg-teal-600 text-white'}`}>
         <div className="max-w-7xl mx-auto px-4 py-2 flex items-center justify-between">
-          <div className="flex items-center gap-2"><School className="h-6 w-6" /><div><h1 className="text-sm font-bold">Sistema de Calificaciones</h1><p className="text-sm font-medium text-teal-100">Centro Escolar Católico San José de la Montaña</p></div></div>
+          <div className="flex items-center gap-2"><School className="h-6 w-6" /><div><h1 className="text-sm font-bold">Sistema de Calificaciones</h1><p className={`text-sm font-medium ${darkMode ? 'text-gray-400' : 'text-teal-100'}`}>Centro Escolar Católico San José de la Montaña</p></div></div>
           <div className="flex items-center gap-3">
             {configuracion && (
-              <Badge className="bg-teal-700 text-white text-sm font-medium px-2 py-0.5">
+              <Badge className={`text-sm font-medium px-2 py-0.5 ${darkMode ? 'bg-gray-800 text-gray-300' : 'bg-teal-700 text-white'}`}>
                 Año {configuracion.añoEscolar}
               </Badge>
             )}
-            <div className="text-right text-base font-medium"><p className="font-medium cursor-pointer hover:underline" onClick={() => setPerfilDialogOpen(true)}>{usuario.nombre}</p><p className="text-teal-200 capitalize">{usuario.rol}</p></div>
-            <Button variant="ghost" size="sm" onClick={() => setPerfilDialogOpen(true)} className="text-white hover:bg-teal-700 h-10 px-2"><User className="h-6 w-6 mr-1" />Perfil</Button>
-            <Button variant="ghost" size="sm" onClick={() => setPasswordDialogOpen(true)} className="text-white hover:bg-teal-700 h-10 px-2"><Key className="h-6 w-6 mr-1" />Clave</Button>
-            <Button variant="ghost" size="sm" onClick={handleLogout} className="text-white hover:bg-teal-700 h-10 px-2"><LogOut className="h-6 w-6 mr-1" />Salir</Button>
+            <button onClick={() => setDarkMode(!darkMode)} className={`p-2 rounded-lg transition-colors ${darkMode ? 'bg-gray-800 hover:bg-gray-700 text-yellow-400' : 'bg-teal-700 hover:bg-teal-800 text-white'}`} title={darkMode ? "Modo claro" : "Modo oscuro"}>
+              {darkMode ? (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+              )}
+            </button>
+            <div className={`text-right text-base font-medium ${darkMode ? '' : ''}`}><p className="font-medium cursor-pointer hover:underline" onClick={() => setPerfilDialogOpen(true)}>{usuario.nombre}</p><p className={`capitalize ${darkMode ? 'text-gray-400' : 'text-teal-200'}`}>{usuario.rol}</p></div>
+            <Button variant="ghost" size="sm" onClick={() => setPerfilDialogOpen(true)} className={`h-10 px-2 ${darkMode ? 'text-gray-300 hover:bg-gray-800' : 'text-white hover:bg-teal-700'}`}><User className="h-6 w-6 mr-1" />Perfil</Button>
+            <Button variant="ghost" size="sm" onClick={() => setPasswordDialogOpen(true)} className={`h-10 px-2 ${darkMode ? 'text-gray-300 hover:bg-gray-800' : 'text-white hover:bg-teal-700'}`}><Key className="h-6 w-6 mr-1" />Clave</Button>
+            <Button variant="ghost" size="sm" onClick={handleLogout} className={`h-10 px-2 ${darkMode ? 'text-gray-300 hover:bg-gray-800' : 'text-white hover:bg-teal-700'}`}><LogOut className="h-6 w-6 mr-1" />Salir</Button>
           </div>
         </div>
       </header>
@@ -894,13 +908,13 @@ export default function Home() {
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-3 py-3 pb-24 md:pb-3">
         <Tabs value={activeTab} onValueChange={(val) => { setActiveTab(val); saveUserState({ activeTab: val }); }}>
-          <TabsList className="bg-white shadow-sm h-10 overflow-x-auto rounded-md hidden md:inline-flex w-auto shrink-0 hide-scrollbar justify-start space-x-1">
-            <TabsTrigger id="tab-dashboard" value="dashboard" className="text-base font-medium px-3 gap-1 shrink-0"><LayoutDashboard className="h-5 w-5" />Inicio</TabsTrigger>
-            <TabsTrigger id="tab-calificaciones" value="calificaciones" className="text-base font-medium px-3 gap-1 shrink-0"><ClipboardList className="h-5 w-5" />Calificaciones</TabsTrigger>
-            <TabsTrigger id="tab-asistencia" value="asistencia" className="text-base font-medium px-3 gap-1 shrink-0"><CalendarDays className="h-5 w-5" />Asistencia</TabsTrigger>
-            <TabsTrigger value="estudiantes" className="text-base font-medium px-3 gap-1 shrink-0"><Users className="h-5 w-5" />Estudiantes</TabsTrigger>
-            <TabsTrigger value="boletas" className="text-base font-medium px-3 gap-1 shrink-0"><FileText className="h-5 w-5" />Boletas</TabsTrigger>
-            {usuario.rol === "admin" && <TabsTrigger value="admin" className="text-base font-medium px-3 gap-1 shrink-0"><Settings className="h-5 w-5" />Admin</TabsTrigger>}
+          <TabsList className={`shadow-md h-10 overflow-x-auto rounded-md hidden md:inline-flex w-auto shrink-0 hide-scrollbar justify-start space-x-1 ${darkMode ? 'bg-gray-900 border border-gray-800' : 'bg-white'}`}>
+            <TabsTrigger id="tab-dashboard" value="dashboard" className={`text-base font-medium px-3 gap-1 shrink-0 ${darkMode ? 'data-[state=active]:bg-gray-800 data-[state=active]:text-teal-400' : ''}`}><LayoutDashboard className="h-5 w-5" />Inicio</TabsTrigger>
+            <TabsTrigger id="tab-calificaciones" value="calificaciones" className={`text-base font-medium px-3 gap-1 shrink-0 ${darkMode ? 'data-[state=active]:bg-gray-800 data-[state=active]:text-teal-400' : ''}`}><ClipboardList className="h-5 w-5" />Calificaciones</TabsTrigger>
+            <TabsTrigger id="tab-asistencia" value="asistencia" className={`text-base font-medium px-3 gap-1 shrink-0 ${darkMode ? 'data-[state=active]:bg-gray-800 data-[state=active]:text-teal-400' : ''}`}><CalendarDays className="h-5 w-5" />Asistencia</TabsTrigger>
+            <TabsTrigger value="estudiantes" className={`text-base font-medium px-3 gap-1 shrink-0 ${darkMode ? 'data-[state=active]:bg-gray-800 data-[state=active]:text-teal-400' : ''}`}><Users className="h-5 w-5" />Estudiantes</TabsTrigger>
+            <TabsTrigger value="boletas" className={`text-base font-medium px-3 gap-1 shrink-0 ${darkMode ? 'data-[state=active]:bg-gray-800 data-[state=active]:text-teal-400' : ''}`}><FileText className="h-5 w-5" />Boletas</TabsTrigger>
+            {usuario.rol === "admin" && <TabsTrigger value="admin" className={`text-base font-medium px-3 gap-1 shrink-0 ${darkMode ? 'data-[state=active]:bg-gray-800 data-[state=active]:text-teal-400' : ''}`}><Settings className="h-5 w-5" />Admin</TabsTrigger>}
           </TabsList>
 
           {/* Dashboard */}
@@ -940,57 +954,57 @@ export default function Home() {
                 </CardContent>
               </Card>
             ) : (
-            <Card className="shadow-sm">
+            <Card className={`shadow-lg border ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-slate-200'}`}>
               <CardContent className="p-3">
                 <div className="flex flex-wrap items-end gap-3">
-                  <div className="flex-1 min-w-[140px]"><Label className="text-base font-medium mb-1 block">Grado</Label><Select value={gradoSeleccionado || ""} onValueChange={(val) => { setGradoSeleccionado(val); saveUserState({ gradoSeleccionado: val }); }}><SelectTrigger className="h-12 text-sm"><SelectValue placeholder="Seleccionar grado" /></SelectTrigger><SelectContent>{ gradosFiltrados && gradosFiltrados.length > 0 ? gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}" - {g.año}</SelectItem>) : <SelectItem value="no-grados" disabled>No hay grados</SelectItem>}</SelectContent></Select></div>
-                  <div className="flex-1 min-w-[180px]"><Label className="text-base font-medium mb-1 block">Asignatura</Label><Select value={asignaturaSeleccionada || ""} onValueChange={(val) => { setAsignaturaSeleccionada(val); saveUserState({ asignaturaSeleccionada: val }); }}><SelectTrigger className="h-12 text-sm"><SelectValue placeholder="Seleccionar materia" /></SelectTrigger><SelectContent>{asignaturasFiltradas && asignaturasFiltradas.length > 0 ? asignaturasFiltradas.map(m => <SelectItem key={m.id} value={m.id} className="text-sm">{m.nombre}</SelectItem>) : <SelectItem value="no-materias" disabled>No hay materias</SelectItem>}</SelectContent></Select></div>
-                  <div className="w-28"><Label className="text-base font-medium mb-1 block">Trimestre</Label><Select value={trimestreSeleccionado} onValueChange={setTrimestreSeleccionado}><SelectTrigger className="h-12 text-sm"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="1" className="text-sm">I</SelectItem><SelectItem value="2" className="text-sm">II</SelectItem><SelectItem value="3" className="text-sm">III</SelectItem></SelectContent></Select></div>
-                  {configActual && <div className="flex items-center gap-1 text-sm font-medium text-slate-500 bg-slate-50 px-2 py-1 rounded"><span>{configActual.numActividadesCotidianas} AC ({configActual.porcentajeAC}%)</span><span>•</span><span>{configActual.numActividadesIntegradoras} AI ({configActual.porcentajeAI}%)</span>{configActual.tieneExamen && <><span>•</span><span>Ex ({configActual.porcentajeExamen}%)</span></>}</div>}
-                  <Button size="sm" variant="outline" className="h-12" onClick={refreshCalificaciones} disabled={refreshing}><RefreshCw className={`h-5 w-5 mr-1 ${refreshing ? 'animate-spin' : ''}`} />{refreshing ? 'Cargando...' : 'Refrescar'}</Button>
-                  {usuario.rol === "admin" && <Button size="sm" variant="outline" className="h-12" onClick={() => { setEditConfig(configActual); setConfigDialogOpen(true); }}><Settings className="h-5 w-5 mr-1" />Config</Button>}
-                  <Button size="sm" variant="outline" className="h-12" onClick={() => setImportDialogOpen(true)}><Upload className="h-5 w-5 mr-1" />Importar</Button>
+                  <div className="flex-1 min-w-[140px]"><Label className={`text-base font-medium mb-1 block ${darkMode ? 'text-gray-300' : ''}`}>Grado</Label><Select value={gradoSeleccionado || ""} onValueChange={(val) => { setGradoSeleccionado(val); saveUserState({ gradoSeleccionado: val }); }}><SelectTrigger className={`h-12 text-sm ${darkMode ? 'bg-gray-800 border-gray-700 text-gray-100' : ''}`}><SelectValue placeholder="Seleccionar grado" /></SelectTrigger><SelectContent>{ gradosFiltrados && gradosFiltrados.length > 0 ? gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}" - {g.año}</SelectItem>) : <SelectItem value="no-grados" disabled>No hay grados</SelectItem>}</SelectContent></Select></div>
+                  <div className="flex-1 min-w-[180px]"><Label className={`text-base font-medium mb-1 block ${darkMode ? 'text-gray-300' : ''}`}>Asignatura</Label><Select value={asignaturaSeleccionada || ""} onValueChange={(val) => { setAsignaturaSeleccionada(val); saveUserState({ asignaturaSeleccionada: val }); }}><SelectTrigger className={`h-12 text-sm ${darkMode ? 'bg-gray-800 border-gray-700 text-gray-100' : ''}`}><SelectValue placeholder="Seleccionar materia" /></SelectTrigger><SelectContent>{asignaturasFiltradas && asignaturasFiltradas.length > 0 ? asignaturasFiltradas.map(m => <SelectItem key={m.id} value={m.id} className="text-sm">{m.nombre}</SelectItem>) : <SelectItem value="no-materias" disabled>No hay materias</SelectItem>}</SelectContent></Select></div>
+                  <div className="w-28"><Label className={`text-base font-medium mb-1 block ${darkMode ? 'text-gray-300' : ''}`}>Trimestre</Label><Select value={trimestreSeleccionado} onValueChange={setTrimestreSeleccionado}><SelectTrigger className={`h-12 text-sm ${darkMode ? 'bg-gray-800 border-gray-700 text-gray-100' : ''}`}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="1" className="text-sm">I</SelectItem><SelectItem value="2" className="text-sm">II</SelectItem><SelectItem value="3" className="text-sm">III</SelectItem></SelectContent></Select></div>
+                  {configActual && <div className={`flex items-center gap-1 text-sm font-medium px-2 py-1 rounded ${darkMode ? 'text-gray-400 bg-gray-800' : 'text-slate-500 bg-slate-50'}`}><span>{configActual.numActividadesCotidianas} AC ({configActual.porcentajeAC}%)</span><span>•</span><span>{configActual.numActividadesIntegradoras} AI ({configActual.porcentajeAI}%)</span>{configActual.tieneExamen && <><span>•</span><span>Ex ({configActual.porcentajeExamen}%)</span></>}</div>}
+                  <Button size="sm" variant="outline" className={`h-12 ${darkMode ? 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700' : ''}`} onClick={refreshCalificaciones} disabled={refreshing}><RefreshCw className={`h-5 w-5 mr-1 ${refreshing ? 'animate-spin' : ''}`} />{refreshing ? 'Cargando...' : 'Refrescar'}</Button>
+                  {usuario.rol === "admin" && <Button size="sm" variant="outline" className={`h-12 ${darkMode ? 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700' : ''}`} onClick={() => { setEditConfig(configActual); setConfigDialogOpen(true); }}><Settings className="h-5 w-5 mr-1" />Config</Button>}
+                  <Button size="sm" variant="outline" className={`h-12 ${darkMode ? 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700' : ''}`} onClick={() => setImportDialogOpen(true)}><Upload className="h-5 w-5 mr-1" />Importar</Button>
                 </div>
               </CardContent>
             </Card>
 
             )}
             {gradoSeleccionado && asignaturaSeleccionada && (
-              <Card className="shadow-sm">
+              <Card className={`shadow-xl border ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-slate-200'}`}>
                 <CardContent className="p-0">
                   <div className="overflow-x-auto">
                     <table className="w-full text-base font-medium border-collapse">
-                      <thead><tr className="bg-slate-700 text-white">
-                        <th className="w-8 p-1.5 text-center font-medium sticky left-0 bg-slate-700 z-10">N°</th>
-                        <th className="min-w-[160px] p-1.5 text-left font-medium sticky left-8 bg-slate-700 z-10">Estudiante</th>
+                      <thead><tr className={darkMode ? 'bg-gray-800 text-gray-100' : 'bg-slate-700 text-white'}>
+                        <th className={`w-8 p-1.5 text-center font-medium sticky left-0 z-10 border-r ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-slate-700 border-slate-600'}`}>N°</th>
+                        <th className={`min-w-[160px] p-1.5 text-left font-medium sticky left-8 z-10 border-r ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-slate-700 border-slate-600'}`}>Estudiante</th>
                         {configActual ? (
                           <>
-                            <th colSpan={configActual.numActividadesCotidianas} className="p-1.5 text-center font-medium border-l border-slate-600">Act. Cotidianas</th>
-                            <th className="w-12 p-1.5 text-center font-medium border-l border-slate-600">Prom AC</th>
-                            <th colSpan={configActual.numActividadesIntegradoras} className="p-1.5 text-center font-medium border-l border-slate-600">Act. Integradoras</th>
-                            <th className="w-12 p-1.5 text-center font-medium border-l border-slate-600">Prom AI</th>
-                            {configActual.tieneExamen && <th className="w-12 p-1.5 text-center font-medium border-l border-slate-600">Examen</th>}
-                            {configActual.tieneExamen && <th className="w-12 p-1.5 text-center font-medium border-l border-slate-600">Prom Ex</th>}
-                            <th className="w-14 p-1.5 text-center font-medium border-l border-slate-600 bg-emerald-600">Prom. Final</th>
+                            <th colSpan={configActual.numActividadesCotidianas} className={`p-1.5 text-center font-medium border-l ${darkMode ? 'border-gray-700' : 'border-slate-600'}`}>Act. Cotidianas</th>
+                            <th className={`w-14 p-1.5 text-center font-medium border-l ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-slate-700/50 border-slate-600'}`}>Prom AC</th>
+                            <th colSpan={configActual.numActividadesIntegradoras} className={`p-1.5 text-center font-medium border-l ${darkMode ? 'border-gray-700' : 'border-slate-600'}`}>Act. Integradoras</th>
+                            <th className={`w-14 p-1.5 text-center font-medium border-l ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-slate-700/50 border-slate-600'}`}>Prom AI</th>
+                            {configActual.tieneExamen && <th className={`w-14 p-1.5 text-center font-medium border-l ${darkMode ? 'border-gray-700' : 'border-slate-600'}`}>Examen</th>}
+                            {configActual.tieneExamen && <th className={`w-14 p-1.5 text-center font-medium border-l ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-slate-700/50 border-slate-600'}`}>Prom Ex</th>}
+                            <th className={`w-16 p-1.5 text-center font-medium border-l ${darkMode ? 'bg-emerald-800 border-emerald-700 text-emerald-100' : 'bg-emerald-600 border-emerald-500'}`}>Prom. Final</th>
                           </>
                         ) : (
                           <>
-                            <th colSpan={4} className="p-1.5 text-center font-medium border-l border-slate-600">Act. Cotidianas</th>
-                            <th className="w-12 p-1.5 text-center font-medium border-l border-slate-600">Prom AC</th>
-                            <th colSpan={1} className="p-1.5 text-center font-medium border-l border-slate-600">Act. Integradoras</th>
-                            <th className="w-12 p-1.5 text-center font-medium border-l border-slate-600">Prom AI</th>
-                            <th className="w-12 p-1.5 text-center font-medium border-l border-slate-600">Examen</th>
-                            <th className="w-12 p-1.5 text-center font-medium border-l border-slate-600">Prom Ex</th>
-                            <th className="w-14 p-1.5 text-center font-medium border-l border-slate-600 bg-emerald-600">Prom. Final</th>
+                            <th colSpan={4} className={`p-1.5 text-center font-medium border-l ${darkMode ? 'border-gray-700' : 'border-slate-600'}`}>Act. Cotidianas</th>
+                            <th className={`w-14 p-1.5 text-center font-medium border-l ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-slate-700/50 border-slate-600'}`}>Prom AC</th>
+                            <th colSpan={1} className={`p-1.5 text-center font-medium border-l ${darkMode ? 'border-gray-700' : 'border-slate-600'}`}>Act. Integradoras</th>
+                            <th className={`w-14 p-1.5 text-center font-medium border-l ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-slate-700/50 border-slate-600'}`}>Prom AI</th>
+                            <th className={`w-14 p-1.5 text-center font-medium border-l ${darkMode ? 'border-gray-700' : 'border-slate-600'}`}>Examen</th>
+                            <th className={`w-14 p-1.5 text-center font-medium border-l ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-slate-700/50 border-slate-600'}`}>Prom Ex</th>
+                            <th className={`w-16 p-1.5 text-center font-medium border-l ${darkMode ? 'bg-emerald-800 border-emerald-700 text-emerald-100' : 'bg-emerald-600 border-emerald-500'}`}>Prom. Final</th>
                           </>
                         )}
-                        <th className="w-12 p-1.5 text-center font-medium border-l border-slate-600">Rec.</th>
-                        <th className="w-10 p-1.5 border-l border-slate-600"></th>
+                        <th className={`w-12 p-1.5 text-center font-medium border-l ${darkMode ? 'border-gray-700' : 'border-slate-600'}`}>Rec.</th>
+                        <th className={`w-10 p-1.5 border-l ${darkMode ? 'border-gray-700' : 'border-slate-600'}`}></th>
                       </tr></thead>
                       <tbody>
                         {(estudiantes || []).map(est => {
                           const calif = getCalificacion(est.id);
-                          return <CalificacionRow key={`${est.id}-${asignaturaSeleccionada}-${trimestreSeleccionado}`} estudiante={est} materiaId={asignaturaSeleccionada} calificacion={calif} config={configActual} onSave={handleSaveCalificacion} saving={saving} />
+                          return <CalificacionRow key={`${est.id}-${asignaturaSeleccionada}-${trimestreSeleccionado}`} estudiante={est} materiaId={asignaturaSeleccionada} calificacion={calif} config={configActual} onSave={handleSaveCalificacion} saving={saving} darkMode={darkMode} />
                         })}
                       </tbody>
                     </table>
@@ -1363,16 +1377,16 @@ export default function Home() {
         </DialogContent>
       </Dialog>
 
-      <footer className="bg-slate-800 text-slate-400 py-2 text-center text-[10px] hidden md:block">© 2026 Centro Escolar Católico San José de la Montaña</footer>
+      <footer className={`py-2 text-center text-[10px] hidden md:block ${darkMode ? 'bg-gray-900 text-gray-500' : 'bg-slate-800 text-slate-400'}`}>© 2026 Centro Escolar Católico San José de la Montaña</footer>
 
       {/* Bottom Nav Bar para Móviles */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around items-center px-1 py-2 z-50">
-        <button onClick={() => { setActiveTab("dashboard"); saveUserState({ activeTab: "dashboard" }); }} className={`flex flex-col items-center p-1.5 px-3 rounded-xl transition-colors ${activeTab === "dashboard" ? "text-teal-700 bg-teal-50" : "text-slate-500"}`}><LayoutDashboard className="h-5 w-5 mb-1" /><span className="text-[10px] font-medium">Inicio</span></button>
-        <button onClick={() => { setActiveTab("calificaciones"); saveUserState({ activeTab: "calificaciones" }); }} className={`flex flex-col items-center p-1.5 px-3 rounded-xl transition-colors ${activeTab === "calificaciones" ? "text-teal-700 bg-teal-50" : "text-slate-500"}`}><ClipboardList className="h-5 w-5 mb-1" /><span className="text-[10px] font-medium">Notas</span></button>
-        <button onClick={() => { setActiveTab("asistencia"); saveUserState({ activeTab: "asistencia" }); }} className={`flex flex-col items-center p-1.5 px-3 rounded-xl transition-colors ${activeTab === "asistencia" ? "text-teal-700 bg-teal-50" : "text-slate-500"}`}><CalendarDays className="h-5 w-5 mb-1" /><span className="text-[10px] font-medium">Lista</span></button>
-        <button onClick={() => { setActiveTab("estudiantes"); saveUserState({ activeTab: "estudiantes" }); }} className={`flex flex-col items-center p-1.5 px-3 rounded-xl transition-colors ${activeTab === "estudiantes" ? "text-teal-700 bg-teal-50" : "text-slate-500"}`}><Users className="h-5 w-5 mb-1" /><span className="text-[10px] font-medium">Alumnos</span></button>
+      <nav className={`md:hidden fixed bottom-0 left-0 right-0 border-t flex justify-around items-center px-1 py-2 z-50 ${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-slate-200'}`}>
+        <button onClick={() => { setActiveTab("dashboard"); saveUserState({ activeTab: "dashboard" }); }} className={`flex flex-col items-center p-1.5 px-3 rounded-xl transition-colors ${activeTab === "dashboard" ? (darkMode ? "text-teal-400 bg-gray-800" : "text-teal-700 bg-teal-50") : (darkMode ? "text-gray-500" : "text-slate-500")}`}><LayoutDashboard className="h-5 w-5 mb-1" /><span className="text-[10px] font-medium">Inicio</span></button>
+        <button onClick={() => { setActiveTab("calificaciones"); saveUserState({ activeTab: "calificaciones" }); }} className={`flex flex-col items-center p-1.5 px-3 rounded-xl transition-colors ${activeTab === "calificaciones" ? (darkMode ? "text-teal-400 bg-gray-800" : "text-teal-700 bg-teal-50") : (darkMode ? "text-gray-500" : "text-slate-500")}`}><ClipboardList className="h-5 w-5 mb-1" /><span className="text-[10px] font-medium">Notas</span></button>
+        <button onClick={() => { setActiveTab("asistencia"); saveUserState({ activeTab: "asistencia" }); }} className={`flex flex-col items-center p-1.5 px-3 rounded-xl transition-colors ${activeTab === "asistencia" ? (darkMode ? "text-teal-400 bg-gray-800" : "text-teal-700 bg-teal-50") : (darkMode ? "text-gray-500" : "text-slate-500")}`}><CalendarDays className="h-5 w-5 mb-1" /><span className="text-[10px] font-medium">Lista</span></button>
+        <button onClick={() => { setActiveTab("estudiantes"); saveUserState({ activeTab: "estudiantes" }); }} className={`flex flex-col items-center p-1.5 px-3 rounded-xl transition-colors ${activeTab === "estudiantes" ? (darkMode ? "text-teal-400 bg-gray-800" : "text-teal-700 bg-teal-50") : (darkMode ? "text-gray-500" : "text-slate-500")}`}><Users className="h-5 w-5 mb-1" /><span className="text-[10px] font-medium">Alumnos</span></button>
         {usuario.rol === "admin" && (
-          <button onClick={() => { setActiveTab("admin"); saveUserState({ activeTab: "admin" }); }} className={`flex flex-col items-center p-1.5 px-3 rounded-xl transition-colors ${activeTab === "admin" ? "text-teal-700 bg-teal-50" : "text-slate-500"}`}><Settings className="h-5 w-5 mb-1" /><span className="text-[10px] font-medium">Admin</span></button>
+          <button onClick={() => { setActiveTab("admin"); saveUserState({ activeTab: "admin" }); }} className={`flex flex-col items-center p-1.5 px-3 rounded-xl transition-colors ${activeTab === "admin" ? (darkMode ? "text-teal-400 bg-gray-800" : "text-teal-700 bg-teal-50") : (darkMode ? "text-gray-500" : "text-slate-500")}`}><Settings className="h-5 w-5 mb-1" /><span className="text-[10px] font-medium">Admin</span></button>
         )}
       </nav>
     </div>
@@ -1380,7 +1394,7 @@ export default function Home() {
 }
 
 // Componentes
-function CalificacionRow({ estudiante, materiaId, calificacion, config, onSave, saving }: { estudiante: Estudiante; materiaId: string; calificacion?: Calificacion; config: ConfigActividad | null; onSave: (id: string, matId: string, data: { actividadesCotidianas: (number | null)[]; actividadesIntegradoras: (number | null)[]; examenTrimestral: number | null; recuperacion: number | null; }) => void; saving: boolean; }) {
+function CalificacionRow({ estudiante, materiaId, calificacion, config, onSave, saving, darkMode }: { estudiante: Estudiante; materiaId: string; calificacion?: Calificacion; config: ConfigActividad | null; onSave: (id: string, matId: string, data: { actividadesCotidianas: (number | null)[]; actividadesIntegradoras: (number | null)[]; examenTrimestral: number | null; recuperacion: number | null; }) => void; saving: boolean; darkMode: boolean; }) {
   const numAC = config?.numActividadesCotidianas ?? 4;
   const numAI = config?.numActividadesIntegradoras ?? 1;
   const tieneExamen = config?.tieneExamen ?? true;
@@ -1434,40 +1448,48 @@ function CalificacionRow({ estudiante, materiaId, calificacion, config, onSave, 
     return () => clearTimeout(handler);
   }, [acNotas, aiNotas, examen, recup, dirty, estudiante.id, materiaId, onSave]);
 
+  const rowBg = darkMode ? 'bg-gray-900 hover:bg-gray-800' : 'bg-white hover:bg-slate-50';
+  const cellBorder = darkMode ? 'border-gray-800' : 'border-slate-200';
+  const stickyBg = darkMode ? 'bg-gray-900' : 'bg-white';
+  const promBg = darkMode ? 'bg-gray-800' : 'bg-slate-50';
+  const finalBg = darkMode ? 'bg-emerald-900/30' : 'bg-emerald-50';
+  const inputBg = darkMode ? 'focus:bg-gray-700 text-gray-100' : 'focus:bg-teal-50';
+  const inputBase = `w-12 h-6 text-base font-medium text-center border-0 bg-transparent rounded ${inputBg}`;
+
   if (!config) {
     return (
-      <tr className="border-b hover:bg-slate-50">
-        <td className="p-1.5 text-center font-medium bg-white sticky left-0 z-10">{estudiante.numero}</td>
-        <td className="p-1.5 font-medium bg-white sticky left-8 z-10 whitespace-nowrap">{estudiante.nombre}</td>
-        {Array.from({ length: numAC }).map((_, i) => <td key={`ac-${i}`} className="p-0.5 border-l border-slate-200"><input type="number" min="0" max="10" step="0.1" className="w-12 h-6 text-base font-medium text-center border-0 bg-transparent focus:bg-teal-50 rounded" value={acNotas[i] ?? ""} onChange={e => updateAC(i, e.target.value)} /></td>)}
-        <td className="p-1.5 text-center font-bold border-l border-slate-200 bg-slate-50 text-base">{promACPeso !== null ? promACPeso.toFixed(2) : "-"}</td>
-        {Array.from({ length: numAI }).map((_, i) => <td key={`ai-${i}`} className="p-0.5 border-l border-slate-200"><input type="number" min="0" max="10" step="0.1" className="w-12 h-6 text-base font-medium text-center border-0 bg-transparent focus:bg-teal-50 rounded" value={aiNotas[i] ?? ""} onChange={e => updateAI(i, e.target.value)} /></td>)}
-        <td className="p-1.5 text-center font-bold border-l border-slate-200 bg-slate-50 text-base">{promAIPeso !== null ? promAIPeso.toFixed(2) : "-"}</td>
-        {tieneExamen && <td className="p-0.5 border-l border-slate-200"><input type="number" min="0" max="10" step="0.1" className="w-12 h-6 text-base font-medium text-center border-0 bg-transparent focus:bg-teal-50 rounded" value={examen ?? ""} onChange={handleExamen} /></td>}
-        {tieneExamen && <td className="p-1.5 text-center font-bold border-l border-slate-200 bg-slate-50 text-base">{promExPeso !== null ? promExPeso.toFixed(2) : "-"}</td>}
-        <td className="p-1.5 text-center border-l border-slate-200 bg-emerald-50"><span className={`inline-block px-1.5 py-0.5 rounded text-sm font-bold shadow-sm ${promFinal !== null && promFinal >= 6 ? 'bg-emerald-100 text-emerald-800' : promFinal !== null ? 'bg-rose-100 text-rose-800' : 'bg-slate-200 text-slate-500'}`}>{promFinal !== null ? promFinal.toFixed(2) : "-"}</span></td>
-        <td className="p-0.5 border-l border-slate-200"><input type="number" min="0" max="10" step="0.1" className="w-10 h-6 text-base font-medium text-center border-0 bg-transparent focus:bg-teal-50 rounded" value={recup ?? ""} onChange={handleRecup} /></td>
-        <td className="p-1 border-l border-slate-200 text-center">
-          {saving && dirty ? <RefreshCw className="h-4 w-4 text-teal-600 animate-spin mx-auto" /> : (!dirty && (acNotas.some(n=>n!==null) || aiNotas.some(n=>n!==null) || examen!==null)) ? <span title="Guardado automáticamente">✅</span> : <span className="text-slate-300">-</span>}
+      <tr className={`border-b ${rowBg}`}>
+        <td className={`p-1.5 text-center font-medium sticky left-0 z-10 ${stickyBg} ${cellBorder}`}>{estudiante.numero}</td>
+        <td className={`p-1.5 font-medium sticky left-8 z-10 whitespace-nowrap ${stickyBg} ${cellBorder}`}>{estudiante.nombre}</td>
+        {Array.from({ length: numAC }).map((_, i) => <td key={`ac-${i}`} className={`p-0.5 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={inputBase} value={acNotas[i] ?? ""} onChange={e => updateAC(i, e.target.value)} /></td>)}
+        <td className={`p-1.5 text-center font-bold border-l ${cellBorder} ${promBg} text-base`}>{promACPeso !== null ? promACPeso.toFixed(2) : "-"}</td>
+        {Array.from({ length: numAI }).map((_, i) => <td key={`ai-${i}`} className={`p-0.5 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={inputBase} value={aiNotas[i] ?? ""} onChange={e => updateAI(i, e.target.value)} /></td>)}
+        <td className={`p-1.5 text-center font-bold border-l ${cellBorder} ${promBg} text-base`}>{promAIPeso !== null ? promAIPeso.toFixed(2) : "-"}</td>
+        {tieneExamen && <td className={`p-0.5 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={`w-12 h-6 text-base font-medium text-center border-0 bg-transparent rounded ${inputBg}`} value={examen ?? ""} onChange={handleExamen} /></td>}
+        {tieneExamen && <td className={`p-1.5 text-center font-bold border-l ${cellBorder} ${promBg} text-base`}>{promExPeso !== null ? promExPeso.toFixed(2) : "-"}</td>}
+        <td className={`p-1.5 text-center border-l ${cellBorder} ${finalBg}`}><span className={`inline-block px-1.5 py-0.5 rounded text-sm font-bold shadow-sm ${promFinal !== null && promFinal >= 6 ? (darkMode ? 'bg-emerald-900 text-emerald-300' : 'bg-emerald-100 text-emerald-800') : promFinal !== null ? (darkMode ? 'bg-rose-900 text-rose-300' : 'bg-rose-100 text-rose-800') : (darkMode ? 'bg-gray-800 text-gray-500' : 'bg-slate-200 text-slate-500')}`}>{promFinal !== null ? promFinal.toFixed(2) : "-"}</span></td>
+        <td className={`p-0.5 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={`w-10 h-6 text-base font-medium text-center border-0 bg-transparent rounded ${inputBg}`} value={recup ?? ""} onChange={handleRecup} /></td>
+        <td className={`p-1 border-l ${cellBorder} text-center`}>
+          {saving && dirty ? <RefreshCw className="h-4 w-4 text-teal-500 animate-spin mx-auto" /> : (!dirty && (acNotas.some(n=>n!==null) || aiNotas.some(n=>n!==null) || examen!==null)) ? <span title="Guardado automáticamente">{darkMode ? '💾' : '✅'}</span> : <span className={darkMode ? 'text-gray-600' : 'text-slate-300'}>-</span>}
         </td>
       </tr>
     );
   }
 
   return (
-    <tr className="border-b hover:bg-slate-50">
-      <td className="p-1.5 text-center font-medium bg-white sticky left-0 z-10">{estudiante.numero}</td>
-      <td className="p-1.5 font-medium bg-white sticky left-8 z-10 whitespace-nowrap">{estudiante.nombre}</td>
-      {acNotas.map((n, i) => <td key={`ac-${i}`} className="p-0.5 border-l border-slate-200"><input type="number" min="0" max="10" step="0.1" className="w-12 h-6 text-base font-medium text-center border-0 bg-transparent focus:bg-teal-50 rounded" value={n ?? ""} onChange={e => updateAC(i, e.target.value)} /></td>)}
-      <td className="p-1.5 text-center font-bold border-l border-slate-200 bg-slate-50 text-base">{promACPeso !== null ? promACPeso.toFixed(2) : "-"}</td>
-      {aiNotas.map((n, i) => <td key={`ai-${i}`} className="p-0.5 border-l border-slate-200"><input type="number" min="0" max="10" step="0.1" className="w-12 h-6 text-base font-medium text-center border-0 bg-transparent focus:bg-teal-50 rounded" value={n ?? ""} onChange={e => updateAI(i, e.target.value)} /></td>)}
-      <td className="p-1.5 text-center font-bold border-l border-slate-200 bg-slate-50 text-base">{promAIPeso !== null ? promAIPeso.toFixed(2) : "-"}</td>
-      {config.tieneExamen && <td className="p-0.5 border-l border-slate-200"><input type="number" min="0" max="10" step="0.1" className="w-12 h-6 text-base font-medium text-center border-0 bg-transparent focus:bg-teal-50 rounded" value={examen ?? ""} onChange={handleExamen} /></td>}
-      {config.tieneExamen && <td className="p-1.5 text-center font-bold border-l border-slate-200 bg-slate-50 text-base">{promExPeso !== null ? promExPeso.toFixed(2) : "-"}</td>}
-      <td className="p-1.5 text-center border-l border-slate-200 bg-emerald-50"><span className={`inline-block px-1.5 py-0.5 rounded text-sm font-bold shadow-sm ${promFinal !== null && promFinal >= 6 ? 'bg-emerald-100 text-emerald-800' : promFinal !== null ? 'bg-rose-100 text-rose-800' : 'bg-slate-200 text-slate-500'}`}>{promFinal !== null ? promFinal.toFixed(2) : "-"}</span></td>
-      <td className="p-0.5 border-l border-slate-200"><input type="number" min="0" max="10" step="0.1" className="w-10 h-6 text-base font-medium text-center border-0 bg-transparent focus:bg-teal-50 rounded" value={recup ?? ""} onChange={handleRecup} /></td>
-      <td className="p-1 border-l border-slate-200 text-center">
-        {saving && dirty ? <RefreshCw className="h-4 w-4 text-teal-600 animate-spin mx-auto" /> : (!dirty && (acNotas.some(n=>n!==null) || aiNotas.some(n=>n!==null) || examen!==null)) ? <span title="Guardado automáticamente">✅</span> : <span className="text-slate-300">-</span>}
+    <tr className={`border-b ${rowBg}`}>
+      <td className={`p-1.5 text-center font-medium sticky left-0 z-10 ${stickyBg} ${cellBorder}`}>{estudiante.numero}</td>
+      <td className={`p-1.5 font-medium sticky left-8 z-10 whitespace-nowrap ${stickyBg} ${cellBorder}`}>{estudiante.nombre}</td>
+      {acNotas.map((n, i) => <td key={`ac-${i}`} className={`p-0.5 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={inputBase} value={n ?? ""} onChange={e => updateAC(i, e.target.value)} /></td>)}
+      <td className={`p-1.5 text-center font-bold border-l ${cellBorder} ${promBg} text-base`}>{promACPeso !== null ? promACPeso.toFixed(2) : "-"}</td>
+      {aiNotas.map((n, i) => <td key={`ai-${i}`} className={`p-0.5 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={inputBase} value={n ?? ""} onChange={e => updateAI(i, e.target.value)} /></td>)}
+      <td className={`p-1.5 text-center font-bold border-l ${cellBorder} ${promBg} text-base`}>{promAIPeso !== null ? promAIPeso.toFixed(2) : "-"}</td>
+      {config.tieneExamen && <td className={`p-0.5 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={`w-12 h-6 text-base font-medium text-center border-0 bg-transparent rounded ${inputBg}`} value={examen ?? ""} onChange={handleExamen} /></td>}
+      {config.tieneExamen && <td className={`p-1.5 text-center font-bold border-l ${cellBorder} ${promBg} text-base`}>{promExPeso !== null ? promExPeso.toFixed(2) : "-"}</td>}
+      <td className={`p-1.5 text-center border-l ${cellBorder} ${finalBg}`}><span className={`inline-block px-1.5 py-0.5 rounded text-sm font-bold shadow-sm ${promFinal !== null && promFinal >= 6 ? (darkMode ? 'bg-emerald-900 text-emerald-300' : 'bg-emerald-100 text-emerald-800') : promFinal !== null ? (darkMode ? 'bg-rose-900 text-rose-300' : 'bg-rose-100 text-rose-800') : (darkMode ? 'bg-gray-800 text-gray-500' : 'bg-slate-200 text-slate-500')}`}>{promFinal !== null ? promFinal.toFixed(2) : "-"}</span></td>
+      <td className={`p-0.5 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={`w-10 h-6 text-base font-medium text-center border-0 bg-transparent rounded ${inputBg}`} value={recup ?? ""} onChange={handleRecup} /></td>
+      <td className={`p-1 border-l ${cellBorder} text-center`}>
+        {saving && dirty ? <RefreshCw className="h-4 w-4 text-teal-500 animate-spin mx-auto" /> : (!dirty && (acNotas.some(n=>n!==null) || aiNotas.some(n=>n!==null) || examen!==null)) ? <span title="Guardado automáticamente">{darkMode ? '💾' : '✅'}</span> : <span className={darkMode ? 'text-gray-600' : 'text-slate-300'}>-</span>}
       </td>
     </tr>
   );
