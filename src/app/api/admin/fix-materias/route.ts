@@ -1,37 +1,104 @@
 import { NextResponse } from "next/server";
-import { sql } from "@/lib/neon";
-import { cookies } from "next/headers";
+import { db } from "@/lib/db";
 
-export async function POST() {
+export async function GET() {
   try {
-    const cookieStore = await cookies();
-    const session = cookieStore.get("session");
-    
-    if (!session) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
-
-    const sessionData = JSON.parse(session.value);
-    if (sessionData.rol !== "admin") {
-      return NextResponse.json({ error: "Solo admin puede ejecutar esta acción" }, { status: 403 });
-    }
-
-    const grados = await sql`SELECT id, numero FROM "Grado" WHERE numero >= 7`;
-    
-    let actualizados = 0;
-    for (const grado of grados) {
-      const materia = await sql`SELECT id, nombre FROM "Materia" WHERE "gradoId" = ${grado.id} AND nombre = 'Desarrollo Corporal'`;
-      
-      if (materia.length > 0) {
-        console.log(`Grado ${grado.numero}: ${materia[0].nombre} -> Educación Física y Deportes`);
-        await sql`UPDATE "Materia" SET nombre = 'Educación Física y Deportes' WHERE id = ${materia[0].id}`;
-        actualizados++;
+    const materiasABorrar = await db.materia.findMany({
+      where: {
+        nombre: "Desarrollo Corporal y Educación Física"
+      },
+      include: {
+        grado: true
       }
+    });
+
+    console.log(`Encontradas ${materiasABorrar.length} materias para procesar.`);
+
+    for (const materiaOld of materiasABorrar) {
+      const gradoNum = materiaOld.grado.numero;
+      const targetNombre = gradoNum >= 7 ? "Educación Física y Deportes" : "Desarrollo Corporal";
+
+      // 1. Asegurar materia destino
+      let materiaNew = await db.materia.findFirst({
+        where: {
+          nombre: targetNombre,
+          gradoId: materiaOld.gradoId
+        }
+      });
+
+      if (!materiaNew) {
+        materiaNew = await db.materia.create({
+          data: {
+            nombre: targetNombre,
+            gradoId: materiaOld.gradoId
+          }
+        });
+      }
+
+      // 2. Migrar Calificaciones
+      await db.calificacion.updateMany({
+        where: { materiaId: materiaOld.id },
+        data: { materiaId: materiaNew.id }
+      });
+
+      // 3. Migrar Asignaciones de Docentes
+      const asignaciones = await db.docenteMateria.findMany({
+        where: { materiaId: materiaOld.id }
+      });
+
+      for (const asig of asignaciones) {
+        await db.docenteMateria.upsert({
+          where: {
+            docenteId_materiaId: {
+              docenteId: asig.docenteId,
+              materiaId: materiaNew.id
+            }
+          },
+          update: {},
+          create: {
+            docenteId: asig.docenteId,
+            materiaId: materiaNew.id
+          }
+        });
+      }
+
+      // 4. Migrar Configuración de Actividades (si la nueva no tiene)
+      const configsOld = await db.configActividad.findMany({
+        where: { materiaId: materiaOld.id }
+      });
+
+      for (const cfg of configsOld) {
+        const exist = await db.configActividad.findFirst({
+          where: { materiaId: materiaNew.id, trimestre: cfg.trimestre }
+        });
+        if (!exist) {
+          await db.configActividad.create({
+            data: {
+              ...cfg,
+              id: undefined,
+              materiaId: materiaNew.id
+            }
+          });
+        }
+      }
+
+      // 5. Borrar materia vieja
+      // Primero limpiar relaciones fallidas si las hay (aunque updateMany debería bastar)
+      await db.docenteMateria.deleteMany({ where: { materiaId: materiaOld.id } });
+      await db.configActividad.deleteMany({ where: { materiaId: materiaOld.id } });
+      await db.calificacion.deleteMany({ where: { materiaId: materiaOld.id } }); // Por si quedaron duplicados
+      
+      await db.materia.delete({
+        where: { id: materiaOld.id }
+      });
     }
 
-    return NextResponse.json({ message: `${actualizados} materias actualizadas` });
-  } catch (error) {
-    console.error("Error:", error);
-    return NextResponse.json({ error: "Error interno" }, { status: 500 });
+    return NextResponse.json({ 
+      success: true, 
+      message: `Se procesaron y eliminaron ${materiasABorrar.length} materias.` 
+    });
+  } catch (error: any) {
+    console.error("Error en fix-materias:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

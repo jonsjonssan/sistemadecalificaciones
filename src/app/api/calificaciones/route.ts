@@ -159,11 +159,9 @@ export async function POST(request: NextRequest) {
         (calificacionAI ?? 0) * porcAI + 
         (examenTrimestral ?? 0) * porcExam;
 
-      if (suma > 0) {
-        promedioFinal = suma;
-        if (recuperacion !== null) {
-          promedioFinal = Math.min(10, promedioFinal + recuperacion);
-        }
+      promedioFinal = suma;
+      if (recuperacion !== null) {
+        promedioFinal = Math.min(10, (promedioFinal ?? 0) + recuperacion);
       }
     } else {
       const suma = 
@@ -171,11 +169,9 @@ export async function POST(request: NextRequest) {
         (calificacionAI ?? 0) * 0.30 + 
         (examenTrimestral ?? 0) * 0.35;
 
-      if (suma > 0) {
-        promedioFinal = suma;
-        if (recuperacion !== null) {
-          promedioFinal = Math.min(10, promedioFinal + recuperacion);
-        }
+      promedioFinal = suma;
+      if (recuperacion !== null) {
+        promedioFinal = Math.min(10, (promedioFinal ?? 0) + recuperacion);
       }
     }
 

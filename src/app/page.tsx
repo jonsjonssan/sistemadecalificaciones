@@ -1053,6 +1053,7 @@ export default function Home() {
                             <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-purple-950/50 border-gray-700 text-purple-300' : 'bg-purple-50 border-slate-500 text-purple-700'}`}>Prom AI</th>
                             {configActual.tieneExamen && <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-gray-700' : 'border-slate-500'}`}>Examen</th>}
                             {configActual.tieneExamen && <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-amber-950/50 border-gray-700 text-amber-300' : 'bg-amber-50 border-slate-500 text-amber-700'}`}>Prom Ex</th>}
+                            <th className={`w-14 p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-gray-700' : 'border-slate-500'}`}>Rec.</th>
                             <th className={`w-18 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-emerald-900/60 border-emerald-800 text-emerald-200' : 'bg-emerald-600 border-emerald-500'}`}>Prom. Final</th>
                           </>
                         ) : (
@@ -1063,11 +1064,11 @@ export default function Home() {
                             <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-purple-950/50 border-gray-700 text-purple-300' : 'bg-purple-50 border-slate-500 text-purple-700'}`}>Prom AI</th>
                             <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-gray-700' : 'border-slate-500'}`}>Examen</th>
                             <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-amber-950/50 border-gray-700 text-amber-300' : 'bg-amber-50 border-slate-500 text-amber-700'}`}>Prom Ex</th>
+                            <th className={`w-14 p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-gray-700' : 'border-slate-500'}`}>Rec.</th>
                             <th className={`w-18 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-emerald-900/60 border-emerald-800 text-emerald-200' : 'bg-emerald-600 border-emerald-500'}`}>Prom. Final</th>
+                            <th className={`w-12 p-2 border-l border-b ${darkMode ? 'border-gray-700' : 'border-slate-500'}`}></th>
                           </>
                         )}
-                        <th className={`w-14 p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-gray-700' : 'border-slate-500'}`}>Rec.</th>
-                        <th className={`w-12 p-2 border-l border-b ${darkMode ? 'border-gray-700' : 'border-slate-500'}`}></th>
                       </tr></thead>
                       <tbody>
                         {(estudiantes || []).map((est, idx) => {
@@ -1541,8 +1542,8 @@ function CalificacionRow({ estudiante, materiaId, calificacion, config, onSave, 
         <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promAIBg} text-base`}>{promAIPeso !== null ? promAIPeso.toFixed(2) : "-"}</td>
         {tieneExamen && <td className={`p-1 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={`w-12 h-7 text-base font-medium text-center border border-transparent focus:border-teal-400/50 bg-transparent rounded-md transition-all ${inputBg}`} value={examen ?? ""} onChange={handleExamen} /></td>}
         {tieneExamen && <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promExBg} text-base`}>{promExPeso !== null ? promExPeso.toFixed(2) : "-"}</td>}
-        <td className={`p-2 text-center border-l ${cellBorder} ${finalBg}`}><span className={`inline-block px-2 py-0.5 rounded-md text-sm font-bold shadow ${promFinal !== null && promFinal >= 6 ? (darkMode ? 'bg-emerald-800/60 text-emerald-200 ring-1 ring-emerald-700' : 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-200') : promFinal !== null ? (darkMode ? 'bg-rose-800/60 text-rose-200 ring-1 ring-rose-700' : 'bg-rose-100 text-rose-800 ring-1 ring-rose-200') : (darkMode ? 'bg-gray-800 text-gray-500' : 'bg-slate-100 text-slate-400')}`}>{promFinal !== null ? promFinal.toFixed(2) : "-"}</span></td>
         <td className={`p-1 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={`w-10 h-7 text-base font-medium text-center border border-transparent focus:border-teal-400/50 bg-transparent rounded-md transition-all ${inputBg}`} value={recup ?? ""} onChange={handleRecup} /></td>
+        <td className={`p-2 text-center border-l ${cellBorder} ${finalBg}`}><span className={`inline-block px-2 py-0.5 rounded-md text-sm font-bold shadow ${promFinal !== null && promFinal >= 6 ? (darkMode ? 'bg-emerald-800/60 text-emerald-200 ring-1 ring-emerald-700' : 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-200') : promFinal !== null ? (darkMode ? 'bg-rose-800/60 text-rose-200 ring-1 ring-rose-700' : 'bg-rose-100 text-rose-800 ring-1 ring-rose-200') : (darkMode ? 'bg-gray-800 text-gray-500' : 'bg-slate-100 text-slate-400')}`}>{promFinal !== null ? promFinal.toFixed(2) : "-"}</span></td>
         <td className={`p-2 border-l ${cellBorder} text-center`}>
           {saving && dirty ? <RefreshCw className="h-4 w-4 text-teal-500 animate-spin mx-auto" /> : (!dirty && (acNotas.some(n=>n!==null) || aiNotas.some(n=>n!==null) || examen!==null)) ? <span title="Guardado">✅</span> : <span className={darkMode ? 'text-gray-700' : 'text-slate-300'}>-</span>}
         </td>
@@ -1560,8 +1561,8 @@ function CalificacionRow({ estudiante, materiaId, calificacion, config, onSave, 
       <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promAIBg} text-base`}>{promAIPeso !== null ? promAIPeso.toFixed(2) : "-"}</td>
       {config.tieneExamen && <td className={`p-1 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={`w-12 h-7 text-base font-medium text-center border border-transparent focus:border-teal-400/50 bg-transparent rounded-md transition-all ${inputBg}`} value={examen ?? ""} onChange={handleExamen} /></td>}
       {config.tieneExamen && <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promExBg} text-base`}>{promExPeso !== null ? promExPeso.toFixed(2) : "-"}</td>}
-      <td className={`p-2 text-center border-l ${cellBorder} ${finalBg}`}><span className={`inline-block px-2 py-0.5 rounded-md text-sm font-bold shadow ${promFinal !== null && promFinal >= 6 ? (darkMode ? 'bg-emerald-800/60 text-emerald-200 ring-1 ring-emerald-700' : 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-200') : promFinal !== null ? (darkMode ? 'bg-rose-800/60 text-rose-200 ring-1 ring-rose-700' : 'bg-rose-100 text-rose-800 ring-1 ring-rose-200') : (darkMode ? 'bg-gray-800 text-gray-500' : 'bg-slate-100 text-slate-400')}`}>{promFinal !== null ? promFinal.toFixed(2) : "-"}</span></td>
       <td className={`p-1 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={`w-10 h-7 text-base font-medium text-center border border-transparent focus:border-teal-400/50 bg-transparent rounded-md transition-all ${inputBg}`} value={recup ?? ""} onChange={handleRecup} /></td>
+      <td className={`p-2 text-center border-l ${cellBorder} ${finalBg}`}><span className={`inline-block px-2 py-0.5 rounded-md text-sm font-bold shadow ${promFinal !== null && promFinal >= 6 ? (darkMode ? 'bg-emerald-800/60 text-emerald-200 ring-1 ring-emerald-700' : 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-200') : promFinal !== null ? (darkMode ? 'bg-rose-800/60 text-rose-200 ring-1 ring-rose-700' : 'bg-rose-100 text-rose-800 ring-1 ring-rose-200') : (darkMode ? 'bg-gray-800 text-gray-500' : 'bg-slate-100 text-slate-400')}`}>{promFinal !== null ? promFinal.toFixed(2) : "-"}</span></td>
       <td className={`p-2 border-l ${cellBorder} text-center`}>
         {saving && dirty ? <RefreshCw className="h-4 w-4 text-teal-500 animate-spin mx-auto" /> : (!dirty && (acNotas.some(n=>n!==null) || aiNotas.some(n=>n!==null) || examen!==null)) ? <span title="Guardado">✅</span> : <span className={darkMode ? 'text-gray-700' : 'text-slate-300'}>-</span>}
       </td>
