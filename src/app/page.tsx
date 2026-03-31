@@ -125,6 +125,37 @@ export default function Home() {
     }
     return false;
   });
+  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
+  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
+
+  // Polling para autorefresco periódico (cada 60 segundos cuando está activo)
+  useEffect(() => {
+    if (!autoRefreshEnabled || !usuario) {
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+        setPollingInterval(null);
+      }
+      return;
+    }
+
+    const interval = setInterval(() => {
+      // Solo refrescar datos estructurales y configs del grado si hay un grado seleccionado
+      loadGrados();
+      loadTodasAsignaturas();
+      loadConfiguracion();
+      if (gradoSeleccionado && trimestreSeleccionado) {
+        loadConfigsGrado();
+      }
+      console.log("Auto-refresco completado");
+    }, 60000); // 60 segundos
+
+    setPollingInterval(interval);
+
+    return () => {
+      clearInterval(interval);
+      setPollingInterval(null);
+    };
+  }, [autoRefreshEnabled, usuario, gradoSeleccionado, trimestreSeleccionado, loadGrados, loadTodasAsignaturas, loadConfiguracion, loadConfigsGrado]);
 
   // Persistence: Cargar de localStorage
   useEffect(() => {
@@ -143,7 +174,9 @@ export default function Home() {
   useEffect(() => { if (typeof window !== "undefined" && trimestreSeleccionado) localStorage.setItem("ss_trimestre", trimestreSeleccionado); }, [trimestreSeleccionado]);
   useEffect(() => { if (typeof window !== "undefined") localStorage.setItem("ss_dark", String(darkMode)); }, [darkMode]);
 
-  // Auth
+  // Auth con detección de cambio de usuario
+  const prevUserId = useRef<string | null>(null);
+  
   const checkAuth = useCallback(async () => {
     // Timeout de seguridad de 10 segundos para no quedar atrapado en el spinner
     const controller = new AbortController();
@@ -152,10 +185,32 @@ export default function Home() {
     try {
       const res = await fetch("/api/auth/me", { cache: "no-store", signal: controller.signal, credentials: "include" });
       const data = await res.json();
-      setUsuario(data.usuario);
+      const nuevoUsuario = data.usuario;
+      
+      // Detectar cambio de usuario y limpiar estado si es necesario
+      if (nuevoUsuario && prevUserId.current && nuevoUsuario.id !== prevUserId.current) {
+        console.log("Cambio de usuario detectado, limpiando estado...");
+        setGrados([]);
+        setGradosFiltrados([]);
+        setAsignaturas([]);
+        setAsignaturasFiltradas([]);
+        setEstudiantes([]);
+        setCalificaciones([]);
+        setConfigActual(null);
+        setConfigsGrado([]);
+        setGradoSeleccionado("");
+        setAsignaturaSeleccionada("");
+        setUsuarios([]);
+        setTodasAsignaturas([]);
+        setConfiguracion(null);
+      }
+      
+      setUsuario(nuevoUsuario);
+      prevUserId.current = nuevoUsuario?.id || null;
     } catch (err) { 
       console.error("Auth check failed:", err);
       setUsuario(null); 
+      prevUserId.current = null;
     }
     finally { 
       clearTimeout(timeoutId);
@@ -366,6 +421,7 @@ export default function Home() {
     saveUserState({ gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado });
     await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
     setUsuario(null);
+    prevUserId.current = null;
     setGrados([]);
     setGradosFiltrados([]);
     setAsignaturas([]);
@@ -376,6 +432,9 @@ export default function Home() {
     setConfigsGrado([]);
     setGradoSeleccionado("");
     setAsignaturaSeleccionada("");
+    setUsuarios([]);
+    setTodasAsignaturas([]);
+    setConfiguracion(null);
   };
 
   const handleChangePassword = async () => {
@@ -482,6 +541,7 @@ export default function Home() {
       if (!configAplicarATodas) setConfigActual(editConfig); 
       setConfigDialogOpen(false); 
       loadCalificaciones(); 
+      loadConfigsGrado(); // Refrescar configs del grado después de guardar
       toast({ title: configAplicarATodas ? "Configuración aplicada a todas las materias del grado" : "Configuración guardada" });
     } catch { toast({ title: "Error", variant: "destructive" }); }
   };
@@ -962,6 +1022,7 @@ export default function Home() {
                   <div className="w-28"><Label className={`text-base font-medium mb-1 block ${darkMode ? 'text-gray-300' : ''}`}>Trimestre</Label><Select value={trimestreSeleccionado} onValueChange={setTrimestreSeleccionado}><SelectTrigger className={`h-12 text-sm ${darkMode ? 'bg-gray-800 border-gray-700 text-gray-100' : ''}`}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="1" className="text-sm">I</SelectItem><SelectItem value="2" className="text-sm">II</SelectItem><SelectItem value="3" className="text-sm">III</SelectItem></SelectContent></Select></div>
                   {configActual && <div className={`flex items-center gap-1 text-sm font-medium px-2 py-1 rounded ${darkMode ? 'text-gray-400 bg-gray-800' : 'text-slate-500 bg-slate-50'}`}><span>{configActual.numActividadesCotidianas} AC ({configActual.porcentajeAC}%)</span><span>•</span><span>{configActual.numActividadesIntegradoras} AI ({configActual.porcentajeAI}%)</span>{configActual.tieneExamen && <><span>•</span><span>Ex ({configActual.porcentajeExamen}%)</span></>}</div>}
                   <Button size="sm" variant="outline" className={`h-12 ${darkMode ? 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700' : ''}`} onClick={refreshCalificaciones} disabled={refreshing}><RefreshCw className={`h-5 w-5 mr-1 ${refreshing ? 'animate-spin' : ''}`} />{refreshing ? 'Cargando...' : 'Refrescar'}</Button>
+                  <Button size="sm" variant="outline" className={`h-12 ${autoRefreshEnabled ? (darkMode ? 'bg-teal-900 border-teal-700 text-teal-100' : 'bg-teal-50 border-teal-300 text-teal-700') : (darkMode ? 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700' : '')}`} onClick={() => setAutoRefreshEnabled(!autoRefreshEnabled)} title={autoRefreshEnabled ? "Auto-refresco activado (cada 60s)" : "Auto-refresco desactivado"}><RefreshCw className={`h-5 w-5 mr-1 ${autoRefreshEnabled ? 'text-green-600' : ''}`} />{autoRefreshEnabled ? 'Auto: ON' : 'Auto: OFF'}</Button>
                   {usuario.rol === "admin" && <Button size="sm" variant="outline" className={`h-12 ${darkMode ? 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700' : ''}`} onClick={() => { setEditConfig(configActual); setConfigDialogOpen(true); }}><Settings className="h-5 w-5 mr-1" />Config</Button>}
                   <Button size="sm" variant="outline" className={`h-12 ${darkMode ? 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700' : ''}`} onClick={() => setImportDialogOpen(true)}><Upload className="h-5 w-5 mr-1" />Importar</Button>
                 </div>

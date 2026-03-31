@@ -1,51 +1,51 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+```gitignore
+# Dependencies
+node_modules/
 
-# dependencies
-node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
+# Build outputs
+dist/
+build/
+.next/
+out/
 
-# testing
-/coverage
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+.ENV
+.python-version
 
-# next.js
-/.next/
-/out/
+# Logs
+*.log
 
-# production
-/build
+# Environment variables
+.env
+.env.local
+.env.*
+!.env.example
 
-# misc
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
 .DS_Store
-*.pem
+Thumbs.db
 
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
+# Coverage
+coverage/
+htmlcov/
+.coverage
+*.coverage
 
-# env files (can opt-in for committing if needed)
-.env*
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-local-*
-.claude
-.z-ai-config
-dev.log
-test
-prompt
-
-server.log
-# Skills directory
-/skills/
+# Temporary files
+*.tmp
+*.temp
+```
