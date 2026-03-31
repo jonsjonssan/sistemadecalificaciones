@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import bcrypt from "bcryptjs";
 
 export async function POST() {
   try {
@@ -184,18 +185,20 @@ export async function POST() {
     ];
 
     for (const u of users) {
+      const hashedPassword = await bcrypt.hash(u.password, 10);
+      
       // Upsert usuario
       const user = await db.usuario.upsert({
         where: { email: u.email },
         update: {
-          password: u.password,
+          password: hashedPassword,
           nombre: u.nombre,
           rol: u.rol,
         },
         create: {
           email: u.email,
           nombre: u.nombre,
-          password: u.password,
+          password: hashedPassword,
           rol: u.rol,
         }
       });
