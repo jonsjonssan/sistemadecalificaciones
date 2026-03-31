@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { sql } from "@/lib/neon";
+import { PrismaClient } from "@prisma/client";
 
 export async function GET(req: Request) {
   try {
@@ -16,28 +16,39 @@ export async function GET(req: Request) {
     if (isNaN(fecha.getTime())) {
       return NextResponse.json({ error: "Fecha inválida" }, { status: 400 });
     }
-    fecha.setUTCHours(0, 0, 0, 0);
 
-    let asistibilidades;
+    const prisma = new PrismaClient();
+
+    const startOfDay = new Date(fecha);
+    startOfDay.setUTCHours(0, 0, 0, 0);
+    const endOfDay = new Date(fecha);
+    endOfDay.setUTCHours(23, 59, 59, 999);
+
+    const where: any = {
+      estudiante: { gradoId },
+      fecha: {
+        gte: startOfDay,
+        lte: endOfDay,
+      },
+    };
+
     if (materiaId) {
-      asistibilidades = await sql`
-        SELECT a.*, e.id as estudiante_id, e.nombre as estudiante_nombre, e.numero as estudiante_numero
-        FROM "Asistencia" a
-        JOIN "Estudiante" e ON a."estudianteId" = e.id
-        WHERE a.fecha = ${fecha} AND a."gradoId" = ${gradoId} AND a."materiaId" = ${materiaId}
-        ORDER BY e.numero
-      `;
+      where.materiaId = materiaId;
     } else {
-      asistibilidades = await sql`
-        SELECT a.*, e.id as estudiante_id, e.nombre as estudiante_nombre, e.numero as estudiante_numero
-        FROM "Asistencia" a
-        JOIN "Estudiante" e ON a."estudianteId" = e.id
-        WHERE a.fecha = ${fecha} AND a."gradoId" = ${gradoId}
-        ORDER BY e.numero
-      `;
+      where.materiaId = null;
     }
 
-    const formatted = asistibilidades.map((a: any) => ({
+    const asistencias = await prisma.asistencia.findMany({
+      where,
+      include: {
+        estudiante: { select: { id: true, nombre: true, numero: true } },
+      },
+      orderBy: { estudiante: { numero: "asc" } },
+    });
+
+    await prisma.$disconnect();
+
+    const formatted = asistencias.map((a: any) => ({
       id: a.id,
       estudianteId: a.estudianteId,
       fecha: a.fecha,
@@ -45,16 +56,16 @@ export async function GET(req: Request) {
       gradoId: a.gradoId,
       materiaId: a.materiaId,
       estudiante: {
-        id: a.estudiante_id,
-        nombre: a.estudiante_nombre,
-        numero: a.estudiante_numero
-      }
+        id: a.estudiante.id,
+        nombre: a.estudiante.nombre,
+        numero: a.estudiante.numero,
+      },
     }));
 
     return NextResponse.json(formatted);
   } catch (error) {
     console.error("Error obteniendo asistencia:", error);
-    return NextResponse.json({ error: "Error del servidor al obtener asistencia" }, { status: 500 });
+    return NextResponse.json({ error: "Error del servidor al obtener asistencia", details: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }
 
@@ -71,37 +82,63 @@ export async function POST(req: Request) {
     if (isNaN(fecha.getTime())) {
       return NextResponse.json({ error: "Fecha inválida" }, { status: 400 });
     }
-    fecha.setUTCHours(0, 0, 0, 0);
+
+    const startOfDay = new Date(fecha);
+    startOfDay.setUTCHours(0, 0, 0, 0);
+    const endOfDay = new Date(fecha);
+    endOfDay.setUTCHours(23, 59, 59, 999);
+
+    const prisma = new PrismaClient();
 
     const resultados: any[] = [];
     for (const record of asistencias) {
       const { estudianteId, estado } = record;
-      
-      const existente = await sql`
-        SELECT id FROM "Asistencia"
-        WHERE "estudianteId" = ${estudianteId} AND fecha = ${fecha} AND "gradoId" = ${gradoId} AND ("materiaId" = ${materiaId} OR (${materiaId} IS NULL AND "materiaId" IS NULL))
-        LIMIT 1
-      `;
 
-      if (existente.length > 0) {
-        await sql`
-          UPDATE "Asistencia" SET estado = ${estado}, "updatedAt" = NOW()
-          WHERE id = ${existente[0].id}
-        `;
-        resultados.push({ id: existente[0].id, estudianteId, estado });
+      const matId = materiaId || null;
+
+      const existente = await prisma.asistencia.findFirst({
+        where: {
+          estudianteId,
+          fecha: {
+            gte: startOfDay,
+            lte: endOfDay,
+          },
+          gradoId,
+          materiaId: matId,
+        },
+      });
+
+      if (existente) {
+        const updated = await prisma.asistencia.update({
+          where: { id: existente.id },
+          data: { estado },
+          include: {
+            estudiante: { select: { id: true, nombre: true, numero: true } },
+          },
+        });
+        resultados.push(updated);
       } else {
-        const nuevo = await sql`
-          INSERT INTO "Asistencia" ("estudianteId", fecha, estado, "gradoId", "materiaId")
-          VALUES (${estudianteId}, ${fecha}, ${estado}, ${gradoId}, ${materiaId || null})
-          RETURNING *
-        `;
-        resultados.push(nuevo[0]);
+        const nuevo = await prisma.asistencia.create({
+          data: {
+            estudianteId,
+            fecha: startOfDay,
+            estado,
+            gradoId,
+            materiaId: matId,
+          },
+          include: {
+            estudiante: { select: { id: true, nombre: true, numero: true } },
+          },
+        });
+        resultados.push(nuevo);
       }
     }
+
+    await prisma.$disconnect();
 
     return NextResponse.json({ success: true, guardados: resultados.length });
   } catch (error) {
     console.error("Error guardando asistencia:", error);
-    return NextResponse.json({ error: "Error del servidor al guardar asistencia" }, { status: 500 });
+    return NextResponse.json({ error: "Error del servidor al guardar asistencia", details: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }
