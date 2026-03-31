@@ -100,6 +100,13 @@ export default function Home() {
   const [listaEstudiantes, setListaEstudiantes] = useState("");
   const [saving, setSaving] = useState(false);
   const [initialized, setInitialized] = useState(false);
+  const [materiasEnBoleta, setMateriasEnBoleta] = useState<number>(() => {
+    if (typeof window !== "undefined") {
+      const v = localStorage.getItem("ss_materiasBoleta");
+      return v ? parseInt(v) : 0;
+    }
+    return 0;
+  });
   const [expandedBoleta, setExpandedBoleta] = useState<string | null>(null);
   const [editConfig, setEditConfig] = useState<ConfigActividad | null>(null);
   const [configAplicarATodas, setConfigAplicarATodas] = useState(false);
@@ -1141,7 +1148,23 @@ export default function Home() {
                   <div className="flex-1"><Label className="text-sm sm:text-base font-medium">Grado</Label><Select value={gradoSeleccionado} onValueChange={setGradoSeleccionado}><SelectTrigger className={`h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue /></SelectTrigger><SelectContent>{gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}"</SelectItem>)}</SelectContent></Select></div>
                   <div className="w-full sm:w-32"><Label className="text-sm sm:text-base font-medium">Trimestre</Label><Select value={trimestreSeleccionado} onValueChange={setTrimestreSeleccionado}><SelectTrigger className={`h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="1">I</SelectItem><SelectItem value="2">II</SelectItem><SelectItem value="3">III</SelectItem></SelectContent></Select></div>
                 </div>
-                {gradoSeleccionado && estudiantes.length > 0 && <BoletaList estudiantes={estudiantes} calificaciones={calificaciones} materias={asignaturasFiltradas} grado={gradosFiltrados.find(g => g.id === gradoSeleccionado)} trimestre={parseInt(trimestreSeleccionado)} expandedBoleta={expandedBoleta} setExpandedBoleta={setExpandedBoleta} darkMode={darkMode} />}
+                {gradoSeleccionado && estudiantes.length > 0 && (
+                  <>
+                    {usuario.rol === "admin" && (
+                      <div className="flex items-center gap-2 mb-2">
+                        <Label className="text-xs sm:text-sm font-medium whitespace-nowrap">Asignaturas en boleta:</Label>
+                        <Select value={materiasEnBoleta === 0 ? "todas" : String(materiasEnBoleta)} onValueChange={(v) => { const n = v === "todas" ? 0 : parseInt(v); setMateriasEnBoleta(n); if (typeof window !== "undefined") localStorage.setItem("ss_materiasBoleta", String(n)); }}>
+                          <SelectTrigger className={`w-24 h-8 text-xs ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="todas" className="text-xs">Todas</SelectItem>
+                            {asignaturasFiltradas.map((_, i) => <SelectItem key={i} value={String(i + 1)} className="text-xs">{i + 1}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                    <BoletaList estudiantes={estudiantes} calificaciones={calificaciones} materias={materiasEnBoleta > 0 ? asignaturasFiltradas.slice(0, materiasEnBoleta) : asignaturasFiltradas} grado={gradosFiltrados.find(g => g.id === gradoSeleccionado)} trimestre={parseInt(trimestreSeleccionado)} expandedBoleta={expandedBoleta} setExpandedBoleta={setExpandedBoleta} darkMode={darkMode} />
+                  </>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -1651,7 +1674,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
     });
 
     if (faltasRecuperacion.length > 0) {
-      alert(`Falta digitar el dato de "Recuperación" (0 si no aplica)\nEstudiante: ${est.nombre}\nMaterias:\n- ${faltasRecuperacion.map(m => m.nombre).join('\n- ')}`);
+      alert(`Falta digitar el dato de "Recuperación"\nEstudiante: ${est.nombre}\nMaterias:\n- ${faltasRecuperacion.map(m => m.nombre).join('\n- ')}`);
       return;
     }
 
