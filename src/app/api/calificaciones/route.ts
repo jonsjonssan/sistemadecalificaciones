@@ -1,13 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { sql } from "@/lib/neon";
+import { PrismaClient } from "@prisma/client";
 import { cookies } from "next/headers";
-import { randomUUID } from "crypto";
-
-function calcularPromedioActividades(notas: (number | null)[]): number | null {
-  const notasValidas = notas.filter((n) => n !== null && n !== undefined) as number[];
-  if (notasValidas.length === 0) return null;
-  return notasValidas.reduce((a, b) => a + b, 0) / notasValidas.length;
-}
 
 async function getUsuarioSession() {
   const cookieStore = await cookies();
@@ -29,71 +22,49 @@ export async function GET(request: NextRequest) {
     const trimestre = searchParams.get("trimestre");
     const estudianteId = searchParams.get("estudianteId");
 
-    let calificaciones;
-    if (materiaId && trimestre) {
-      calificaciones = await sql`
-        SELECT c.*, e.id as estudiante_id, e.numero as estudiante_numero, e.nombre as estudiante_nombre, 
-               m.nombre as materia_nombre, m.id as materia_id
-        FROM "Calificacion" c
-        JOIN "Estudiante" e ON c."estudianteId" = e.id
-        JOIN "Materia" m ON c."materiaId" = m.id
-        WHERE e."gradoId" = ${gradoId}
-          AND c."materiaId" = ${materiaId}
-          AND c.trimestre = ${parseInt(trimestre!)}
-        ORDER BY e.numero
-      `;
+    const prisma = new PrismaClient();
+
+    let calificaciones: any[] = [];
+    if (materiaId && trimestre && gradoId) {
+      calificaciones = await prisma.calificacion.findMany({
+        where: {
+          estudiante: { gradoId },
+          materiaId,
+          trimestre: parseInt(trimestre),
+        },
+        include: {
+          estudiante: { select: { id: true, numero: true, nombre: true, gradoId: true } },
+          materia: { select: { id: true, nombre: true } },
+        },
+        orderBy: { estudiante: { numero: "asc" } },
+      });
     } else if (estudianteId) {
-      calificaciones = await sql`
-        SELECT c.*, e.id as estudiante_id, e.numero as estudiante_numero, e.nombre as estudiante_nombre, 
-               m.nombre as materia_nombre, m.id as materia_id
-        FROM "Calificacion" c
-        JOIN "Estudiante" e ON c."estudianteId" = e.id
-        JOIN "Materia" m ON c."materiaId" = m.id
-        WHERE c."estudianteId" = ${estudianteId}
-        ORDER BY e.numero
-      `;
+      calificaciones = await prisma.calificacion.findMany({
+        where: { estudianteId },
+        include: {
+          estudiante: { select: { id: true, numero: true, nombre: true, gradoId: true } },
+          materia: { select: { id: true, nombre: true } },
+        },
+        orderBy: { estudiante: { numero: "asc" } },
+      });
     } else if (gradoId) {
-      calificaciones = await sql`
-        SELECT c.*, e.id as estudiante_id, e.numero as estudiante_numero, e.nombre as estudiante_nombre, 
-               m.nombre as materia_nombre, m.id as materia_id
-        FROM "Calificacion" c
-        JOIN "Estudiante" e ON c."estudianteId" = e.id
-        JOIN "Materia" m ON c."materiaId" = m.id
-        WHERE e."gradoId" = ${gradoId}
-        ORDER BY e.numero
-      `;
-    } else {
-      calificaciones = [];
+      calificaciones = await prisma.calificacion.findMany({
+        where: {
+          estudiante: { gradoId },
+        },
+        include: {
+          estudiante: { select: { id: true, numero: true, nombre: true, gradoId: true } },
+          materia: { select: { id: true, nombre: true } },
+        },
+        orderBy: { estudiante: { numero: "asc" } },
+      });
     }
 
-    const formatted = calificaciones.map((c: any) => ({
-      id: c.id,
-      estudianteId: c.estudianteId,
-      materiaId: c.materiaId,
-      trimestre: c.trimestre,
-      actividadesCotidianas: c.actividadesCotidianas,
-      calificacionAC: c.calificacionAC,
-      actividadesIntegradoras: c.actividadesIntegradoras,
-      calificacionAI: c.calificacionAI,
-      examenTrimestral: c.examenTrimestral,
-      promedioFinal: c.promedioFinal,
-      recuperacion: c.recuperacion,
-      estudiante: {
-        id: c.estudiante_id,
-        numero: c.estudiante_numero,
-        nombre: c.estudiante_nombre,
-        gradoId: gradoId
-      },
-      materia: {
-        id: c.materia_id,
-        nombre: c.materia_nombre
-      }
-    }));
-
-    return NextResponse.json(formatted);
+    await prisma.$disconnect();
+    return NextResponse.json(calificaciones);
   } catch (error) {
     console.error("Error al obtener calificaciones:", error);
-    return NextResponse.json({ error: "Error al obtener calificaciones" }, { status: 500 });
+    return NextResponse.json({ error: "Error al obtener calificaciones", details: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }
 
@@ -138,61 +109,35 @@ export async function POST(request: NextRequest) {
       } catch { aiNotas = []; }
     }
 
-    const calificacionAC = calcularPromedioActividades(acNotas);
-    const calificacionAI = calcularPromedioActividades(aiNotas);
+    const notasValidasAC = acNotas.filter((n): n is number => n !== null && n !== undefined);
+    const calificacionAC = notasValidasAC.length > 0 ? notasValidasAC.reduce((a, b) => a + b, 0) / notasValidasAC.length : null;
 
-    const configResult = await sql`
-      SELECT "porcentajeAC", "porcentajeAI", "tieneExamen", "porcentajeExamen"
-      FROM "ConfigActividad"
-      WHERE "materiaId" = ${materiaId} AND trimestre = ${parseInt(String(trimestre))}
-    `;
+    const notasValidasAI = aiNotas.filter((n): n is number => n !== null && n !== undefined);
+    const calificacionAI = notasValidasAI.length > 0 ? notasValidasAI.reduce((a, b) => a + b, 0) / notasValidasAI.length : null;
+
+    const prisma = new PrismaClient();
+
+    const config = await prisma.configActividad.findFirst({
+      where: { materiaId, trimestre: parseInt(String(trimestre)) },
+    });
 
     let promedioFinal: number | null = null;
-    if (configResult.length > 0) {
-      const config = configResult[0];
+    if (config) {
       const porcAC = config.porcentajeAC / 100;
       const porcAI = config.porcentajeAI / 100;
       const porcExam = config.tieneExamen ? config.porcentajeExamen / 100 : 0;
-
-      const suma = 
-        (calificacionAC ?? 0) * porcAC + 
-        (calificacionAI ?? 0) * porcAI + 
-        ((examenTrimestral ?? 0)) * porcExam;
-
+      const suma = (calificacionAC ?? 0) * porcAC + (calificacionAI ?? 0) * porcAI + ((examenTrimestral ?? 0)) * porcExam;
       promedioFinal = isNaN(suma) ? null : suma;
-      const recupVal = recuperacion ?? null;
-      if (recupVal !== null) {
-        promedioFinal = Math.min(10, (promedioFinal ?? 0) + recupVal);
+      if (recuperacion !== null && recuperacion !== undefined) {
+        promedioFinal = Math.min(10, (promedioFinal ?? 0) + recuperacion);
       }
     } else {
-      const suma = 
-        (calificacionAC ?? 0) * 0.35 + 
-        (calificacionAI ?? 0) * 0.30 + 
-        ((examenTrimestral ?? 0)) * 0.35;
-
+      const suma = (calificacionAC ?? 0) * 0.35 + (calificacionAI ?? 0) * 0.30 + ((examenTrimestral ?? 0)) * 0.35;
       promedioFinal = isNaN(suma) ? null : suma;
-      const recupVal = recuperacion ?? null;
-      if (recupVal !== null) {
-        promedioFinal = Math.min(10, (promedioFinal ?? 0) + recupVal);
+      if (recuperacion !== null && recuperacion !== undefined) {
+        promedioFinal = Math.min(10, (promedioFinal ?? 0) + recuperacion);
       }
     }
-
-    const existResult = await sql`
-      SELECT id FROM "Calificacion"
-      WHERE "estudianteId" = ${estudianteId} AND "materiaId" = ${materiaId} AND trimestre = ${parseInt(String(trimestre))}
-    `;
-
-    const estudianteExtra = await sql`
-      SELECT e."gradoId", g.numero as grado_numero, g.año as grado_año 
-      FROM "Estudiante" e JOIN "Grado" g on e."gradoId" = g.id 
-      WHERE e.id = ${estudianteId}
-    `;
-    const materiaExtra = await sql`SELECT nombre FROM "Materia" WHERE id = ${materiaId}`;
-    
-    const gradoIdCapturado = estudianteExtra[0]?.gradoId || null;
-    const gradoNombreCapturado = estudianteExtra[0]?.grado_numero ? String(estudianteExtra[0].grado_numero) : null;
-    const añoEscolarCapturado = estudianteExtra[0]?.grado_año || null;
-    const materiaNombreCapturada = materiaExtra[0]?.nombre || null;
 
     const examenVal = (examenTrimestral !== undefined && examenTrimestral !== null && !isNaN(examenTrimestral)) ? examenTrimestral : null;
     const recupVal = (recuperacion !== undefined && recuperacion !== null && !isNaN(recuperacion)) ? recuperacion : null;
@@ -200,57 +145,43 @@ export async function POST(request: NextRequest) {
     const aiFinal = (calificacionAI !== null && !isNaN(calificacionAI)) ? calificacionAI : null;
     const promFinal = (promedioFinal !== null && !isNaN(promedioFinal)) ? promedioFinal : null;
 
-    let result;
-    if (existResult.length > 0) {
-      result = await sql`
-        UPDATE "Calificacion" 
-        SET "actividadesCotidianas" = ${JSON.stringify(acNotas)},
-            "calificacionAC" = ${acFinal},
-            "actividadesIntegradoras" = ${JSON.stringify(aiNotas)},
-            "calificacionAI" = ${aiFinal},
-            "examenTrimestral" = ${examenVal},
-            "promedioFinal" = ${promFinal},
-            "recuperacion" = ${recupVal},
-            "updatedAt" = NOW()
-        WHERE id = ${existResult[0].id}
-        RETURNING *
-      `;
-    } else {
-      result = await sql`
-        INSERT INTO "Calificacion" (
-          "id", "estudianteId", "materiaId", "trimestre",
-          "actividadesCotidianas", "calificacionAC",
-          "actividadesIntegradoras", "calificacionAI",
-          "examenTrimestral", "promedioFinal", "recuperacion"
-        ) VALUES (
-          ${randomUUID()}, ${estudianteId}, ${materiaId}, ${parseInt(String(trimestre))},
-          ${JSON.stringify(acNotas)}, ${acFinal},
-          ${JSON.stringify(aiNotas)}, ${aiFinal},
-          ${examenVal}, ${promFinal}, ${recupVal}
-        )
-        RETURNING *
-      `;
-    }
-
-    const calif = result[0];
-    const estudiante = await sql`SELECT id, numero, nombre, "gradoId" FROM "Estudiante" WHERE id = ${estudianteId}`;
-    const materia = await sql`SELECT id, nombre FROM "Materia" WHERE id = ${materiaId}`;
-
-    return NextResponse.json({
-      id: calif.id,
-      estudianteId: calif.estudianteId,
-      materiaId: calif.materiaId,
-      trimestre: calif.trimestre,
-      actividadesCotidianas: calif.actividadesCotidianas,
-      calificacionAC: calif.calificacionAC,
-      actividadesIntegradoras: calif.actividadesIntegradoras,
-      calificacionAI: calif.calificacionAI,
-      examenTrimestral: calif.examenTrimestral,
-      promedioFinal: calif.promedioFinal,
-      recuperacion: calif.recuperacion,
-      estudiante: estudiante[0],
-      materia: materia[0]
+    const result = await prisma.calificacion.upsert({
+      where: {
+        estudianteId_materiaId_trimestre: {
+          estudianteId,
+          materiaId,
+          trimestre: parseInt(String(trimestre)),
+        },
+      },
+      update: {
+        actividadesCotidianas: JSON.stringify(acNotas),
+        calificacionAC: acFinal,
+        actividadesIntegradoras: JSON.stringify(aiNotas),
+        calificacionAI: aiFinal,
+        examenTrimestral: examenVal,
+        promedioFinal: promFinal,
+        recuperacion: recupVal,
+      },
+      create: {
+        estudianteId,
+        materiaId,
+        trimestre: parseInt(String(trimestre)),
+        actividadesCotidianas: JSON.stringify(acNotas),
+        calificacionAC: acFinal,
+        actividadesIntegradoras: JSON.stringify(aiNotas),
+        calificacionAI: aiFinal,
+        examenTrimestral: examenVal,
+        promedioFinal: promFinal,
+        recuperacion: recupVal,
+      },
+      include: {
+        estudiante: { select: { id: true, numero: true, nombre: true, gradoId: true } },
+        materia: { select: { id: true, nombre: true } },
+      },
     });
+
+    await prisma.$disconnect();
+    return NextResponse.json(result);
   } catch (error) {
     console.error("Error al guardar calificación:", error);
     const errMsg = error instanceof Error ? error.message : String(error);
