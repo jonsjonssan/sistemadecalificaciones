@@ -96,6 +96,7 @@ export default function Home() {
   const [nuevoEstudiante, setNuevoEstudiante] = useState({ nombre: "" });
   const [listaEstudiantes, setListaEstudiantes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [pendingSaves, setPendingSaves] = useState<Map<string, { estudianteId: string; materiaId: string; data: any }>>(new Map());
   const [initialized, setInitialized] = useState(false);
   const [expandedBoleta, setExpandedBoleta] = useState<string | null>(null);
   const [editConfig, setEditConfig] = useState<ConfigActividad | null>(null);
@@ -464,15 +465,55 @@ export default function Home() {
         const err = await res.json();
         console.error("Error al guardar calificación:", err);
         toast({ title: "Error al guardar: " + (err.error || "Error desconocido"), variant: "destructive" });
-      } else {
-        loadCalificaciones();
       }
     } catch (e) {
       console.error("Error de conexión al guardar:", e);
       toast({ title: "Error de conexión al guardar", variant: "destructive" });
     }
     finally { setSaving(false); }
-  }, [trimestreSeleccionado, toast, loadCalificaciones]);
+  }, [trimestreSeleccionado, toast]);
+
+  const handleGuardarTodo = useCallback(async () => {
+    setSaving(true);
+    try {
+      const rows = document.querySelectorAll("[data-calificacion-row]");
+      const saves: Promise<Response>[] = [];
+      rows.forEach(row => {
+        const estudianteId = row.getAttribute("data-estudiante-id");
+        const acStr = row.getAttribute("data-ac");
+        const aiStr = row.getAttribute("data-ai");
+        const exStr = row.getAttribute("data-ex");
+        const recStr = row.getAttribute("data-rec");
+        if (estudianteId && acStr && aiStr) {
+          saves.push(fetch("/api/calificaciones", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+              estudianteId,
+              materiaId: asignaturaSeleccionada,
+              trimestre: parseInt(trimestreSeleccionado),
+              actividadesCotidianas: acStr,
+              actividadesIntegradoras: aiStr,
+              examenTrimestral: exStr === "null" ? null : parseFloat(exStr || "0") || null,
+              recuperacion: recStr === "null" ? null : parseFloat(recStr || "0") || null,
+            }),
+          }));
+        }
+      });
+      const results = await Promise.all(saves);
+      const errors = results.filter(r => !r.ok);
+      if (errors.length > 0) {
+        toast({ title: `${errors.length} error(es) al guardar`, variant: "destructive" });
+      } else {
+        toast({ title: "Todas las calificaciones guardadas", description: `${results.length} registros actualizados` });
+      }
+      loadCalificaciones();
+    } catch (e) {
+      console.error("Error al guardar todo:", e);
+      toast({ title: "Error al guardar todo", variant: "destructive" });
+    } finally { setSaving(false); }
+  }, [asignaturaSeleccionada, trimestreSeleccionado, toast, loadCalificaciones]);
 
   const handleSaveConfig = async () => {
     if (!editConfig) return;
@@ -971,6 +1012,7 @@ export default function Home() {
                   <div className="flex-1 min-w-[180px]"><Label className={`text-base font-medium mb-1 block ${darkMode ? 'text-gray-300' : ''}`}>Asignatura</Label><Select value={asignaturaSeleccionada || ""} onValueChange={(val) => { setAsignaturaSeleccionada(val); saveUserState({ asignaturaSeleccionada: val }); }}><SelectTrigger className={`h-12 text-sm ${darkMode ? 'bg-gray-800 border-gray-700 text-gray-100' : ''}`}><SelectValue placeholder="Seleccionar materia" /></SelectTrigger><SelectContent>{asignaturasFiltradas && asignaturasFiltradas.length > 0 ? asignaturasFiltradas.map(m => <SelectItem key={m.id} value={m.id} className="text-sm">{m.nombre}</SelectItem>) : <SelectItem value="no-materias" disabled>No hay materias</SelectItem>}</SelectContent></Select></div>
                   <div className="w-28"><Label className={`text-base font-medium mb-1 block ${darkMode ? 'text-gray-300' : ''}`}>Trimestre</Label><Select value={trimestreSeleccionado} onValueChange={setTrimestreSeleccionado}><SelectTrigger className={`h-12 text-sm ${darkMode ? 'bg-gray-800 border-gray-700 text-gray-100' : ''}`}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="1" className="text-sm">I</SelectItem><SelectItem value="2" className="text-sm">II</SelectItem><SelectItem value="3" className="text-sm">III</SelectItem></SelectContent></Select></div>
                   {configActual && <div className={`flex items-center gap-1 text-sm font-medium px-2 py-1 rounded ${darkMode ? 'text-gray-400 bg-gray-800' : 'text-slate-500 bg-slate-50'}`}><span>{configActual.numActividadesCotidianas} AC ({configActual.porcentajeAC}%)</span><span>•</span><span>{configActual.numActividadesIntegradoras} AI ({configActual.porcentajeAI}%)</span>{configActual.tieneExamen && <><span>•</span><span>Ex ({configActual.porcentajeExamen}%)</span></>}</div>}
+                  <Button size="sm" className={`h-12 font-semibold ${darkMode ? 'bg-emerald-700 hover:bg-emerald-600 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white'}`} onClick={handleGuardarTodo} disabled={saving || !estudiantes.length}><Save className="h-5 w-5 mr-1" />{saving ? 'Guardando...' : 'Guardar Todo'}</Button>
                   <Button size="sm" variant="outline" className={`h-12 ${darkMode ? 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700' : ''}`} onClick={refreshCalificaciones} disabled={refreshing}><RefreshCw className={`h-5 w-5 mr-1 ${refreshing ? 'animate-spin' : ''}`} />{refreshing ? 'Cargando...' : 'Refrescar'}</Button>
                   {usuario.rol === "admin" && <Button size="sm" variant="outline" className={`h-12 ${darkMode ? 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700' : ''}`} onClick={() => { setEditConfig(configActual); setConfigDialogOpen(true); }}><Settings className="h-5 w-5 mr-1" />Config</Button>}
                   <Button size="sm" variant="outline" className={`h-12 ${darkMode ? 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700' : ''}`} onClick={() => setImportDialogOpen(true)}><Upload className="h-5 w-5 mr-1" />Importar</Button>
@@ -1474,7 +1516,7 @@ function CalificacionRow({ estudiante, materiaId, calificacion, config, onSave, 
 
   if (!config) {
     return (
-      <tr className={`border-b transition-colors ${rowBg}`}>
+      <tr data-calificacion-row data-estudiante-id={estudiante.id} data-ac={JSON.stringify(acNotas)} data-ai={JSON.stringify(aiNotas)} data-ex={examen?.toString() ?? "null"} data-rec={recup?.toString() ?? "null"} className={`border-b transition-colors ${rowBg}`}>
         <td className={`p-2 text-center font-semibold sticky left-0 z-10 border-r ${stickyBg} ${cellBorder}`}>{estudiante.numero}</td>
         <td className={`p-2 font-medium sticky left-10 z-10 whitespace-nowrap border-r ${stickyBg} ${cellBorder}`}>{estudiante.nombre}</td>
         {Array.from({ length: numAC }).map((_, i) => <td key={`ac-${i}`} className={`p-1 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={inputBase} value={acNotas[i] ?? ""} onChange={e => updateAC(i, e.target.value)} /></td>)}
@@ -1486,14 +1528,14 @@ function CalificacionRow({ estudiante, materiaId, calificacion, config, onSave, 
         <td className={`p-2 text-center border-l ${cellBorder} ${finalBg}`}><span className={`inline-block px-2 py-0.5 rounded-md text-sm font-bold shadow ${promFinal !== null && promFinal >= 6 ? (darkMode ? 'bg-emerald-800/60 text-emerald-200 ring-1 ring-emerald-700' : 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-200') : promFinal !== null ? (darkMode ? 'bg-rose-800/60 text-rose-200 ring-1 ring-rose-700' : 'bg-rose-100 text-rose-800 ring-1 ring-rose-200') : (darkMode ? 'bg-gray-800 text-gray-500' : 'bg-slate-100 text-slate-400')}`}>{promFinal !== null ? promFinal.toFixed(2) : "-"}</span></td>
         <td className={`p-1 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={`w-10 h-7 text-base font-medium text-center border border-transparent focus:border-teal-400/50 bg-transparent rounded-md transition-all ${inputBg}`} value={recup ?? ""} onChange={handleRecup} /></td>
         <td className={`p-2 border-l ${cellBorder} text-center`}>
-          {saving && dirty ? <RefreshCw className="h-4 w-4 text-teal-500 animate-spin mx-auto" /> : (!dirty && (acNotas.some(n=>n!==null) || aiNotas.some(n=>n!==null) || examen!==null)) ? <span title="Guardado">{darkMode ? '✅' : '✅'}</span> : <span className={darkMode ? 'text-gray-700' : 'text-slate-300'}>-</span>}
+          {saving && dirty ? <RefreshCw className="h-4 w-4 text-teal-500 animate-spin mx-auto" /> : (!dirty && (acNotas.some(n=>n!==null) || aiNotas.some(n=>n!==null) || examen!==null)) ? <span title="Guardado">✅</span> : <span className={darkMode ? 'text-gray-700' : 'text-slate-300'}>-</span>}
         </td>
       </tr>
     );
   }
 
   return (
-    <tr className={`border-b transition-colors ${rowBg}`}>
+    <tr data-calificacion-row data-estudiante-id={estudiante.id} data-ac={JSON.stringify(acNotas)} data-ai={JSON.stringify(aiNotas)} data-ex={examen?.toString() ?? "null"} data-rec={recup?.toString() ?? "null"} className={`border-b transition-colors ${rowBg}`}>
       <td className={`p-2 text-center font-semibold sticky left-0 z-10 border-r ${stickyBg} ${cellBorder}`}>{estudiante.numero}</td>
       <td className={`p-2 font-medium sticky left-10 z-10 whitespace-nowrap border-r ${stickyBg} ${cellBorder}`}>{estudiante.nombre}</td>
       {acNotas.map((n, i) => <td key={`ac-${i}`} className={`p-1 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={inputBase} value={n ?? ""} onChange={e => updateAC(i, e.target.value)} /></td>)}
