@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1467,7 +1467,7 @@ export default function Home() {
 }
 
 // Componentes
-const NotaInput = ({ value, onChange, darkMode }: { value: string | number; onChange: (v: string) => void; darkMode: boolean }) => {
+const NotaInput = React.memo(({ value, onChange, darkMode }: { value: string | number; onChange: (v: string) => void; darkMode: boolean }) => {
   const inputBg = darkMode ? 'focus:bg-slate-700/60 text-white placeholder-slate-500' : 'focus:bg-teal-50/60 placeholder-slate-300';
   return (
     <input
@@ -1480,9 +1480,9 @@ const NotaInput = ({ value, onChange, darkMode }: { value: string | number; onCh
       onChange={e => onChange(e.target.value)}
     />
   );
-};
+});
 
-function CalificacionRow({ estudiante, materiaId, calificacion, config, onSave, saving, darkMode, evenRow }: { estudiante: Estudiante; materiaId: string; calificacion?: Calificacion; config: ConfigActividad | null; onSave: (id: string, matId: string, data: { actividadesCotidianas: (number | null)[]; actividadesIntegradoras: (number | null)[]; examenTrimestral: number | null; recuperacion: number | null; }) => void; saving: boolean; darkMode: boolean; evenRow: boolean; }) {
+const CalificacionRow = React.memo(function CalificacionRow({ estudiante, materiaId, calificacion, config, onSave, saving, darkMode, evenRow }: { estudiante: Estudiante; materiaId: string; calificacion?: Calificacion; config: ConfigActividad | null; onSave: (id: string, matId: string, data: { actividadesCotidianas: (number | null)[]; actividadesIntegradoras: (number | null)[]; examenTrimestral: number | null; recuperacion: number | null; }) => void; saving: boolean; darkMode: boolean; evenRow: boolean; }) {
   const numAC = config?.numActividadesCotidianas ?? 4;
   const numAI = config?.numActividadesIntegradoras ?? 1;
   const tieneExamen = config?.tieneExamen ?? true;
@@ -1584,7 +1584,7 @@ function CalificacionRow({ estudiante, materiaId, calificacion, config, onSave, 
       <td className={`p-2 border-l ${cellBorder} text-center`}>{statusIcon}</td>
     </tr>
   );
-}
+});
 
 function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, expandedBoleta, setExpandedBoleta, darkMode }: { estudiantes: Estudiante[]; calificaciones: Calificacion[]; materias: Asignatura[]; grado?: Grado; trimestre: number; expandedBoleta: string | null; setExpandedBoleta: (id: string | null) => void; darkMode: boolean; }) {
   const [resumenAsistencia, setResumenAsistencia] = useState<any[]>([]);
