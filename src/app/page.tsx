@@ -966,22 +966,22 @@ export default function Home() {
                         {configActual ? (
                           <>
                             <th colSpan={configActual.numActividadesCotidianas} className="p-1.5 text-center font-medium border-l border-slate-600">Act. Cotidianas</th>
-                            <th className="w-16 p-1.5 text-center font-medium border-l border-slate-600">Prom AC (max {(configActual.porcentajeAC / 10).toFixed(1)})</th>
+                            <th className="w-12 p-1.5 text-center font-medium border-l border-slate-600">Prom AC</th>
                             <th colSpan={configActual.numActividadesIntegradoras} className="p-1.5 text-center font-medium border-l border-slate-600">Act. Integradoras</th>
-                            <th className="w-16 p-1.5 text-center font-medium border-l border-slate-600">Prom AI (max {(configActual.porcentajeAI / 10).toFixed(1)})</th>
-                            {configActual.tieneExamen && <th className="w-14 p-1.5 text-center font-medium border-l border-slate-600">Examen</th>}
-                            {configActual.tieneExamen && <th className="w-16 p-1.5 text-center font-medium border-l border-slate-600">Prom Ex (max {(configActual.porcentajeExamen / 10).toFixed(1)})</th>}
-                            <th className="w-16 p-1.5 text-center font-medium border-l border-slate-600 bg-emerald-600">Prom. Final (/10)</th>
+                            <th className="w-12 p-1.5 text-center font-medium border-l border-slate-600">Prom AI</th>
+                            {configActual.tieneExamen && <th className="w-12 p-1.5 text-center font-medium border-l border-slate-600">Examen</th>}
+                            {configActual.tieneExamen && <th className="w-12 p-1.5 text-center font-medium border-l border-slate-600">Prom Ex</th>}
+                            <th className="w-14 p-1.5 text-center font-medium border-l border-slate-600 bg-emerald-600">Prom. Final</th>
                           </>
                         ) : (
                           <>
                             <th colSpan={4} className="p-1.5 text-center font-medium border-l border-slate-600">Act. Cotidianas</th>
-                            <th className="w-16 p-1.5 text-center font-medium border-l border-slate-600">Prom AC (max 3.5)</th>
+                            <th className="w-12 p-1.5 text-center font-medium border-l border-slate-600">Prom AC</th>
                             <th colSpan={1} className="p-1.5 text-center font-medium border-l border-slate-600">Act. Integradoras</th>
-                            <th className="w-16 p-1.5 text-center font-medium border-l border-slate-600">Prom AI (max 3.0)</th>
-                            <th className="w-14 p-1.5 text-center font-medium border-l border-slate-600">Examen</th>
-                            <th className="w-16 p-1.5 text-center font-medium border-l border-slate-600">Prom Ex (max 3.5)</th>
-                            <th className="w-16 p-1.5 text-center font-medium border-l border-slate-600 bg-emerald-600">Prom. Final (/10)</th>
+                            <th className="w-12 p-1.5 text-center font-medium border-l border-slate-600">Prom AI</th>
+                            <th className="w-12 p-1.5 text-center font-medium border-l border-slate-600">Examen</th>
+                            <th className="w-12 p-1.5 text-center font-medium border-l border-slate-600">Prom Ex</th>
+                            <th className="w-14 p-1.5 text-center font-medium border-l border-slate-600 bg-emerald-600">Prom. Final</th>
                           </>
                         )}
                         <th className="w-12 p-1.5 text-center font-medium border-l border-slate-600">Rec.</th>
