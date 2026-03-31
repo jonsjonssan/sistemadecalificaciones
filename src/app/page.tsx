@@ -778,14 +778,14 @@ export default function Home() {
     }
   }, [gradoSeleccionado, loadEstudiantes, loadAsignaturas]);
 
-  // Carga de configuración y calificaciones sincronizada con grado, asignatura y trimestre
+  // Carga de configuración y calificaciones sincronizada
   useEffect(() => { 
     if (gradoSeleccionado && asignaturaSeleccionada && trimestreSeleccionado) {
       loadConfig(); 
       loadCalificaciones(); 
       loadConfigsGrado();
     }
-  }, [gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado, loadConfig, loadCalificaciones, loadConfigsGrado]);
+  }, [gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado]);
   // Auto-selección inicial de grado - restaurar estado guardado o usar primero disponible
   useEffect(() => {
     if (gradosFiltrados && gradosFiltrados.length > 0 && !gradoSeleccionado) {
@@ -1578,7 +1578,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
     const fetchAsistencia = async () => {
       if (!grado?.id) return;
       try {
-        const res = await fetch(`/api/asistencia/resumen?gradoId=${grado.id}&trimestre=${trimestre}`);
+        const res = await fetch(`/api/asistencia/resumen?gradoId=${grado.id}&trimestre=${trimestre}`, { credentials: "include" });
         if (res.ok) setResumenAsistencia(await res.json());
       } catch (e) { console.error(e); }
     };
@@ -1589,19 +1589,19 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
     const fetchDatosAnuales = async () => {
       if (!grado?.id) return;
       try {
-        // Fetch todas las calificaciones del año
-        const resCal = await fetch(`/api/calificaciones?gradoId=${grado.id}&anual=true`);
+        const resCal = await fetch(`/api/calificaciones?gradoId=${grado.id}`, { credentials: "include" });
         if (resCal.ok) setTodasCalificaciones(await resCal.json());
         
-        // Fetch asistencia consolidada de todo el año
-        const resAsist = await fetch(`/api/asistencia/resumen?gradoId=${grado.id}&anual=true`);
+        const resAsist = await fetch(`/api/asistencia/resumen?gradoId=${grado.id}&anual=true`, { credentials: "include" });
         if (resAsist.ok) setResumenAsistenciaAnual(await resAsist.json());
       } catch (e) { console.error(e); }
     };
     fetchDatosAnuales();
   }, [grado?.id]);
 
-  const getCalifs = (id: string) => calificaciones.filter(c => c.estudianteId === id && c.trimestre === trimestre);
+  const getCalifs = (id: string) => todasCalificaciones.length > 0 
+    ? todasCalificaciones.filter(c => c.estudianteId === id && c.trimestre === trimestre)
+    : calificaciones.filter(c => c.estudianteId === id && c.trimestre === trimestre);
   const calcProm = (c: Calificacion[]) => { 
     const notas = materias.map(m => {
       const cal = c.find(x => x.materiaId === m.id);
