@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTheme } from "next-themes";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Users, BookOpen, ClipboardList, School, GraduationCap, CalendarDays, Trophy, AlertTriangle, TrendingUp } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend, Cell } from "recharts";
@@ -16,7 +17,7 @@ interface DashboardProps {
   grados: Grado[];
   totalEstudiantes: number;
   totalAsignaturas: number;
-  asignaturasAsignadas?: MateriaConGrado[]; // solo docentes
+  asignaturasAsignadas?: MateriaConGrado[];
   totalDocentes: number;
 }
 
@@ -33,6 +34,8 @@ interface GradeStats {
 }
 
 export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsignaturas, asignaturasAsignadas, totalDocentes }: DashboardProps) {
+  const { resolvedTheme } = useTheme();
+  const darkMode = resolvedTheme === "dark";
   const [stats, setStats] = useState<GradeStats[]>([]);
   const [selectedGradoId, setSelectedGradoId] = useState<string>("all");
   const [loading, setLoading] = useState(true);
@@ -44,9 +47,6 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
         if (res.ok) {
           const data = await res.json();
           setStats(data);
-          if (data.length > 0 && selectedGradoId === "all") {
-            // No cambiar el default "all" pero tener los datos listos
-          }
         }
       } catch (error) {
         console.error("Error fetching stats:", error);
@@ -59,13 +59,11 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
 
   const selectedStats = selectedGradoId === "all" ? null : stats.find(s => s.gradoId === selectedGradoId);
 
-  // Datos para gráfico de población
   const popChartData = grados.map(g => ({
     name: `${g.numero}° ${g.seccion}`,
     estudiantes: g._count?.estudiantes || 0
   })).filter(g => g.estudiantes > 0);
 
-  // Datos para gráfico de promedios por categoría
   const categoryChartData = selectedStats ? [
     { name: "Cotidianas", valor: selectedStats.promedios.cotidiana, color: "#0d9488" },
     { name: "Integradoras", valor: selectedStats.promedios.integradora, color: "#0891b2" },
@@ -73,126 +71,123 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
   ] : [];
 
   return (
-    <div className="space-y-4">
-      {/* Saludo */}
-      <h2 className="text-2xl font-bold text-slate-800 tracking-tight">
+    <div className="space-y-4 pb-8">
+      <h2 className={`text-xl sm:text-2xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-slate-800'}`}>
         Hola, {usuario.nombre} 👋
       </h2>
-      <p className="text-slate-500 text-lg font-medium mb-6">
+      <p className={`text-base sm:text-lg font-medium mb-6 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
         {usuario.rol === "admin" 
           ? "Bienvenido al panel de administración del sistema." 
           : "Te damos la bienvenida al ciclo escolar."}
       </p>
 
-      {/* Cards de Métricas (Admin) */}
       {usuario.rol === "admin" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="shadow-sm border-teal-100 overflow-hidden">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <Card className={`shadow-sm overflow-hidden ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-teal-100'}`}>
             <div className="h-1 bg-teal-500 w-full" />
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-lg font-medium font-medium text-slate-600">Total Estudiantes</CardTitle>
-              <div className="h-12 w-12 rounded-full bg-teal-50 flex items-center justify-center">
-                <Users className="h-8 w-8 text-teal-600" />
+              <CardTitle className={`text-sm sm:text-lg font-medium ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>Total Estudiantes</CardTitle>
+              <div className={`h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center ${darkMode ? 'bg-teal-900/50' : 'bg-teal-50'}`}>
+                <Users className={`h-6 w-6 md:h-8 md:w-8 ${darkMode ? 'text-teal-400' : 'text-teal-600'}`} />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-slate-800">{totalEstudiantes}</div>
-              <p className="text-base font-medium text-slate-500 mt-1">Registrados en el sistema</p>
+              <div className={`text-2xl md:text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{totalEstudiantes}</div>
+              <p className={`text-xs sm:text-sm md:text-base font-medium mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Registrados</p>
             </CardContent>
           </Card>
           
-          <Card className="shadow-sm border-emerald-100 overflow-hidden">
+          <Card className={`shadow-sm overflow-hidden ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-emerald-100'}`}>
             <div className="h-1 bg-emerald-500 w-full" />
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-lg font-medium font-medium text-slate-600">Grados Activos</CardTitle>
-              <div className="h-12 w-12 rounded-full bg-emerald-50 flex items-center justify-center">
-                <School className="h-8 w-8 text-emerald-600" />
+              <CardTitle className={`text-sm sm:text-lg font-medium ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>Grados Activos</CardTitle>
+              <div className={`h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center ${darkMode ? 'bg-emerald-900/50' : 'bg-emerald-50'}`}>
+                <School className={`h-6 w-6 md:h-8 md:w-8 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-slate-800">{grados.length}</div>
-              <p className="text-base font-medium text-slate-500 mt-1">Secciones asignadas</p>
+              <div className={`text-2xl md:text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{grados.length}</div>
+              <p className={`text-xs sm:text-sm md:text-base font-medium mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Secciones</p>
             </CardContent>
           </Card>
 
-          <Card className="shadow-sm border-blue-100 overflow-hidden">
+          <Card className={`shadow-sm overflow-hidden ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-blue-100'}`}>
             <div className="h-1 bg-blue-500 w-full" />
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-lg font-medium font-medium text-slate-600">Asignaturas impartidas</CardTitle>
-              <div className="h-12 w-12 rounded-full bg-blue-50 flex items-center justify-center">
-                <BookOpen className="h-8 w-8 text-blue-600" />
+              <CardTitle className={`text-sm sm:text-lg font-medium ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>Asignaturas</CardTitle>
+              <div className={`h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center ${darkMode ? 'bg-blue-900/50' : 'bg-blue-50'}`}>
+                <BookOpen className={`h-6 w-6 md:h-8 md:w-8 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-slate-800">{totalAsignaturas}</div>
-              <p className="text-base font-medium text-slate-500 mt-1">En todos los grados</p>
+              <div className={`text-2xl md:text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{totalAsignaturas}</div>
+              <p className={`text-xs sm:text-sm md:text-base font-medium mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Impartidas</p>
             </CardContent>
           </Card>
 
-          <Card className="shadow-sm border-amber-100 overflow-hidden">
+          <Card className={`shadow-sm overflow-hidden ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-amber-100'}`}>
             <div className="h-1 bg-amber-500 w-full" />
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-lg font-medium font-medium text-slate-600">Docentes</CardTitle>
-              <div className="h-12 w-12 rounded-full bg-amber-50 flex items-center justify-center">
-                <GraduationCap className="h-8 w-8 text-amber-600" />
+              <CardTitle className={`text-sm sm:text-lg font-medium ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>Docentes</CardTitle>
+              <div className={`h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center ${darkMode ? 'bg-amber-900/50' : 'bg-amber-50'}`}>
+                <GraduationCap className={`h-6 w-6 md:h-8 md:w-8 ${darkMode ? 'text-amber-400' : 'text-amber-600'}`} />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-slate-800">{totalDocentes}</div>
-              <p className="text-base font-medium text-slate-500 mt-1">Activos en el ciclo</p>
+              <div className={`text-2xl md:text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{totalDocentes}</div>
+              <p className={`text-xs sm:text-sm md:text-base font-medium mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Activos</p>
             </CardContent>
           </Card>
         </div>
       )}
 
-      {/* Analíticas Avanzadas */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        <Card className="lg:col-span-3 shadow-sm border-slate-100 overflow-hidden">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 border-b bg-slate-50/50">
+      <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+        <Card className={`lg:col-span-2 xl:col-span-3 shadow-sm overflow-hidden flex flex-col ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-slate-100'}`}>
+          <CardHeader className={`flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b gap-4 ${darkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50/50'}`}>
             <div>
-              <CardTitle className="text-base text-slate-700 flex items-center gap-2">
-                <TrendingUp className="h-8 w-8 text-teal-600" />
-                Rendimiento Académico por Grado
+              <CardTitle className={`text-sm sm:text-base flex items-center gap-2 ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>
+                <TrendingUp className="h-5 w-5 text-teal-600" />
+                Rendimiento Académico
               </CardTitle>
-              <CardDescription className="text-base font-medium">Promedios por categoría evaluativa</CardDescription>
+              <CardDescription className={`text-xs sm:text-sm font-medium ${darkMode ? 'text-slate-400' : ''}`}>Promedios por categoría</CardDescription>
             </div>
             <Select value={selectedGradoId} onValueChange={setSelectedGradoId}>
-              <SelectTrigger className="w-[180px] h-8 text-base font-medium bg-white">
+              <SelectTrigger className={`w-full sm:w-[180px] h-9 text-xs sm:text-sm font-medium ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white'}`}>
                 <SelectValue placeholder="Seleccionar grado" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all" className="text-base font-medium">Vista General</SelectItem>
+                <SelectItem value="all" className="text-xs sm:text-sm font-medium">Vista General</SelectItem>
                 {stats.map(s => (
-                  <SelectItem key={s.gradoId} value={s.gradoId} className="text-base font-medium">
+                  <SelectItem key={s.gradoId} value={s.gradoId} className="text-xs sm:text-sm font-medium">
                     {s.nombre}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </CardHeader>
-          <CardContent className="p-6">
+          <CardContent className="p-3 sm:p-4 md:p-6 flex-1">
             {selectedGradoId === "all" ? (
-              <div className="h-[300px]">
+              <div className="h-[200px] sm:h-[250px] md:h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={popChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
-                    <Tooltip cursor={{fill: '#f1f5f9'}} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px' }} />
-                    <Bar dataKey="estudiantes" name="N° Estudiantes" fill="#0d9488" radius={[4, 4, 0, 0]} barSize={40} />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={darkMode ? "#334155" : "#E2E8F0"} />
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: darkMode ? '#94a3b8' : '#64748b' }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: darkMode ? '#94a3b8' : '#64748b' }} />
+                    <Tooltip cursor={{fill: darkMode ? '#334155' : '#f1f5f9'}} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '11px', backgroundColor: darkMode ? '#1e293b' : '#fff', color: darkMode ? '#fff' : '#333' }} />
+                    <Bar dataKey="estudiantes" name="N° Estudiantes" fill="#0d9488" radius={[4, 4, 0, 0]} barSize={30} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
             ) : selectedStats ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center h-full">
-                <div className="h-[250px]">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 items-start h-full">
+                <div className="h-[200px] sm:h-[250px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={categoryChartData} layout="vertical" margin={{ top: 0, right: 30, left: 40, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E2E8F0" />
-                      <XAxis type="number" domain={[0, 10]} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
-                      <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} width={80} />
-                      <Tooltip cursor={{fill: '#f1f5f9'}} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px' }} />
-                      <Bar dataKey="valor" name="Promedio" radius={[0, 4, 4, 0]} barSize={35}>
+                      <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={darkMode ? "#334155" : "#E2E8F0"} />
+                      <XAxis type="number" domain={[0, 10]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: darkMode ? '#94a3b8' : '#64748b' }} />
+                      <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: darkMode ? '#94a3b8' : '#64748b' }} width={80} />
+                      <Tooltip cursor={{fill: darkMode ? '#334155' : '#f1f5f9'}} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '11px', backgroundColor: darkMode ? '#1e293b' : '#fff', color: darkMode ? '#fff' : '#333' }} />
+                      <Bar dataKey="valor" name="Promedio" radius={[0, 4, 4, 0]} barSize={25}>
                         {categoryChartData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
@@ -200,61 +195,59 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="space-y-4">
-                  <div className="bg-teal-50/50 p-4 rounded-xl border border-teal-100">
-                    <h4 className="text-base font-medium font-bold text-teal-800 uppercase tracking-wider mb-2 flex items-center gap-2">
-                       <Trophy className="h-6 w-6 text-amber-500" /> Cuadro de Honor
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-3 sm:gap-4">
+                  <div className={`p-3 sm:p-4 rounded-xl border ${darkMode ? 'bg-teal-900/30 border-teal-800' : 'bg-teal-50/50 border-teal-100'}`}>
+                    <h4 className={`text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2 ${darkMode ? 'text-teal-300' : 'text-teal-800'}`}>
+                       <Trophy className="h-4 w-4 text-amber-500" /> Cuadro de Honor
                     </h4>
                     <div className="space-y-2">
                       {selectedStats.topEstudiantes.length > 0 ? selectedStats.topEstudiantes.map((est, i) => (
-                        <div key={est.id} className="flex items-center justify-between text-lg font-medium">
-                          <span className="text-slate-700 truncate max-w-[180px]">{i+1}. {est.nombre}</span>
-                          <Badge variant="outline" className="bg-white text-teal-700 border-teal-200 font-bold ml-2">
+                        <div key={est.id} className="flex items-center justify-between text-xs sm:text-sm">
+                          <span className={`truncate max-w-[100px] sm:max-w-[150px] ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>{i+1}. {est.nombre}</span>
+                          <Badge variant="outline" className={`py-0 h-5 text-xs ${darkMode ? 'bg-slate-800 text-teal-400 border-teal-700' : 'bg-white text-teal-700 border-teal-200'}`}>
                             {est.promedio.toFixed(1)}
                           </Badge>
                         </div>
-                      )) : <p className="text-base text-slate-400">Sin promedios calculados</p>}
+                      )) : <p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>Sin datos</p>}
                     </div>
                   </div>
-                  <div className="bg-red-50/50 p-4 rounded-xl border border-red-100">
-                    <h4 className="text-base font-medium font-bold text-red-800 uppercase tracking-wider mb-2 flex items-center gap-2">
-                      <AlertTriangle className="h-6 w-6 text-red-500" /> Alertas Académicas
+                  <div className={`p-3 sm:p-4 rounded-xl border ${darkMode ? 'bg-red-900/30 border-red-800' : 'bg-red-50/50 border-red-100'}`}>
+                    <h4 className={`text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2 ${darkMode ? 'text-red-300' : 'text-red-800'}`}>
+                      <AlertTriangle className="h-4 w-4 text-red-500" /> Alertas
                     </h4>
                     <div className="space-y-2">
                       {selectedStats.alertas.length > 0 ? selectedStats.alertas.map((est, i) => (
-                        <div key={est.id} className="flex items-center justify-between text-lg font-medium">
-                          <span className="text-slate-700 truncate max-w-[180px]">{est.nombre}</span>
-                          <Badge variant="destructive" className="bg-red-500 text-white font-bold ml-2">
+                        <div key={est.id} className="flex items-center justify-between text-xs sm:text-sm">
+                          <span className={`truncate max-w-[100px] sm:max-w-[150px] ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>{est.nombre}</span>
+                          <Badge variant="destructive" className="bg-red-500 text-white font-bold py-0 h-5 text-xs">
                             {est.promedio.toFixed(1)}
                           </Badge>
                         </div>
-                      )) : <p className="text-base text-slate-400">Sin alertas detectadas</p>}
+                      )) : <p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>Sin alertas</p>}
                     </div>
                   </div>
                 </div>
               </div>
             ) : (
-              <div className="h-[300px] flex items-center justify-center text-slate-400 italic">
+              <div className={`h-[200px] sm:h-[250px] flex items-center justify-center italic text-xs sm:text-sm ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                 Cargando estadísticas...
               </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Accesos y Otros */}
-        <div className="flex flex-col gap-4">
-           {/* Info Docente si aplica */}
-          {usuario.rol === "docente" && asignaturasAsignadas && (
-             <Card className="shadow-sm border-slate-100">
-               <CardHeader className="py-3 px-4 border-b">
-                 <CardTitle className="text-base font-medium font-bold text-slate-500 uppercase">Mis Asignaturas</CardTitle>
+        <div className="flex flex-col gap-3 sm:gap-4 lg:col-span-1 xl:col-span-1">
+          {usuario.rol === "docente" && asignaturasAsignadas && asignaturasAsignadas.length > 0 && (
+             <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-slate-100'}`}>
+               <CardHeader className={`py-3 px-4 border-b ${darkMode ? 'border-slate-700' : ''}`}>
+                 <CardTitle className={`text-xs font-bold uppercase ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Mis Asignaturas</CardTitle>
                </CardHeader>
-               <CardContent className="p-3 max-h-[300px] overflow-y-auto">
+               <CardContent className="p-3 max-h-[200px] overflow-y-auto">
                  <div className="space-y-2">
                    {asignaturasAsignadas.map(m => (
-                     <div key={m.id} className="p-2 bg-slate-50 rounded border text-base font-medium flex justify-between items-center">
-                       <span className="font-medium text-slate-700">{m.nombre}</span>
-                       <Badge variant="secondary" className="text-sm">{m.grado?.numero}°{m.grado?.seccion}</Badge>
+                     <div key={m.id} className={`p-2 rounded border text-xs flex justify-between items-center ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border'}`}>
+                       <span className={`font-medium truncate mr-2 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>{m.nombre}</span>
+                       <Badge variant="secondary" className={`text-[10px] whitespace-nowrap ${darkMode ? 'bg-slate-700 text-slate-300' : ''}`}>{m.grado?.numero}°{m.grado?.seccion}</Badge>
                      </div>
                    ))}
                  </div>
@@ -262,31 +255,31 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
              </Card>
           )}
 
-          <Card className="shadow-sm border-slate-100 flex-1">
-            <CardHeader className="py-3 px-4 border-b">
-              <CardTitle className="text-base font-medium font-bold text-slate-500 uppercase">Gestión Rápida</CardTitle>
+          <Card className={`shadow-sm flex-1 ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-slate-100'}`}>
+            <CardHeader className={`py-3 px-4 border-b ${darkMode ? 'border-slate-700' : ''}`}>
+              <CardTitle className={`text-xs font-bold uppercase ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Gestión Rápida</CardTitle>
             </CardHeader>
-            <CardContent className="p-4 space-y-3">
-              <div className="p-3 bg-teal-50/50 border border-teal-100 rounded-lg flex items-center gap-3 hover:bg-teal-50 transition-colors cursor-pointer group" onClick={() => document.getElementById('tab-calificaciones')?.click()}>
-                <div className="p-2 bg-teal-100 text-teal-700 rounded-md shrink-0 group-hover:scale-110 transition-transform"><ClipboardList className="h-8 w-8" /></div>
+            <CardContent className="p-3 sm:p-4 space-y-3">
+              <div className={`p-3 border rounded-lg flex items-center gap-3 hover:bg-teal-50 transition-colors cursor-pointer group ${darkMode ? 'bg-teal-900/30 border-teal-800 hover:bg-teal-900/50' : 'bg-teal-50/50 border-teal-100'}`} onClick={() => (window as any).setActiveTab?.('calificaciones')}>
+                <div className={`p-2 rounded-md shrink-0 group-hover:scale-110 transition-transform ${darkMode ? 'bg-teal-800 text-teal-300' : 'bg-teal-100 text-teal-700'}`}><ClipboardList className="h-5 w-5" /></div>
                 <div>
-                  <h4 className="text-base font-medium font-bold text-teal-900">Pasar Notas</h4>
-                  <p className="text-base text-teal-700/70">Ingreso rápido de calificaciones</p>
+                  <h4 className={`text-sm font-bold ${darkMode ? 'text-teal-200' : 'text-teal-900'}`}>Pasar Notas</h4>
+                  <p className={`text-[11px] ${darkMode ? 'text-teal-400' : 'text-teal-700/70'}`}>Calificaciones</p>
                 </div>
               </div>
-              <div className="p-3 bg-blue-50/50 border border-blue-100 rounded-lg flex items-center gap-3 hover:bg-blue-50 transition-colors cursor-pointer group" onClick={() => document.getElementById('tab-asistencia')?.click()}>
-                <div className="p-2 bg-blue-100 text-blue-700 rounded-md shrink-0 group-hover:scale-110 transition-transform"><CalendarDays className="h-8 w-8" /></div>
+              <div className={`p-3 border rounded-lg flex items-center gap-3 hover:bg-blue-50 transition-colors cursor-pointer group ${darkMode ? 'bg-blue-900/30 border-blue-800 hover:bg-blue-900/50' : 'bg-blue-50/50 border-blue-100'}`} onClick={() => (window as any).setActiveTab?.('asistencia')}>
+                <div className={`p-2 rounded-md shrink-0 group-hover:scale-110 transition-transform ${darkMode ? 'bg-blue-800 text-blue-300' : 'bg-blue-100 text-blue-700'}`}><CalendarDays className="h-5 w-5" /></div>
                 <div>
-                  <h4 className="text-base font-medium font-bold text-blue-900">Asistencia</h4>
-                  <p className="text-base text-blue-700/70">Control diario de alumnos</p>
+                  <h4 className={`text-sm font-bold ${darkMode ? 'text-blue-200' : 'text-blue-900'}`}>Asistencia</h4>
+                  <p className={`text-[11px] ${darkMode ? 'text-blue-400' : 'text-blue-700/70'}`}>Control diario</p>
                 </div>
               </div>
               {usuario.rol === "admin" && (
-                <div className="p-3 bg-amber-50/50 border border-amber-100 rounded-lg flex items-center gap-3 hover:bg-amber-50 transition-colors cursor-pointer group">
-                  <div className="p-2 bg-amber-100 text-amber-700 rounded-md shrink-0 group-hover:scale-110 transition-transform"><GraduationCap className="h-8 w-8" /></div>
+                <div className={`p-3 border rounded-lg flex items-center gap-3 hover:bg-amber-50 transition-colors cursor-pointer group ${darkMode ? 'bg-amber-900/30 border-amber-800 hover:bg-amber-900/50' : 'bg-amber-50/50 border-amber-100'}`} onClick={() => (window as any).setActiveTab?.('admin')}>
+                  <div className={`p-2 rounded-md shrink-0 group-hover:scale-110 transition-transform ${darkMode ? 'bg-amber-800 text-amber-300' : 'bg-amber-100 text-amber-700'}`}><GraduationCap className="h-5 w-5" /></div>
                   <div>
-                    <h4 className="text-base font-medium font-bold text-amber-900">Docentes</h4>
-                    <p className="text-base text-amber-700/70">Administrar personal académico</p>
+                    <h4 className={`text-sm font-bold ${darkMode ? 'text-amber-200' : 'text-amber-900'}`}>Docentes</h4>
+                    <p className={`text-[11px] ${darkMode ? 'text-amber-400' : 'text-amber-700/70'}`}>Administración</p>
                   </div>
                 </div>
               )}
