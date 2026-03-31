@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/neon";
 import { cookies } from "next/headers";
+import { randomUUID } from "crypto";
 
 function calcularPromedioActividades(notas: (number | null)[]): number | null {
   const notasValidas = notas.filter((n) => n !== null && n !== undefined) as number[];
@@ -222,12 +223,12 @@ export async function POST(request: NextRequest) {
     } else {
       result = await sql`
         INSERT INTO "Calificacion" (
-          "estudianteId", "materiaId", trimestre,
+          "id", "estudianteId", "materiaId", trimestre,
           actividadesCotidianas, calificacionAC,
           actividadesIntegradoras, calificacionAI,
           examenTrimestral, promedioFinal, recuperacion
         ) VALUES (
-          ${estudianteId}, ${materiaId}, ${parseInt(String(trimestre))},
+          ${randomUUID()}, ${estudianteId}, ${materiaId}, ${parseInt(String(trimestre))},
           ${JSON.stringify(acNotas)}, ${calificacionAC},
           ${JSON.stringify(aiNotas)}, ${calificacionAI},
           ${examenTrimestral}, ${promedioFinal}, ${recuperacion}
