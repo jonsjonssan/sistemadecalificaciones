@@ -100,12 +100,12 @@ export default function Home() {
   const [listaEstudiantes, setListaEstudiantes] = useState("");
   const [saving, setSaving] = useState(false);
   const [initialized, setInitialized] = useState(false);
-  const [materiasEnBoleta, setMateriasEnBoleta] = useState<number>(() => {
+  const [materiasEnBoleta, setMateriasEnBoleta] = useState<string[]>(() => {
     if (typeof window !== "undefined") {
       const v = localStorage.getItem("ss_materiasBoleta");
-      return v ? parseInt(v) : 0;
+      return v ? JSON.parse(v) : [];
     }
-    return 0;
+    return [];
   });
   const [expandedBoleta, setExpandedBoleta] = useState<string | null>(null);
   const [editConfig, setEditConfig] = useState<ConfigActividad | null>(null);
@@ -1151,18 +1151,46 @@ export default function Home() {
                 {gradoSeleccionado && estudiantes.length > 0 && (
                   <>
                     {usuario.rol === "admin" && (
-                      <div className="flex items-center gap-2 mb-2">
-                        <Label className="text-xs sm:text-sm font-medium whitespace-nowrap">Asignaturas en boleta:</Label>
-                        <Select value={materiasEnBoleta === 0 ? "todas" : String(materiasEnBoleta)} onValueChange={(v) => { const n = v === "todas" ? 0 : parseInt(v); setMateriasEnBoleta(n); if (typeof window !== "undefined") localStorage.setItem("ss_materiasBoleta", String(n)); }}>
-                          <SelectTrigger className={`w-24 h-8 text-xs ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="todas" className="text-xs">Todas</SelectItem>
-                            {asignaturasFiltradas.map((_, i) => <SelectItem key={i} value={String(i + 1)} className="text-xs">{i + 1}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
+                      <div className="space-y-2 mb-2">
+                        <div className="flex items-center gap-2">
+                          <Label className="text-xs sm:text-sm font-medium whitespace-nowrap">Asignaturas en boleta:</Label>
+                          <Select value={materiasEnBoleta.length === 0 ? "todas" : "personalizado"} onValueChange={(v) => { if (v === "todas") { setMateriasEnBoleta([]); if (typeof window !== "undefined") localStorage.setItem("ss_materiasBoleta", JSON.stringify([])); } }}>
+                            <SelectTrigger className={`w-32 h-8 text-xs ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="todas" className="text-xs">Todas ({asignaturasFiltradas.length})</SelectItem>
+                              <SelectItem value="personalizado" className="text-xs">Personalizado</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <span className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                            {materiasEnBoleta.length > 0 ? `${materiasEnBoleta.length} seleccionada(s)` : 'Mostrando todas'}
+                          </span>
+                        </div>
+                        {materiasEnBoleta.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5">
+                            {asignaturasFiltradas.map(m => (
+                              <button
+                                key={m.id}
+                                onClick={() => {
+                                  const next = materiasEnBoleta.includes(m.id)
+                                    ? materiasEnBoleta.filter(id => id !== m.id)
+                                    : [...materiasEnBoleta, m.id];
+                                  setMateriasEnBoleta(next);
+                                  if (typeof window !== "undefined") localStorage.setItem("ss_materiasBoleta", JSON.stringify(next));
+                                }}
+                                className={`px-2 py-0.5 rounded-full text-xs font-medium border transition-colors ${
+                                  materiasEnBoleta.includes(m.id)
+                                    ? (darkMode ? 'bg-teal-700 text-white border-teal-600' : 'bg-teal-600 text-white border-teal-600')
+                                    : (darkMode ? 'bg-slate-800 text-slate-400 border-slate-700 hover:border-slate-500' : 'bg-slate-100 text-slate-500 border-slate-200 hover:border-slate-400')
+                                }`}
+                              >
+                                {m.nombre}
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
-                    <BoletaList estudiantes={estudiantes} calificaciones={calificaciones} materias={materiasEnBoleta > 0 ? asignaturasFiltradas.slice(0, materiasEnBoleta) : asignaturasFiltradas} grado={gradosFiltrados.find(g => g.id === gradoSeleccionado)} trimestre={parseInt(trimestreSeleccionado)} expandedBoleta={expandedBoleta} setExpandedBoleta={setExpandedBoleta} darkMode={darkMode} />
+                    <BoletaList estudiantes={estudiantes} calificaciones={calificaciones} materias={materiasEnBoleta.length > 0 ? asignaturasFiltradas.filter(m => materiasEnBoleta.includes(m.id)) : asignaturasFiltradas} grado={gradosFiltrados.find(g => g.id === gradoSeleccionado)} trimestre={parseInt(trimestreSeleccionado)} expandedBoleta={expandedBoleta} setExpandedBoleta={setExpandedBoleta} darkMode={darkMode} />
                   </>
                 )}
               </CardContent>
