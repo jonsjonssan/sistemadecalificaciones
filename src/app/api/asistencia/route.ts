@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 
 export async function GET(req: Request) {
@@ -140,5 +140,53 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("Error guardando asistencia:", error);
     return NextResponse.json({ error: "Error del servidor al guardar asistencia", details: error instanceof Error ? error.message : String(error) }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const fechaParam = searchParams.get("fecha");
+    const gradoId = searchParams.get("gradoId");
+    const materiaId = searchParams.get("materiaId");
+
+    if (!fechaParam || !gradoId) {
+      return NextResponse.json({ error: "Faltan parámetros requeridos" }, { status: 400 });
+    }
+
+    const fecha = new Date(fechaParam);
+    if (isNaN(fecha.getTime())) {
+      return NextResponse.json({ error: "Fecha inválida" }, { status: 400 });
+    }
+
+    const startOfDay = new Date(fecha);
+    startOfDay.setUTCHours(0, 0, 0, 0);
+    const endOfDay = new Date(fecha);
+    endOfDay.setUTCHours(23, 59, 59, 999);
+
+    const prisma = new PrismaClient();
+
+    const where: any = {
+      fecha: {
+        gte: startOfDay,
+        lte: endOfDay,
+      },
+      gradoId,
+    };
+
+    if (materiaId) {
+      where.materiaId = materiaId;
+    } else {
+      where.materiaId = null;
+    }
+
+    const deleted = await prisma.asistencia.deleteMany({ where });
+
+    await prisma.$disconnect();
+
+    return NextResponse.json({ success: true, eliminados: deleted.count });
+  } catch (error) {
+    console.error("Error eliminando asistencia:", error);
+    return NextResponse.json({ error: "Error del servidor al eliminar asistencia", details: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }

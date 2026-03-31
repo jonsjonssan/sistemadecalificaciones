@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar as CalendarIcon, Save, RefreshCw, CheckCircle2, XCircle, Clock, CalendarDays, Download } from "lucide-react";
+import { Calendar as CalendarIcon, Save, RefreshCw, CheckCircle2, XCircle, Clock, CalendarDays, Download, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -25,9 +25,10 @@ interface AsistenciaBoardProps {
   estudiantes: Estudiante[];
   gradoInicial?: string;
   asignaturaInicial?: string;
+  isAdmin?: boolean;
 }
 
-export default function AsistenciaBoard({ grados, asignaturas, estudiantes, gradoInicial = "", asignaturaInicial = "" }: AsistenciaBoardProps) {
+export default function AsistenciaBoard({ grados, asignaturas, estudiantes, gradoInicial = "", asignaturaInicial = "", isAdmin = false }: AsistenciaBoardProps) {
   const { resolvedTheme } = useTheme();
   const darkMode = resolvedTheme === "dark";
   const { toast } = useToast();
@@ -41,6 +42,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
   const [view, setView] = useState<"pass" | "summary">("pass");
   const [summaryRange, setSummaryRange] = useState<"month" | "all">("all");
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const initializeAttendance = useCallback(() => {
     const initial: Record<string, string> = {};
@@ -172,6 +174,30 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     }
   };
 
+  const handleDelete = async () => {
+    if (!gradoId || !fecha) return;
+    if (!confirm(`¿Eliminar la asistencia del ${fecha} para este grado? Esta acción no se puede deshacer.`)) return;
+    setDeleting(true);
+    try {
+      const params = new URLSearchParams({ fecha: `${fecha}T00:00:00.000Z`, gradoId });
+      if (asignaturaId) params.set("materiaId", asignaturaId);
+      const res = await fetch(`/api/asistencia?${params.toString()}`, { method: "DELETE" });
+      if (res.ok) {
+        const data = await res.json();
+        toast({ title: `${data.eliminados} registros eliminados` });
+        setAsistencias(initializeAttendance());
+        loadAsistencia();
+      } else {
+        const data = await res.json();
+        toast({ title: data.error || "Error al eliminar", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Error de red al eliminar asistencia", variant: "destructive" });
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const activeStudents = estudiantes.filter(e => e.activo);
   const presentCount = Object.values(asistencias).filter(e => e === "presente").length;
   const absentCount = Object.values(asistencias).filter(e => e === "ausente").length;
@@ -265,6 +291,16 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                 {saving ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
                 {saving ? "Guardando..." : "Guardar Lista"}
               </Button>
+              {isAdmin && (
+                <Button 
+                  className={`h-10 text-white w-full sm:w-auto px-4 font-bold text-xs sm:text-sm ${darkMode ? 'bg-red-700 hover:bg-red-600' : 'bg-red-600 hover:bg-red-700'}`} 
+                  onClick={handleDelete}
+                  disabled={deleting || activeStudents.length === 0}
+                >
+                  {deleting ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : <Trash2 className="h-4 w-4 mr-2" />}
+                  {deleting ? "Eliminando..." : "Borrar"}
+                </Button>
+              )}
             </div>
 
             <div className="flex gap-2 text-xs sm:text-sm font-medium flex-wrap">

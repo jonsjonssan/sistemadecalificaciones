@@ -1037,6 +1037,7 @@ export default function Home() {
               estudiantes={estudiantes}
               gradoInicial={gradoSeleccionado}
               asignaturaInicial={asignaturaSeleccionada}
+              isAdmin={usuario.rol === "admin"}
             />
           </TabsContent>
 
