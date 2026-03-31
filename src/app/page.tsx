@@ -1695,17 +1695,6 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
     if (!est) return;
     const califs = getCalifs(id);
 
-    // Validación de Recuperación
-    const faltasRecuperacion = materias.filter(m => {
-      const c = califs.find(x => x.materiaId === m.id);
-      return !c || c.recuperacion === null || c.recuperacion === undefined;
-    });
-
-    if (faltasRecuperacion.length > 0) {
-      alert(`Falta digitar el dato de "Recuperación"\nEstudiante: ${est.nombre}\nMaterias:\n- ${faltasRecuperacion.map(m => m.nombre).join('\n- ')}`);
-      return;
-    }
-
     const prom = calcProm(califs);
     const estadoFinal = getEstadoFinal(prom);
     const año = grado?.año || new Date().getFullYear();
@@ -1910,23 +1899,6 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
   const imprimirTodas = async () => {
     if (!estudiantes.length) return;
     
-    // Validación general antes de imprimir todas
-    const errores: string[] = [];
-    for (const est of estudiantes) {
-      const califs = getCalifs(est.id);
-      for (const m of materias) {
-        const c = califs.find(x => x.materiaId === m.id);
-        if (!c || c.recuperacion === null || c.recuperacion === undefined) {
-          errores.push(`- ${est.nombre} (${m.nombre})`);
-        }
-      }
-    }
-
-    if (errores.length > 0) {
-      alert(`No se puede imprimir el reporte múltiple. Falta digitar dato de "Recuperación" en:\n${errores.slice(0, 10).join('\n')}\n${errores.length > 10 ? '...y ' + (errores.length - 10) + ' más.' : ''}`);
-      return;
-    }
-
     let allBoletasHtml = '';
     const año = grado?.año || new Date().getFullYear();
     const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
