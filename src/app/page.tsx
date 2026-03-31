@@ -559,24 +559,62 @@ export default function Home() {
     const lines = importData.split('\n').filter(l => l.trim());
     if (lines.length < 2) return;
     const headers = lines[0].split(/[,;\t]/).map(h => h.trim().toLowerCase());
-    const nombreIdx = headers.findIndex(h => h.includes('nombre'));
+    const nombreIdx = headers.findIndex(h => h.includes('nombre') || h.includes('estudiante') || h.includes('alumno'));
+    
+    const acCols: number[] = [];
+    const aiCols: number[] = [];
+    let examenCol: number | null = null;
+    let recupCol: number | null = null;
+    
+    headers.forEach((h, i) => {
+      if (/^ac\d*$/.test(h)) acCols.push(i);
+      if (/^ai\d*$/.test(h)) aiCols.push(i);
+      if (/^(examen|ex)$/.test(h)) examenCol = i;
+      if (/^(recup|recuperacion|rec)$/.test(h)) recupCol = i;
+    });
+    
     let importados = 0;
+    let errores = 0;
+    
     for (let i = 1; i < lines.length; i++) {
       const cols = lines[i].split(/[,;\t]/).map(c => c.trim());
-      const est = estudiantes.find(e => e.nombre.toLowerCase().includes((cols[nombreIdx] || "").toLowerCase()));
+      if (nombreIdx < 0 || nombreIdx >= cols.length) continue;
+      const nombreBusqueda = cols[nombreIdx].toLowerCase();
+      const est = estudiantes.find(e => e.nombre.toLowerCase().includes(nombreBusqueda) || nombreBusqueda.includes(e.nombre.toLowerCase().split(',')[0].trim()));
       if (!est) continue;
-      const acNotas: (number | null)[] = Array(configActual.numActividadesCotidianas).fill(null);
-      const aiNotas: (number | null)[] = Array(configActual.numActividadesIntegradoras).fill(null);
+      
+      const acNotas: (number | null)[] = acCols.map(idx => {
+        const val = parseFloat(cols[idx]);
+        return isNaN(val) ? null : Math.min(10, Math.max(0, val));
+      });
+      
+      const aiNotas: (number | null)[] = aiCols.map(idx => {
+        const val = parseFloat(cols[idx]);
+        return isNaN(val) ? null : Math.min(10, Math.max(0, val));
+      });
+      
+      const examenVal = examenCol !== null ? (() => { const v = parseFloat(cols[examenCol!]); return isNaN(v) ? null : Math.min(10, Math.max(0, v)); })() : null;
+      const recupVal = recupCol !== null ? (() => { const v = parseFloat(cols[recupCol!]); return isNaN(v) ? null : Math.min(10, Math.max(0, v)); })() : null;
+      
       const res = await fetch("/api/calificaciones", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ estudianteId: est.id, materiaId: asignaturaSeleccionada, trimestre: parseInt(trimestreSeleccionado), actividadesCotidianas: JSON.stringify(acNotas), actividadesIntegradoras: JSON.stringify(aiNotas) }),
+        body: JSON.stringify({
+          estudianteId: est.id,
+          materiaId: asignaturaSeleccionada,
+          trimestre: parseInt(trimestreSeleccionado),
+          actividadesCotidianas: acNotas,
+          actividadesIntegradoras: aiNotas,
+          examenTrimestral: examenVal,
+          recuperacion: recupVal,
+        }),
       });
-      if (!res.ok) { toast({ title: "Error al importar calificación", variant: "destructive" }); return; }
+      if (!res.ok) { errores++; continue; }
       importados++;
     }
-    setImportDialogOpen(false); setImportData(""); loadCalificaciones(); toast({ title: `${importados} calificaciones importadas` });
+    setImportDialogOpen(false); setImportData(""); loadCalificaciones();
+    toast({ title: `${importados} calificaciones importadas${errores > 0 ? `, ${errores} errores` : ''}` });
   };
 
   const generateTemplate = () => {
@@ -956,7 +994,7 @@ export default function Home() {
       {/* Diálogo de cambio de contraseña */}
       <Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
         <DialogContent className="max-w-sm">
-          <DialogHeader><DialogTitle>Cambiar Contraseña</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Cambiar Contraseña</DialogTitle><DialogDescription>Actualiza tu contraseña de acceso al sistema.</DialogDescription></DialogHeader>
           <div className="space-y-3">
             <div><Label className="text-base font-medium">Contraseña Actual</Label><Input type="password" value={passwordForm.actual} onChange={e => setPasswordForm({...passwordForm, actual: e.target.value})} /></div>
             <div><Label className="text-base font-medium">Nueva Contraseña</Label><Input type="password" value={passwordForm.nueva} onChange={e => setPasswordForm({...passwordForm, nueva: e.target.value})} /></div>
@@ -1089,7 +1127,7 @@ export default function Home() {
                   <Dialog open={listaDialogOpen} onOpenChange={setListaDialogOpen}>
                     <DialogTrigger asChild><Button size="sm" variant="outline" className={`h-10 text-xs sm:text-sm ${darkMode ? 'border-slate-600 text-slate-300 hover:bg-slate-700' : ''}`}><ListPlus className="h-5 w-5 mr-1" />Lista</Button></DialogTrigger>
                     <DialogContent className={`max-w-md ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
-                      <DialogHeader><DialogTitle>Agregar Lista de Estudiantes</DialogTitle></DialogHeader>
+                      <DialogHeader><DialogTitle>Agregar Lista de Estudiantes</DialogTitle><DialogDescription>Ingresa los nombres de los estudiantes, uno por línea.</DialogDescription></DialogHeader>
                       <div className="space-y-2"><Label>Un nombre por línea</Label><textarea className={`w-full h-48 p-2 text-sm border rounded-md ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} value={listaEstudiantes} onChange={e => setListaEstudiantes(e.target.value)} placeholder="Apellido, Nombre&#10;Apellido, Nombre&#10;..." /></div>
                       <DialogFooter><Button variant="outline" size="sm" onClick={() => { setListaDialogOpen(false); setListaEstudiantes(""); }}>Cancelar</Button><Button size="sm" onClick={handleAddMultipleEstudiantes} className="bg-teal-600">Agregar {listaEstudiantes.split('\n').filter(n => n.trim()).length}</Button></DialogFooter>
                     </DialogContent>
@@ -1097,7 +1135,7 @@ export default function Home() {
                   <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                     <DialogTrigger asChild><Button size="sm" className={`h-10 text-xs sm:text-sm ${darkMode ? 'bg-teal-600 hover:bg-teal-500' : 'bg-teal-600'}`}><Plus className="h-5 w-5 mr-1" />Uno</Button></DialogTrigger>
                     <DialogContent className={`max-w-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
-                      <DialogHeader><DialogTitle>Agregar Estudiante</DialogTitle></DialogHeader>
+                      <DialogHeader><DialogTitle>Agregar Estudiante</DialogTitle><DialogDescription>Ingresa el nombre completo del nuevo estudiante.</DialogDescription></DialogHeader>
                       <div className="space-y-2"><Label>Nombre completo</Label><Input value={nuevoEstudiante.nombre} onChange={e => setNuevoEstudiante({ nombre: e.target.value })} placeholder="Apellidos, Nombres" /></div>
                       <DialogFooter><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Cancelar</Button><Button size="sm" onClick={handleAddEstudiante} className="bg-teal-600">Guardar</Button></DialogFooter>
                     </DialogContent>
@@ -1148,7 +1186,7 @@ export default function Home() {
                   <Dialog open={userDialogOpen} onOpenChange={setUserDialogOpen}>
                     <DialogTrigger asChild><Button size="sm" className={`h-7 text-xs ${darkMode ? 'bg-teal-600 hover:bg-teal-500' : 'bg-teal-600'}`} onClick={() => { setEditUsuarioId(null); setNuevoUsuario({ email: "", password: "", nombre: "", rol: "docente", gradosAsignados: [], materiasAsignadas: [] }); }}><UserPlus className="h-3.5 w-3.5 mr-1" />Nuevo Usuario</Button></DialogTrigger>
                     <DialogContent className={`max-w-lg max-h-[90vh] overflow-y-auto ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
-                      <DialogHeader><DialogTitle>{editUsuarioId ? "Editar Usuario" : "Crear Usuario"}</DialogTitle></DialogHeader>
+                      <DialogHeader><DialogTitle>{editUsuarioId ? "Editar Usuario" : "Crear Usuario"}</DialogTitle><DialogDescription>Completa la información del usuario del sistema.</DialogDescription></DialogHeader>
                       <div className="space-y-3">
                         <div><Label className="text-xs">Nombre</Label><Input value={nuevoUsuario.nombre} onChange={e => setNuevoUsuario({...nuevoUsuario, nombre: e.target.value})} placeholder="Nombre completo" /></div>
                         <div><Label className="text-xs">Email</Label><Input type="email" value={nuevoUsuario.email} onChange={e => setNuevoUsuario({...nuevoUsuario, email: e.target.value})} placeholder="correo@escuela.edu" /></div>
@@ -1272,7 +1310,7 @@ export default function Home() {
                       </Button>
                     </DialogTrigger>
                     <DialogContent className={`max-w-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
-                      <DialogHeader><DialogTitle>Cambiar Año Escolar</DialogTitle></DialogHeader>
+                      <DialogHeader><DialogTitle>Cambiar Año Escolar</DialogTitle><DialogDescription>El nuevo año solo mostrará datos correspondientes a ese período.</DialogDescription></DialogHeader>
                       <div className="space-y-3">
                         <div>
                           <Label className="text-xs">Año Escolar</Label>
@@ -1329,7 +1367,7 @@ export default function Home() {
       {/* Dialogs */}
       <Dialog open={configDialogOpen} onOpenChange={setConfigDialogOpen}>
         <DialogContent className={`max-w-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
-          <DialogHeader><DialogTitle>Configurar Actividades</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Configurar Actividades</DialogTitle><DialogDescription>Define cuántas actividades y sus porcentajes por trimestre.</DialogDescription></DialogHeader>
           {editConfig && <div className="space-y-3">
             <div><Label className="text-xs">Actividades Cotidianas</Label><div className="flex items-center gap-2 mt-1"><Input type="number" min="1" max="10" value={editConfig.numActividadesCotidianas} onChange={e => setEditConfig({...editConfig, numActividadesCotidianas: parseInt(e.target.value) || 1})} className={`w-16 h-8 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-xs">u.</span><Input type="number" min="0" max="100" value={editConfig.porcentajeAC} onChange={e => setEditConfig({...editConfig, porcentajeAC: parseFloat(e.target.value) || 0})} className={`w-16 h-8 ml-auto ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-xs">%</span></div></div>
             <div><Label className="text-xs">Actividades Integradoras</Label><div className="flex items-center gap-2 mt-1"><Input type="number" min="1" max="10" value={editConfig.numActividadesIntegradoras} onChange={e => setEditConfig({...editConfig, numActividadesIntegradoras: parseInt(e.target.value) || 1})} className={`w-16 h-8 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-xs">u.</span><Input type="number" min="0" max="100" value={editConfig.porcentajeAI} onChange={e => setEditConfig({...editConfig, porcentajeAI: parseFloat(e.target.value) || 0})} className={`w-16 h-8 ml-auto ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-xs">%</span></div></div>
@@ -1346,7 +1384,7 @@ export default function Home() {
 
       <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
         <DialogContent className={`max-w-lg ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
-          <DialogHeader><DialogTitle>Importar Calificaciones</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>Importar Calificaciones</DialogTitle><DialogDescription>Carga un archivo CSV con las notas de los estudiantes.</DialogDescription></DialogHeader>
           <div className="space-y-3">
             <div className="flex gap-2">
               <Button size="sm" variant="outline" onClick={generateTemplate} className={`flex-1 text-xs ${darkMode ? 'border-slate-600 text-slate-300 hover:bg-slate-700' : ''}`}><Download className="h-3.5 w-3.5 mr-1" />Plantilla</Button>
@@ -1365,9 +1403,7 @@ export default function Home() {
         <DialogContent className={`sm:max-w-[400px] ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
           <DialogHeader>
             <DialogTitle>Restablecer Contraseña</DialogTitle>
-            <DialogDescription>
-              Nueva contraseña para: <strong>{resetPasswordUser?.nombre}</strong>
-            </DialogDescription>
+            <DialogDescription>Nueva contraseña para: <strong>{resetPasswordUser?.nombre}</strong></DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <Label>Nueva Contraseña</Label>
@@ -1393,6 +1429,7 @@ export default function Home() {
         <DialogContent className={`max-w-md ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2"><User className="h-5 w-5" /> Mi Perfil</DialogTitle>
+            <DialogDescription>Información de tu cuenta y asignaciones.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className={`p-4 rounded-lg space-y-3 ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
