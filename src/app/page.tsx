@@ -64,6 +64,7 @@ export default function Home() {
   const darkMode = resolvedTheme === "dark";
   const [usuario, setUsuario] = useState<UsuarioSesion | null>(null);
   const [loading, setLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(false);
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
   const [loginError, setLoginError] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
@@ -774,10 +775,8 @@ export default function Home() {
   // Carga inicial de datos estructurales
   useEffect(() => { 
     if (usuario) { 
-      loadGrados(); 
-      loadUsuarios(); 
-      loadTodasAsignaturas(); 
-      loadConfiguracion(); 
+      setDataLoading(true);
+      Promise.all([loadGrados(), loadUsuarios(), loadTodasAsignaturas(), loadConfiguracion()]).finally(() => setDataLoading(false));
     } 
   }, [usuario, loadGrados, loadUsuarios, loadTodasAsignaturas, loadConfiguracion]);
   // Carga de datos base (estudiantes y materias del grado)
@@ -910,7 +909,8 @@ export default function Home() {
   }, [usuario, gradoSeleccionado, asignaturas, asignaturaSeleccionada]);
 
   // Loading
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-background"><RefreshCw className="h-12 w-8 animate-spin text-teal-600" /></div>;
+  const dataReady = usuario && grados.length > 0 && gradosFiltrados.length > 0;
+  if (loading || dataLoading || !dataReady) return <div className="min-h-screen flex items-center justify-center bg-background"><RefreshCw className="h-12 w-8 animate-spin text-teal-600" /></div>;
 
   // Login
   if (!usuario) return (
