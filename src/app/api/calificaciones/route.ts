@@ -204,13 +204,13 @@ export async function POST(request: NextRequest) {
     if (existResult.length > 0) {
       result = await sql`
         UPDATE "Calificacion" 
-        SET actividadesCotidianas = ${JSON.stringify(acNotas)},
-            calificacionAC = ${acFinal},
-            actividadesIntegradoras = ${JSON.stringify(aiNotas)},
-            calificacionAI = ${aiFinal},
-            examenTrimestral = ${examenVal},
-            promedioFinal = ${promFinal},
-            recuperacion = ${recupVal},
+        SET "actividadesCotidianas" = ${JSON.stringify(acNotas)},
+            "calificacionAC" = ${acFinal},
+            "actividadesIntegradoras" = ${JSON.stringify(aiNotas)},
+            "calificacionAI" = ${aiFinal},
+            "examenTrimestral" = ${examenVal},
+            "promedioFinal" = ${promFinal},
+            "recuperacion" = ${recupVal},
             "updatedAt" = NOW()
         WHERE id = ${existResult[0].id}
         RETURNING *
@@ -218,10 +218,10 @@ export async function POST(request: NextRequest) {
     } else {
       result = await sql`
         INSERT INTO "Calificacion" (
-          "id", "estudianteId", "materiaId", trimestre,
-          actividadesCotidianas, calificacionAC,
-          actividadesIntegradoras, calificacionAI,
-          examenTrimestral, promedioFinal, recuperacion
+          "id", "estudianteId", "materiaId", "trimestre",
+          "actividadesCotidianas", "calificacionAC",
+          "actividadesIntegradoras", "calificacionAI",
+          "examenTrimestral", "promedioFinal", "recuperacion"
         ) VALUES (
           ${randomUUID()}, ${estudianteId}, ${materiaId}, ${parseInt(String(trimestre))},
           ${JSON.stringify(acNotas)}, ${acFinal},
