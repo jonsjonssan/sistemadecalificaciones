@@ -456,6 +456,8 @@ export default function Home() {
   };
 
   const dirtyRowsRef = useRef<Map<string, { estudianteId: string; materiaId: string; data: any }>>(new Map());
+  const trimestreRef = useRef(trimestreSeleccionado);
+  useEffect(() => { trimestreRef.current = trimestreSeleccionado; }, [trimestreSeleccionado]);
 
   const handleSaveCalificacion = useCallback(async (estudianteId: string, materiaId: string, data: { actividadesCotidianas: (number | null)[]; actividadesIntegradoras: (number | null)[]; examenTrimestral: number | null; recuperacion: number | null; }) => {
     setSaving(true);
@@ -464,18 +466,16 @@ export default function Home() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ estudianteId, materiaId, trimestre: parseInt(trimestreSeleccionado), actividadesCotidianas: JSON.stringify(data.actividadesCotidianas), actividadesIntegradoras: JSON.stringify(data.actividadesIntegradoras), examenTrimestral: data.examenTrimestral, recuperacion: data.recuperacion }),
+        body: JSON.stringify({ estudianteId, materiaId, trimestre: parseInt(trimestreRef.current), actividadesCotidianas: JSON.stringify(data.actividadesCotidianas), actividadesIntegradoras: JSON.stringify(data.actividadesIntegradoras), examenTrimestral: data.examenTrimestral, recuperacion: data.recuperacion }),
       });
       if (!res.ok) {
         const err = await res.json();
-        console.error("Error al guardar:", err.error);
-        toast({ title: "Error: " + (err.error || "desconocido"), variant: "destructive" });
+        console.error("Error API:", err);
       }
     } catch (e) {
-      console.error("Error de conexión:", e);
-      toast({ title: "Error de conexión", variant: "destructive" });
+      console.error("Error conexión:", e);
     } finally { setSaving(false); }
-  }, [trimestreSeleccionado, toast]);
+  }, []);
 
   const handleGuardarTodo = useCallback(async () => {
     if (!gradoSeleccionado || !asignaturaSeleccionada || !estudiantes.length) {
@@ -506,6 +506,7 @@ export default function Home() {
       const ok = results.filter(r => r && r.ok).length;
       if (ok > 0) {
         toast({ title: `${ok} calificaciones guardadas en Neon` });
+        loadCalificaciones();
       } else {
         toast({ title: "No hay calificaciones para guardar" });
       }
@@ -513,7 +514,7 @@ export default function Home() {
       console.error("Error:", e);
       toast({ title: "Error al guardar", variant: "destructive" });
     } finally { setSaving(false); }
-  }, [gradoSeleccionado, asignaturaSeleccionada, estudiantes, calificaciones, trimestreSeleccionado, toast]);
+  }, [gradoSeleccionado, asignaturaSeleccionada, estudiantes, calificaciones, trimestreSeleccionado, toast, loadCalificaciones]);
 
   const handleSaveConfig = async () => {
     if (!editConfig) return;
