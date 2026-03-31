@@ -1467,6 +1467,21 @@ export default function Home() {
 }
 
 // Componentes
+const NotaInput = ({ value, onChange, darkMode }: { value: string | number; onChange: (v: string) => void; darkMode: boolean }) => {
+  const inputBg = darkMode ? 'focus:bg-slate-700/60 text-white placeholder-slate-500' : 'focus:bg-teal-50/60 placeholder-slate-300';
+  return (
+    <input
+      type="number"
+      min="0"
+      max="10"
+      step="0.1"
+      className={`w-10 sm:w-12 h-6 sm:h-7 text-sm sm:text-base font-medium text-center border border-transparent focus:border-teal-400/50 bg-transparent rounded-md transition-all ${inputBg}`}
+      value={value}
+      onChange={e => onChange(e.target.value)}
+    />
+  );
+};
+
 function CalificacionRow({ estudiante, materiaId, calificacion, config, onSave, saving, darkMode, evenRow }: { estudiante: Estudiante; materiaId: string; calificacion?: Calificacion; config: ConfigActividad | null; onSave: (id: string, matId: string, data: { actividadesCotidianas: (number | null)[]; actividadesIntegradoras: (number | null)[]; examenTrimestral: number | null; recuperacion: number | null; }) => void; saving: boolean; darkMode: boolean; evenRow: boolean; }) {
   const numAC = config?.numActividadesCotidianas ?? 4;
   const numAI = config?.numActividadesIntegradoras ?? 1;
@@ -1497,12 +1512,12 @@ function CalificacionRow({ estudiante, materiaId, calificacion, config, onSave, 
   const promAIPeso = config && promAI !== null ? promAI * (config.porcentajeAI / 100) : (promAI !== null ? promAI * 0.30 : null);
   const promExPeso = config && config.tieneExamen && examen !== null ? examen * (config.porcentajeExamen / 100) : (examen !== null ? examen * 0.35 : null);
   const promFinal = config ? calcularPromedioFinal(promAC, promAI, examen, config, recup) : (promAC !== null || promAI !== null || examen !== null ? ((promAC ?? 0) * 0.35 + (promAI ?? 0) * 0.30 + (examen ?? 0) * 0.35) : null);
-  const parseVal = (v: string): number | null => { const n = parseFloat(v); return isNaN(n) ? null : Math.min(10, Math.max(0, n)); };
+  const parseVal = useCallback((v: string): number | null => { const n = parseFloat(v); return isNaN(n) ? null : Math.min(10, Math.max(0, n)); }, []);
   
-  const updateAC = (i: number, v: string) => { const n = [...acNotas]; n[i] = parseVal(v); setAcNotas(n); setDirty(true); };
-  const updateAI = (i: number, v: string) => { const n = [...aiNotas]; n[i] = parseVal(v); setAiNotas(n); setDirty(true); };
-  const handleExamen = (e: React.ChangeEvent<HTMLInputElement>) => { setExamen(parseVal(e.target.value)); setDirty(true); };
-  const handleRecup = (e: React.ChangeEvent<HTMLInputElement>) => { setRecup(parseVal(e.target.value)); setDirty(true); };
+  const updateAC = useCallback((i: number, v: string) => { setAcNotas(n => { const arr = [...n]; arr[i] = parseVal(v); return arr; }); setDirty(true); }, [parseVal]);
+  const updateAI = useCallback((i: number, v: string) => { setAiNotas(n => { const arr = [...n]; arr[i] = parseVal(v); return arr; }); setDirty(true); }, [parseVal]);
+  const handleExamen = useCallback((v: string) => { setExamen(parseVal(v)); setDirty(true); }, [parseVal]);
+  const handleRecup = useCallback((v: string) => { setRecup(parseVal(v)); setDirty(true); }, [parseVal]);
 
   useEffect(() => {
     return () => {
@@ -1515,7 +1530,7 @@ function CalificacionRow({ estudiante, materiaId, calificacion, config, onSave, 
   useEffect(() => {
     if (!dirty) return;
     const handler = setTimeout(() => {
-      onSave(estudiante.id, materiaId, { actividadesCotidianas: acNotas, actividadesIntegradoras: aiNotas, examenTrimestral: examen, recuperacion: recup });
+      onSave(estudiante.id, materiaId, { actividadesCotidianas: stateRef.current.acNotas, actividadesIntegradoras: stateRef.current.aiNotas, examenTrimestral: stateRef.current.examen, recuperacion: stateRef.current.recup });
       setDirty(false);
     }, 800);
     return () => clearTimeout(handler);
@@ -1532,25 +1547,24 @@ function CalificacionRow({ estudiante, materiaId, calificacion, config, onSave, 
   const promAIBg = darkMode ? 'bg-purple-900/50' : 'bg-purple-50/70';
   const promExBg = darkMode ? 'bg-amber-900/50' : 'bg-amber-50/70';
   const finalBg = darkMode ? 'bg-emerald-900/60' : 'bg-emerald-50/80';
-  const inputBg = darkMode ? 'focus:bg-slate-700/60 text-white placeholder-slate-500' : 'focus:bg-teal-50/60 placeholder-slate-300';
-  const inputBase = `w-10 sm:w-12 h-6 sm:h-7 text-sm sm:text-base font-medium text-center border border-transparent focus:border-teal-400/50 bg-transparent rounded-md transition-all ${inputBg}`;
+  const hasData = acNotas.some(n=>n!==null) || aiNotas.some(n=>n!==null) || examen!==null;
+  const statusIcon = saving && dirty ? <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 text-teal-500 animate-spin mx-auto" /> : (!dirty && hasData) ? <span title="Guardado">✅</span> : <span className={darkMode ? 'text-slate-600' : 'text-slate-300'}>-</span>;
+  const finalBadgeClass = promFinal !== null && promFinal >= 6 ? (darkMode ? 'bg-emerald-700/80 text-emerald-100 ring-1 ring-emerald-500' : 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-200') : promFinal !== null ? (darkMode ? 'bg-rose-700/80 text-rose-100 ring-1 ring-rose-500' : 'bg-rose-100 text-rose-800 ring-1 ring-rose-200') : (darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-400');
 
   if (!config) {
     return (
       <tr className={`border-b transition-colors ${rowBg}`}>
         <td className={`p-2 text-center font-semibold sticky-col shadow-right left-0 z-10 border-r ${stickyBg} ${cellBorder}`}>{estudiante.numero}</td>
         <td className={`p-2 font-medium sticky-col shadow-right left-10 z-10 whitespace-nowrap border-r ${stickyBg} ${cellBorder}`}>{estudiante.nombre}</td>
-        {Array.from({ length: numAC }).map((_, i) => <td key={`ac-${i}`} className={`p-1 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={inputBase} value={acNotas[i] ?? ""} onChange={e => updateAC(i, e.target.value)} /></td>)}
+        {Array.from({ length: numAC }).map((_, i) => <td key={`ac-${i}`} className={`p-1 border-l ${cellBorder}`}><NotaInput value={acNotas[i] ?? ""} onChange={v => updateAC(i, v)} darkMode={darkMode} /></td>)}
         <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promACBg} text-base`}>{promACPeso !== null ? promACPeso.toFixed(2) : "-"}</td>
-        {Array.from({ length: numAI }).map((_, i) => <td key={`ai-${i}`} className={`p-1 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={inputBase} value={aiNotas[i] ?? ""} onChange={e => updateAI(i, e.target.value)} /></td>)}
+        {Array.from({ length: numAI }).map((_, i) => <td key={`ai-${i}`} className={`p-1 border-l ${cellBorder}`}><NotaInput value={aiNotas[i] ?? ""} onChange={v => updateAI(i, v)} darkMode={darkMode} /></td>)}
         <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promAIBg} text-base`}>{promAIPeso !== null ? promAIPeso.toFixed(2) : "-"}</td>
-        {tieneExamen && <td className={`p-1 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={`w-12 h-7 text-base font-medium text-center border border-transparent focus:border-teal-400/50 bg-transparent rounded-md transition-all ${inputBg}`} value={examen ?? ""} onChange={handleExamen} /></td>}
+        {tieneExamen && <td className={`p-1 border-l ${cellBorder}`}><NotaInput value={examen ?? ""} onChange={handleExamen} darkMode={darkMode} /></td>}
         {tieneExamen && <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promExBg} text-base`}>{promExPeso !== null ? promExPeso.toFixed(2) : "-"}</td>}
-        <td className={`p-1 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={`w-10 h-7 text-base font-medium text-center border border-transparent focus:border-teal-400/50 bg-transparent rounded-md transition-all ${inputBg}`} value={recup ?? ""} onChange={handleRecup} /></td>
-        <td className={`p-2 text-center border-l ${cellBorder} ${finalBg}`}><span className={`inline-block px-2 py-0.5 rounded-md text-xs sm:text-sm font-bold shadow ${promFinal !== null && promFinal >= 6 ? (darkMode ? 'bg-emerald-700/80 text-emerald-100 ring-1 ring-emerald-500' : 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-200') : promFinal !== null ? (darkMode ? 'bg-rose-700/80 text-rose-100 ring-1 ring-rose-500' : 'bg-rose-100 text-rose-800 ring-1 ring-rose-200') : (darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-400')}`}>{promFinal !== null ? promFinal.toFixed(2) : "-"}</span></td>
-        <td className={`p-2 border-l ${cellBorder} text-center`}>
-          {saving && dirty ? <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 text-teal-500 animate-spin mx-auto" /> : (!dirty && (acNotas.some(n=>n!==null) || aiNotas.some(n=>n!==null) || examen!==null)) ? <span title="Guardado">✅</span> : <span className={darkMode ? 'text-slate-600' : 'text-slate-300'}>-</span>}
-        </td>
+        <td className={`p-1 border-l ${cellBorder}`}><NotaInput value={recup ?? ""} onChange={handleRecup} darkMode={darkMode} /></td>
+        <td className={`p-2 text-center border-l ${cellBorder} ${finalBg}`}><span className={`inline-block px-2 py-0.5 rounded-md text-xs sm:text-sm font-bold shadow ${finalBadgeClass}`}>{promFinal !== null ? promFinal.toFixed(2) : "-"}</span></td>
+        <td className={`p-2 border-l ${cellBorder} text-center`}>{statusIcon}</td>
       </tr>
     );
   }
@@ -1559,17 +1573,15 @@ function CalificacionRow({ estudiante, materiaId, calificacion, config, onSave, 
     <tr className={`border-b transition-colors ${rowBg}`}>
       <td className={`p-2 text-center font-semibold sticky-col shadow-right left-0 z-10 border-r ${stickyBg} ${cellBorder}`}>{estudiante.numero}</td>
       <td className={`p-2 font-medium sticky-col shadow-right left-10 z-10 whitespace-nowrap border-r ${stickyBg} ${cellBorder}`}>{estudiante.nombre}</td>
-      {acNotas.map((n, i) => <td key={`ac-${i}`} className={`p-1 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={inputBase} value={n ?? ""} onChange={e => updateAC(i, e.target.value)} /></td>)}
+      {acNotas.map((n, i) => <td key={`ac-${i}`} className={`p-1 border-l ${cellBorder}`}><NotaInput value={n ?? ""} onChange={v => updateAC(i, v)} darkMode={darkMode} /></td>)}
       <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promACBg} text-sm sm:text-base`}>{promACPeso !== null ? promACPeso.toFixed(2) : "-"}</td>
-      {aiNotas.map((n, i) => <td key={`ai-${i}`} className={`p-1 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={inputBase} value={n ?? ""} onChange={e => updateAI(i, e.target.value)} /></td>)}
+      {aiNotas.map((n, i) => <td key={`ai-${i}`} className={`p-1 border-l ${cellBorder}`}><NotaInput value={n ?? ""} onChange={v => updateAI(i, v)} darkMode={darkMode} /></td>)}
       <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promAIBg} text-sm sm:text-base`}>{promAIPeso !== null ? promAIPeso.toFixed(2) : "-"}</td>
-      {config.tieneExamen && <td className={`p-1 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={`w-10 sm:w-12 h-6 sm:h-7 text-sm sm:text-base font-medium text-center border border-transparent focus:border-teal-400/50 bg-transparent rounded-md transition-all ${inputBg}`} value={examen ?? ""} onChange={handleExamen} /></td>}
+      {config.tieneExamen && <td className={`p-1 border-l ${cellBorder}`}><NotaInput value={examen ?? ""} onChange={handleExamen} darkMode={darkMode} /></td>}
       {config.tieneExamen && <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promExBg} text-sm sm:text-base`}>{promExPeso !== null ? promExPeso.toFixed(2) : "-"}</td>}
-      <td className={`p-1 border-l ${cellBorder}`}><input type="number" min="0" max="10" step="0.1" className={`w-8 sm:w-10 h-6 sm:h-7 text-sm sm:text-base font-medium text-center border border-transparent focus:border-teal-400/50 bg-transparent rounded-md transition-all ${inputBg}`} value={recup ?? ""} onChange={handleRecup} /></td>
-      <td className={`p-2 text-center border-l ${cellBorder} ${finalBg}`}><span className={`inline-block px-2 py-0.5 rounded-md text-xs sm:text-sm font-bold shadow ${promFinal !== null && promFinal >= 6 ? (darkMode ? 'bg-emerald-700/80 text-emerald-100 ring-1 ring-emerald-500' : 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-200') : promFinal !== null ? (darkMode ? 'bg-rose-700/80 text-rose-100 ring-1 ring-rose-500' : 'bg-rose-100 text-rose-800 ring-1 ring-rose-200') : (darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-400')}`}>{promFinal !== null ? promFinal.toFixed(2) : "-"}</span></td>
-      <td className={`p-2 border-l ${cellBorder} text-center`}>
-        {saving && dirty ? <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 text-teal-500 animate-spin mx-auto" /> : (!dirty && (acNotas.some(n=>n!==null) || aiNotas.some(n=>n!==null) || examen!==null)) ? <span title="Guardado">✅</span> : <span className={darkMode ? 'text-slate-600' : 'text-slate-300'}>-</span>}
-      </td>
+      <td className={`p-1 border-l ${cellBorder}`}><NotaInput value={recup ?? ""} onChange={handleRecup} darkMode={darkMode} /></td>
+      <td className={`p-2 text-center border-l ${cellBorder} ${finalBg}`}><span className={`inline-block px-2 py-0.5 rounded-md text-xs sm:text-sm font-bold shadow ${finalBadgeClass}`}>{promFinal !== null ? promFinal.toFixed(2) : "-"}</span></td>
+      <td className={`p-2 border-l ${cellBorder} text-center`}>{statusIcon}</td>
     </tr>
   );
 }
