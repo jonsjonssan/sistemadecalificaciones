@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/neon";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
+import { randomUUID } from "crypto";
 
 async function getUsuarioSession() {
   const cookieStore = await cookies();
@@ -97,8 +98,8 @@ export async function POST(request: NextRequest) {
     if (materiasAsignadas && materiasAsignadas.length > 0) {
       for (const materiaId of materiasAsignadas) {
         await sql`
-          INSERT INTO "DocenteMateria" ("docenteId", "materiaId")
-          VALUES (${nuevoUsuario[0].id}, ${materiaId})
+          INSERT INTO "DocenteMateria" ("id", "docenteId", "materiaId")
+          VALUES (${randomUUID()}, ${nuevoUsuario[0].id}, ${materiaId})
           ON CONFLICT DO NOTHING
         `;
       }
@@ -171,8 +172,8 @@ export async function PUT(request: NextRequest) {
       if (materiasAsignadas && materiasAsignadas.length > 0) {
         for (const materiaId of materiasAsignadas) {
           await sql`
-            INSERT INTO "DocenteMateria" ("docenteId", "materiaId")
-            VALUES (${id}, ${materiaId})
+            INSERT INTO "DocenteMateria" ("id", "docenteId", "materiaId")
+            VALUES (${randomUUID()}, ${id}, ${materiaId})
             ON CONFLICT DO NOTHING
           `;
         }
