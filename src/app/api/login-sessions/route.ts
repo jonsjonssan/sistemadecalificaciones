@@ -7,7 +7,9 @@ async function getUsuarioSession() {
     const cookieStore = await cookies();
     const session = cookieStore.get("session");
     if (!session) return null;
-    return JSON.parse(session.value);
+    const parsed = JSON.parse(session.value);
+    if (!parsed || !parsed.id) return null;
+    return parsed;
   } catch (error) {
     return null;
   }
@@ -22,7 +24,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "50");
+    const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 200);
     const usuarioId = searchParams.get("usuarioId");
 
     const skip = (page - 1) * limit;
@@ -52,7 +54,8 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("[login-sessions] GET Error:", error);
-    return NextResponse.json({ error: "Error al obtener sesiones" }, { status: 500 });
+    const errMsg = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: "Error al obtener sesiones", details: errMsg }, { status: 500 });
   }
 }
 
@@ -85,6 +88,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(session);
   } catch (error) {
     console.error("[login-sessions] POST Error:", error);
-    return NextResponse.json({ error: "Error al crear sesión" }, { status: 500 });
+    const errMsg = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: "Error al crear sesión", details: errMsg }, { status: 500 });
   }
 }

@@ -23,6 +23,8 @@ model Usuario {
   
   gradosComoTutor   Grado[]          @relation("TutorGrado") // Para grados 2-5 (tutor)
   materiasAsignadas DocenteMateria[] // Para grados 6-9 (materias específicas)
+  auditLogs         AuditLog[]
+  loginSessions     LoginSession[]
 
   @@index([email])
   @@index([rol, activo])
@@ -199,6 +201,8 @@ model AuditLog {
   userAgent   String?
   createdAt   DateTime @default(now())
 
+  usuario     Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
   @@index([usuarioId])
   @@index([entidad])
   @@index([accion])
@@ -214,6 +218,8 @@ model LoginSession {
   loginAt     DateTime @default(now())
   logoutAt    DateTime?
   isActive    Boolean  @default(true)
+
+  usuario     Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 
   @@index([usuarioId])
   @@index([loginAt])

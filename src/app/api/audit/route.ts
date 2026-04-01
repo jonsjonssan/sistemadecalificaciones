@@ -7,7 +7,9 @@ async function getUsuarioSession() {
     const cookieStore = await cookies();
     const session = cookieStore.get("session");
     if (!session) return null;
-    return JSON.parse(session.value);
+    const parsed = JSON.parse(session.value);
+    if (!parsed || !parsed.id) return null;
+    return parsed;
   } catch (error) {
     console.error("[audit] Error parsing session:", error);
     return null;
@@ -23,7 +25,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "50");
+    const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 200);
     const usuarioId = searchParams.get("usuarioId");
     const accion = searchParams.get("accion");
     const entidad = searchParams.get("entidad");
@@ -65,7 +67,8 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("[audit] GET Error:", error);
-    return NextResponse.json({ error: "Error al obtener logs" }, { status: 500 });
+    const errMsg = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: "Error al obtener logs", details: errMsg }, { status: 500 });
   }
 }
 
@@ -79,6 +82,10 @@ export async function POST(request: NextRequest) {
     const data = await request.json();
     const { accion, entidad, entidadId, detalles } = data;
 
+    if (!accion || !entidad) {
+      return NextResponse.json({ error: "accion y entidad son requeridos" }, { status: 400 });
+    }
+
     const headers = Object.fromEntries(request.headers.entries());
     const ip = headers["x-forwarded-for"] || headers["x-real-ip"] || "unknown";
     const userAgent = headers["user-agent"] || "unknown";
@@ -88,16 +95,22 @@ export async function POST(request: NextRequest) {
         usuarioId: session.id,
         accion,
         entidad,
-        entidadId,
+        entidadId: entidadId || null,
         detalles: detalles ? JSON.stringify(detalles) : null,
         ip,
         userAgent
+      },
+      include: {
+        usuario: {
+          select: { id: true, nombre: true, email: true, rol: true }
+        }
       }
     });
 
     return NextResponse.json(log);
   } catch (error) {
     console.error("[audit] POST Error:", error);
-    return NextResponse.json({ error: "Error al crear log" }, { status: 500 });
+    const errMsg = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: "Error al crear log", details: errMsg }, { status: 500 });
   }
 }
