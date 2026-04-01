@@ -4,6 +4,7 @@ import { randomUUID } from "crypto";
 
 export async function POST() {
   try {
+    console.log("[init] Paso 1: Asegurar grados...");
     // 1. Asegurar grados 2-9
     for (let numero = 2; numero <= 9; numero++) {
       const existing = await sql`SELECT id FROM "Grado" WHERE numero = ${numero} LIMIT 1`;
@@ -12,9 +13,11 @@ export async function POST() {
       }
     }
 
+    console.log("[init] Paso 2: Obtener grados...");
     const grados = await sql`SELECT * FROM "Grado"`;
     const getGradoId = (num: number) => grados.find((g: any) => g.numero === num)?.id;
 
+    console.log("[init] Paso 3: Crear materias...");
     // 2. Crear materias si no existen
     const asegurarMateria = async (nombre: string, numGrado: number) => {
       const gradoId = getGradoId(numGrado);
@@ -35,6 +38,7 @@ export async function POST() {
       return { id: materiaId, nombre, gradoId };
     };
 
+    console.log("[init] Paso 4: Usuarios y asignaciones...");
     // 3. Usuarios y asignaciones
     const users = [
       { nombre: "Administrador General", email: "jonathan.araujo.mendoza@clases.edu.sv", password: "admin", rol: "admin", materias: [] },
@@ -53,6 +57,7 @@ export async function POST() {
     ];
 
     for (const u of users) {
+      console.log(`[init] Procesando usuario: ${u.nombre}`);
       const existing = await sql`SELECT id FROM "Usuario" WHERE email = ${u.email} LIMIT 1`;
       let userId: string;
       
@@ -82,15 +87,18 @@ export async function POST() {
       }
     }
 
+    console.log("[init] Paso 5: Configuración...");
     // 4. Configuracion
     const cfg = await sql`SELECT id FROM "ConfiguracionSistema" LIMIT 1`;
     if (cfg.length === 0) {
       await sql`INSERT INTO "ConfiguracionSistema" (id, "añoEscolar", escuela) VALUES (${randomUUID()}, 2026, 'Centro Escolar Católico San José de la Montaña')`;
     }
 
+    console.log("[init] Completado exitosamente");
     return NextResponse.json({ message: "Sistema cargado exitosamente", count: users.length });
   } catch (error: any) {
     console.error("Error al inicializar:", error);
+    console.error("Stack trace:", error.stack);
     return NextResponse.json({ error: error.message || "Error interno" }, { status: 500 });
   }
 }
