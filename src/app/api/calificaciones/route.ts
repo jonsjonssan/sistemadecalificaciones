@@ -32,11 +32,17 @@ export async function GET(request: NextRequest) {
       
       if (materiaId && materiasAsignadasIds.length > 0 && !materiasAsignadasIds.includes(materiaId)) {
         console.log("[calificaciones] No autorizado para materia:", materiaId);
-        return NextResponse.json({ error: "No autorizado para esta materia" }, { status: 403 });
+        return NextResponse.json({ 
+          error: "No autorizado para esta materia",
+          debug: { solicitada: materiaId, permitidas: materiasAsignadasIds }
+        }, { status: 403 });
       }
       if (gradoId && todosGradosIds.length > 0 && !todosGradosIds.includes(gradoId)) {
         console.log("[calificaciones] No autorizado para grado:", gradoId, "permitidos:", todosGradosIds);
-        return NextResponse.json({ error: "No autorizado para este grado" }, { status: 403 });
+        return NextResponse.json({ 
+          error: "No autorizado para este grado",
+          debug: { solicitado: gradoId, permitidos: todosGradosIds, gradosByTutor, gradosByMaterias }
+        }, { status: 403 });
       }
     }
 
