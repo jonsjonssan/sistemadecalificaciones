@@ -1396,9 +1396,6 @@ export default function Home() {
                   <Button variant="destructive" size="sm" onClick={handleResetSistema} className="h-8 text-xs sm:text-sm w-full sm:w-auto">
                     <Trash2 className="h-4 w-4 mr-1" /> Finalizar Año y Reiniciar Datos
                   </Button>
-                  <Button size="sm" onClick={handleReinicializar} disabled={añoLoading} className={`h-8 text-xs sm:text-sm w-full sm:w-auto ${darkMode ? 'bg-teal-600 hover:bg-teal-500' : ''}`}>
-                    <RefreshCw className="h-4 w-4 mr-1" /> Reinicializar Asignaciones
-                  </Button>
                 </CardFooter>
               </Card>
             </TabsContent>
