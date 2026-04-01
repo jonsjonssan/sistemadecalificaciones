@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { sql } from "@/lib/neon";
 import { cookies } from "next/headers";
 
 async function getUsuarioSession() {
@@ -21,34 +21,59 @@ export async function GET(request: NextRequest) {
     const todas = searchParams.get("todas");
     const año = searchParams.get("año") ? parseInt(searchParams.get("año")!) : 2026;
 
-    const prisma = prisma;
-
     let materias;
     if (todas === "true") {
-      materias = await prisma.materia.findMany({
-        where: { grado: { año } },
-        include: { grado: { select: { id: true, numero: true, seccion: true } } },
-        orderBy: [{ grado: { numero: "asc" } }, { nombre: "asc" }],
-      });
-    } else if (gradoId) {
-      materias = await prisma.materia.findMany({
-        where: { gradoId },
-        include: { grado: { select: { id: true, numero: true, seccion: true } } },
-        orderBy: { nombre: "asc" },
-      });
-    } else {
-      materias = await prisma.materia.findMany({
-        where: { grado: { año } },
-        include: { grado: { select: { id: true, numero: true, seccion: true } } },
-        orderBy: [{ grado: { numero: "asc" } }, { nombre: "asc" }],
-      });
+      materias = await sql`
+        SELECT m.*, g.id as grado_id, g.numero as grado_numero, g.seccion as grado_seccion
+        FROM "Materia" m
+        JOIN "Grado" g ON m."gradoId" = g.id
+        WHERE g.año = ${año}
+        ORDER BY g.numero, m.nombre
+      `;
+      
+      const formatted = materias.map((m: any) => ({
+        id: m.id,
+        nombre: m.nombre,
+        gradoId: m.gradoId,
+        grado: {
+          id: m.grado_id,
+          numero: m.grado_numero,
+          seccion: m.grado_seccion
+        }
+      }));
+      return NextResponse.json(formatted);
     }
 
+    if (gradoId) {
+      materias = await sql`
+        SELECT * FROM "Materia" 
+        WHERE "gradoId" = ${gradoId}
+        ORDER BY nombre
+      `;
+      return NextResponse.json(materias);
+    }
 
-
-    return NextResponse.json(materias);
+    materias = await sql`
+      SELECT m.*, g.id as grado_id, g.numero as grado_numero, g.seccion as grado_seccion
+      FROM "Materia" m
+      JOIN "Grado" g ON m."gradoId" = g.id
+      WHERE g.año = ${año}
+      ORDER BY g.numero, m.nombre
+    `;
+    
+    const formatted = materias.map((m: any) => ({
+      id: m.id,
+      nombre: m.nombre,
+      gradoId: m.gradoId,
+      grado: {
+        id: m.grado_id,
+        numero: m.grado_numero,
+        seccion: m.grado_seccion
+      }
+    }));
+    return NextResponse.json(formatted);
   } catch (error) {
     console.error("Error al obtener materias:", error);
-    return NextResponse.json({ error: "Error al obtener materias", details: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    return NextResponse.json({ error: "Error al obtener materias" }, { status: 500 });
   }
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { sql } from "@/lib/neon";
 import { cookies } from "next/headers";
 
 async function getUsuarioSession() {
@@ -21,48 +21,69 @@ export async function GET(request: NextRequest) {
     const gradoId = searchParams.get("gradoId");
     const trimestre = searchParams.get("trimestre");
 
-    const prismaClient = prisma;
+    if (materiaId && trimestre) {
+      let configResult = await sql`
+        SELECT * FROM "ConfigActividad"
+        WHERE "materiaId" = ${materiaId} AND trimestre = ${parseInt(trimestre!)}
+      `;
+
+      if (configResult.length === 0) {
+        const newConfig = await sql`
+          INSERT INTO "ConfigActividad" (
+            "materiaId", trimestre, 
+            "numActividadesCotidianas", "numActividadesIntegradoras", 
+            "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen"
+          ) VALUES (
+            ${materiaId}, ${parseInt(trimestre!)},
+            4, 1, true, 35.0, 35.0, 30.0
+          )
+          RETURNING *
+        `;
+        configResult = newConfig;
+      }
+
+      const config = configResult[0];
+      return NextResponse.json({
+        id: config.id,
+        materiaId: config.materiaId,
+        trimestre: config.trimestre,
+        numActividadesCotidianas: config.numActividadesCotidianas,
+        numActividadesIntegradoras: config.numActividadesIntegradoras,
+        tieneExamen: config.tieneExamen,
+        porcentajeAC: config.porcentajeAC,
+        porcentajeAI: config.porcentajeAI,
+        porcentajeExamen: config.porcentajeExamen,
+      });
+    }
 
     if (gradoId && trimestre) {
-      const trimestreNum = parseInt(trimestre);
-      const materias = await prismaClient.materia.findMany({
-        where: { gradoId },
-        select: { id: true, nombre: true },
-      });
+      const materias = await sql`
+        SELECT id, nombre FROM "Materia" WHERE "gradoId" = ${gradoId}
+      `;
 
       const result: any[] = [];
       for (const materia of materias) {
-        let config = await prismaClient.configActividad.findFirst({
-          where: { materiaId: materia.id, trimestre: trimestreNum },
-        });
+        let configResult = await sql`
+          SELECT * FROM "ConfigActividad"
+          WHERE "materiaId" = ${materia.id} AND trimestre = ${parseInt(trimestre!)}
+        `;
 
-        if (!config) {
-          config = await prismaClient.configActividad.create({
-            data: {
-              materiaId: materia.id,
-              trimestre: trimestreNum,
-              numActividadesCotidianas: 4,
-              numActividadesIntegradoras: 1,
-              tieneExamen: true,
-              porcentajeAC: 35.0,
-              porcentajeAI: 35.0,
-              porcentajeExamen: 30.0,
-            },
-          });
+        if (configResult.length === 0) {
+          const newConfig = await sql`
+            INSERT INTO "ConfigActividad" (
+              "materiaId", trimestre, 
+              "numActividadesCotidianas", "numActividadesIntegradoras", 
+              "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen"
+            ) VALUES (
+              ${materia.id}, ${parseInt(trimestre!)},
+              4, 1, true, 35.0, 35.0, 30.0
+            )
+            RETURNING *
+          `;
+          result.push({ ...newConfig[0], materiaNombre: materia.nombre });
+        } else {
+          result.push({ ...configResult[0], materiaNombre: materia.nombre });
         }
-
-        result.push({
-          id: config.id,
-          materiaId: config.materiaId,
-          trimestre: config.trimestre,
-          numActividadesCotidianas: config.numActividadesCotidianas,
-          numActividadesIntegradoras: config.numActividadesIntegradoras,
-          tieneExamen: config.tieneExamen,
-          porcentajeAC: config.porcentajeAC,
-          porcentajeAI: config.porcentajeAI,
-          porcentajeExamen: config.porcentajeExamen,
-          materiaNombre: materia.nombre,
-        });
       }
 
       return NextResponse.json(result);
@@ -71,7 +92,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(null);
   } catch (error) {
     console.error("Error al obtener configuración:", error);
-    return NextResponse.json({ error: "Error al obtener configuración", details: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    return NextResponse.json({ error: "Error al obtener configuración" }, { status: 500 });
   }
 }
 
@@ -85,11 +106,8 @@ export async function POST(request: NextRequest) {
 
     if (!trimestre) return NextResponse.json({ error: "Trimestre es requerido" }, { status: 400 });
 
-    const prismaClient = prisma;
-
-    const trimestreNum = parseInt(String(trimestre));
     const baseData = {
-      trimestre: trimestreNum,
+      trimestre: parseInt(String(trimestre)),
       numActividadesCotidianas: numActividadesCotidianas ?? 4,
       numActividadesIntegradoras: numActividadesIntegradoras ?? 1,
       tieneExamen: tieneExamen ?? true,
@@ -99,43 +117,82 @@ export async function POST(request: NextRequest) {
     };
 
     if (aplicarATodasLasMateriasDelGrado && gradoId) {
-      const materias = await prismaClient.materia.findMany({
-        where: { gradoId },
-        select: { id: true },
-      });
-
+      const materias = await sql`SELECT id FROM "Materia" WHERE "gradoId" = ${gradoId}`;
+      
       for (const materia of materias) {
-        await prismaClient.configActividad.upsert({
-          where: {
-            materiaId_trimestre: {
-              materiaId: materia.id,
-              trimestre: baseData.trimestre,
-            },
-          },
-          update: baseData,
-          create: { materiaId: materia.id, ...baseData },
-        });
-      }
+        const exist = await sql`
+          SELECT id FROM "ConfigActividad"
+          WHERE "materiaId" = ${materia.id} AND trimestre = ${baseData.trimestre}
+        `;
 
+        if (exist.length > 0) {
+          await sql`
+            UPDATE "ConfigActividad" SET
+              "numActividadesCotidianas" = ${baseData.numActividadesCotidianas},
+              "numActividadesIntegradoras" = ${baseData.numActividadesIntegradoras},
+              "tieneExamen" = ${baseData.tieneExamen},
+              "porcentajeAC" = ${baseData.porcentajeAC},
+              "porcentajeAI" = ${baseData.porcentajeAI},
+              "porcentajeExamen" = ${baseData.porcentajeExamen},
+              "updatedAt" = NOW()
+            WHERE "materiaId" = ${materia.id} AND trimestre = ${baseData.trimestre}
+          `;
+        } else {
+          await sql`
+            INSERT INTO "ConfigActividad" (
+              "materiaId", trimestre, 
+              "numActividadesCotidianas", "numActividadesIntegradoras", 
+              "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen"
+            ) VALUES (
+              ${materia.id}, ${baseData.trimestre},
+              ${baseData.numActividadesCotidianas}, ${baseData.numActividadesIntegradoras},
+              ${baseData.tieneExamen}, ${baseData.porcentajeAC}, ${baseData.porcentajeAI}, ${baseData.porcentajeExamen}
+            )
+          `;
+        }
+      }
       return NextResponse.json({ success: true, count: materias.length });
     }
 
     if (!materiaId) return NextResponse.json({ error: "materiaId es requerido" }, { status: 400 });
 
-    const result = await prismaClient.configActividad.upsert({
-      where: {
-        materiaId_trimestre: {
-          materiaId,
-          trimestre: baseData.trimestre,
-        },
-      },
-      update: baseData,
-      create: { materiaId, ...baseData },
-    });
+    const exist = await sql`
+      SELECT id FROM "ConfigActividad"
+      WHERE "materiaId" = ${materiaId} AND trimestre = ${baseData.trimestre}
+    `;
 
-    return NextResponse.json(result);
+    let result;
+    if (exist.length > 0) {
+      result = await sql`
+        UPDATE "ConfigActividad" SET
+          "numActividadesCotidianas" = ${baseData.numActividadesCotidianas},
+          "numActividadesIntegradoras" = ${baseData.numActividadesIntegradoras},
+          "tieneExamen" = ${baseData.tieneExamen},
+          "porcentajeAC" = ${baseData.porcentajeAC},
+          "porcentajeAI" = ${baseData.porcentajeAI},
+          "porcentajeExamen" = ${baseData.porcentajeExamen},
+          "updatedAt" = NOW()
+        WHERE "materiaId" = ${materiaId} AND trimestre = ${baseData.trimestre}
+        RETURNING *
+      `;
+    } else {
+      result = await sql`
+        INSERT INTO "ConfigActividad" (
+          "materiaId", trimestre, 
+          "numActividadesCotidianas", "numActividadesIntegradoras", 
+          "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen"
+        ) VALUES (
+          ${materiaId}, ${baseData.trimestre},
+          ${baseData.numActividadesCotidianas}, ${baseData.numActividadesIntegradoras},
+          ${baseData.tieneExamen}, ${baseData.porcentajeAC}, ${baseData.porcentajeAI}, ${baseData.porcentajeExamen}
+        )
+        RETURNING *
+      `;
+    }
+
+    return NextResponse.json(result[0]);
   } catch (error) {
     console.error("Error al guardar configuración:", error);
-    return NextResponse.json({ error: "Error al guardar configuración", details: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    return NextResponse.json({ error: "Error al guardar configuración" }, { status: 500 });
   }
 }

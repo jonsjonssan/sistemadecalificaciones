@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { sql } from "@/lib/neon";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import { randomUUID } from "crypto";
@@ -18,47 +18,44 @@ export async function GET() {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const prisma = prisma;
+    const usuarios = await sql`
+      SELECT u.id, u.email, u.nombre, u.rol, u.activo, u."createdAt"
+      FROM "Usuario" u
+      ORDER BY u."createdAt" DESC
+    `;
 
-    const usuarios = await prisma.usuario.findMany({
-      orderBy: { createdAt: "desc" },
-      include: {
-        gradosComoTutor: { select: { id: true, numero: true, seccion: true, año: true } },
-        materiasAsignadas: {
-          include: {
-            materia: {
-              include: {
-                grado: { select: { id: true, numero: true, seccion: true } },
-              },
-            },
-          },
-        },
-      },
-    });
+    const usuariosFormateados = await Promise.all(usuarios.map(async (u: any) => {
+      const grados = await sql`
+        SELECT g.id, g.numero, g.seccion, g.año
+        FROM "Grado" g WHERE g."docenteId" = ${u.id}
+      `;
 
+      const materiasRaw = await sql`
+        SELECT dm.id, m.id as materia_id, m.nombre as materia_nombre, 
+               g.id as grado_id, g.numero as grado_numero, g.seccion as grado_seccion
+        FROM "DocenteMateria" dm
+        JOIN "Materia" m ON dm."materiaId" = m.id
+        JOIN "Grado" g ON m."gradoId" = g.id
+        WHERE dm."docenteId" = ${u.id}
+      `;
 
-
-    const usuariosFormateados = usuarios.map((u: any) => ({
-      id: u.id,
-      email: u.email,
-      nombre: u.nombre,
-      rol: u.rol,
-      activo: u.activo,
-      createdAt: u.createdAt,
-      gradosComoTutor: u.gradosComoTutor,
-      materias: u.materiasAsignadas.map((dm: any) => ({
-        id: dm.materia.id,
-        nombre: dm.materia.nombre,
-        gradoId: dm.materia.gradoId,
-        gradoNumero: dm.materia.grado?.numero,
-        gradoSeccion: dm.materia.grado?.seccion,
-      })),
+      return {
+        ...u,
+        gradosComoTutor: grados,
+        materias: materiasRaw.map((m: any) => ({
+          id: m.materia_id,
+          nombre: m.materia_nombre,
+          gradoId: m.grado_id,
+          gradoNumero: m.grado_numero,
+          gradoSeccion: m.grado_seccion,
+        })),
+      };
     }));
 
     return NextResponse.json(usuariosFormateados);
   } catch (error) {
     console.error("Error al obtener usuarios:", error);
-    return NextResponse.json({ error: "Error al obtener usuarios", details: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    return NextResponse.json({ error: "Error al obtener usuarios" }, { status: 500 });
   }
 }
 
@@ -79,52 +76,36 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Todos los campos son requeridos" }, { status: 400 });
     }
 
-    const prisma = prisma;
-
-    const existeEmail = await prisma.usuario.findUnique({ where: { email } });
-    if (existeEmail) {
-
+    const existeEmail = await sql`SELECT id FROM "Usuario" WHERE email = ${email}`;
+    if (existeEmail.length > 0) {
       return NextResponse.json({ error: "El email ya está registrado" }, { status: 400 });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const nuevoUsuario = await prisma.usuario.create({
-      data: {
-        email,
-        password: hashedPassword,
-        nombre,
-        rol,
-      },
-    });
+    const nuevoUsuario = await sql`
+      INSERT INTO "Usuario" (email, password, nombre, rol)
+      VALUES (${email}, ${hashedPassword}, ${nombre}, ${rol})
+      RETURNING id, email, nombre, rol, activo
+    `;
 
     if (gradosAsignados && gradosAsignados.length > 0) {
-      await prisma.grado.updateMany({
-        where: { id: { in: gradosAsignados } },
-        data: { docenteId: nuevoUsuario.id },
-      });
+      for (const gradoId of gradosAsignados) {
+        await sql`UPDATE "Grado" SET "docenteId" = ${nuevoUsuario[0].id} WHERE id = ${gradoId}`;
+      }
     }
 
     if (materiasAsignadas && materiasAsignadas.length > 0) {
-      await prisma.docenteMateria.createMany({
-        data: materiasAsignadas.map((materiaId: string) => ({
-          id: randomUUID(),
-          docenteId: nuevoUsuario.id,
-          materiaId,
-        })),
-        skipDuplicates: true,
-      });
+      for (const materiaId of materiasAsignadas) {
+        await sql`
+          INSERT INTO "DocenteMateria" ("id", "docenteId", "materiaId")
+          VALUES (${randomUUID()}, ${nuevoUsuario[0].id}, ${materiaId})
+          ON CONFLICT DO NOTHING
+        `;
+      }
     }
 
-
-
-    return NextResponse.json({
-      id: nuevoUsuario.id,
-      email: nuevoUsuario.email,
-      nombre: nuevoUsuario.nombre,
-      rol: nuevoUsuario.rol,
-      activo: nuevoUsuario.activo,
-    });
+    return NextResponse.json(nuevoUsuario[0]);
   } catch (error: any) {
     console.error("Error al crear usuario:", error);
     return NextResponse.json({ error: error.message || "Error al crear usuario" }, { status: 500 });
@@ -155,64 +136,52 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "No puedes desactivarte a ti mismo" }, { status: 400 });
     }
 
-    const prisma = prisma;
+    if (nombre !== undefined || rol !== undefined || activo !== undefined || password) {
+      const current = await sql`SELECT * FROM "Usuario" WHERE id = ${id}`;
+      if (current.length === 0) {
+        return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+      }
+      
+      let finalPassword = current[0].password;
+      if (password) {
+        finalPassword = await bcrypt.hash(password, 10);
+      }
 
-    const current = await prisma.usuario.findUnique({ where: { id } });
-    if (!current) {
-
-      return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+      await sql`
+        UPDATE "Usuario" SET
+          nombre = ${nombre || current[0].nombre},
+          rol = ${rol || current[0].rol},
+          activo = ${activo !== undefined ? activo : current[0].activo},
+          password = ${finalPassword},
+          "updatedAt" = NOW()
+        WHERE id = ${id}
+      `;
     }
-
-    let finalPassword = current.password;
-    if (password) {
-      finalPassword = await bcrypt.hash(password, 10);
-    }
-
-    await prisma.usuario.update({
-      where: { id },
-      data: {
-        nombre: nombre || current.nombre,
-        rol: rol || current.rol,
-        activo: activo !== undefined ? activo : current.activo,
-        password: finalPassword,
-      },
-    });
 
     if (gradosReales !== undefined) {
-      await prisma.grado.updateMany({
-        where: { docenteId: id },
-        data: { docenteId: null },
-      });
+      await sql`UPDATE "Grado" SET "docenteId" = NULL WHERE "docenteId" = ${id}`;
       if (gradosReales && gradosReales.length > 0) {
-        await prisma.grado.updateMany({
-          where: { id: { in: gradosReales } },
-          data: { docenteId: id },
-        });
+        for (const gradoId of gradosReales) {
+          await sql`UPDATE "Grado" SET "docenteId" = ${id} WHERE id = ${gradoId}`;
+        }
       }
     }
 
     if (materiasAsignadas !== undefined) {
-      await prisma.docenteMateria.deleteMany({ where: { docenteId: id } });
+      await sql`DELETE FROM "DocenteMateria" WHERE "docenteId" = ${id}`;
       if (materiasAsignadas && materiasAsignadas.length > 0) {
-        await prisma.docenteMateria.createMany({
-          data: materiasAsignadas.map((materiaId: string) => ({
-            id: randomUUID(),
-            docenteId: id,
-            materiaId,
-          })),
-          skipDuplicates: true,
-        });
+        for (const materiaId of materiasAsignadas) {
+          await sql`
+            INSERT INTO "DocenteMateria" ("id", "docenteId", "materiaId")
+            VALUES (${randomUUID()}, ${id}, ${materiaId})
+            ON CONFLICT DO NOTHING
+          `;
+        }
       }
     }
 
-    const usuarioActualizado = await prisma.usuario.findUnique({
-      where: { id },
-      select: { id: true, email: true, nombre: true, rol: true, activo: true },
-    });
-
-
-
-    return NextResponse.json(usuarioActualizado);
+    const usuarioActualizado = await sql`SELECT id, email, nombre, rol, activo FROM "Usuario" WHERE id = ${id}`;
+    return NextResponse.json(usuarioActualizado[0]);
   } catch (error: any) {
     console.error("Error al actualizar usuario:", error);
     return NextResponse.json({ error: error.message || "Error al actualizar usuario" }, { status: 500 });
@@ -241,13 +210,9 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "No puedes eliminarte a ti mismo" }, { status: 400 });
     }
 
-    const prisma = prisma;
-
-    await prisma.grado.updateMany({ where: { docenteId: id }, data: { docenteId: null } });
-    await prisma.docenteMateria.deleteMany({ where: { docenteId: id } });
-    await prisma.usuario.delete({ where: { id } });
-
-
+    await sql`UPDATE "Grado" SET "docenteId" = NULL WHERE "docenteId" = ${id}`;
+    await sql`DELETE FROM "DocenteMateria" WHERE "docenteId" = ${id}`;
+    await sql`DELETE FROM "Usuario" WHERE id = ${id}`;
 
     return NextResponse.json({ message: "Usuario eliminado" });
   } catch (error: any) {

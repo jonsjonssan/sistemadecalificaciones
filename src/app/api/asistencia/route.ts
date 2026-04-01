@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { PrismaClient } from "@prisma/client";
 
 export async function GET(req: Request) {
   try {
@@ -17,7 +17,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Fecha inválida" }, { status: 400 });
     }
 
-    const prisma = prisma;
+    const prisma = new PrismaClient();
 
     const startOfDay = new Date(fecha);
     startOfDay.setUTCHours(0, 0, 0, 0);
@@ -46,7 +46,7 @@ export async function GET(req: Request) {
       orderBy: { estudiante: { numero: "asc" } },
     });
 
-
+    await prisma.$disconnect();
 
     const formatted = asistencias.map((a: any) => ({
       id: a.id,
@@ -88,7 +88,7 @@ export async function POST(req: Request) {
     const endOfDay = new Date(fecha);
     endOfDay.setUTCHours(23, 59, 59, 999);
 
-    const prisma = prisma;
+    const prisma = new PrismaClient();
 
     const resultados: any[] = [];
     for (const record of asistencias) {
@@ -134,7 +134,7 @@ export async function POST(req: Request) {
       }
     }
 
-
+    await prisma.$disconnect();
 
     return NextResponse.json({ success: true, guardados: resultados.length });
   } catch (error) {
@@ -164,7 +164,7 @@ export async function DELETE(request: NextRequest) {
     const endOfDay = new Date(fecha);
     endOfDay.setUTCHours(23, 59, 59, 999);
 
-    const prisma = prisma;
+    const prisma = new PrismaClient();
 
     const where: any = {
       fecha: {
@@ -182,7 +182,7 @@ export async function DELETE(request: NextRequest) {
 
     const deleted = await prisma.asistencia.deleteMany({ where });
 
-
+    await prisma.$disconnect();
 
     return NextResponse.json({ success: true, eliminados: deleted.count });
   } catch (error) {
