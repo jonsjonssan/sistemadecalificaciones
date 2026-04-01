@@ -25,24 +25,18 @@ export async function GET(request: NextRequest) {
     console.log("[config-actividades] Params:", { materiaId, gradoId, trimestre });
 
     if (session.rol === "docente") {
-      // IDs de materias asignadas directamente (docentes de grados 6-9)
       const materiasAsignadasIds = session.asignaturasAsignadas?.map((m: any) => m.id) || [];
-      // IDs de grados por materias asignadas (grados 6-9)
       const gradosByMaterias = session.asignaturasAsignadas?.map((m: any) => m.gradoId) || [];
-      // IDs de grados donde el docente es tutor (grados 2-5)
       const gradosByTutor = session.gradosAsignados?.map((g: any) => g.id) || [];
-      // Todos los grados permitidos
       const todosGradosIds = [...new Set([...gradosByMaterias, ...gradosByTutor])];
 
-      console.log("[config-actividades] Materias asignadas IDs:", materiasAsignadasIds);
-      console.log("[config-actividades] Grados permitidos IDs:", todosGradosIds);
+      console.log("[config-actividades] docente session:", JSON.stringify({ materiasAsignadasIds, todosGradosIds }));
 
-      // Si pide una materia concreta: debe tenerla asignada directamente
       if (materiaId && materiasAsignadasIds.length > 0 && !materiasAsignadasIds.includes(materiaId)) {
         return NextResponse.json({ error: "No autorizado para esta materia" }, { status: 403 });
       }
-      // Si pide un grado: debe ser tutor o tener alguna materia en ese grado
-      if (gradoId && !todosGradosIds.includes(gradoId)) {
+      if (gradoId && todosGradosIds.length > 0 && !todosGradosIds.includes(gradoId)) {
+        console.log("[config-actividades] No autorizado para grado:", gradoId, "permitidos:", todosGradosIds);
         return NextResponse.json({ error: "No autorizado para este grado" }, { status: 403 });
       }
     }
