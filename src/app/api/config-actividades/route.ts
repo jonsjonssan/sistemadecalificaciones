@@ -51,36 +51,55 @@ export async function GET(request: NextRequest) {
 
       console.log("[config-actividades] GET materia:", materiaId, "trimestre:", trimestreNum);
 
-      const materiaExists = await sql`SELECT id FROM "Materia" WHERE id = ${materiaId} LIMIT 1`;
-      if (materiaExists.length === 0) {
-        return NextResponse.json({ error: "Materia no encontrada" }, { status: 404 });
+      try {
+        const materiaExists = await sql`SELECT id FROM "Materia" WHERE id = ${materiaId} LIMIT 1`;
+        console.log("[config-actividades] materiaExists:", materiaExists.length);
+        if (materiaExists.length === 0) {
+          return NextResponse.json({ error: "Materia no encontrada" }, { status: 404 });
+        }
+      } catch (err) {
+        console.error("[config-actividades] Error checking materia:", err);
+        return NextResponse.json({ error: "Error al verificar materia", details: String(err) }, { status: 500 });
       }
 
-      let configResult = await sql`
-        SELECT * FROM "ConfigActividad"
-        WHERE "materiaId" = ${materiaId} AND trimestre = ${trimestreNum}
-      `;
+      let configResult;
+      try {
+        configResult = await sql`
+          SELECT * FROM "ConfigActividad"
+          WHERE "materiaId" = ${materiaId} AND trimestre = ${trimestreNum}
+        `;
+        console.log("[config-actividades] configResult count:", configResult.length);
+      } catch (err) {
+        console.error("[config-actividades] Error selecting config:", err);
+        return NextResponse.json({ error: "Error al obtener configuración", details: String(err) }, { status: 500 });
+      }
 
       if (configResult.length === 0) {
-        const newConfig = await sql`
-          INSERT INTO "ConfigActividad" (
-            "materiaId", trimestre, 
-            "numActividadesCotidianas", "numActividadesIntegradoras", 
-            "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen"
-          ) VALUES (
-            ${materiaId}, ${trimestreNum},
-            4, 1, true, 35.0, 35.0, 30.0
-          )
-          ON CONFLICT ("materiaId", trimestre) DO UPDATE SET
-            "numActividadesCotidianas" = EXCLUDED."numActividadesCotidianas",
-            "numActividadesIntegradoras" = EXCLUDED."numActividadesIntegradoras",
-            "tieneExamen" = EXCLUDED."tieneExamen",
-            "porcentajeAC" = EXCLUDED."porcentajeAC",
-            "porcentajeAI" = EXCLUDED."porcentajeAI",
-            "porcentajeExamen" = EXCLUDED."porcentajeExamen"
-          RETURNING *
-        `;
-        configResult = newConfig;
+        try {
+          const newConfig = await sql`
+            INSERT INTO "ConfigActividad" (
+              "materiaId", trimestre, 
+              "numActividadesCotidianas", "numActividadesIntegradoras", 
+              "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen"
+            ) VALUES (
+              ${materiaId}, ${trimestreNum},
+              4, 1, true, 35.0, 35.0, 30.0
+            )
+            ON CONFLICT ("materiaId", trimestre) DO UPDATE SET
+              "numActividadesCotidianas" = EXCLUDED."numActividadesCotidianas",
+              "numActividadesIntegradoras" = EXCLUDED."numActividadesIntegradoras",
+              "tieneExamen" = EXCLUDED."tieneExamen",
+              "porcentajeAC" = EXCLUDED."porcentajeAC",
+              "porcentajeAI" = EXCLUDED."porcentajeAI",
+              "porcentajeExamen" = EXCLUDED."porcentajeExamen"
+            RETURNING *
+          `;
+          configResult = newConfig;
+          console.log("[config-actividades] Created new config:", configResult.length);
+        } catch (err) {
+          console.error("[config-actividades] Error creating config:", err);
+          return NextResponse.json({ error: "Error al crear configuración", details: String(err) }, { status: 500 });
+        }
       }
 
       const config = configResult[0];
