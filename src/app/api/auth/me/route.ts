@@ -13,6 +13,8 @@ export async function GET() {
 
     const sessionData = JSON.parse(session.value);
 
+    console.log("[auth/me] Session from cookie:", JSON.stringify(sessionData));
+
     const usuarioCompleto = await sql`
       SELECT u.*,
              COALESCE(

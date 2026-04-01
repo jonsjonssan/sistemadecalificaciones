@@ -73,6 +73,8 @@ export async function POST(request: NextRequest) {
       }))
     };
 
+    console.log("[auth/login] User data to save in session:", JSON.stringify(userData));
+
     cookieStore.set("session", JSON.stringify(userData), {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
