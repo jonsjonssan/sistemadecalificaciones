@@ -34,6 +34,11 @@ export async function GET(request: NextRequest) {
     }
 
     if (materiaId && trimestre) {
+      const materiaExists = await sql`SELECT id FROM "Materia" WHERE id = ${materiaId} LIMIT 1`;
+      if (materiaExists.length === 0) {
+        return NextResponse.json({ error: "Materia no encontrada" }, { status: 404 });
+      }
+
       let configResult = await sql`
         SELECT * FROM "ConfigActividad"
         WHERE "materiaId" = ${materiaId} AND trimestre = ${parseInt(trimestre!)}
@@ -69,6 +74,11 @@ export async function GET(request: NextRequest) {
     }
 
     if (gradoId && trimestre) {
+      const gradoExists = await sql`SELECT id FROM "Grado" WHERE id = ${gradoId} LIMIT 1`;
+      if (gradoExists.length === 0) {
+        return NextResponse.json({ error: "Grado no encontrado" }, { status: 404 });
+      }
+
       const materias = await sql`
         SELECT id, nombre FROM "Materia" WHERE "gradoId" = ${gradoId}
       `;
@@ -104,7 +114,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(null);
   } catch (error) {
     console.error("Error al obtener configuración:", error);
-    return NextResponse.json({ error: "Error al obtener configuración" }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : "Error desconocido";
+    return NextResponse.json({ error: "Error al obtener configuración", details: errorMessage }, { status: 500 });
   }
 }
 

@@ -883,11 +883,13 @@ export default function Home() {
         if (savedState.trimestreSeleccionado) {
           setTrimestreSeleccionado(savedState.trimestreSeleccionado);
         }
+        saveUserState({ gradoSeleccionado: savedState.gradoSeleccionado, trimestreSeleccionado: savedState.trimestreSeleccionado });
       } else {
         setGradoSeleccionado(gradosFiltrados[0].id);
+        saveUserState({ gradoSeleccionado: gradosFiltrados[0].id });
       }
     }
-  }, [ gradosFiltrados, gradoSeleccionado, loadUserState ]);
+  }, [ gradosFiltrados, gradoSeleccionado, loadUserState, saveUserState ]);
 
   // Auto-selección de asignatura restaurada o primera disponible
   useEffect(() => {
@@ -895,11 +897,13 @@ export default function Home() {
       const savedState = loadUserState();
       if (savedState?.asignaturaSeleccionada && asignaturasFiltradas.some(m => m.id === savedState.asignaturaSeleccionada)) {
         setAsignaturaSeleccionada(savedState.asignaturaSeleccionada);
+        saveUserState({ asignaturaSeleccionada: savedState.asignaturaSeleccionada });
       } else {
         setAsignaturaSeleccionada(asignaturasFiltradas[0].id);
+        saveUserState({ asignaturaSeleccionada: asignaturasFiltradas[0].id });
       }
     }
-  }, [asignaturasFiltradas, asignaturaSeleccionada, loadUserState]);
+  }, [asignaturasFiltradas, asignaturaSeleccionada, loadUserState, saveUserState]);
 
   // Guardar estado automáticamente cuando cambie la selección
   useEffect(() => {
