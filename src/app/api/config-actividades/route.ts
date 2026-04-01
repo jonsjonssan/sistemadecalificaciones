@@ -62,6 +62,13 @@ export async function GET(request: NextRequest) {
             ${materiaId}, ${parseInt(trimestre!)},
             4, 1, true, 35.0, 35.0, 30.0
           )
+          ON CONFLICT ("materiaId", trimestre) DO UPDATE SET
+            "numActividadesCotidianas" = EXCLUDED."numActividadesCotidianas",
+            "numActividadesIntegradoras" = EXCLUDED."numActividadesIntegradoras",
+            "tieneExamen" = EXCLUDED."tieneExamen",
+            "porcentajeAC" = EXCLUDED."porcentajeAC",
+            "porcentajeAI" = EXCLUDED."porcentajeAI",
+            "porcentajeExamen" = EXCLUDED."porcentajeExamen"
           RETURNING *
         `;
         configResult = newConfig;
@@ -93,26 +100,37 @@ export async function GET(request: NextRequest) {
 
       const result: any[] = [];
       for (const materia of materias) {
-        let configResult = await sql`
-          SELECT * FROM "ConfigActividad"
-          WHERE "materiaId" = ${materia.id} AND trimestre = ${parseInt(trimestre!)}
-        `;
-
-        if (configResult.length === 0) {
-          const newConfig = await sql`
-            INSERT INTO "ConfigActividad" (
-              "materiaId", trimestre, 
-              "numActividadesCotidianas", "numActividadesIntegradoras", 
-              "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen"
-            ) VALUES (
-              ${materia.id}, ${parseInt(trimestre!)},
-              4, 1, true, 35.0, 35.0, 30.0
-            )
-            RETURNING *
+        try {
+          let configResult = await sql`
+            SELECT * FROM "ConfigActividad"
+            WHERE "materiaId" = ${materia.id} AND trimestre = ${parseInt(trimestre!)}
           `;
-          result.push({ ...newConfig[0], materiaNombre: materia.nombre });
-        } else {
-          result.push({ ...configResult[0], materiaNombre: materia.nombre });
+
+          if (configResult.length === 0) {
+            const newConfig = await sql`
+              INSERT INTO "ConfigActividad" (
+                "materiaId", trimestre, 
+                "numActividadesCotidianas", "numActividadesIntegradoras", 
+                "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen"
+              ) VALUES (
+                ${materia.id}, ${parseInt(trimestre!)},
+                4, 1, true, 35.0, 35.0, 30.0
+              )
+              ON CONFLICT ("materiaId", trimestre) DO UPDATE SET
+                "numActividadesCotidianas" = EXCLUDED."numActividadesCotidianas",
+                "numActividadesIntegradoras" = EXCLUDED."numActividadesIntegradoras",
+                "tieneExamen" = EXCLUDED."tieneExamen",
+                "porcentajeAC" = EXCLUDED."porcentajeAC",
+                "porcentajeAI" = EXCLUDED."porcentajeAI",
+                "porcentajeExamen" = EXCLUDED."porcentajeExamen"
+              RETURNING *
+            `;
+            result.push({ ...newConfig[0], materiaNombre: materia.nombre });
+          } else {
+            result.push({ ...configResult[0], materiaNombre: materia.nombre });
+          }
+        } catch (err) {
+          console.error(`[config-actividades] Error con materia ${materia.id}:`, err);
         }
       }
 
