@@ -1225,7 +1225,7 @@ export default function Home() {
                       <tbody>
                         {(estudiantes || []).map((est, idx) => {
                           const calif = getCalificacion(est.id);
-                          return <CalificacionRow key={`${est.id}-${asignaturaSeleccionada}-${trimestreSeleccionado}`} estudiante={est} materiaId={asignaturaSeleccionada} trimestre={trimestreSeleccionado} calificacion={calif} config={configActual} onSave={handleSaveCalificacion} saving={saving} darkMode={darkMode} evenRow={idx % 2 === 0} isAdmin={usuario.rol === "admin"} onBorrar={(estId) => { setBorrarCalifEstudianteId(estId); setBorrarCalifTipo("alumno"); setBorrarCalifDialogOpen(true); }} />
+                          return <CalificacionRow key={`${est.id}-${asignaturaSeleccionada}-${trimestreSeleccionado}-${configActual?.numActividadesCotidianas ?? 4}-${configActual?.numActividadesIntegradoras ?? 1}`} estudiante={est} materiaId={asignaturaSeleccionada} trimestre={trimestreSeleccionado} calificacion={calif} config={configActual} onSave={handleSaveCalificacion} saving={saving} darkMode={darkMode} evenRow={idx % 2 === 0} isAdmin={usuario.rol === "admin"} onBorrar={(estId) => { setBorrarCalifEstudianteId(estId); setBorrarCalifTipo("alumno"); setBorrarCalifDialogOpen(true); }} />
                         })}
                       </tbody>
                     </table>
