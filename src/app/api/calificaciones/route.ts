@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
-import { db } from "@/lib/db";
-import { createAuditLog } from "@/lib/audit";
+import { sql } from "@/lib/neon";
 import { cookies } from "next/headers";
 
 async function getUsuarioSession() {
@@ -9,6 +8,33 @@ async function getUsuarioSession() {
   const session = cookieStore.get("session");
   if (!session) return null;
   return JSON.parse(session.value);
+}
+
+async function createAuditLog({
+  usuarioId,
+  accion,
+  entidad,
+  entidadId,
+  detalles,
+  ip,
+  userAgent
+}: {
+  usuarioId: string;
+  accion: string;
+  entidad: string;
+  entidadId?: string | null;
+  detalles?: string | null;
+  ip?: string;
+  userAgent?: string;
+}) {
+  try {
+    await sql`
+      INSERT INTO "AuditLog" ("id", "usuarioId", "accion", "entidad", "entidadId", "detalles", "ip", "userAgent", "createdAt")
+      VALUES (gen_random_uuid()::text, ${usuarioId}, ${accion}, ${entidad}, ${entidadId || null}, ${detalles || null}, ${ip || null}, ${userAgent || null}, NOW())
+    `;
+  } catch (error) {
+    console.error("[audit] Failed to create log:", error);
+  }
 }
 
 export async function GET(request: NextRequest) {

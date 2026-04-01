@@ -30,46 +30,23 @@ export async function GET(request: NextRequest) {
       console.error("[audit] Cleanup error:", cleanupError);
     }
 
-    const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 200);
-    const usuarioId = searchParams.get("usuarioId");
-    const accion = searchParams.get("accion");
-    const entidad = searchParams.get("entidad");
-    const fechaDesde = searchParams.get("fechaDesde");
-    const fechaHasta = searchParams.get("fechaHasta");
-
-    const skip = (page - 1) * limit;
-
-    let whereClauses: string[] = [];
-    if (usuarioId) whereClauses.push(`a."usuarioId" = '${usuarioId}'`);
-    if (accion) whereClauses.push(`a.accion = '${accion}'`);
-    if (entidad) whereClauses.push(`a.entidad = '${entidad}'`);
-    if (fechaDesde) whereClauses.push(`a."createdAt" >= '${fechaDesde}'`);
-    if (fechaHasta) whereClauses.push(`a."createdAt" <= '${fechaHasta}'`);
-
-    const whereSql = whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
-
-    const logsQuery = `
+    // Always filter by Calificacion entity
+    const logs = await sql`
       SELECT a.*, u.nombre as "usuario_nombre", u.email as "usuario_email", u.rol as "usuario_rol"
       FROM "AuditLog" a
       JOIN "Usuario" u ON a."usuarioId" = u.id
-      ${whereSql}
+      WHERE a.entidad = 'Calificacion'
       ORDER BY a."createdAt" DESC
-      LIMIT ${limit} OFFSET ${skip}
+      LIMIT 100
     `;
 
-    const totalQuery = `
+    const totalResult = await sql`
       SELECT COUNT(*) FROM "AuditLog" a
-      ${whereSql}
+      WHERE a.entidad = 'Calificacion'
     `;
+    const total = parseInt(totalResult[0]?.count || "0");
 
-    const [logsRaw, totalRaw] = await Promise.all([
-      sql.unsafe(logsQuery),
-      sql.unsafe(totalQuery)
-    ]);
-
-    const logs = (logsRaw as any[]).map((l: any) => ({
+    const formattedLogs = (logs as any[]).map((l: any) => ({
       id: l.id,
       usuarioId: l.usuarioId,
       accion: l.accion,
@@ -87,13 +64,11 @@ export async function GET(request: NextRequest) {
       }
     }));
 
-    const total = parseInt((totalRaw as any[])[0]?.count || "0");
-
     return NextResponse.json({
-      logs,
+      logs: formattedLogs,
       total,
-      page,
-      totalPages: Math.ceil(total / limit)
+      page: 1,
+      totalPages: Math.ceil(total / 100)
     });
   } catch (error) {
     console.error("[audit] GET Error:", error);
