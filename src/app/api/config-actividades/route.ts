@@ -21,9 +21,15 @@ export async function GET(request: NextRequest) {
     const gradoId = searchParams.get("gradoId");
     const trimestre = searchParams.get("trimestre");
 
+    console.log("[config-actividades] Session:", JSON.stringify(session));
+    console.log("[config-actividades] Params:", { materiaId, gradoId, trimestre });
+
     if (session.rol === "docente") {
       const materiasAsignadasIds = session.asignaturasAsignadas?.map((m: any) => m.id) || [];
       const gradosAsignadosIds = session.asignaturasAsignadas?.map((m: any) => m.gradoId) || [];
+      
+      console.log("[config-actividades] Materias asignadas IDs:", materiasAsignadasIds);
+      console.log("[config-actividades] Grados asignados IDs:", gradosAsignadosIds);
       
       if (materiaId && !materiasAsignadasIds.includes(materiaId)) {
         return NextResponse.json({ error: "No autorizado para esta materia" }, { status: 403 });
