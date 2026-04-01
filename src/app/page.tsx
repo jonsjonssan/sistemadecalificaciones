@@ -1720,7 +1720,7 @@ const CalificacionRow = React.memo(function CalificacionRow({ estudiante, materi
       setDirty(false);
     }, 0);
     return () => clearTimeout(timer);
-  }, [key, numAC, numAI]);
+  }, [key, numAC, numAI, calificacion?.actividadesCotidianas, calificacion?.actividadesIntegradoras, calificacion?.examenTrimestral, calificacion?.recuperacion]);
   
   const stateRef = useRef({ dirty, acNotas, aiNotas, examen, recup });
   useEffect(() => { stateRef.current = { dirty, acNotas, aiNotas, examen, recup }; }, [dirty, acNotas, aiNotas, examen, recup]);
