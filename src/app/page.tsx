@@ -1699,7 +1699,7 @@ const CalificacionRow = React.memo(function CalificacionRow({ estudiante, materi
   const numAI = config?.numActividadesIntegradoras ?? 1;
   const tieneExamen = config?.tieneExamen ?? true;
   
-  const key = `${materiaId}-${trimestre}-${calificacion?.id || 'none'}`;
+  const key = `${materiaId}-${trimestre}-${calificacion?.id || 'none'}-${numAC}-${numAI}`;
   
   const [acNotas, setAcNotas] = useState<(number | null)[]>(() => parseNotas(calificacion?.actividadesCotidianas ?? null, numAC));
   const [aiNotas, setAiNotas] = useState<(number | null)[]>(() => parseNotas(calificacion?.actividadesIntegradoras ?? null, numAI));
