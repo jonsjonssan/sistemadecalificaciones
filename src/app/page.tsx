@@ -710,12 +710,32 @@ export default function Home() {
       
       if (res.ok) {
         toast({ title: "Sistema reiniciado", description: data.message });
-        // Recargar datos esenciales
         await checkAuth();
         await loadConfiguracion();
         await loadGrados();
       } else {
         toast({ title: "Error al reiniciar", description: data.error, variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Error de conexión", variant: "destructive" });
+    } finally {
+      setAñoLoading(false);
+    }
+  };
+
+  const handleReinicializar = async () => {
+    if (!confirm("⚠️ Esto re-aplicará todas las asignaciones de docentes a grados y materias. ¿Continuar?")) {
+      return;
+    }
+    setAñoLoading(true);
+    try {
+      const res = await fetch("/api/init", { method: "POST", credentials: "include" });
+      const data = await res.json();
+      if (res.ok) {
+        toast({ title: "Sistema reinicializado", description: data.message });
+        await Promise.all([loadGrados(), loadUsuarios(), loadTodasAsignaturas(), loadConfiguracion()]);
+      } else {
+        toast({ title: "Error", description: data.error, variant: "destructive" });
       }
     } catch {
       toast({ title: "Error de conexión", variant: "destructive" });
@@ -1375,6 +1395,9 @@ export default function Home() {
                   <div className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Versión 1.2.0 | © 2026 CEC San José de la Montaña</div>
                   <Button variant="destructive" size="sm" onClick={handleResetSistema} className="h-8 text-xs sm:text-sm w-full sm:w-auto">
                     <Trash2 className="h-4 w-4 mr-1" /> Finalizar Año y Reiniciar Datos
+                  </Button>
+                  <Button size="sm" onClick={handleReinicializar} disabled={añoLoading} className={`h-8 text-xs sm:text-sm w-full sm:w-auto ${darkMode ? 'bg-teal-600 hover:bg-teal-500' : ''}`}>
+                    <RefreshCw className="h-4 w-4 mr-1" /> Reinicializar Asignaciones
                   </Button>
                 </CardFooter>
               </Card>
