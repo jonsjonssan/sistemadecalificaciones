@@ -114,7 +114,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(null);
   } catch (error) {
     console.error("Error al obtener configuración:", error);
-    const errorMessage = error instanceof Error ? error.message : "Error desconocido";
+    const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json({ error: "Error al obtener configuración", details: errorMessage }, { status: 500 });
   }
 }
