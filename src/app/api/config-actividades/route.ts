@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { sql } from "@/lib/neon";
+import { db } from "@/lib/db";
 import { cookies } from "next/headers";
 
 async function getUsuarioSession() {
@@ -26,9 +26,6 @@ export async function GET(request: NextRequest) {
     const gradoId = searchParams.get("gradoId");
     const trimestre = searchParams.get("trimestre");
 
-    console.log("[config-actividades] GET Session:", JSON.stringify(session));
-    console.log("[config-actividades] GET Params:", { materiaId, gradoId, trimestre });
-
     if (session.rol === "docente") {
       const materiasAsignadasIds = session.asignaturasAsignadas?.map((m: any) => m.id) || [];
       const gradosByMaterias = session.asignaturasAsignadas?.map((m: any) => m.gradoId) || [];
@@ -49,60 +46,38 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: "Trimestre inválido" }, { status: 400 });
       }
 
-      console.log("[config-actividades] GET materia:", materiaId, "trimestre:", trimestreNum);
+      const materia = await db.materia.findUnique({
+        where: { id: materiaId }
+      });
 
-      try {
-        const materiaExists = await sql`SELECT id FROM "Materia" WHERE id = ${materiaId} LIMIT 1`;
-        console.log("[config-actividades] materiaExists:", materiaExists.length);
-        if (materiaExists.length === 0) {
-          return NextResponse.json({ error: "Materia no encontrada" }, { status: 404 });
+      if (!materia) {
+        return NextResponse.json({ error: "Materia no encontrada" }, { status: 404 });
+      }
+
+      let config = await db.configActividad.findUnique({
+        where: {
+          materiaId_trimestre: {
+            materiaId,
+            trimestre: trimestreNum
+          }
         }
-      } catch (err) {
-        console.error("[config-actividades] Error checking materia:", err);
-        return NextResponse.json({ error: "Error al verificar materia", details: String(err) }, { status: 500 });
+      });
+
+      if (!config) {
+        config = await db.configActividad.create({
+          data: {
+            materiaId,
+            trimestre: trimestreNum,
+            numActividadesCotidianas: 4,
+            numActividadesIntegradoras: 1,
+            tieneExamen: true,
+            porcentajeAC: 35.0,
+            porcentajeAI: 35.0,
+            porcentajeExamen: 30.0
+          }
+        });
       }
 
-      let configResult;
-      try {
-        configResult = await sql`
-          SELECT * FROM "ConfigActividad"
-          WHERE "materiaId" = ${materiaId} AND trimestre = ${trimestreNum}
-        `;
-        console.log("[config-actividades] configResult count:", configResult.length);
-      } catch (err) {
-        console.error("[config-actividades] Error selecting config:", err);
-        return NextResponse.json({ error: "Error al obtener configuración", details: String(err) }, { status: 500 });
-      }
-
-      if (configResult.length === 0) {
-        try {
-          const newConfig = await sql`
-            INSERT INTO "ConfigActividad" (
-              "materiaId", trimestre, 
-              "numActividadesCotidianas", "numActividadesIntegradoras", 
-              "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen"
-            ) VALUES (
-              ${materiaId}, ${trimestreNum},
-              4, 1, true, 35.0, 35.0, 30.0
-            )
-            ON CONFLICT ("materiaId", trimestre) DO UPDATE SET
-              "numActividadesCotidianas" = EXCLUDED."numActividadesCotidianas",
-              "numActividadesIntegradoras" = EXCLUDED."numActividadesIntegradoras",
-              "tieneExamen" = EXCLUDED."tieneExamen",
-              "porcentajeAC" = EXCLUDED."porcentajeAC",
-              "porcentajeAI" = EXCLUDED."porcentajeAI",
-              "porcentajeExamen" = EXCLUDED."porcentajeExamen"
-            RETURNING *
-          `;
-          configResult = newConfig;
-          console.log("[config-actividades] Created new config:", configResult.length);
-        } catch (err) {
-          console.error("[config-actividades] Error creating config:", err);
-          return NextResponse.json({ error: "Error al crear configuración", details: String(err) }, { status: 500 });
-        }
-      }
-
-      const config = configResult[0];
       return NextResponse.json({
         id: config.id,
         materiaId: config.materiaId,
@@ -122,48 +97,57 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: "Trimestre inválido" }, { status: 400 });
       }
 
-      console.log("[config-actividades] GET grado:", gradoId, "trimestre:", trimestreNum);
+      const grado = await db.grado.findUnique({
+        where: { id: gradoId }
+      });
 
-      const gradoExists = await sql`SELECT id FROM "Grado" WHERE id = ${gradoId} LIMIT 1`;
-      if (gradoExists.length === 0) {
+      if (!grado) {
         return NextResponse.json({ error: "Grado no encontrado" }, { status: 404 });
       }
 
-      const materias = await sql`
-        SELECT id, nombre FROM "Materia" WHERE "gradoId" = ${gradoId}
-      `;
+      const materias = await db.materia.findMany({
+        where: { gradoId }
+      });
 
       const result: any[] = [];
       for (const materia of materias) {
         try {
-          let configResult = await sql`
-            SELECT * FROM "ConfigActividad"
-            WHERE "materiaId" = ${materia.id} AND trimestre = ${trimestreNum}
-          `;
+          let config = await db.configActividad.findUnique({
+            where: {
+              materiaId_trimestre: {
+                materiaId: materia.id,
+                trimestre: trimestreNum
+              }
+            }
+          });
 
-          if (configResult.length === 0) {
-            const newConfig = await sql`
-              INSERT INTO "ConfigActividad" (
-                "materiaId", trimestre, 
-                "numActividadesCotidianas", "numActividadesIntegradoras", 
-                "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen"
-              ) VALUES (
-                ${materia.id}, ${trimestreNum},
-                4, 1, true, 35.0, 35.0, 30.0
-              )
-              ON CONFLICT ("materiaId", trimestre) DO UPDATE SET
-                "numActividadesCotidianas" = EXCLUDED."numActividadesCotidianas",
-                "numActividadesIntegradoras" = EXCLUDED."numActividadesIntegradoras",
-                "tieneExamen" = EXCLUDED."tieneExamen",
-                "porcentajeAC" = EXCLUDED."porcentajeAC",
-                "porcentajeAI" = EXCLUDED."porcentajeAI",
-                "porcentajeExamen" = EXCLUDED."porcentajeExamen"
-              RETURNING *
-            `;
-            result.push({ ...newConfig[0], materiaNombre: materia.nombre });
-          } else {
-            result.push({ ...configResult[0], materiaNombre: materia.nombre });
+          if (!config) {
+            config = await db.configActividad.create({
+              data: {
+                materiaId: materia.id,
+                trimestre: trimestreNum,
+                numActividadesCotidianas: 4,
+                numActividadesIntegradoras: 1,
+                tieneExamen: true,
+                porcentajeAC: 35.0,
+                porcentajeAI: 35.0,
+                porcentajeExamen: 30.0
+              }
+            });
           }
+
+          result.push({
+            id: config.id,
+            materiaId: config.materiaId,
+            trimestre: config.trimestre,
+            numActividadesCotidianas: config.numActividadesCotidianas,
+            numActividadesIntegradoras: config.numActividadesIntegradoras,
+            tieneExamen: config.tieneExamen,
+            porcentajeAC: config.porcentajeAC,
+            porcentajeAI: config.porcentajeAI,
+            porcentajeExamen: config.porcentajeExamen,
+            materiaNombre: materia.nombre
+          });
         } catch (err) {
           console.error(`[config-actividades] Error con materia ${materia.id}:`, err);
         }
@@ -183,11 +167,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getUsuarioSession();
-    console.log("[config-actividades] POST session:", session ? JSON.stringify(session) : "null");
     if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
     const data = await request.json();
-    console.log("[config-actividades] POST body:", JSON.stringify(data));
 
     const { materiaId, gradoId, aplicarATodasLasMateriasDelGrado, trimestre: trimestreValue, numActividadesCotidianas, numActividadesIntegradoras, tieneExamen, porcentajeAC, porcentajeAI, porcentajeExamen } = data;
 
@@ -220,106 +202,85 @@ export async function POST(request: NextRequest) {
     const porcAI = porcentajeAI !== undefined && porcentajeAI !== null ? parseFloat(String(porcentajeAI)) : 35.0;
     const porcEx = porcentajeExamen !== undefined && porcentajeExamen !== null ? parseFloat(String(porcentajeExamen)) : 30.0;
 
-    console.log("[config-actividades] POST parsed values:", {
-      trimestreNum, numAC, numAI, tieneEx, porcAC, porcAI, porcEx,
-      aplicarATodas: aplicarATodasLasMateriasDelGrado, gradoId, materiaId
-    });
-
     if (aplicarATodasLasMateriasDelGrado && gradoId) {
-      console.log("[config-actividades] Aplicando a todas las materias del grado:", gradoId);
-      const materias = await sql`SELECT id, nombre FROM "Materia" WHERE "gradoId" = ${gradoId}`;
-      console.log("[config-actividades] Materias encontradas:", materias.length, materias.map((m: any) => m.nombre));
-      
+      const materias = await db.materia.findMany({
+        where: { gradoId }
+      });
+
       if (materias.length === 0) {
         return NextResponse.json({ error: "No hay materias para este grado" }, { status: 404 });
       }
-      
+
       let count = 0;
       for (const materia of materias) {
         try {
-          console.log("[config-actividades] Procesando materia:", materia.id, materia.nombre);
-          const exist = await sql`
-            SELECT id FROM "ConfigActividad"
-            WHERE "materiaId" = ${materia.id} AND trimestre = ${trimestreNum}
-          `;
-
-          if (exist.length > 0) {
-            await sql`
-              UPDATE "ConfigActividad" SET
-                "numActividadesCotidianas" = ${numAC},
-                "numActividadesIntegradoras" = ${numAI},
-                "tieneExamen" = ${tieneEx},
-                "porcentajeAC" = ${porcAC},
-                "porcentajeAI" = ${porcAI},
-                "porcentajeExamen" = ${porcEx}
-              WHERE "materiaId" = ${materia.id} AND trimestre = ${trimestreNum}
-            `;
-          } else {
-            await sql`
-              INSERT INTO "ConfigActividad" (
-                "materiaId", trimestre, 
-                "numActividadesCotidianas", "numActividadesIntegradoras", 
-                "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen"
-              ) VALUES (
-                ${materia.id}, ${trimestreNum},
-                ${numAC}, ${numAI},
-                ${tieneEx}, ${porcAC}, ${porcAI}, ${porcEx}
-              )
-            `;
-          }
+          await db.configActividad.upsert({
+            where: {
+              materiaId_trimestre: {
+                materiaId: materia.id,
+                trimestre: trimestreNum
+              }
+            },
+            update: {
+              numActividadesCotidianas: numAC,
+              numActividadesIntegradoras: numAI,
+              tieneExamen: tieneEx,
+              porcentajeAC: porcAC,
+              porcentajeAI: porcAI,
+              porcentajeExamen: porcEx
+            },
+            create: {
+              materiaId: materia.id,
+              trimestre: trimestreNum,
+              numActividadesCotidianas: numAC,
+              numActividadesIntegradoras: numAI,
+              tieneExamen: tieneEx,
+              porcentajeAC: porcAC,
+              porcentajeAI: porcAI,
+              porcentajeExamen: porcEx
+            }
+          });
           count++;
         } catch (err) {
           console.error("[config-actividades] Error con materia:", materia.id, err);
         }
       }
-      console.log("[config-actividades] POST apply-to-all success, count:", count);
       return NextResponse.json({ success: true, count });
     }
 
     if (!materiaId) return NextResponse.json({ error: "materiaId es requerido" }, { status: 400 });
 
-    const exist = await sql`
-      SELECT id FROM "ConfigActividad"
-      WHERE "materiaId" = ${materiaId} AND trimestre = ${trimestreNum}
-    `;
+    const config = await db.configActividad.upsert({
+      where: {
+        materiaId_trimestre: {
+          materiaId,
+          trimestre: trimestreNum
+        }
+      },
+      update: {
+        numActividadesCotidianas: numAC,
+        numActividadesIntegradoras: numAI,
+        tieneExamen: tieneEx,
+        porcentajeAC: porcAC,
+        porcentajeAI: porcAI,
+        porcentajeExamen: porcEx
+      },
+      create: {
+        materiaId,
+        trimestre: trimestreNum,
+        numActividadesCotidianas: numAC,
+        numActividadesIntegradoras: numAI,
+        tieneExamen: tieneEx,
+        porcentajeAC: porcAC,
+        porcentajeAI: porcAI,
+        porcentajeExamen: porcEx
+      }
+    });
 
-    let result;
-    if (exist.length > 0) {
-      result = await sql`
-        UPDATE "ConfigActividad" SET
-          "numActividadesCotidianas" = ${numAC},
-          "numActividadesIntegradoras" = ${numAI},
-          "tieneExamen" = ${tieneEx},
-          "porcentajeAC" = ${porcAC},
-          "porcentajeAI" = ${porcAI},
-          "porcentajeExamen" = ${porcEx}
-        WHERE "materiaId" = ${materiaId} AND trimestre = ${trimestreNum}
-        RETURNING *
-      `;
-    } else {
-      result = await sql`
-        INSERT INTO "ConfigActividad" (
-          "materiaId", trimestre, 
-          "numActividadesCotidianas", "numActividadesIntegradoras", 
-          "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen"
-        ) VALUES (
-          ${materiaId}, ${trimestreNum},
-          ${numAC}, ${numAI},
-          ${tieneEx}, ${porcAC}, ${porcAI}, ${porcEx}
-        )
-        RETURNING *
-      `;
-    }
-
-    console.log("[config-actividades] POST success:", JSON.stringify(result[0]));
-    return NextResponse.json(result[0]);
+    return NextResponse.json(config);
   } catch (error) {
     console.error("[config-actividades] POST Error:", error);
     const errorMessage = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({ 
-      error: "Error al guardar configuración", 
-      details: errorMessage,
-      stack: error instanceof Error ? error.stack : undefined
-    }, { status: 500 });
+    return NextResponse.json({ error: "Error al guardar configuración", details: errorMessage }, { status: 500 });
   }
 }
