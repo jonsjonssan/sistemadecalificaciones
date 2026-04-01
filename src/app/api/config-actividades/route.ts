@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { createAuditLog } from "@/lib/audit";
 import { cookies } from "next/headers";
 
 async function getUsuarioSession() {
@@ -276,6 +277,34 @@ export async function POST(request: NextRequest) {
         porcentajeExamen: porcEx
       }
     });
+
+    // Audit log
+    try {
+      const headers = Object.fromEntries(request.headers.entries());
+      const ip = headers["x-forwarded-for"] || headers["x-real-ip"] || "unknown";
+      const userAgent = headers["user-agent"] || "unknown";
+      await createAuditLog({
+        usuarioId: session.id,
+        accion: "CONFIG_CHANGE",
+        entidad: "ConfigActividad",
+        entidadId: config.id,
+        detalles: JSON.stringify({
+          materiaId,
+          trimestre: trimestreNum,
+          numAC,
+          numAI,
+          tieneExamen: tieneEx,
+          porcAC,
+          porcAI,
+          porcEx,
+          aplicarATodas: aplicarATodasLasMateriasDelGrado
+        }),
+        ip,
+        userAgent
+      });
+    } catch (auditError) {
+      console.error("[config-actividades] Audit error:", auditError);
+    }
 
     return NextResponse.json(config);
   } catch (error) {

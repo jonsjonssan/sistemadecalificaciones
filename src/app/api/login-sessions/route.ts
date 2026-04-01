@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { sql } from "@/lib/neon";
 import { cookies } from "next/headers";
 
 async function getUsuarioSession() {
@@ -28,23 +28,48 @@ export async function GET(request: NextRequest) {
     const usuarioId = searchParams.get("usuarioId");
 
     const skip = (page - 1) * limit;
-    const where: any = {};
-    if (usuarioId) where.usuarioId = usuarioId;
 
-    const [sessions, total] = await Promise.all([
-      db.loginSession.findMany({
-        where,
-        orderBy: { loginAt: "desc" },
-        skip,
-        take: limit,
-        include: {
-          usuario: {
-            select: { id: true, nombre: true, email: true, rol: true }
-          }
-        }
-      }),
-      db.loginSession.count({ where })
+    let whereClause = "";
+    if (usuarioId) {
+      whereClause = `WHERE s."usuarioId" = '${usuarioId}'`;
+    }
+
+    const sessionsQuery = `
+      SELECT s.*, u.nombre as "usuario_nombre", u.email as "usuario_email", u.rol as "usuario_rol"
+      FROM "LoginSession" s
+      JOIN "Usuario" u ON s."usuarioId" = u.id
+      ${whereClause}
+      ORDER BY s."loginAt" DESC
+      LIMIT ${limit} OFFSET ${skip}
+    `;
+
+    const totalQuery = `
+      SELECT COUNT(*) FROM "LoginSession" s
+      ${whereClause}
+    `;
+
+    const [sessionsRaw, totalRaw] = await Promise.all([
+      sql.unsafe(sessionsQuery),
+      sql.unsafe(totalQuery)
     ]);
+
+    const sessions = (sessionsRaw as any[]).map((s: any) => ({
+      id: s.id,
+      usuarioId: s.usuarioId,
+      ip: s.ip,
+      userAgent: s.userAgent,
+      loginAt: s.loginAt,
+      logoutAt: s.logoutAt,
+      isActive: s.isActive,
+      usuario: {
+        id: s.usuarioId,
+        nombre: s.usuario_nombre,
+        email: s.usuario_email,
+        rol: s.usuario_rol
+      }
+    }));
+
+    const total = parseInt((totalRaw as any[])[0]?.count || "0");
 
     return NextResponse.json({
       sessions,
@@ -72,20 +97,20 @@ export async function POST(request: NextRequest) {
     const ip = headers["x-forwarded-for"] || headers["x-real-ip"] || "unknown";
     const userAgent = headers["user-agent"] || "unknown";
 
-    const session = await db.loginSession.create({
-      data: {
-        usuarioId,
-        ip,
-        userAgent
-      },
-      include: {
-        usuario: {
-          select: { id: true, nombre: true, email: true, rol: true }
-        }
-      }
-    });
+    const result = await sql`
+      INSERT INTO "LoginSession" ("id", "usuarioId", "ip", "userAgent", "loginAt")
+      VALUES (gen_random_uuid()::text, ${usuarioId}, ${ip}, ${userAgent}, NOW())
+      RETURNING *
+    `;
 
-    return NextResponse.json(session);
+    const usuario = await sql`SELECT id, nombre, email, rol FROM "Usuario" WHERE id = ${usuarioId}`;
+
+    const sessionData = {
+      ...result[0],
+      usuario: usuario[0]
+    };
+
+    return NextResponse.json(sessionData);
   } catch (error) {
     console.error("[login-sessions] POST Error:", error);
     const errMsg = error instanceof Error ? error.message : String(error);

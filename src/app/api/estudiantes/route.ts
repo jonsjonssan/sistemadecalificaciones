@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/neon";
 import { cookies } from "next/headers";
+import { createAuditLog } from "@/lib/audit";
 
 async function getUsuarioSession() {
   const cookieStore = await cookies();
@@ -76,6 +77,20 @@ export async function POST(request: NextRequest) {
       RETURNING *
     `;
 
+    // Audit log
+    if (session && session.id) {
+      const headers = Object.fromEntries(request.headers.entries());
+      const ip = headers["x-forwarded-for"] || headers["x-real-ip"] || "unknown";
+      await createAuditLog({
+        usuarioId: session.id,
+        accion: "CREATE",
+        entidad: "Estudiante",
+        entidadId: result[0].id,
+        detalles: JSON.stringify({ nombre, gradoId }),
+        ip
+      });
+    }
+
     return NextResponse.json(result[0]);
   } catch (error) {
     console.error("Error al crear estudiante:", error);
@@ -135,9 +150,26 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "ID requerido" }, { status: 400 });
     }
 
+    // Get student info before deleting for audit
+    const student = await sql`SELECT nombre, "gradoId" FROM "Estudiante" WHERE id = ${id}`;
+
     await sql`DELETE FROM "Calificacion" WHERE "estudianteId" = ${id}`;
     await sql`DELETE FROM "Asistencia" WHERE "estudianteId" = ${id}`;
     await sql`DELETE FROM "Estudiante" WHERE id = ${id}`;
+
+    // Audit log
+    if (session && session.id) {
+      const headers = Object.fromEntries(request.headers.entries());
+      const ip = headers["x-forwarded-for"] || headers["x-real-ip"] || "unknown";
+      await createAuditLog({
+        usuarioId: session.id,
+        accion: "DELETE",
+        entidad: "Estudiante",
+        entidadId: id,
+        detalles: JSON.stringify({ nombre: student[0]?.nombre, gradoId: student[0]?.gradoId }),
+        ip
+      });
+    }
 
     return NextResponse.json({ message: "Estudiante eliminado" });
   } catch (error) {

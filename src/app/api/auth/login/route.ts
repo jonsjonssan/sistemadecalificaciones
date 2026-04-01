@@ -3,6 +3,7 @@ import { sql } from "@/lib/neon";
 import { db } from "@/lib/db";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
+import { createAuditLog } from "@/lib/audit";
 
 export async function POST(request: NextRequest) {
   try {
@@ -90,25 +91,20 @@ export async function POST(request: NextRequest) {
       const ip = headers["x-forwarded-for"] || headers["x-real-ip"] || "unknown";
       const userAgent = headers["user-agent"] || "unknown";
 
-      await db.auditLog.create({
-        data: {
-          usuarioId: usuario[0].id,
-          accion: "LOGIN",
-          entidad: "Usuario",
-          entidadId: usuario[0].id,
-          detalles: JSON.stringify({ email: usuario[0].email, nombre: usuario[0].nombre }),
-          ip,
-          userAgent
-        }
+      await createAuditLog({
+        usuarioId: usuario[0].id,
+        accion: "LOGIN",
+        entidad: "Usuario",
+        entidadId: usuario[0].id,
+        detalles: JSON.stringify({ email: usuario[0].email, nombre: usuario[0].nombre }),
+        ip,
+        userAgent
       });
 
-      await db.loginSession.create({
-        data: {
-          usuarioId: usuario[0].id,
-          ip,
-          userAgent
-        }
-      });
+      await sql`
+        INSERT INTO "LoginSession" ("id", "usuarioId", "ip", "userAgent", "loginAt")
+        VALUES (gen_random_uuid()::text, ${usuario[0].id}, ${ip}, ${userAgent}, NOW())
+      `;
     } catch (auditError) {
       console.error("[auth/login] Error creating audit log:", auditError);
     }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { sql } from "@/lib/neon";
 import { cookies } from "next/headers";
 
 async function getUsuarioSession() {
@@ -23,6 +23,13 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
+    // Auto-borrar logs mayores a 5 dias
+    try {
+      await sql`DELETE FROM "AuditLog" WHERE "createdAt" < NOW() - INTERVAL '5 days'`;
+    } catch (cleanupError) {
+      console.error("[audit] Cleanup error:", cleanupError);
+    }
+
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
     const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 200);
@@ -34,30 +41,53 @@ export async function GET(request: NextRequest) {
 
     const skip = (page - 1) * limit;
 
-    const where: any = {};
-    if (usuarioId) where.usuarioId = usuarioId;
-    if (accion) where.accion = accion;
-    if (entidad) where.entidad = entidad;
-    if (fechaDesde || fechaHasta) {
-      where.createdAt = {};
-      if (fechaDesde) where.createdAt.gte = new Date(fechaDesde);
-      if (fechaHasta) where.createdAt.lte = new Date(fechaHasta);
-    }
+    let whereClauses: string[] = [];
+    if (usuarioId) whereClauses.push(`a."usuarioId" = '${usuarioId}'`);
+    if (accion) whereClauses.push(`a.accion = '${accion}'`);
+    if (entidad) whereClauses.push(`a.entidad = '${entidad}'`);
+    if (fechaDesde) whereClauses.push(`a."createdAt" >= '${fechaDesde}'`);
+    if (fechaHasta) whereClauses.push(`a."createdAt" <= '${fechaHasta}'`);
 
-    const [logs, total] = await Promise.all([
-      db.auditLog.findMany({
-        where,
-        orderBy: { createdAt: "desc" },
-        skip,
-        take: limit,
-        include: {
-          usuario: {
-            select: { id: true, nombre: true, email: true, rol: true }
-          }
-        }
-      }),
-      db.auditLog.count({ where })
+    const whereSql = whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
+
+    const logsQuery = `
+      SELECT a.*, u.nombre as "usuario_nombre", u.email as "usuario_email", u.rol as "usuario_rol"
+      FROM "AuditLog" a
+      JOIN "Usuario" u ON a."usuarioId" = u.id
+      ${whereSql}
+      ORDER BY a."createdAt" DESC
+      LIMIT ${limit} OFFSET ${skip}
+    `;
+
+    const totalQuery = `
+      SELECT COUNT(*) FROM "AuditLog" a
+      ${whereSql}
+    `;
+
+    const [logsRaw, totalRaw] = await Promise.all([
+      sql.unsafe(logsQuery),
+      sql.unsafe(totalQuery)
     ]);
+
+    const logs = (logsRaw as any[]).map((l: any) => ({
+      id: l.id,
+      usuarioId: l.usuarioId,
+      accion: l.accion,
+      entidad: l.entidad,
+      entidadId: l.entidadId,
+      detalles: l.detalles,
+      ip: l.ip,
+      userAgent: l.userAgent,
+      createdAt: l.createdAt,
+      usuario: {
+        id: l.usuarioId,
+        nombre: l.usuario_nombre,
+        email: l.usuario_email,
+        rol: l.usuario_rol
+      }
+    }));
+
+    const total = parseInt((totalRaw as any[])[0]?.count || "0");
 
     return NextResponse.json({
       logs,
@@ -90,22 +120,20 @@ export async function POST(request: NextRequest) {
     const ip = headers["x-forwarded-for"] || headers["x-real-ip"] || "unknown";
     const userAgent = headers["user-agent"] || "unknown";
 
-    const log = await db.auditLog.create({
-      data: {
-        usuarioId: session.id,
-        accion,
-        entidad,
-        entidadId: entidadId || null,
-        detalles: detalles ? JSON.stringify(detalles) : null,
-        ip,
-        userAgent
-      },
-      include: {
-        usuario: {
-          select: { id: true, nombre: true, email: true, rol: true }
-        }
-      }
-    });
+    const detallesStr = detalles ? JSON.stringify(detalles) : null;
+
+    const result = await sql`
+      INSERT INTO "AuditLog" ("id", "usuarioId", "accion", "entidad", "entidadId", "detalles", "ip", "userAgent", "createdAt")
+      VALUES (gen_random_uuid()::text, ${session.id}, ${accion}, ${entidad}, ${entidadId || null}, ${detallesStr}, ${ip}, ${userAgent}, NOW())
+      RETURNING *
+    `;
+
+    const usuario = await sql`SELECT id, nombre, email, rol FROM "Usuario" WHERE id = ${session.id}`;
+
+    const log = {
+      ...result[0],
+      usuario: usuario[0]
+    };
 
     return NextResponse.json(log);
   } catch (error) {

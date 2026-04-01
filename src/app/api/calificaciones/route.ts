@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { db } from "@/lib/db";
+import { createAuditLog } from "@/lib/audit";
 import { cookies } from "next/headers";
 
 async function getUsuarioSession() {
@@ -214,11 +215,11 @@ export async function POST(request: NextRequest) {
 
     // Audit log
     try {
-      const headers = Object.fromEntries(request.headers.entries());
-      const ip = headers["x-forwarded-for"] || headers["x-real-ip"] || "unknown";
-      const userAgent = headers["user-agent"] || "unknown";
-      await db.auditLog.create({
-        data: {
+      if (session && session.id) {
+        const headers = Object.fromEntries(request.headers.entries());
+        const ip = headers["x-forwarded-for"] || headers["x-real-ip"] || "unknown";
+        const userAgent = headers["user-agent"] || "unknown";
+        await createAuditLog({
           usuarioId: session.id,
           accion: "UPDATE",
           entidad: "Calificacion",
@@ -231,8 +232,8 @@ export async function POST(request: NextRequest) {
           }),
           ip,
           userAgent
-        }
-      });
+        });
+      }
     } catch (auditError) {
       console.error("[calificaciones] Audit error:", auditError);
     }
