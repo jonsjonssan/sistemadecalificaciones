@@ -3,10 +3,15 @@ import { sql } from "@/lib/neon";
 import { cookies } from "next/headers";
 
 async function getUsuarioSession() {
-  const cookieStore = await cookies();
-  const session = cookieStore.get("session");
-  if (!session) return null;
-  return JSON.parse(session.value);
+  try {
+    const cookieStore = await cookies();
+    const session = cookieStore.get("session");
+    if (!session) return null;
+    return JSON.parse(session.value);
+  } catch (error) {
+    console.error("[config-actividades] Error parsing session:", error);
+    return null;
+  }
 }
 
 export async function GET(request: NextRequest) {
@@ -21,8 +26,8 @@ export async function GET(request: NextRequest) {
     const gradoId = searchParams.get("gradoId");
     const trimestre = searchParams.get("trimestre");
 
-    console.log("[config-actividades] Session:", JSON.stringify(session));
-    console.log("[config-actividades] Params:", { materiaId, gradoId, trimestre });
+    console.log("[config-actividades] GET Session:", JSON.stringify(session));
+    console.log("[config-actividades] GET Params:", { materiaId, gradoId, trimestre });
 
     if (session.rol === "docente") {
       const materiasAsignadasIds = session.asignaturasAsignadas?.map((m: any) => m.id) || [];
@@ -30,18 +35,22 @@ export async function GET(request: NextRequest) {
       const gradosByTutor = session.gradosAsignados?.map((g: any) => g.id) || [];
       const todosGradosIds = [...new Set([...gradosByMaterias, ...gradosByTutor])];
 
-      console.log("[config-actividades] docente session:", JSON.stringify({ materiasAsignadasIds, todosGradosIds }));
-
       if (materiaId && materiasAsignadasIds.length > 0 && !materiasAsignadasIds.includes(materiaId)) {
         return NextResponse.json({ error: "No autorizado para esta materia" }, { status: 403 });
       }
       if (gradoId && todosGradosIds.length > 0 && !todosGradosIds.includes(gradoId)) {
-        console.log("[config-actividades] No autorizado para grado:", gradoId, "permitidos:", todosGradosIds);
         return NextResponse.json({ error: "No autorizado para este grado" }, { status: 403 });
       }
     }
 
     if (materiaId && trimestre) {
+      const trimestreNum = parseInt(trimestre);
+      if (isNaN(trimestreNum)) {
+        return NextResponse.json({ error: "Trimestre inválido" }, { status: 400 });
+      }
+
+      console.log("[config-actividades] GET materia:", materiaId, "trimestre:", trimestreNum);
+
       const materiaExists = await sql`SELECT id FROM "Materia" WHERE id = ${materiaId} LIMIT 1`;
       if (materiaExists.length === 0) {
         return NextResponse.json({ error: "Materia no encontrada" }, { status: 404 });
@@ -49,7 +58,7 @@ export async function GET(request: NextRequest) {
 
       let configResult = await sql`
         SELECT * FROM "ConfigActividad"
-        WHERE "materiaId" = ${materiaId} AND trimestre = ${parseInt(trimestre!)}
+        WHERE "materiaId" = ${materiaId} AND trimestre = ${trimestreNum}
       `;
 
       if (configResult.length === 0) {
@@ -59,7 +68,7 @@ export async function GET(request: NextRequest) {
             "numActividadesCotidianas", "numActividadesIntegradoras", 
             "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen"
           ) VALUES (
-            ${materiaId}, ${parseInt(trimestre!)},
+            ${materiaId}, ${trimestreNum},
             4, 1, true, 35.0, 35.0, 30.0
           )
           ON CONFLICT ("materiaId", trimestre) DO UPDATE SET
@@ -89,6 +98,13 @@ export async function GET(request: NextRequest) {
     }
 
     if (gradoId && trimestre) {
+      const trimestreNum = parseInt(trimestre);
+      if (isNaN(trimestreNum)) {
+        return NextResponse.json({ error: "Trimestre inválido" }, { status: 400 });
+      }
+
+      console.log("[config-actividades] GET grado:", gradoId, "trimestre:", trimestreNum);
+
       const gradoExists = await sql`SELECT id FROM "Grado" WHERE id = ${gradoId} LIMIT 1`;
       if (gradoExists.length === 0) {
         return NextResponse.json({ error: "Grado no encontrado" }, { status: 404 });
@@ -103,7 +119,7 @@ export async function GET(request: NextRequest) {
         try {
           let configResult = await sql`
             SELECT * FROM "ConfigActividad"
-            WHERE "materiaId" = ${materia.id} AND trimestre = ${parseInt(trimestre!)}
+            WHERE "materiaId" = ${materia.id} AND trimestre = ${trimestreNum}
           `;
 
           if (configResult.length === 0) {
@@ -113,7 +129,7 @@ export async function GET(request: NextRequest) {
                 "numActividadesCotidianas", "numActividadesIntegradoras", 
                 "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen"
               ) VALUES (
-                ${materia.id}, ${parseInt(trimestre!)},
+                ${materia.id}, ${trimestreNum},
                 4, 1, true, 35.0, 35.0, 30.0
               )
               ON CONFLICT ("materiaId", trimestre) DO UPDATE SET
@@ -139,7 +155,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(null);
   } catch (error) {
-    console.error("Error al obtener configuración:", error);
+    console.error("[config-actividades] GET Error:", error);
     const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json({ error: "Error al obtener configuración", details: errorMessage }, { status: 500 });
   }
@@ -151,6 +167,8 @@ export async function POST(request: NextRequest) {
     if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
     const data = await request.json();
+    console.log("[config-actividades] POST body:", JSON.stringify(data));
+
     const { materiaId, gradoId, aplicarATodasLasMateriasDelGrado, trimestre, numActividadesCotidianas, numActividadesIntegradoras, tieneExamen, porcentajeAC, porcentajeAI, porcentajeExamen } = data;
 
     if (session.rol === "docente") {
@@ -170,10 +188,13 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    if (!trimestre) return NextResponse.json({ error: "Trimestre es requerido" }, { status: 400 });
+    const trimestreNum = trimestre ? parseInt(String(trimestre)) : NaN;
+    if (!trimestre || isNaN(trimestreNum)) {
+      return NextResponse.json({ error: "Trimestre es requerido y debe ser válido" }, { status: 400 });
+    }
 
     const baseData = {
-      trimestre: parseInt(String(trimestre)),
+      trimestre: trimestreNum,
       numActividadesCotidianas: numActividadesCotidianas ?? 4,
       numActividadesIntegradoras: numActividadesIntegradoras ?? 1,
       tieneExamen: tieneExamen ?? true,
@@ -181,6 +202,9 @@ export async function POST(request: NextRequest) {
       porcentajeAI: porcentajeAI ?? 35.0,
       porcentajeExamen: porcentajeExamen ?? 30.0,
     };
+
+    console.log("[config-actividades] POST baseData:", JSON.stringify(baseData));
+    console.log("[config-actividades] POST aplicarATodas:", aplicarATodasLasMateriasDelGrado, "gradoId:", gradoId);
 
     if (aplicarATodasLasMateriasDelGrado && gradoId) {
       const materias = await sql`SELECT id FROM "Materia" WHERE "gradoId" = ${gradoId}`;
@@ -249,9 +273,10 @@ export async function POST(request: NextRequest) {
       `;
     }
 
+    console.log("[config-actividades] POST success:", JSON.stringify(result[0]));
     return NextResponse.json(result[0]);
   } catch (error) {
-    console.error("Error al guardar configuración:", error);
+    console.error("[config-actividades] POST Error:", error);
     const errorMessage = error instanceof Error ? error.message : String(error);
     return NextResponse.json({ error: "Error al guardar configuración", details: errorMessage }, { status: 500 });
   }
