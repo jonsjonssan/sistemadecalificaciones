@@ -1604,10 +1604,10 @@ export default function Home() {
                   {activeAdminTab === "actividad" && (
                     <div className="space-y-3">
                       <div className="flex flex-wrap gap-2">
-                        <Select value={auditFilter.accion} onValueChange={(v) => setAuditFilter({...auditFilter, accion: v})}>
+                        <Select value={auditFilter.accion || "all"} onValueChange={(v) => setAuditFilter({...auditFilter, accion: v === "all" ? "" : v})}>
                           <SelectTrigger className={`w-32 h-8 text-xs ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue placeholder="Acción" /></SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Todas</SelectItem>
+                            <SelectItem value="all">Todas</SelectItem>
                             <SelectItem value="LOGIN">Login</SelectItem>
                             <SelectItem value="UPDATE">Update</SelectItem>
                             <SelectItem value="CREATE">Create</SelectItem>
@@ -1615,10 +1615,10 @@ export default function Home() {
                             <SelectItem value="CONFIG_CHANGE">Config</SelectItem>
                           </SelectContent>
                         </Select>
-                        <Select value={auditFilter.entidad} onValueChange={(v) => setAuditFilter({...auditFilter, entidad: v})}>
+                        <Select value={auditFilter.entidad || "all"} onValueChange={(v) => setAuditFilter({...auditFilter, entidad: v === "all" ? "" : v})}>
                           <SelectTrigger className={`w-36 h-8 text-xs ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue placeholder="Entidad" /></SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Todas</SelectItem>
+                            <SelectItem value="all">Todas</SelectItem>
                             <SelectItem value="Calificacion">Calificaciones</SelectItem>
                             <SelectItem value="Estudiante">Estudiantes</SelectItem>
                             <SelectItem value="Usuario">Usuarios</SelectItem>
