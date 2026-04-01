@@ -185,37 +185,30 @@ export async function POST(request: NextRequest) {
     if (aplicarATodasLasMateriasDelGrado && gradoId) {
       const materias = await sql`SELECT id FROM "Materia" WHERE "gradoId" = ${gradoId}`;
       
+      if (materias.length === 0) {
+        return NextResponse.json({ error: "No hay materias para este grado" }, { status: 404 });
+      }
+      
       for (const materia of materias) {
-        const exist = await sql`
-          SELECT id FROM "ConfigActividad"
-          WHERE "materiaId" = ${materia.id} AND trimestre = ${baseData.trimestre}
+        await sql`
+          INSERT INTO "ConfigActividad" (
+            "materiaId", trimestre, 
+            "numActividadesCotidianas", "numActividadesIntegradoras", 
+            "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen"
+          ) VALUES (
+            ${materia.id}, ${baseData.trimestre},
+            ${baseData.numActividadesCotidianas}, ${baseData.numActividadesIntegradoras},
+            ${baseData.tieneExamen}, ${baseData.porcentajeAC}, ${baseData.porcentajeAI}, ${baseData.porcentajeExamen}
+          )
+          ON CONFLICT ("materiaId", trimestre) DO UPDATE SET
+            "numActividadesCotidianas" = EXCLUDED."numActividadesCotidianas",
+            "numActividadesIntegradoras" = EXCLUDED."numActividadesIntegradoras",
+            "tieneExamen" = EXCLUDED."tieneExamen",
+            "porcentajeAC" = EXCLUDED."porcentajeAC",
+            "porcentajeAI" = EXCLUDED."porcentajeAI",
+            "porcentajeExamen" = EXCLUDED."porcentajeExamen",
+            "updatedAt" = NOW()
         `;
-
-        if (exist.length > 0) {
-          await sql`
-            UPDATE "ConfigActividad" SET
-              "numActividadesCotidianas" = ${baseData.numActividadesCotidianas},
-              "numActividadesIntegradoras" = ${baseData.numActividadesIntegradoras},
-              "tieneExamen" = ${baseData.tieneExamen},
-              "porcentajeAC" = ${baseData.porcentajeAC},
-              "porcentajeAI" = ${baseData.porcentajeAI},
-              "porcentajeExamen" = ${baseData.porcentajeExamen},
-              "updatedAt" = NOW()
-            WHERE "materiaId" = ${materia.id} AND trimestre = ${baseData.trimestre}
-          `;
-        } else {
-          await sql`
-            INSERT INTO "ConfigActividad" (
-              "materiaId", trimestre, 
-              "numActividadesCotidianas", "numActividadesIntegradoras", 
-              "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen"
-            ) VALUES (
-              ${materia.id}, ${baseData.trimestre},
-              ${baseData.numActividadesCotidianas}, ${baseData.numActividadesIntegradoras},
-              ${baseData.tieneExamen}, ${baseData.porcentajeAC}, ${baseData.porcentajeAI}, ${baseData.porcentajeExamen}
-            )
-          `;
-        }
       }
       return NextResponse.json({ success: true, count: materias.length });
     }
@@ -259,6 +252,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(result[0]);
   } catch (error) {
     console.error("Error al guardar configuración:", error);
-    return NextResponse.json({ error: "Error al guardar configuración" }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: "Error al guardar configuración", details: errorMessage }, { status: 500 });
   }
 }
