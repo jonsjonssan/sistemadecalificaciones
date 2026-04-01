@@ -331,8 +331,8 @@ export default function Home() {
       const data = await res.json();
       if (res.ok) { 
         setLoginForm({ email: "", password: "" });
-        // Recargar datos completos del usuario incluyendo asignaciones
-        await checkAuth();
+        // Usar los datos directamente del login en lugar de llamar checkAuth
+        setUsuario(data.usuario);
       } else { 
         setLoginError(data.error || "Error"); 
       }
