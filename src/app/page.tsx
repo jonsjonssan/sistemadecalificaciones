@@ -670,12 +670,15 @@ export default function Home() {
     }
     try {
       const isEdit = !!editUsuarioId;
+      console.log("[handleAddUsuario] Enviando:", nuevoUsuario);
       const res = await fetch("/api/usuarios", {
         method: isEdit ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify(isEdit ? { id: editUsuarioId, ...nuevoUsuario } : nuevoUsuario),
       });
+      const data = await res.json();
+      console.log("[handleAddUsuario] Respuesta:", res.status, data);
       if (res.ok) { 
         setNuevoUsuario({ email: "", password: "", nombre: "", rol: "docente", gradosAsignados: [], materiasAsignadas: [] }); 
         setEditUsuarioId(null);
@@ -683,7 +686,7 @@ export default function Home() {
         loadUsuarios(); 
         toast({ title: isEdit ? "Usuario actualizado" : "Usuario creado" }); 
       }
-      else { const d = await res.json(); toast({ title: d.error, variant: "destructive" }); }
+      else { toast({ title: data.error, variant: "destructive" }); }
     } catch { toast({ title: "Error", variant: "destructive" }); }
   };
 

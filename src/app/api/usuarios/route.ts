@@ -62,6 +62,8 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const session = await getUsuarioSession();
+    console.log("[usuarios POST] Session:", JSON.stringify(session));
+    
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
@@ -71,6 +73,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { email, password, nombre, rol, gradosAsignados, materiasAsignadas } = await request.json();
+    console.log("[usuarios POST] Data:", { email, nombre, rol, gradosAsignados, materiasAsignadas });
 
     if (!email || !password || !nombre || !rol) {
       return NextResponse.json({ error: "Todos los campos son requeridos" }, { status: 400 });
