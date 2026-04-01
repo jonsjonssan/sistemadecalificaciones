@@ -531,7 +531,8 @@ export default function Home() {
         credentials: "include",
         body: JSON.stringify({...editConfig, aplicarATodasLasMateriasDelGrado: configAplicarATodas, gradoId: gradoSeleccionado})
       });
-      if (!res.ok) { toast({ title: "Error al guardar configuración", variant: "destructive" }); return; }
+      const data = await res.json();
+      if (!res.ok) { toast({ title: data.error || "Error al guardar configuración", variant: "destructive" }); return; }
       setConfigDialogOpen(false);
       loadConfig();
       loadConfigsGrado();
