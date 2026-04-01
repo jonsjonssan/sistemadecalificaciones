@@ -164,6 +164,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await getUsuarioSession();
+    console.log("[config-actividades] POST session:", session ? JSON.stringify(session) : "null");
     if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
     const data = await request.json();
@@ -193,12 +194,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Trimestre es requerido y debe ser válido" }, { status: 400 });
     }
 
-    const numAC = numActividadesCotidianas !== undefined ? parseInt(String(numActividadesCotidianas)) : 4;
-    const numAI = numActividadesIntegradoras !== undefined ? parseInt(String(numActividadesIntegradoras)) : 1;
+    const numAC = numActividadesCotidianas !== undefined && numActividadesCotidianas !== null ? parseInt(String(numActividadesCotidianas)) : 4;
+    const numAI = numActividadesIntegradoras !== undefined && numActividadesIntegradoras !== null ? parseInt(String(numActividadesIntegradoras)) : 1;
     const tieneEx = tieneExamen === true || tieneExamen === "true" || tieneExamen === 1;
-    const porcAC = porcentajeAC !== undefined ? parseFloat(String(porcentajeAC)) : 35.0;
-    const porcAI = porcentajeAI !== undefined ? parseFloat(String(porcentajeAI)) : 35.0;
-    const porcEx = porcentajeExamen !== undefined ? parseFloat(String(porcentajeExamen)) : 30.0;
+    const porcAC = porcentajeAC !== undefined && porcentajeAC !== null ? parseFloat(String(porcentajeAC)) : 35.0;
+    const porcAI = porcentajeAI !== undefined && porcentajeAI !== null ? parseFloat(String(porcentajeAI)) : 35.0;
+    const porcEx = porcentajeExamen !== undefined && porcentajeExamen !== null ? parseFloat(String(porcentajeExamen)) : 30.0;
 
     console.log("[config-actividades] POST parsed values:", {
       trimestreNum, numAC, numAI, tieneEx, porcAC, porcAI, porcEx,
@@ -289,6 +290,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("[config-actividades] POST Error:", error);
     const errorMessage = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({ error: "Error al guardar configuración", details: errorMessage }, { status: 500 });
+    return NextResponse.json({ 
+      error: "Error al guardar configuración", 
+      details: errorMessage,
+      stack: error instanceof Error ? error.stack : undefined
+    }, { status: 500 });
   }
 }
