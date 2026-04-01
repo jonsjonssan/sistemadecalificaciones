@@ -529,7 +529,7 @@ export default function Home() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({...editConfig, trimestre: trimestreSeleccionado, aplicarATodasLasMateriasDelGrado: configAplicarATodas, gradoId: gradoSeleccionado})
+        body: JSON.stringify({...editConfig, materiaId: asignaturaSeleccionada, trimestre: trimestreSeleccionado, aplicarATodasLasMateriasDelGrado: configAplicarATodas, gradoId: gradoSeleccionado})
       });
       const data = await res.json();
       if (!res.ok) { toast({ title: data.error || "Error al guardar configuración", variant: "destructive" }); return; }
