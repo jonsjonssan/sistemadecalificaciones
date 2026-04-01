@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
     const data = await request.json();
     console.log("[config-actividades] POST body:", JSON.stringify(data));
 
-    const { materiaId, gradoId, aplicarATodasLasMateriasDelGrado, trimestre, numActividadesCotidianas, numActividadesIntegradoras, tieneExamen, porcentajeAC, porcentajeAI, porcentajeExamen } = data;
+    const { materiaId, gradoId, aplicarATodasLasMateriasDelGrado, trimestre: trimestreValue, numActividadesCotidianas, numActividadesIntegradoras, tieneExamen, porcentajeAC, porcentajeAI, porcentajeExamen } = data;
 
     if (session.rol === "docente") {
       const materiasAsignadasIds = session.asignaturasAsignadas?.map((m: any) => m.id) || [];
@@ -189,8 +189,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const trimestreNum = trimestre !== undefined && trimestre !== null ? parseInt(String(trimestre)) : NaN;
-    if (!trimestre || isNaN(trimestreNum)) {
+    const trimestreNum = trimestreValue !== undefined && trimestreValue !== null ? parseInt(String(trimestreValue)) : NaN;
+    if (!trimestreValue || isNaN(trimestreNum)) {
       return NextResponse.json({ error: "Trimestre es requerido y debe ser válido" }, { status: 400 });
     }
 
@@ -207,7 +207,9 @@ export async function POST(request: NextRequest) {
     });
 
     if (aplicarATodasLasMateriasDelGrado && gradoId) {
-      const materias = await sql`SELECT id FROM "Materia" WHERE "gradoId" = ${gradoId}`;
+      console.log("[config-actividades] Aplicando a todas las materias del grado:", gradoId);
+      const materias = await sql`SELECT id, nombre FROM "Materia" WHERE "gradoId" = ${gradoId}`;
+      console.log("[config-actividades] Materias encontradas:", materias.length, materias.map((m: any) => m.nombre));
       
       if (materias.length === 0) {
         return NextResponse.json({ error: "No hay materias para este grado" }, { status: 404 });
@@ -215,36 +217,41 @@ export async function POST(request: NextRequest) {
       
       let count = 0;
       for (const materia of materias) {
-        const exist = await sql`
-          SELECT id FROM "ConfigActividad"
-          WHERE "materiaId" = ${materia.id} AND trimestre = ${trimestreNum}
-        `;
-
-        if (exist.length > 0) {
-          await sql`
-            UPDATE "ConfigActividad" SET
-              "numActividadesCotidianas" = ${numAC},
-              "numActividadesIntegradoras" = ${numAI},
-              "tieneExamen" = ${tieneEx},
-              "porcentajeAC" = ${porcAC},
-              "porcentajeAI" = ${porcAI},
-              "porcentajeExamen" = ${porcEx}
+        try {
+          console.log("[config-actividades] Procesando materia:", materia.id, materia.nombre);
+          const exist = await sql`
+            SELECT id FROM "ConfigActividad"
             WHERE "materiaId" = ${materia.id} AND trimestre = ${trimestreNum}
           `;
-        } else {
-          await sql`
-            INSERT INTO "ConfigActividad" (
-              "materiaId", trimestre, 
-              "numActividadesCotidianas", "numActividadesIntegradoras", 
-              "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen"
-            ) VALUES (
-              ${materia.id}, ${trimestreNum},
-              ${numAC}, ${numAI},
-              ${tieneEx}, ${porcAC}, ${porcAI}, ${porcEx}
-            )
-          `;
+
+          if (exist.length > 0) {
+            await sql`
+              UPDATE "ConfigActividad" SET
+                "numActividadesCotidianas" = ${numAC},
+                "numActividadesIntegradoras" = ${numAI},
+                "tieneExamen" = ${tieneEx},
+                "porcentajeAC" = ${porcAC},
+                "porcentajeAI" = ${porcAI},
+                "porcentajeExamen" = ${porcEx}
+              WHERE "materiaId" = ${materia.id} AND trimestre = ${trimestreNum}
+            `;
+          } else {
+            await sql`
+              INSERT INTO "ConfigActividad" (
+                "materiaId", trimestre, 
+                "numActividadesCotidianas", "numActividadesIntegradoras", 
+                "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen"
+              ) VALUES (
+                ${materia.id}, ${trimestreNum},
+                ${numAC}, ${numAI},
+                ${tieneEx}, ${porcAC}, ${porcAI}, ${porcEx}
+              )
+            `;
+          }
+          count++;
+        } catch (err) {
+          console.error("[config-actividades] Error con materia:", materia.id, err);
         }
-        count++;
       }
       console.log("[config-actividades] POST apply-to-all success, count:", count);
       return NextResponse.json({ success: true, count });
