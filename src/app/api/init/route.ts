@@ -26,7 +26,7 @@ export async function POST() {
       if (existing.length > 0) return existing[0];
 
       const materiaId = randomUUID();
-      await sql`INSERT INTO "Materia" (id, nombre, "gradoId") VALUES (${materiaId}, ${nombre}, ${gradoId})`;
+      await sql`INSERT INTO "Materia" (id, nombre, "gradoId", "createdAt", "updatedAt") VALUES (${materiaId}, ${nombre}, ${gradoId}, NOW(), NOW())`;
 
       for (let t = 1; t <= 3; t++) {
         const existingCfg = await sql`SELECT id FROM "ConfigActividad" WHERE "materiaId" = ${materiaId} AND trimestre = ${t} LIMIT 1`;
