@@ -23,13 +23,19 @@ export async function GET(request: NextRequest) {
     const estudianteId = searchParams.get("estudianteId");
 
     if (session.rol === "docente") {
+      // IDs de materias asignadas directamente (docentes de grados 6-9)
       const materiasAsignadasIds = session.asignaturasAsignadas?.map((m: any) => m.id) || [];
-      const gradosAsignadosIds = session.asignaturasAsignadas?.map((m: any) => m.gradoId) || [];
-      
-      if (materiaId && !materiasAsignadasIds.includes(materiaId)) {
+      // Grados permitidos: por materias asignadas + por ser tutor
+      const gradosByMaterias = session.asignaturasAsignadas?.map((m: any) => m.gradoId) || [];
+      const gradosByTutor = session.gradosAsignados?.map((g: any) => g.id) || [];
+      const todosGradosIds = [...new Set([...gradosByMaterias, ...gradosByTutor])];
+
+      // Validar materia solo si el docente tiene materias específicas asignadas
+      if (materiaId && materiasAsignadasIds.length > 0 && !materiasAsignadasIds.includes(materiaId)) {
         return NextResponse.json({ error: "No autorizado para esta materia" }, { status: 403 });
       }
-      if (gradoId && !gradosAsignadosIds.includes(gradoId)) {
+      // Validar grado: debe ser tutor o tener alguna materia en ese grado
+      if (gradoId && !todosGradosIds.includes(gradoId)) {
         return NextResponse.json({ error: "No autorizado para este grado" }, { status: 403 });
       }
     }

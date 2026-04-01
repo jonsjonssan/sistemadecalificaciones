@@ -63,7 +63,7 @@ export async function POST() {
         await sql`UPDATE "Usuario" SET nombre = ${u.nombre}, rol = ${u.rol}, password = ${u.password}, "updatedAt" = NOW() WHERE id = ${userId}`;
       } else {
         userId = randomUUID();
-        await sql`INSERT INTO "Usuario" (id, email, password, nombre, rol) VALUES (${userId}, ${u.email}, ${u.password}, ${u.nombre}, ${u.rol})`;
+        await sql`INSERT INTO "Usuario" (id, email, password, nombre, rol, activo, "createdAt", "updatedAt") VALUES (${userId}, ${u.email}, ${u.password}, ${u.nombre}, ${u.rol}, true, NOW(), NOW())`;
       }
 
       if (u.tutorGrado) {
