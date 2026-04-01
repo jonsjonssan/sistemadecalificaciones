@@ -1051,26 +1051,26 @@ export default function Home() {
 
   // Login
   if (!usuario) return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-600 to-emerald-700 p-3 sm:p-4">
-      <Card className="w-full max-w-md shadow-2xl">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-600 to-emerald-700 p-4 safe-area-bottom">
+      <Card className="w-full max-w-sm sm:max-w-md shadow-2xl mx-4">
         <CardHeader className="text-center pb-2">
           <div className="mx-auto w-14 h-14 bg-white rounded-xl flex items-center justify-center mb-3 shadow-lg"><School className="h-10 w-7 text-teal-600" /></div>
-          <CardTitle className="text-lg sm:text-xl">Sistema de Calificaciones</CardTitle>
+          <CardTitle className="text-base sm:text-xl">Sistema de Calificaciones</CardTitle>
           <CardDescription className="text-xs sm:text-sm">Centro Escolar Católico San José de la Montaña</CardDescription>
         </CardHeader>
         <CardContent className="pt-4">
           {!initialized ? (
             <div className="space-y-3 text-center">
               <p className="text-sm text-muted-foreground">Inicializa el sistema para comenzar</p>
-              <Button onClick={initSystem} className="w-full bg-teal-600 hover:bg-teal-700">Inicializar Sistema</Button>
+              <Button onClick={initSystem} className="w-full bg-teal-600 hover:bg-teal-700 mobile-button">Inicializar Sistema</Button>
             </div>
           ) : (
             <form onSubmit={handleLogin} className="space-y-3">
-              <div><Label>Email</Label><Input type="email" value={loginForm.email} onChange={e => setLoginForm({...loginForm, email: e.target.value})} placeholder="correo@ejemplo.edu" required /></div>
-              <div><Label>Contraseña</Label><Input type="password" autoComplete="current-password" value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} required /></div>
+              <div><Label className="text-sm">Email</Label><Input type="email" value={loginForm.email} onChange={e => setLoginForm({...loginForm, email: e.target.value})} placeholder="correo@ejemplo.edu" required className="mobile-input" /></div>
+              <div><Label className="text-sm">Contraseña</Label><Input type="password" autoComplete="current-password" value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} required className="mobile-input" /></div>
               {loginError && <p className="text-sm text-red-500 text-center">{loginError}</p>}
-              <Button type="submit" className="w-full bg-teal-600 hover:bg-teal-700" disabled={loginLoading}>{loginLoading ? "Ingresando..." : "Ingresar"}</Button>
-              <p className="text-sm sm:text-base font-medium text-center text-muted-foreground">Ingrese sus credenciales para continuar</p>
+              <Button type="submit" className="w-full bg-teal-600 hover:bg-teal-700 mobile-button" disabled={loginLoading}>{loginLoading ? "Ingresando..." : "Ingresar"}</Button>
+              <p className="text-sm font-medium text-center text-muted-foreground">Ingrese sus credenciales para continuar</p>
             </form>
           )}
         </CardContent>
@@ -1080,13 +1080,13 @@ export default function Home() {
 
   // Main
   return (
-    <div className={`min-h-screen flex flex-col transition-colors duration-300 ${darkMode ? 'bg-[#0f172a] text-white' : 'bg-slate-100 text-slate-900'}`}>
-      <header className={`shadow-lg ${darkMode ? 'bg-[#1e293b] text-white border-b border-slate-700' : 'bg-teal-600 text-white'}`}>
+    <div className={`min-h-screen flex flex-col transition-colors duration-300 ${darkMode ? 'bg-[#0f172a] text-white' : 'bg-slate-100 text-slate-900'} safe-area-bottom`}>
+      <header className={`shadow-lg ${darkMode ? 'bg-[#1e293b] text-white border-b border-slate-700' : 'bg-teal-600 text-white'} mobile-header`}>
         <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0"><School className="h-5 w-5 sm:h-6 sm:w-6 shrink-0" /><div className="min-w-0"><h1 className="text-xs sm:text-sm font-bold truncate">Sistema de Calificaciones</h1><p className={`text-xs font-medium truncate ${darkMode ? 'text-slate-400' : 'text-teal-100'}`}>CEC San José de la Montaña</p></div></div>
           <div className="flex items-center gap-1 sm:gap-3">
             {configuracion && (
-              <Badge className={`text-xs sm:text-sm font-medium px-1.5 sm:px-2 py-0.5 ${darkMode ? 'bg-slate-700 text-slate-200' : 'bg-teal-700 text-white'}`}>
+              <Badge className={`text-xs font-medium px-1.5 sm:px-2 py-0.5 ${darkMode ? 'bg-slate-700 text-slate-200' : 'bg-teal-700 text-white'}`}>
                 Año {configuracion.añoEscolar}
               </Badge>
             )}
@@ -1097,10 +1097,10 @@ export default function Home() {
                 <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
               )}
             </button>
-            <div className={`text-right text-xs sm:text-sm font-medium hidden sm:block ${darkMode ? '' : ''}`}><p className="font-medium cursor-pointer hover:underline" onClick={() => setPerfilDialogOpen(true)}>{usuario.nombre}</p><p className={`capitalize ${darkMode ? 'text-slate-400' : 'text-teal-200'}`}>{usuario.rol}</p></div>
-            <Button variant="ghost" size="sm" onClick={() => setPerfilDialogOpen(true)} className={`h-8 sm:h-10 px-1.5 sm:px-2 text-xs sm:text-sm ${darkMode ? 'text-slate-200 hover:bg-slate-700' : 'text-white hover:bg-teal-700'}`}><User className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Perfil</span></Button>
-            <Button variant="ghost" size="sm" onClick={() => setPasswordDialogOpen(true)} className={`h-8 sm:h-10 px-1.5 sm:px-2 text-xs sm:text-sm ${darkMode ? 'text-slate-200 hover:bg-slate-700' : 'text-white hover:bg-teal-700'}`}><Key className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Clave</span></Button>
-            <Button variant="ghost" size="sm" onClick={handleLogout} className={`h-8 sm:h-10 px-1.5 sm:px-2 text-xs sm:text-sm ${darkMode ? 'text-slate-200 hover:bg-slate-700' : 'text-white hover:bg-teal-700'}`}><LogOut className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Salir</span></Button>
+            <div className={`text-right text-xs font-medium hidden sm:block ${darkMode ? '' : ''}`}><p className="font-medium cursor-pointer hover:underline" onClick={() => setPerfilDialogOpen(true)}>{usuario.nombre}</p><p className={`capitalize ${darkMode ? 'text-slate-400' : 'text-teal-200'}`}>{usuario.rol}</p></div>
+            <Button variant="ghost" size="sm" onClick={() => setPerfilDialogOpen(true)} className={`h-8 sm:h-10 px-1.5 sm:px-2 text-xs ${darkMode ? 'text-slate-200 hover:bg-slate-700' : 'text-white hover:bg-teal-700'}`}><User className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Perfil</span></Button>
+            <Button variant="ghost" size="sm" onClick={() => setPasswordDialogOpen(true)} className={`h-8 sm:h-10 px-1.5 sm:px-2 text-xs ${darkMode ? 'text-slate-200 hover:bg-slate-700' : 'text-white hover:bg-teal-700'}`}><Key className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Clave</span></Button>
+            <Button variant="ghost" size="sm" onClick={handleLogout} className={`h-8 sm:h-10 px-1.5 sm:px-2 text-xs ${darkMode ? 'text-slate-200 hover:bg-slate-700' : 'text-white hover:bg-teal-700'}`}><LogOut className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Salir</span></Button>
           </div>
         </div>
       </header>
@@ -1124,13 +1124,40 @@ export default function Home() {
       <main className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-3 py-2 sm:py-3 pb-24 md:pb-3">
         <Tabs value={activeTab} onValueChange={(val) => { setActiveTab(val); saveUserState({ activeTab: val }); }}>
           <TabsList className={`shadow-md h-10 overflow-x-auto rounded-md hidden md:inline-flex w-auto shrink-0 hide-scrollbar justify-start space-x-1 ${darkMode ? 'bg-[#1e293b] border border-slate-700' : 'bg-white'}`}>
-            <TabsTrigger id="tab-dashboard" value="dashboard" className={`text-sm sm:text-base font-medium px-3 gap-1 shrink-0 ${darkMode ? 'data-[state=active]:bg-slate-700 data-[state=active]:text-teal-400' : ''}`}><LayoutDashboard className="h-4 w-4 sm:h-5 sm:w-5" />Inicio</TabsTrigger>
-            <TabsTrigger id="tab-calificaciones" value="calificaciones" className={`text-sm sm:text-base font-medium px-3 gap-1 shrink-0 ${darkMode ? 'data-[state=active]:bg-slate-700 data-[state=active]:text-teal-400' : ''}`}><ClipboardList className="h-4 w-4 sm:h-5 sm:w-5" />Calificaciones</TabsTrigger>
-            <TabsTrigger id="tab-asistencia" value="asistencia" className={`text-sm sm:text-base font-medium px-3 gap-1 shrink-0 ${darkMode ? 'data-[state=active]:bg-slate-700 data-[state=active]:text-teal-400' : ''}`}><CalendarDays className="h-4 w-4 sm:h-5 sm:w-5" />Asistencia</TabsTrigger>
-            <TabsTrigger value="estudiantes" className={`text-sm sm:text-base font-medium px-3 gap-1 shrink-0 ${darkMode ? 'data-[state=active]:bg-slate-700 data-[state=active]:text-teal-400' : ''}`}><Users className="h-4 w-4 sm:h-5 sm:w-5" />Estudiantes</TabsTrigger>
-            <TabsTrigger value="boletas" className={`text-sm sm:text-base font-medium px-3 gap-1 shrink-0 ${darkMode ? 'data-[state=active]:bg-slate-700 data-[state=active]:text-teal-400' : ''}`}><FileText className="h-4 w-4 sm:h-5 sm:w-5" />Boletas</TabsTrigger>
-            {usuario.rol === "admin" && <TabsTrigger value="admin" className={`text-sm sm:text-base font-medium px-3 gap-1 shrink-0 ${darkMode ? 'data-[state=active]:bg-slate-700 data-[state=active]:text-teal-400' : ''}`}><Settings className="h-4 w-4 sm:h-5 sm:w-5" />Admin</TabsTrigger>}
+            <TabsTrigger id="tab-dashboard" value="dashboard" className={`text-sm font-medium px-3 gap-1 shrink-0 ${darkMode ? 'data-[state=active]:bg-slate-700 data-[state=active]:text-teal-400' : ''}`}><LayoutDashboard className="h-4 w-4" />Inicio</TabsTrigger>
+            <TabsTrigger id="tab-calificaciones" value="calificaciones" className={`text-sm font-medium px-3 gap-1 shrink-0 ${darkMode ? 'data-[state=active]:bg-slate-700 data-[state=active]:text-teal-400' : ''}`}><ClipboardList className="h-4 w-4" />Calificaciones</TabsTrigger>
+            <TabsTrigger id="tab-asistencia" value="asistencia" className={`text-sm font-medium px-3 gap-1 shrink-0 ${darkMode ? 'data-[state=active]:bg-slate-700 data-[state=active]:text-teal-400' : ''}`}><CalendarDays className="h-4 w-4" />Asistencia</TabsTrigger>
+            <TabsTrigger value="estudiantes" className={`text-sm font-medium px-3 gap-1 shrink-0 ${darkMode ? 'data-[state=active]:bg-slate-700 data-[state=active]:text-teal-400' : ''}`}><Users className="h-4 w-4" />Estudiantes</TabsTrigger>
+            <TabsTrigger value="boletas" className={`text-sm font-medium px-3 gap-1 shrink-0 ${darkMode ? 'data-[state=active]:bg-slate-700 data-[state=active]:text-teal-400' : ''}`}><FileText className="h-4 w-4" />Boletas</TabsTrigger>
+            {usuario.rol === "admin" && <TabsTrigger value="admin" className={`text-sm font-medium px-3 gap-1 shrink-0 ${darkMode ? 'data-[state=active]:bg-slate-700 data-[state=active]:text-teal-400' : ''}`}><Settings className="h-4 w-4" />Admin</TabsTrigger>}
           </TabsList>
+
+          {/* Mobile bottom nav */}
+          <nav className={`md:hidden fixed bottom-0 left-0 right-0 z-50 border-t ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'bg-white border-slate-200'} safe-area-bottom`}>
+            <div className="flex justify-around items-center h-14">
+              {[
+                { value: "dashboard", icon: LayoutDashboard, label: "Inicio" },
+                { value: "calificaciones", icon: ClipboardList, label: "Notas" },
+                { value: "asistencia", icon: CalendarDays, label: "Asist." },
+                { value: "estudiantes", icon: Users, label: "Estud." },
+                { value: "boletas", icon: FileText, label: "Boletas" },
+                ...(usuario.rol === "admin" ? [{ value: "admin", icon: Settings, label: "Admin" }] : []),
+              ].map((item) => (
+                <button
+                  key={item.value}
+                  onClick={() => { setActiveTab(item.value); saveUserState({ activeTab: item.value }); }}
+                  className={`flex flex-col items-center justify-center flex-1 h-full text-xs transition-colors ${
+                    activeTab === item.value
+                      ? (darkMode ? 'text-teal-400' : 'text-teal-600')
+                      : (darkMode ? 'text-slate-500' : 'text-slate-400')
+                  }`}
+                >
+                  <item.icon className="h-5 w-5" />
+                  <span className="text-[10px] mt-0.5">{item.label}</span>
+                </button>
+              ))}
+            </div>
+          </nav>
 
           {/* Dashboard */}
           <TabsContent value="dashboard" className="mt-3">
@@ -1178,16 +1205,16 @@ export default function Home() {
             <Card className={`shadow-lg border ${darkMode ? 'bg-[#1e293b] border-slate-700 text-white' : 'bg-white border-slate-200'}`}>
               <CardContent className="p-2 sm:p-3">
                 <div className="flex flex-wrap items-end gap-2 sm:gap-3">
-                  <div className="flex-1 min-w-[120px] sm:min-w-[140px]"><Label className={`text-sm sm:text-base font-medium mb-1 block ${darkMode ? 'text-slate-300' : ''}`}>Grado</Label><Select value={gradoSeleccionado || ""} onValueChange={(val) => { setGradoSeleccionado(val); saveUserState({ gradoSeleccionado: val }); }}><SelectTrigger className={`h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue placeholder="Seleccionar grado" /></SelectTrigger><SelectContent>{ gradosFiltrados && gradosFiltrados.length > 0 ? gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}" - {g.año}</SelectItem>) : <SelectItem value="no-grados" disabled>No hay grados</SelectItem>}</SelectContent></Select></div>
+                  <div className="flex-1 min-w-[120px] sm:min-w-[140px]"><Label className={`text-sm font-medium mb-1 block ${darkMode ? 'text-slate-300' : ''}`}>Grado</Label><Select value={gradoSeleccionado || ""} onValueChange={(val) => { setGradoSeleccionado(val); saveUserState({ gradoSeleccionado: val }); }}><SelectTrigger className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue placeholder="Seleccionar grado" /></SelectTrigger><SelectContent>{ gradosFiltrados && gradosFiltrados.length > 0 ? gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}" - {g.año}</SelectItem>) : <SelectItem value="no-grados" disabled>No hay grados</SelectItem>}</SelectContent></Select></div>
 
-                  <div className="flex-1 min-w-[140px] sm:min-w-[180px]"><Label className={`text-sm sm:text-base font-medium mb-1 block ${darkMode ? 'text-slate-300' : ''}`}>Asignatura</Label><Select value={asignaturaSeleccionada || ""} onValueChange={(val) => { setAsignaturaSeleccionada(val); saveUserState({ asignaturaSeleccionada: val }); }}><SelectTrigger className={`h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue placeholder="Seleccionar materia" /></SelectTrigger><SelectContent>{asignaturasFiltradas && asignaturasFiltradas.length > 0 ? asignaturasFiltradas.map(m => <SelectItem key={m.id} value={m.id} className="text-sm">{m.nombre}</SelectItem>) : <SelectItem value="no-materias" disabled>No hay materias</SelectItem>}</SelectContent></Select></div>
-                  <div className="w-20 sm:w-28"><Label className={`text-sm sm:text-base font-medium mb-1 block ${darkMode ? 'text-slate-300' : ''}`}>Trimestre</Label><Select value={trimestreSeleccionado} onValueChange={setTrimestreSeleccionado}><SelectTrigger className={`h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="1" className="text-sm">I</SelectItem><SelectItem value="2" className="text-sm">II</SelectItem><SelectItem value="3" className="text-sm">III</SelectItem></SelectContent></Select></div>
-                  {configActual && <div className={`flex items-center gap-1 text-xs sm:text-sm font-medium px-2 py-1 rounded ${darkMode ? 'text-slate-400 bg-slate-800' : 'text-slate-500 bg-slate-50'}`}><span>{configActual.numActividadesCotidianas} AC ({configActual.porcentajeAC}%)</span><span>•</span><span>{configActual.numActividadesIntegradoras} AI ({configActual.porcentajeAI}%)</span>{configActual.tieneExamen && <><span>•</span><span>Ex ({configActual.porcentajeExamen}%)</span></>}</div>}
-                  <Button size="sm" className={`h-10 sm:h-12 font-semibold text-xs sm:text-sm ${darkMode ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white'}`} onClick={handleGuardarTodo} disabled={saving}><Save className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">{saving ? 'Guardando...' : 'Guardar Todo'}</span><span className="sm:hidden">{saving ? '...' : 'Guardar'}</span></Button>
-                  <Button size="sm" variant="outline" className={`h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''}`} onClick={() => { setEditConfig(configActual); setConfigDialogOpen(true); }}><Settings className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Config</span></Button>
-                  <Button size="sm" variant="outline" className={`h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''}`} onClick={() => setImportDialogOpen(true)}><Upload className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Importar</span></Button>
+                  <div className="flex-1 min-w-[140px] sm:min-w-[180px]"><Label className={`text-sm font-medium mb-1 block ${darkMode ? 'text-slate-300' : ''}`}>Asignatura</Label><Select value={asignaturaSeleccionada || ""} onValueChange={(val) => { setAsignaturaSeleccionada(val); saveUserState({ asignaturaSeleccionada: val }); }}><SelectTrigger className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue placeholder="Seleccionar materia" /></SelectTrigger><SelectContent>{asignaturasFiltradas && asignaturasFiltradas.length > 0 ? asignaturasFiltradas.map(m => <SelectItem key={m.id} value={m.id} className="text-sm">{m.nombre}</SelectItem>) : <SelectItem value="no-materias" disabled>No hay materias</SelectItem>}</SelectContent></Select></div>
+                  <div className="w-20 sm:w-28"><Label className={`text-sm font-medium mb-1 block ${darkMode ? 'text-slate-300' : ''}`}>Trimestre</Label><Select value={trimestreSeleccionado} onValueChange={setTrimestreSeleccionado}><SelectTrigger className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="1" className="text-sm">I</SelectItem><SelectItem value="2" className="text-sm">II</SelectItem><SelectItem value="3" className="text-sm">III</SelectItem></SelectContent></Select></div>
+                  {configActual && <div className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded ${darkMode ? 'text-slate-400 bg-slate-800' : 'text-slate-500 bg-slate-50'}`}><span>{configActual.numActividadesCotidianas} AC ({configActual.porcentajeAC}%)</span><span>•</span><span>{configActual.numActividadesIntegradoras} AI ({configActual.porcentajeAI}%)</span>{configActual.tieneExamen && <><span>•</span><span>Ex ({configActual.porcentajeExamen}%)</span></>}</div>}
+                  <Button size="sm" className={`h-11 sm:h-12 font-semibold text-sm ${darkMode ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white'} mobile-button`} onClick={handleGuardarTodo} disabled={saving}><Save className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">{saving ? 'Guardando...' : 'Guardar Todo'}</span><span className="sm:hidden">{saving ? '...' : 'Guardar'}</span></Button>
+                  <Button size="sm" variant="outline" className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''} mobile-button`} onClick={() => { setEditConfig(configActual); setConfigDialogOpen(true); }}><Settings className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Config</span></Button>
+                  <Button size="sm" variant="outline" className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''} mobile-button`} onClick={() => setImportDialogOpen(true)}><Upload className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Importar</span></Button>
                   {usuario.rol === "admin" && (
-                    <Button size="sm" variant="destructive" className={`h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-red-700 hover:bg-red-600 border-red-600' : ''}`} onClick={() => { setBorrarCalifTipo("grado"); setBorrarCalifDialogOpen(true); }}><Trash2 className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Borrar Todo</span></Button>
+                    <Button size="sm" variant="destructive" className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-red-700 hover:bg-red-600 border-red-600' : ''} mobile-button`} onClick={() => { setBorrarCalifTipo("grado"); setBorrarCalifDialogOpen(true); }}><Trash2 className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Borrar Todo</span></Button>
                   )}
                 </div>
               </CardContent>
@@ -1534,19 +1561,19 @@ export default function Home() {
 
       {/* Dialogs */}
       <Dialog open={configDialogOpen} onOpenChange={setConfigDialogOpen}>
-        <DialogContent className={`max-w-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
-          <DialogHeader><DialogTitle>Configurar Actividades</DialogTitle><DialogDescription>Define cuántas actividades y sus porcentajes por trimestre.</DialogDescription></DialogHeader>
+        <DialogContent className={`max-w-sm mx-4 ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
+          <DialogHeader><DialogTitle className="text-base">Configurar Actividades</DialogTitle><DialogDescription className="text-sm">Define cuántas actividades y sus porcentajes por trimestre.</DialogDescription></DialogHeader>
           {editConfig && <div className="space-y-3">
-            <div><Label className="text-xs">Actividades Cotidianas</Label><div className="flex items-center gap-2 mt-1"><Input type="number" min="1" max="10" value={editConfig.numActividadesCotidianas} onChange={e => setEditConfig({...editConfig, numActividadesCotidianas: parseInt(e.target.value) || 1})} className={`w-16 h-8 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-xs">u.</span><Input type="number" min="0" max="100" value={editConfig.porcentajeAC} onChange={e => setEditConfig({...editConfig, porcentajeAC: parseFloat(e.target.value) || 0})} className={`w-16 h-8 ml-auto ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-xs">%</span></div></div>
-            <div><Label className="text-xs">Actividades Integradoras</Label><div className="flex items-center gap-2 mt-1"><Input type="number" min="1" max="10" value={editConfig.numActividadesIntegradoras} onChange={e => setEditConfig({...editConfig, numActividadesIntegradoras: parseInt(e.target.value) || 1})} className={`w-16 h-8 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-xs">u.</span><Input type="number" min="0" max="100" value={editConfig.porcentajeAI} onChange={e => setEditConfig({...editConfig, porcentajeAI: parseFloat(e.target.value) || 0})} className={`w-16 h-8 ml-auto ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-xs">%</span></div></div>
-            <div className="flex items-center justify-between"><Label className="text-xs">Examen</Label><div className="flex items-center gap-2"><input type="checkbox" checked={editConfig.tieneExamen} onChange={e => setEditConfig({...editConfig, tieneExamen: e.target.checked})} className="h-4 w-4" />{editConfig.tieneExamen && <><Input type="number" min="0" max="100" value={editConfig.porcentajeExamen} onChange={e => setEditConfig({...editConfig, porcentajeExamen: parseFloat(e.target.value) || 0})} className={`w-16 h-8 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-xs">%</span></>}</div></div>
-            <div className={`p-2 rounded text-xs flex justify-between ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}><span>Total:</span><span className={`font-bold ${Math.abs(editConfig.porcentajeAC + editConfig.porcentajeAI + (editConfig.tieneExamen ? editConfig.porcentajeExamen : 0) - 100) > 0.1 ? 'text-red-500' : (darkMode ? 'text-teal-400' : 'text-teal-600')}`}>{(editConfig.porcentajeAC + editConfig.porcentajeAI + (editConfig.tieneExamen ? editConfig.porcentajeExamen : 0)).toFixed(1)}%</span></div>
+            <div><Label className="text-sm">Actividades Cotidianas</Label><div className="flex items-center gap-2 mt-1"><Input type="number" min="1" max="10" value={editConfig.numActividadesCotidianas} onChange={e => setEditConfig({...editConfig, numActividadesCotidianas: parseInt(e.target.value) || 1})} className={`w-16 h-11 text-base ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-sm">u.</span><Input type="number" min="0" max="100" value={editConfig.porcentajeAC} onChange={e => setEditConfig({...editConfig, porcentajeAC: parseFloat(e.target.value) || 0})} className={`w-16 h-11 text-base ml-auto ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-sm">%</span></div></div>
+            <div><Label className="text-sm">Actividades Integradoras</Label><div className="flex items-center gap-2 mt-1"><Input type="number" min="1" max="10" value={editConfig.numActividadesIntegradoras} onChange={e => setEditConfig({...editConfig, numActividadesIntegradoras: parseInt(e.target.value) || 1})} className={`w-16 h-11 text-base ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-sm">u.</span><Input type="number" min="0" max="100" value={editConfig.porcentajeAI} onChange={e => setEditConfig({...editConfig, porcentajeAI: parseFloat(e.target.value) || 0})} className={`w-16 h-11 text-base ml-auto ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-sm">%</span></div></div>
+            <div className="flex items-center justify-between"><Label className="text-sm">Examen</Label><div className="flex items-center gap-2"><input type="checkbox" checked={editConfig.tieneExamen} onChange={e => setEditConfig({...editConfig, tieneExamen: e.target.checked})} className="h-5 w-5" />{editConfig.tieneExamen && <><Input type="number" min="0" max="100" value={editConfig.porcentajeExamen} onChange={e => setEditConfig({...editConfig, porcentajeExamen: parseFloat(e.target.value) || 0})} className={`w-16 h-11 text-base ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-sm">%</span></>}</div></div>
+            <div className={`p-3 rounded-lg text-sm flex justify-between ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}><span>Total:</span><span className={`font-bold ${Math.abs(editConfig.porcentajeAC + editConfig.porcentajeAI + (editConfig.tieneExamen ? editConfig.porcentajeExamen : 0) - 100) > 0.1 ? 'text-red-500' : (darkMode ? 'text-teal-400' : 'text-teal-600')}`}>{(editConfig.porcentajeAC + editConfig.porcentajeAI + (editConfig.tieneExamen ? editConfig.porcentajeExamen : 0)).toFixed(1)}%</span></div>
             <div className={`flex items-center gap-2 mt-4 pt-4 border-t ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
-              <input type="checkbox" id="aplicarATodas" checked={configAplicarATodas} onChange={e => setConfigAplicarATodas(e.target.checked)} className="h-4 w-4 text-teal-600" />
+              <input type="checkbox" id="aplicarATodas" checked={configAplicarATodas} onChange={e => setConfigAplicarATodas(e.target.checked)} className="h-5 w-5 text-teal-600" />
               <Label htmlFor="aplicarATodas" className="text-sm font-medium">Aplicar a todas las materias de este grado</Label>
             </div>
           </div>}
-          <DialogFooter><Button variant="outline" size="sm" onClick={() => setConfigDialogOpen(false)}>Cancelar</Button><Button size="sm" onClick={handleSaveConfig} className="bg-teal-600">Guardar</Button></DialogFooter>
+          <DialogFooter className="flex-row gap-2 sm:gap-0"><Button variant="outline" size="sm" className="flex-1 sm:flex-initial" onClick={() => setConfigDialogOpen(false)}>Cancelar</Button><Button size="sm" className="flex-1 sm:flex-initial bg-teal-600" onClick={handleSaveConfig}>Guardar</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -1690,10 +1717,11 @@ const NotaInput = React.memo(({ value, onChange, darkMode }: { value: string | n
   return (
     <input
       type="number"
+      inputMode="decimal"
       min="0"
       max="10"
       step="0.1"
-      className={`w-10 sm:w-12 h-6 sm:h-7 text-sm sm:text-base font-medium text-center border border-transparent focus:border-teal-400/50 bg-transparent rounded-md transition-all ${inputBg}`}
+      className={`w-10 sm:w-12 h-7 sm:h-8 text-xs sm:text-sm font-medium text-center border border-transparent focus:border-teal-400/50 bg-transparent rounded-md transition-all ${inputBg}`}
       value={value}
       onChange={e => onChange(e.target.value)}
     />
