@@ -21,7 +21,7 @@ import Dashboard from "@/components/Dashboard";
 import AsistenciaBoard from "@/components/AsistenciaBoard";
 
 // Interfaces
-interface UsuarioSesion { id: string; email: string; nombre: string; rol: string; gradosAsignados?: { id: string; numero: number; seccion: string; }[]; asignaturasAsignadas?: { id: string; nombre: string; gradoId: string; gradoNumero?: number; }[]; }
+interface UsuarioSesion { id: string; email: string; nombre: string; rol: string; gradosAsignados?: { id: string; numero: number; seccion: string; }[]; asignaturasAsignadas?: { id: string; nombre: string; gradoId: string; gradoNumero?: number; gradoSeccion?: string; }[]; }
 interface AsignaturaConGrado { id: string; nombre: string; gradoId: string; grado?: { id: string; numero: number; seccion: string; }; gradoNumero?: number; }
 interface Usuario { 
   id: string; 
@@ -1116,6 +1116,11 @@ export default function Home() {
               totalEstudiantes={grados.reduce((sum, g) => sum + (g._count?.estudiantes || 0), 0)}
               totalAsignaturas={todasAsignaturas.length}
               totalDocentes={usuarios.filter(u => u.rol === "docente" && u.activo).length}
+              asignaturasAsignadas={(usuario.asignaturasAsignadas || []).map((m: any) => ({
+                id: m.id,
+                nombre: m.nombre,
+                grado: m.gradoNumero ? { numero: m.gradoNumero, seccion: m.gradoSeccion || "" } : undefined
+              }))}
             />
           </TabsContent>
 
