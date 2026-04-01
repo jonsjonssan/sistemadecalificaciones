@@ -114,7 +114,7 @@ export async function POST() {
         password: "docente123",
         rol: "docente",
         materias: [
-          ...[4, 5, 6].map(g => ({ grado: g, mat: "Aritmética y Finanzas" })),
+          { grado: 6, mat: "Aritmética y Finanzas" },
           ...[7, 8, 9].map(g => ({ grado: g, mat: "Matemática y Datos" }))
         ]
       },
@@ -147,7 +147,7 @@ export async function POST() {
         tutorGrado: 3,
         materias: [3].flatMap(g => [
           { grado: g, mat: "Comunicación y Literatura" },
-          { grado: g, mat: "Aritmética y Finanzas" },
+          { grado: g, mat: "Números y Formas" },
           { grado: g, mat: "Ciudadanía y Valores" },
           { grado: g, mat: "Ciencia y Tecnología" }
         ])
@@ -186,7 +186,7 @@ export async function POST() {
         tutorGrado: 2,
         materias: [2].flatMap(g => [
           { grado: g, mat: "Comunicación y Literatura" },
-          { grado: g, mat: "Aritmética y Finanzas" },
+          { grado: g, mat: "Números y Formas" },
           { grado: g, mat: "Ciudadanía y Valores" },
           { grado: g, mat: "Ciencia y Tecnología" }
         ])
