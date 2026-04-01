@@ -35,6 +35,7 @@ interface Usuario {
 interface Estudiante { id: string; numero: number; nombre: string; gradoId: string; activo: boolean; }
 interface Asignatura { id: string; nombre: string; gradoId: string; }
 interface ConfigActividad { id: string; materiaId: string; trimestre: number; numActividadesCotidianas: number; numActividadesIntegradoras: number; tieneExamen: boolean; porcentajeAC: number; porcentajeAI: number; porcentajeExamen: number; asignaturaNombre?: string; }
+type ConfigActividadPartial = Partial<ConfigActividad> & { numActividadesCotidianas: number; numActividadesIntegradoras: number; tieneExamen: boolean; porcentajeAC: number; porcentajeAI: number; porcentajeExamen: number; };
 interface Calificacion { id: string; estudianteId: string; materiaId: string; trimestre: number; actividadesCotidianas: string | null; calificacionAC: number | null; actividadesIntegradoras: string | null; calificacionAI: number | null; examenTrimestral: number | null; promedioFinal: number | null; recuperacion: number | null; estudiante?: Estudiante; asignatura?: Asignatura; config?: ConfigActividad; }
 interface Grado { id: string; numero: number; seccion: string; año: number; docenteId: string | null; docente?: { id: string; nombre: string; email: string; }; _count?: { estudiantes: number; materias: number; }; }
 interface ConfiguracionSistema { id: string; añoEscolar: number; escuela: string; }
@@ -44,9 +45,12 @@ const calcularPromedio = (notas: (number | null)[]): number | null => {
   const validas = notas.filter(n => n !== null && !isNaN(n!)) as number[];
   return validas.length ? validas.reduce((a, b) => a + b, 0) / validas.length : null;
 };
-const calcularPromedioFinal = (ac: number | null, ai: number | null, et: number | null, cfg: ConfigActividad, recup: number | null = null): number | null => {
+const calcularPromedioFinal = (ac: number | null, ai: number | null, et: number | null, cfg: ConfigActividadPartial, recup: number | null = null): number | null => {
   if (ac === null && ai === null && et === null) return null;
-  let base = (ac ?? 0) * cfg.porcentajeAC / 100 + (ai ?? 0) * cfg.porcentajeAI / 100 + (et ?? 0) * cfg.porcentajeExamen / 100;
+  const pctAC = cfg.porcentajeAC ?? 35;
+  const pctAI = cfg.porcentajeAI ?? 35;
+  const pctEx = cfg.porcentajeExamen ?? 30;
+  let base = (ac ?? 0) * pctAC / 100 + (ai ?? 0) * pctAI / 100 + (et ?? 0) * pctEx / 100;
   if (recup !== null) base = Math.min(10, base + recup);
   return base;
 };
@@ -77,7 +81,7 @@ export default function Home() {
   const [asignaturas, setAsignaturas] = useState<Asignatura[]>([]);
   const [todasAsignaturas, setTodasAsignaturas] = useState<AsignaturaConGrado[]>([]);
   const [calificaciones, setCalificaciones] = useState<Calificacion[]>([]);
-  const [configActual, setConfigActual] = useState<ConfigActividad | null>(null);
+  const [configActual, setConfigActual] = useState<ConfigActividadPartial | null>(null);
   const [configsGrado, setConfigsGrado] = useState<ConfigActividad[]>([]);
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   
@@ -109,7 +113,7 @@ export default function Home() {
     return [];
   });
   const [expandedBoleta, setExpandedBoleta] = useState<string | null>(null);
-  const [editConfig, setEditConfig] = useState<ConfigActividad | null>(null);
+  const [editConfig, setEditConfig] = useState<ConfigActividadPartial | null>(null);
   const [configAplicarATodas, setConfigAplicarATodas] = useState(false);
   const [importData, setImportData] = useState("");
   const [nuevoUsuario, setNuevoUsuario] = useState({ 
@@ -129,6 +133,10 @@ export default function Home() {
   const [resetPasswordForm, setResetPasswordForm] = useState({ password: "docente123" });
   const [resetPasswordLoading, setResetPasswordLoading] = useState(false);
   const [perfilDialogOpen, setPerfilDialogOpen] = useState(false);
+  const [borrarCalifDialogOpen, setBorrarCalifDialogOpen] = useState(false);
+  const [borrarCalifTipo, setBorrarCalifTipo] = useState<"alumno" | "grado" | null>(null);
+  const [borrarCalifEstudianteId, setBorrarCalifEstudianteId] = useState<string | null>(null);
+  const [borrarCalifLoading, setBorrarCalifLoading] = useState(false);
 
   // Persistence: Cargar de localStorage
   useEffect(() => {
@@ -242,11 +250,11 @@ export default function Home() {
         setConfigActual(data);
       } else {
         console.error("Error al cargar config:", res.status);
-        setConfigActual(null);
+        setConfigActual({ numActividadesCotidianas: 4, numActividadesIntegradoras: 1, tieneExamen: true, porcentajeAC: 35, porcentajeAI: 35, porcentajeExamen: 30 });
       }
     } catch { 
       console.error("Error al cargar config"); 
-      setConfigActual(null);
+      setConfigActual({ numActividadesCotidianas: 4, numActividadesIntegradoras: 1, tieneExamen: true, porcentajeAC: 35, porcentajeAI: 35, porcentajeExamen: 30 });
     }
   }, [asignaturaSeleccionada, trimestreSeleccionado]);
 
@@ -254,8 +262,8 @@ export default function Home() {
     if (!gradoSeleccionado || !trimestreSeleccionado) return;
     try {
       const res = await fetch(`/api/config-actividades?gradoId=${gradoSeleccionado}&trimestre=${trimestreSeleccionado}`, { cache: "no-store", credentials: "include" });
-      setConfigsGrado(await res.json());
-    } catch { /* error toast */ }
+      if (res.ok) setConfigsGrado(await res.json());
+    } catch { setConfigsGrado([]); }
   }, [gradoSeleccionado, trimestreSeleccionado]);
 
   const loadCalificaciones = useCallback(async () => {
@@ -530,6 +538,45 @@ export default function Home() {
       loadCalificaciones();
       toast({ title: configAplicarATodas ? "Configuración aplicada a todas las materias del grado" : "Configuración guardada" });
     } catch { toast({ title: "Error", variant: "destructive" }); }
+  };
+
+  const handleBorrarCalifAlumno = async () => {
+    if (!borrarCalifEstudianteId || !asignaturaSeleccionada || !trimestreSeleccionado) return;
+    setBorrarCalifLoading(true);
+    try {
+      const res = await fetch(`/api/calificaciones?estudianteId=${borrarCalifEstudianteId}&materiaId=${asignaturaSeleccionada}&trimestre=${trimestreSeleccionado}`, {
+        method: "DELETE",
+        credentials: "include"
+      });
+      if (res.ok) {
+        toast({ title: "Calificaciones del alumno borradas" });
+        setBorrarCalifDialogOpen(false);
+        loadCalificaciones();
+      } else {
+        toast({ title: "Error al borrar", variant: "destructive" });
+      }
+    } catch { toast({ title: "Error", variant: "destructive" }); }
+    finally { setBorrarCalifLoading(false); }
+  };
+
+  const handleBorrarCalifGrado = async () => {
+    if (!gradoSeleccionado || !asignaturaSeleccionada || !trimestreSeleccionado) return;
+    setBorrarCalifLoading(true);
+    try {
+      const res = await fetch(`/api/calificaciones/borrar-todas?gradoId=${gradoSeleccionado}&materiaId=${asignaturaSeleccionada}&trimestre=${trimestreSeleccionado}`, {
+        method: "DELETE",
+        credentials: "include"
+      });
+      if (res.ok) {
+        const data = await res.json();
+        toast({ title: `${data.borradas} calificaciones borradas` });
+        setBorrarCalifDialogOpen(false);
+        loadCalificaciones();
+      } else {
+        toast({ title: "Error al borrar", variant: "destructive" });
+      }
+    } catch { toast({ title: "Error", variant: "destructive" }); }
+    finally { setBorrarCalifLoading(false); }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1103,6 +1150,9 @@ export default function Home() {
                   <Button size="sm" className={`h-10 sm:h-12 font-semibold text-xs sm:text-sm ${darkMode ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white'}`} onClick={handleGuardarTodo} disabled={saving}><Save className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">{saving ? 'Guardando...' : 'Guardar Todo'}</span><span className="sm:hidden">{saving ? '...' : 'Guardar'}</span></Button>
                   <Button size="sm" variant="outline" className={`h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''}`} onClick={() => { setEditConfig(configActual); setConfigDialogOpen(true); }}><Settings className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Config</span></Button>
                   <Button size="sm" variant="outline" className={`h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''}`} onClick={() => setImportDialogOpen(true)}><Upload className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Importar</span></Button>
+                  {usuario.rol === "admin" && (
+                    <Button size="sm" variant="destructive" className={`h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-red-700 hover:bg-red-600 border-red-600' : ''}`} onClick={() => { setBorrarCalifTipo("grado"); setBorrarCalifDialogOpen(true); }}><Trash2 className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Borrar Todo</span></Button>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -1145,7 +1195,7 @@ export default function Home() {
                       <tbody>
                         {(estudiantes || []).map((est, idx) => {
                           const calif = getCalificacion(est.id);
-                          return <CalificacionRow key={`${est.id}-${asignaturaSeleccionada}-${trimestreSeleccionado}`} estudiante={est} materiaId={asignaturaSeleccionada} calificacion={calif} config={configActual} onSave={handleSaveCalificacion} saving={saving} darkMode={darkMode} evenRow={idx % 2 === 0} />
+                          return <CalificacionRow key={`${est.id}-${asignaturaSeleccionada}-${trimestreSeleccionado}`} estudiante={est} materiaId={asignaturaSeleccionada} trimestre={trimestreSeleccionado} calificacion={calif} config={configActual} onSave={handleSaveCalificacion} saving={saving} darkMode={darkMode} evenRow={idx % 2 === 0} isAdmin={usuario.rol === "admin"} onBorrar={(estId) => { setBorrarCalifEstudianteId(estId); setBorrarCalifTipo("alumno"); setBorrarCalifDialogOpen(true); }} />
                         })}
                       </tbody>
                     </table>
@@ -1480,6 +1530,26 @@ export default function Home() {
         </DialogContent>
       </Dialog>
 
+      {/* Dialogo para borrar calificaciones */}
+      <Dialog open={borrarCalifDialogOpen} onOpenChange={setBorrarCalifDialogOpen}>
+        <DialogContent className={`sm:max-w-[400px] ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
+          <DialogHeader>
+            <DialogTitle className="text-red-600 flex items-center gap-2"><Trash2 className="h-5 w-5" />Borrar Calificaciones</DialogTitle>
+            <DialogDescription>
+              {borrarCalifTipo === "grado" 
+                ? `Esto borrará TODAS las calificaciones del grado "${estudiantes[0]?.nombre ? 'seleccionado' : ''}" en la materia y trimestre seleccionados. Esta acción no se puede deshacer.`
+                : "Esto borrará las calificaciones del estudiante seleccionado. Esta acción no se puede deshacer."}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBorrarCalifDialogOpen(false)}>Cancelar</Button>
+            <Button variant="destructive" onClick={borrarCalifTipo === "grado" ? handleBorrarCalifGrado : handleBorrarCalifAlumno} disabled={borrarCalifLoading}>
+              {borrarCalifLoading ? "Borrando..." : "Borrar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Dialogo para restablecer contraseña */}
       <Dialog open={resetPasswordDialogOpen} onOpenChange={setResetPasswordDialogOpen}>
         <DialogContent className={`sm:max-w-[400px] ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
@@ -1594,10 +1664,12 @@ const NotaInput = React.memo(({ value, onChange, darkMode }: { value: string | n
   );
 });
 
-const CalificacionRow = React.memo(function CalificacionRow({ estudiante, materiaId, calificacion, config, onSave, saving, darkMode, evenRow }: { estudiante: Estudiante; materiaId: string; calificacion?: Calificacion; config: ConfigActividad | null; onSave: (id: string, matId: string, data: { actividadesCotidianas: (number | null)[]; actividadesIntegradoras: (number | null)[]; examenTrimestral: number | null; recuperacion: number | null; }) => void; saving: boolean; darkMode: boolean; evenRow: boolean; }) {
+const CalificacionRow = React.memo(function CalificacionRow({ estudiante, materiaId, trimestre, calificacion, config, onSave, saving, darkMode, evenRow, isAdmin, onBorrar }: { estudiante: Estudiante; materiaId: string; trimestre: string; calificacion?: Calificacion; config: ConfigActividadPartial | null; onSave: (id: string, matId: string, data: { actividadesCotidianas: (number | null)[]; actividadesIntegradoras: (number | null)[]; examenTrimestral: number | null; recuperacion: number | null; }) => void; saving: boolean; darkMode: boolean; evenRow: boolean; isAdmin?: boolean; onBorrar?: (estudianteId: string) => void; }) {
   const numAC = config?.numActividadesCotidianas ?? 4;
   const numAI = config?.numActividadesIntegradoras ?? 1;
   const tieneExamen = config?.tieneExamen ?? true;
+  
+  const key = `${materiaId}-${trimestre}-${calificacion?.id || 'none'}`;
   
   const [acNotas, setAcNotas] = useState<(number | null)[]>(() => parseNotas(calificacion?.actividadesCotidianas ?? null, numAC));
   const [aiNotas, setAiNotas] = useState<(number | null)[]>(() => parseNotas(calificacion?.actividadesIntegradoras ?? null, numAI));
@@ -1606,15 +1678,19 @@ const CalificacionRow = React.memo(function CalificacionRow({ estudiante, materi
   const [dirty, setDirty] = useState(false);
   
   useEffect(() => {
-    if (!dirty && calificacion) {
-      const newAC = parseNotas(calificacion.actividadesCotidianas ?? null, numAC);
-      const newAI = parseNotas(calificacion.actividadesIntegradoras ?? null, numAI);
-      if (JSON.stringify(newAC) !== JSON.stringify(acNotas)) setAcNotas(newAC);
-      if (JSON.stringify(newAI) !== JSON.stringify(aiNotas)) setAiNotas(newAI);
-      if (calificacion.examenTrimestral !== examen) setExamen(calificacion.examenTrimestral ?? null);
-      if (calificacion.recuperacion !== recup) setRecup(calificacion.recuperacion ?? null);
-    }
-  }, [calificacion?.id]);
+    const timer = setTimeout(() => {
+      const newAC = parseNotas(calificacion?.actividadesCotidianas ?? null, numAC);
+      const newAI = parseNotas(calificacion?.actividadesIntegradoras ?? null, numAI);
+      const newEx = calificacion?.examenTrimestral ?? null;
+      const newRc = calificacion?.recuperacion ?? null;
+      setAcNotas(newAC);
+      setAiNotas(newAI);
+      setExamen(newEx);
+      setRecup(newRc);
+      setDirty(false);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [key, numAC, numAI]);
   
   const stateRef = useRef({ dirty, acNotas, aiNotas, examen, recup });
   useEffect(() => { stateRef.current = { dirty, acNotas, aiNotas, examen, recup }; }, [dirty, acNotas, aiNotas, examen, recup]);
@@ -1677,6 +1753,7 @@ const CalificacionRow = React.memo(function CalificacionRow({ estudiante, materi
         <td className={`p-1 border-l ${cellBorder}`}><NotaInput value={recup ?? ""} onChange={handleRecup} darkMode={darkMode} /></td>
         <td className={`p-2 text-center border-l ${cellBorder} ${finalBg}`}><span className={`inline-block px-2 py-0.5 rounded-md text-xs sm:text-sm font-bold shadow ${finalBadgeClass}`}>{promFinal !== null ? promFinal.toFixed(2) : "-"}</span></td>
         <td className={`p-2 border-l ${cellBorder} text-center`}>{statusIcon}</td>
+        {isAdmin && onBorrar && <td className={`p-1 border-l ${cellBorder} text-center`}><button onClick={() => onBorrar(estudiante.id)} title="Borrar calificaciones de este alumno" className="text-red-500 hover:text-red-700 p-1">🗑️</button></td>}
       </tr>
     );
   }

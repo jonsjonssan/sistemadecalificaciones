@@ -195,3 +195,46 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Error al guardar calificación", details: errMsg }, { status: 500 });
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await getUsuarioSession();
+    if (!session || session.rol !== "admin") {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const estudianteId = searchParams.get("estudianteId");
+    const materiaId = searchParams.get("materiaId");
+    const trimestre = searchParams.get("trimestre");
+    const gradoId = searchParams.get("gradoId");
+
+    const prisma = new PrismaClient();
+
+    if (estudianteId && materiaId && trimestre) {
+      const deleted = await prisma.calificacion.deleteMany({
+        where: { estudianteId, materiaId, trimestre: parseInt(trimestre) }
+      });
+      await prisma.$disconnect();
+      return NextResponse.json({ deleted: deleted.count });
+    }
+
+    if (gradoId && materiaId && trimestre) {
+      const deleted = await prisma.calificacion.deleteMany({
+        where: {
+          estudiante: { gradoId },
+          materiaId,
+          trimestre: parseInt(trimestre)
+        }
+      });
+      await prisma.$disconnect();
+      return NextResponse.json({ borradas: deleted.count });
+    }
+
+    await prisma.$disconnect();
+    return NextResponse.json({ error: "Parámetros insuficientes" }, { status: 400 });
+  } catch (error) {
+    console.error("Error al borrar calificaciones:", error);
+    return NextResponse.json({ error: "Error al borrar" }, { status: 500 });
+  }
+}
