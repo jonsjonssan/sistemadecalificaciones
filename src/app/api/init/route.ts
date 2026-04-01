@@ -27,11 +27,10 @@ export async function POST() {
       await sql`INSERT INTO "Materia" (id, nombre, "gradoId") VALUES (${materiaId}, ${nombre}, ${gradoId})`;
 
       for (let t = 1; t <= 3; t++) {
-        await sql`
-          INSERT INTO "ConfigActividad" (id, "materiaId", trimestre, "numActividadesCotidianas", "numActividadesIntegradoras", "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen")
-          VALUES (${randomUUID()}, ${materiaId}, ${t}, 4, 1, true, 35.0, 35.0, 30.0)
-          ON CONFLICT DO NOTHING
-        `;
+        const existingCfg = await sql`SELECT id FROM "ConfigActividad" WHERE "materiaId" = ${materiaId} AND trimestre = ${t} LIMIT 1`;
+        if (existingCfg.length === 0) {
+          await sql`INSERT INTO "ConfigActividad" (id, "materiaId", trimestre, "numActividadesCotidianas", "numActividadesIntegradoras", "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen") VALUES (${randomUUID()}, ${materiaId}, ${t}, 4, 1, true, 35.0, 35.0, 30.0)`;
+        }
       }
       return { id: materiaId, nombre, gradoId };
     };
@@ -75,11 +74,10 @@ export async function POST() {
       for (const mat of u.materias) {
         const materiaRecord = await asegurarMateria(mat.mat, mat.grado);
         if (materiaRecord) {
-          await sql`
-            INSERT INTO "DocenteMateria" ("docenteId", "materiaId")
-            VALUES (${userId}, ${materiaRecord.id})
-            ON CONFLICT ("docenteId", "materiaId") DO NOTHING
-          `;
+          const existingAsig = await sql`SELECT id FROM "DocenteMateria" WHERE "docenteId" = ${userId} AND "materiaId" = ${materiaRecord.id} LIMIT 1`;
+          if (existingAsig.length === 0) {
+            await sql`INSERT INTO "DocenteMateria" (id, "docenteId", "materiaId") VALUES (${randomUUID()}, ${userId}, ${materiaRecord.id})`;
+          }
         }
       }
     }
