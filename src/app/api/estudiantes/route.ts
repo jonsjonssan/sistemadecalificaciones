@@ -71,8 +71,8 @@ export async function POST(request: NextRequest) {
     const nuevoNumero = ultimo.length > 0 ? ultimo[0].numero + 1 : 1;
 
     const result = await sql`
-      INSERT INTO "Estudiante" (numero, nombre, "gradoId")
-      VALUES (${nuevoNumero}, ${nombre}, ${gradoId})
+      INSERT INTO "Estudiante" (numero, nombre, "gradoId", "createdAt", "updatedAt")
+      VALUES (${nuevoNumero}, ${nombre}, ${gradoId}, NOW(), NOW())
       RETURNING *
     `;
 
@@ -107,8 +107,8 @@ export async function PUT(request: NextRequest) {
     const creados: any[] = [];
     for (let i = 0; i < estudiantes.length; i++) {
       const result = await sql`
-        INSERT INTO "Estudiante" (numero, nombre, "gradoId")
-        VALUES (${numeroInicial + i + 1}, ${estudiantes[i]}, ${gradoId})
+        INSERT INTO "Estudiante" (numero, nombre, "gradoId", "createdAt", "updatedAt")
+        VALUES (${numeroInicial + i + 1}, ${estudiantes[i]}, ${gradoId}, NOW(), NOW())
         RETURNING *
       `;
       creados.push(result[0]);

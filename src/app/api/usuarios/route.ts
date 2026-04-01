@@ -84,8 +84,8 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const nuevoUsuario = await sql`
-      INSERT INTO "Usuario" (email, password, nombre, rol)
-      VALUES (${email}, ${hashedPassword}, ${nombre}, ${rol})
+      INSERT INTO "Usuario" (email, password, nombre, rol, "createdAt", "updatedAt")
+      VALUES (${email}, ${hashedPassword}, ${nombre}, ${rol}, NOW(), NOW())
       RETURNING id, email, nombre, rol, activo
     `;
 
