@@ -528,19 +528,22 @@ export default function Home() {
     if (!asignaturaSeleccionada) { toast({ title: "No hay materia seleccionada", variant: "destructive" }); return; }
     if (!gradoSeleccionado) { toast({ title: "No hay grado seleccionado", variant: "destructive" }); return; }
     try {
+      const trimestreNum = parseInt(trimestreSeleccionado);
+      console.log("[handleSaveConfig] Trimestre parseado:", trimestreNum, "tipo:", typeof trimestreNum);
+      
       const payload = {
         materiaId: asignaturaSeleccionada,
-        trimestre: parseInt(trimestreSeleccionado),
-        numActividadesCotidianas: editConfig.numActividadesCotidianas,
-        numActividadesIntegradoras: editConfig.numActividadesIntegradoras,
-        tieneExamen: editConfig.tieneExamen,
-        porcentajeAC: editConfig.porcentajeAC,
-        porcentajeAI: editConfig.porcentajeAI,
-        porcentajeExamen: editConfig.porcentajeExamen,
-        aplicarATodasLasMateriasDelGrado: configAplicarATodas,
+        trimestre: trimestreNum,
+        numActividadesCotidianas: Number(editConfig.numActividadesCotidianas),
+        numActividadesIntegradoras: Number(editConfig.numActividadesIntegradoras),
+        tieneExamen: Boolean(editConfig.tieneExamen),
+        porcentajeAC: Number(editConfig.porcentajeAC),
+        porcentajeAI: Number(editConfig.porcentajeAI),
+        porcentajeExamen: Number(editConfig.porcentajeExamen),
+        aplicarATodasLasMateriasDelGrado: Boolean(configAplicarATodas),
         gradoId: gradoSeleccionado,
       };
-      console.log("[handleSaveConfig] Enviando payload:", payload);
+      console.log("[handleSaveConfig] Enviando payload:", JSON.stringify(payload));
       const res = await fetch("/api/config-actividades", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -551,9 +554,12 @@ export default function Home() {
       console.log("[handleSaveConfig] Respuesta:", { status: res.status, data });
       if (!res.ok) { toast({ title: data.error || "Error al guardar configuración", variant: "destructive" }); return; }
       setConfigDialogOpen(false);
-      loadConfig();
-      loadConfigsGrado();
-      loadCalificaciones();
+      console.log("[handleSaveConfig] Calling loadConfig()...");
+      await loadConfig();
+      console.log("[handleSaveConfig] loadConfig() completado");
+      await loadConfigsGrado();
+      await loadCalificaciones();
+      console.log("[handleSaveConfig] Todo cargado, configActual:", configActual);
       toast({ title: configAplicarATodas ? "Configuración aplicada a todas las materias del grado" : "Configuración guardada" });
     } catch (err) { console.error("[handleSaveConfig] Error:", err); toast({ title: "Error de red", variant: "destructive" }); }
   };
