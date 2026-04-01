@@ -563,7 +563,7 @@ export default function Home() {
     if (!gradoSeleccionado || !asignaturaSeleccionada || !trimestreSeleccionado) return;
     setBorrarCalifLoading(true);
     try {
-      const res = await fetch(`/api/calificaciones/borrar-todas?gradoId=${gradoSeleccionado}&materiaId=${asignaturaSeleccionada}&trimestre=${trimestreSeleccionado}`, {
+      const res = await fetch(`/api/calificaciones?gradoId=${gradoSeleccionado}&materiaId=${asignaturaSeleccionada}&trimestre=${trimestreSeleccionado}`, {
         method: "DELETE",
         credentials: "include"
       });
