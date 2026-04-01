@@ -1,3 +1,6 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,121 +10,120 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Usuario del sistema (Administrador o Docente)
 model Usuario {
   id        String   @id @default(cuid())
   email     String   @unique
   password  String
   nombre    String
-  rol       String
+  rol       String   // "admin" o "docente"
   activo    Boolean  @default(true)
-  deletedAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  gradosComoTutor   Grado          @relation("TutorGrado")
-  materiasAsignadas DocenteMateria[]
-  auditLogs         AuditLog[]
+  
+  gradosComoTutor   Grado[]          @relation("TutorGrado") // Para grados 2-5 (tutor)
+  materiasAsignadas DocenteMateria[] // Para grados 6-9 (materias específicas)
 
   @@index([email])
   @@index([rol, activo])
 }
 
+// Grado escolar (2do a 9no)
 model Grado {
   id        String   @id @default(cuid())
-  numero    Int
+  numero    Int      // 2, 3, 4, 5, 6, 7, 8, 9
   seccion   String   @default("A")
   año       Int      @default(2026)
   docenteId String?
-  activo    Boolean  @default(true)
-  deletedAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  docente     Usuario?       @relation("TutorGrado", fields: [docenteId], references: [id])
+  
+  docente     Usuario?    @relation("TutorGrado", fields: [docenteId], references: [id])
   estudiantes Estudiante[]
   materias    Materia[]
   asistencias Asistencia[]
-  auditLogs   AuditLog[]
 
-  @@unique([numero, seccion, año])
   @@index([docenteId])
-  @@index([numero, activo])
 }
 
+// Estudiante
 model Estudiante {
   id        String   @id @default(cuid())
-  numero    Int
-  nombre    String
+  numero    Int      // Número de lista
+  nombre    String   // Nombre completo
   gradoId   String
   activo    Boolean  @default(true)
-  deletedAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  grado          Grado           @relation(fields: [gradoId], references: [id])
+  
+  grado          Grado          @relation(fields: [gradoId], references: [id])
   calificaciones Calificacion[]
-  calificacionesHistorico CalificacionHistorico[]
-  asistencias    Asistencia[]
-  auditLogs      AuditLog[]
+  asistencia    Asistencia[]
 
   @@index([gradoId, activo])
   @@index([nombre])
   @@index([numero, gradoId])
 }
 
+// Materia
 model Materia {
   id        String   @id @default(cuid())
-  nombre    String
+  nombre    String   // Comunicación, Números y Formas, etc.
   gradoId   String
-  activa    Boolean  @default(true)
-  deletedAt DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  grado              Grado              @relation(fields: [gradoId], references: [id])
+  calificaciones     Calificacion[]
+  configActividades  ConfigActividad[]
+  docentesAsignados  DocenteMateria[] // Para grados 6-9
+  asistencia        Asistencia[]
 
-  grado             Grado               @relation(fields: [gradoId], references: [id])
-  calificaciones    Calificacion[]
-  configActividades ConfigActividad[]
-  docentesAsignados DocenteMateria[]
-  libertades        Asistencia[]
-  auditLogs         AuditLog[]
-
-  @@index([gradoId, activa])
+  @@index([gradoId])
   @@index([nombre])
 }
 
+// Asignación de docentes a materias (para grados 6-9)
 model DocenteMateria {
   id        String   @id @default(cuid())
   docenteId String
   materiaId String
   createdAt DateTime @default(now())
-
+  
   docente Usuario @relation(fields: [docenteId], references: [id], onDelete: Cascade)
   materia Materia @relation(fields: [materiaId], references: [id], onDelete: Cascade)
-
+  
   @@unique([docenteId, materiaId])
   @@index([docenteId])
   @@index([materiaId])
 }
 
+// Configuración de actividades por materia y trimestre
 model ConfigActividad {
   id                         String   @id @default(cuid())
   materiaId                  String
-  trimestre                  Int      @default(1)
+  trimestre                  Int      @default(1) // 1, 2, 3
+  
+  // Cantidad de cada tipo de actividad
   numActividadesCotidianas   Int      @default(4)
   numActividadesIntegradoras Int      @default(1)
   tieneExamen                Boolean  @default(true)
-  porcentajeAC               Float    @default(35.0)
-  porcentajeAI               Float    @default(35.0)
-  porcentajeExamen           Float    @default(30.0)
-  createdAt                  DateTime @default(now())
-  updatedAt                  DateTime @updatedAt
-
+  
+  // Porcentajes (deben sumar 100%)
+  porcentajeAC       Float @default(35.0)
+  porcentajeAI       Float @default(35.0)
+  porcentajeExamen   Float @default(30.0)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
   materia Materia @relation(fields: [materiaId], references: [id])
-
+  
   @@unique([materiaId, trimestre])
   @@index([materiaId])
 }
 
+// Configuración del sistema (año escolar actual, etc.)
 model ConfiguracionSistema {
   id           String   @id @default(cuid())
   añoEscolar   Int      @default(2026)
@@ -130,94 +132,57 @@ model ConfiguracionSistema {
   updatedAt    DateTime @updatedAt
 }
 
+// Calificaciones por estudiante, materia y trimestre
 model Calificacion {
   id           String   @id @default(cuid())
   estudianteId String
   materiaId    String
   trimestre    Int      @default(1)
-  actividadesCotidianas   String?
-  calificacionAC          Float?
-  actividadesIntegradoras String?
-  calificacionAI          Float?
-  examenTrimestral        Float?
-  promedioFinal           Float?
-  recuperacion            Float?
+  
+  // Notas de actividades (JSON arrays)
+  actividadesCotidianas   String?  // JSON array: [10, 9, 8, 7]
+  calificacionAC          Float?   // Promedio calculado
+  actividadesIntegradoras String?  // JSON array: [10, 9]
+  calificacionAI          Float?   // Promedio calculado
+  examenTrimestral        Float?   // Nota del examen
+  promedioFinal           Float?   // Promedio final calculado
+  recuperacion            Float?   // Nota de recuperación
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  
   estudiante Estudiante @relation(fields: [estudianteId], references: [id])
   materia    Materia    @relation(fields: [materiaId], references: [id])
-
+  
   @@unique([estudianteId, materiaId, trimestre])
   @@index([estudianteId])
   @@index([materiaId])
   @@index([trimestre])
 }
 
-model CalificacionHistorico {
-  id              String   @id @default(cuid())
-  calificacionId  String
-  version         Int
-  estudianteId    String
-  materiaId       String
-  trimestre       Int
-  actividadesCotidianas   String?
-  calificacionAC          Float?
-  actividadesIntegradoras String?
-  calificacionAI          Float?
-  examenTrimestral        Float?
-  promedioFinal           Float?
-  recuperacion            Float?
-  modificadoPor          String
-  motivoCambio           String?
-  createdAt DateTime @default(now())
-
-  estudiante Estudiante @relation(fields: [estudianteId], references: [id])
-
-  @@index([calificacionId])
-  @@index([estudianteId])
-}
-
+// Registro de Asistencia Diaria
 model Asistencia {
   id           String   @id @default(cuid())
   estudianteId String
   fecha        DateTime
-  estado       String
+  estado       String   // "presente", "ausente", "justificada", "tarde"
+  
+  // La asistencia puede ser general por grado (tutor 2-5) o específica por materia (6-9)
   gradoId      String?
   materiaId    String?
+
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-
-  estudiante Estudiante @relation(fields: [estudianteId], references: [id], onDelete: Cascade)
-  grado      Grado?     @relation(fields: [gradoId], references: [id], onDelete: Cascade)
-  materia    Materia?  @relation(fields: [materiaId], references: [id], onDelete: Cascade)
-
+  
+  estudiante   Estudiante @relation(fields: [estudianteId], references: [id], onDelete: Cascade)
+  grado        Grado?     @relation(fields: [gradoId], references: [id], onDelete: Cascade)
+  materia      Materia?   @relation(fields: [materiaId], references: [id], onDelete: Cascade)
+  
+  // Un estudiante solo puede tener un registro de asistencia por día por materia/grado
+  // El índice cuidará que no haya duplicados el mismo día exacto. En la API limpiaremos la hora.
   @@unique([estudianteId, fecha, gradoId, materiaId], name: "unica_asistencia_dia")
   @@index([estudianteId])
   @@index([fecha])
   @@index([estado])
   @@index([estudianteId, fecha])
-}
-
-model AuditLog {
-  id          String   @id @default(cuid())
-  accion      String
-  entidad     String
-  entidadId   String?
-  usuarioId   String
-  usuarioEmail String
-  detalles    String?
-  ip          String?
-  userAgent   String?
-  createdAt   DateTime @default(now())
-
-  usuario   Usuario?   @relation(fields: [usuarioId], references: [id])
-  grado     Grado?     @relation(fields: [entidadId], references: [id], map: "audit_log_grado_fk")
-  estudiante Estudiante? @relation(fields: [entidadId], references: [id], map: "audit_log_estudiante_fk")
-
-  @@index([usuarioId])
-  @@index([entidad])
-  @@index([createdAt])
-  @@index([accion, entidad])
-  @@index([entidadId])
 }
