@@ -699,28 +699,31 @@ export default function Home() {
   };
 
   const handleResetSistema = async () => {
-    if (!confirm("⚠️ ADVERTENCIA: Esta acción eliminará TODAS las calificaciones, asistencias y asignaciones de docentes para reiniciar el sistema para el próximo año. ¿Estás seguro de continuar?")) {
-      return;
-    }
-    
+    if (!confirm("⚠️ ¿Estás seguro de FINALIZAR el año escolar? Esto eliminará TODOS los estudiantes, calificaciones y asistencias. Los usuarios y configuraciones se conservarán.")) return;
     setAñoLoading(true);
     try {
-      const res = await fetch("/api/admin/reset-sistema", { method: "DELETE" });
+      const res = await fetch("/api/admin/reset-sistema", { method: "POST", credentials: "include" });
       const data = await res.json();
-      
+      if (res.ok) { toast({ title: "Sistema resetado" }); await Promise.all([loadGrados(), loadEstudiantes(), loadCalificaciones()]); }
+      else { toast({ title: "Error", description: data.error, variant: "destructive" }); }
+    } catch { toast({ title: "Error de conexión", variant: "destructive" }); }
+    finally { setAñoLoading(false); }
+  };
+
+  const handleRepararAsignaciones = async () => {
+    if (!confirm("⚠️ Esto reparará las asignaciones de docentes: creará materias faltantes y asignará materias a los docentes. ¿Continuar?")) return;
+    setAñoLoading(true);
+    try {
+      const res = await fetch("/api/admin/reparar-asignaciones", { method: "POST", credentials: "include" });
+      const data = await res.json();
       if (res.ok) {
-        toast({ title: "Sistema reiniciado", description: data.message });
-        await checkAuth();
-        await loadConfiguracion();
-        await loadGrados();
+        toast({ title: "Reparación completada", description: `${data.asignacionesCreadas} asignaciones creadas, ${data.tutoresAsignados} tutores asignados, ${data.materiasCreadas} materias creadas` });
+        await Promise.all([loadGrados(), loadUsuarios(), loadTodasAsignaturas()]);
       } else {
-        toast({ title: "Error al reiniciar", description: data.error, variant: "destructive" });
+        toast({ title: "Error", description: data.error, variant: "destructive" });
       }
-    } catch {
-      toast({ title: "Error de conexión", variant: "destructive" });
-    } finally {
-      setAñoLoading(false);
-    }
+    } catch { toast({ title: "Error de conexión", variant: "destructive" }); }
+    finally { setAñoLoading(false); }
   };
 
   const handleReinicializar = async () => {
@@ -1393,8 +1396,11 @@ export default function Home() {
                 </CardContent>
                 <CardFooter className={`border-t justify-between py-3 px-4 flex-col sm:flex-row gap-2 ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50'}`}>
                   <div className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Versión 1.2.0 | © 2026 CEC San José de la Montaña</div>
+                  <Button variant="outline" size="sm" onClick={handleRepararAsignaciones} disabled={añoLoading} className="h-8 text-xs sm:text-sm w-full sm:w-auto">
+                    <Settings className="h-4 w-4 mr-1" /> Reparar Asignaciones
+                  </Button>
                   <Button variant="destructive" size="sm" onClick={handleResetSistema} className="h-8 text-xs sm:text-sm w-full sm:w-auto">
-                    <Trash2 className="h-4 w-4 mr-1" /> Finalizar Año y Reiniciar Datos
+                    <Trash2 className="h-4 w-4 mr-1" /> Finalizar Año
                   </Button>
                 </CardFooter>
               </Card>
