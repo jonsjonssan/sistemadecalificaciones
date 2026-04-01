@@ -1,23 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { sql } from '@/lib/neon';
 import { cookies } from 'next/headers';
+import { randomUUID } from 'crypto';
 
 // Obtener configuración del sistema
 export async function GET() {
   try {
-    let config = await db.configuracionSistema.findFirst();
+    let config = await sql`SELECT * FROM "ConfiguracionSistema" LIMIT 1`;
     
     // Si no existe, crear configuración inicial
-    if (!config) {
-      config = await db.configuracionSistema.create({
-        data: {
-          añoEscolar: 2026,
-          escuela: 'Centro Escolar'
-        }
-      });
+    if (config.length === 0) {
+      const id = randomUUID();
+      await sql`INSERT INTO "ConfiguracionSistema" (id, "añoEscolar", escuela) VALUES (${id}, 2026, 'Centro Escolar')`;
+      config = await sql`SELECT * FROM "ConfiguracionSistema" LIMIT 1`;
     }
     
-    return NextResponse.json(config);
+    return NextResponse.json(config[0]);
   } catch (error) {
     console.error('Error al obtener configuración:', error);
     return NextResponse.json(
@@ -51,26 +49,18 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { añoEscolar, escuela } = body;
     
-    let config = await db.configuracionSistema.findFirst();
+    let config = await sql`SELECT * FROM "ConfiguracionSistema" LIMIT 1`;
     
-    if (!config) {
-      config = await db.configuracionSistema.create({
-        data: {
-          añoEscolar: añoEscolar || 2026,
-          escuela: escuela || 'Centro Escolar'
-        }
-      });
+    if (config.length === 0) {
+      const id = randomUUID();
+      await sql`INSERT INTO "ConfiguracionSistema" (id, "añoEscolar", escuela) VALUES (${id}, ${añoEscolar || 2026}, ${escuela || 'Centro Escolar'})`;
+      config = await sql`SELECT * FROM "ConfiguracionSistema" LIMIT 1`;
     } else {
-      config = await db.configuracionSistema.update({
-        where: { id: config.id },
-        data: {
-          ...(añoEscolar !== undefined && { añoEscolar }),
-          ...(escuela !== undefined && { escuela })
-        }
-      });
+      await sql`UPDATE "ConfiguracionSistema" SET "añoEscolar" = ${añoEscolar !== undefined ? añoEscolar : config[0].añoEscolar}, escuela = ${escuela !== undefined ? escuela : config[0].escuela}, "updatedAt" = NOW() WHERE id = ${config[0].id}`;
+      config = await sql`SELECT * FROM "ConfiguracionSistema" LIMIT 1`;
     }
     
-    return NextResponse.json(config);
+    return NextResponse.json(config[0]);
   } catch (error) {
     console.error('Error al actualizar configuración:', error);
     return NextResponse.json(

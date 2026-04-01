@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { sql } from "@/lib/neon";
+import bcrypt from "bcryptjs";
+import { randomUUID } from "crypto";
 
 export async function POST() {
   try {
@@ -7,53 +9,46 @@ export async function POST() {
 
     // 1. Asegurar que los grados existan (del 2 al 9)
     for (let numero = 2; numero <= 9; numero++) {
-      await db.grado.upsert({
-        where: {
-          id: (await db.grado.findFirst({ where: { numero } }))?.id || "not-found",
-        },
-        update: {},
-        create: {
-          numero,
-          seccion: "A",
-          año: 2026,
-        },
-      });
+      const existing = await sql`SELECT id FROM "Grado" WHERE numero = ${numero} LIMIT 1`;
+      if (existing.length === 0) {
+        await sql`INSERT INTO "Grado" (id, numero, seccion, año) VALUES (${randomUUID()}, ${numero}, 'A', 2026)`;
+      }
     }
 
-    const gradosDb = await db.grado.findMany();
-    const getGradoId = (num: number) => gradosDb.find(g => g.numero === num)?.id;
+    const gradosDb = await sql`SELECT * FROM "Grado"`;
+    const getGradoId = (num: number) => gradosDb.find((g: any) => g.numero === num)?.id ?? gradosDb.find((g: any) => g.numero === num)?.id;
+
+    // Refrescar gradosDb después de inserts
+    const gradosActualizados = await sql`SELECT * FROM "Grado"`;
+    const getGradoIdActual = (num: number) => gradosActualizados.find((g: any) => g.numero === num)?.id;
 
     // Función para crear materia si no existe
     const asegurarMateria = async (nombre: string, numGrado: number) => {
-      const gradoId = getGradoId(numGrado);
+      const gradoId = getGradoIdActual(numGrado);
       if (!gradoId) return null;
       
-      let materia = await db.materia.findFirst({
-        where: { nombre, gradoId },
-      });
+      let materia = await sql`SELECT * FROM "Materia" WHERE nombre = ${nombre} AND "gradoId" = ${gradoId} LIMIT 1`;
 
-      if (!materia) {
-        materia = await db.materia.create({
-          data: { nombre, gradoId },
-        });
+      if (materia.length === 0) {
+        const materiaId = randomUUID();
+        await sql`INSERT INTO "Materia" (id, nombre, "gradoId") VALUES (${materiaId}, ${nombre}, ${gradoId})`;
+        materia = [{ id: materiaId, nombre, gradoId }];
 
         // Configuración de actividades para cada trimestre (por defecto)
         for (let trimestre = 1; trimestre <= 3; trimestre++) {
-          await db.configActividad.create({
-            data: {
-              materiaId: materia.id,
-              trimestre,
-              numActividadesCotidianas: 4,
-              numActividadesIntegradoras: 1,
-              tieneExamen: true,
-              porcentajeAC: 35.0,
-              porcentajeAI: 35.0,
-              porcentajeExamen: 30.0,
-            },
-          });
+          await sql`
+            INSERT INTO "ConfigActividad" (
+              id, "materiaId", trimestre, 
+              "numActividadesCotidianas", "numActividadesIntegradoras", 
+              "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen"
+            ) VALUES (
+              ${randomUUID()}, ${materiaId}, ${trimestre},
+              4, 1, true, 35.0, 35.0, 30.0
+            )
+          `;
         }
       }
-      return materia;
+      return materia[0];
     };
 
     // Limpiar materias duplicadas o con nombres incorrectos
@@ -69,19 +64,22 @@ export async function POST() {
         materia6ta,
         "Educación en la Fe",
       ];
+      if (num >= 7) {
+        nombresValidosPorGrado[num].push("Inglés");
+      }
     }
 
     // Eliminar materias que no corresponden al grado
-    const todasMaterias = await db.materia.findMany();
+    const todasMaterias = await sql`SELECT * FROM "Materia"`;
     for (const m of todasMaterias) {
-      const grado = gradosDb.find(g => g.id === m.gradoId);
+      const grado = gradosActualizados.find((g: any) => g.id === m.gradoId);
       if (!grado) continue;
       const validos = nombresValidosPorGrado[grado.numero] || [];
       if (!validos.includes(m.nombre)) {
-        await db.configActividad.deleteMany({ where: { materiaId: m.id } });
-        await db.docenteMateria.deleteMany({ where: { materiaId: m.id } });
-        await db.calificacion.deleteMany({ where: { materiaId: m.id } });
-        await db.materia.delete({ where: { id: m.id } });
+        await sql`DELETE FROM "ConfigActividad" WHERE "materiaId" = ${m.id}`;
+        await sql`DELETE FROM "DocenteMateria" WHERE "materiaId" = ${m.id}`;
+        await sql`DELETE FROM "Calificacion" WHERE "materiaId" = ${m.id}`;
+        await sql`DELETE FROM "Materia" WHERE id = ${m.id}`;
       }
     }
 
@@ -113,8 +111,7 @@ export async function POST() {
         password: "docente123",
         rol: "docente",
         materias: [6, 7, 8, 9].flatMap(g => [
-          { grado: g, mat: "Aritmética y Finanzas" },
-          { grado: g, mat: "Matemática y Datos" }
+          { grado: g, mat: "Números y Formas" }
         ])
       },
       {
@@ -145,8 +142,8 @@ export async function POST() {
         rol: "docente",
         tutorGrado: 3,
         materias: [3].flatMap(g => [
-          { grado: g, mat: "Comunicación y Literatura" },
-          { grado: g, mat: "Aritmética y Finanzas" },
+          { grado: g, mat: "Comunicación" },
+          { grado: g, mat: "Números y Formas" },
           { grado: g, mat: "Ciudadanía y Valores" },
           { grado: g, mat: "Ciencia y Tecnología" }
         ])
@@ -158,8 +155,8 @@ export async function POST() {
         rol: "docente",
         tutorGrado: 4,
         materias: [4].flatMap(g => [
-          { grado: g, mat: "Comunicación y Literatura" },
-          { grado: g, mat: "Aritmética y Finanzas" },
+          { grado: g, mat: "Comunicación" },
+          { grado: g, mat: "Números y Formas" },
           { grado: g, mat: "Ciudadanía y Valores" },
           { grado: g, mat: "Ciencia y Tecnología" }
         ])
@@ -171,8 +168,8 @@ export async function POST() {
         rol: "docente",
         tutorGrado: 5,
         materias: [5].flatMap(g => [
-          { grado: g, mat: "Comunicación y Literatura" },
-          { grado: g, mat: "Aritmética y Finanzas" },
+          { grado: g, mat: "Comunicación" },
+          { grado: g, mat: "Números y Formas" },
           { grado: g, mat: "Ciudadanía y Valores" },
           { grado: g, mat: "Ciencia y Tecnología" }
         ])
@@ -184,8 +181,8 @@ export async function POST() {
         rol: "docente",
         tutorGrado: 2,
         materias: [2].flatMap(g => [
-          { grado: g, mat: "Comunicación y Literatura" },
-          { grado: g, mat: "Aritmética y Finanzas" },
+          { grado: g, mat: "Comunicación" },
+          { grado: g, mat: "Números y Formas" },
           { grado: g, mat: "Ciudadanía y Valores" },
           { grado: g, mat: "Ciencia y Tecnología" }
         ])
@@ -213,30 +210,24 @@ export async function POST() {
     ];
 
     for (const u of users) {
-      // Upsert usuario
-      const user = await db.usuario.upsert({
-        where: { email: u.email },
-        update: {
-          password: u.password,
-          nombre: u.nombre,
-          rol: u.rol,
-        },
-        create: {
-          email: u.email,
-          nombre: u.nombre,
-          password: u.password,
-          rol: u.rol,
-        }
-      });
+      // Upsert usuario con SQL raw
+      const existingUser = await sql`SELECT * FROM "Usuario" WHERE email = ${u.email}`;
+      const hashedPassword = await bcrypt.hash(u.password, 10);
+      
+      let userId: string;
+      if (existingUser.length > 0) {
+        await sql`UPDATE "Usuario" SET password = ${hashedPassword}, nombre = ${u.nombre}, rol = ${u.rol}, "updatedAt" = NOW() WHERE email = ${u.email}`;
+        userId = existingUser[0].id;
+      } else {
+        userId = randomUUID();
+        await sql`INSERT INTO "Usuario" (id, email, password, nombre, rol) VALUES (${userId}, ${u.email}, ${hashedPassword}, ${u.nombre}, ${u.rol})`;
+      }
 
       // Set Tutor
       if (u.tutorGrado) {
-        const gradoId = getGradoId(u.tutorGrado);
+        const gradoId = getGradoIdActual(u.tutorGrado);
         if (gradoId) {
-          await db.grado.update({
-            where: { id: gradoId },
-            data: { docenteId: user.id }
-          });
+          await sql`UPDATE "Grado" SET "docenteId" = ${userId} WHERE id = ${gradoId}`;
         }
       }
 
@@ -245,33 +236,20 @@ export async function POST() {
         for (const mat of u.materias) {
           const materiaRecord = await asegurarMateria(mat.mat, mat.grado);
           if (materiaRecord) {
-            await db.docenteMateria.upsert({
-              where: {
-                docenteId_materiaId: {
-                  docenteId: user.id,
-                  materiaId: materiaRecord.id
-                }
-              },
-              update: {},
-              create: {
-                docenteId: user.id,
-                materiaId: materiaRecord.id
-              }
-            });
+            await sql`
+              INSERT INTO "DocenteMateria" ("docenteId", "materiaId")
+              VALUES (${userId}, ${materiaRecord.id})
+              ON CONFLICT ("docenteId", "materiaId") DO NOTHING
+            `;
           }
         }
       }
     }
 
     // Inicializar configuración global si no existe
-    const config = await db.configuracionSistema.findFirst();
-    if (!config) {
-      await db.configuracionSistema.create({
-        data: {
-          añoEscolar: 2026,
-          escuela: "Centro Escolar Católico San José de la Montaña"
-        }
-      });
+    const config = await sql`SELECT * FROM "ConfiguracionSistema" LIMIT 1`;
+    if (config.length === 0) {
+      await sql`INSERT INTO "ConfiguracionSistema" (id, "añoEscolar", escuela) VALUES (${randomUUID()}, 2026, 'Centro Escolar Católico San José de la Montaña')`;
     }
 
     return NextResponse.json({
