@@ -23,12 +23,12 @@ export const SECCIONES = ["A", "B", "C", "D"] as const;
 export const MATERIAS_POR_GRADO: Record<number, string[]> = {
   2: ["Comunicación", "Matemática", "Descubrimiento del Medio", "Educación Artística"],
   3: ["Comunicación", "Matemática", "Ciencias Naturales", "Ciencias Sociales"],
-  4: ["Comunicación", "Matemática", "Ciencias Naturales", "Ciencias Sociales"],
-  5: ["Comunicación", "Matemática", "Ciencias Naturales", "Ciencias Sociales"],
-  6: ["Lenguaje", "Matemática", "Ciencias Naturales", "Ciencias Sociales", "Educación Física"],
-  7: ["Lenguaje", "Matemática", "Ciencias Naturales", "Ciencias Sociales", "Educación Física"],
-  8: ["Lenguaje", "Matemática", "Física", "Química", "Historia", "Educación Física"],
-  9: ["Lenguaje", "Matemática", "Física", "Química", "Historia", "Educación Física"],
+  4: ["Comunicación y Literatura", "Matemática", "Ciencias Naturales", "Ciencias Sociales"],
+  5: ["Comunicación y Literatura", "Matemática", "Ciencias Naturales", "Ciencias Sociales"],
+  6: ["Comunicación y Literatura", "Matemática", "Ciencias Naturales", "Ciencias Sociales", "Educación Física"],
+  7: ["Lengua y Literatura", "Matemática", "Ciencias Naturales", "Ciencias Sociales", "Educación Física"],
+  8: ["Lengua y Literatura", "Matemática", "Física", "Química", "Historia", "Educación Física"],
+  9: ["Lengua y Literatura", "Matemática", "Física", "Química", "Historia", "Educación Física"],
 };
 
 export const ESTANDARES_PORCENTAJES = {

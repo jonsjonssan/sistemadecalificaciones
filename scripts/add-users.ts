@@ -105,7 +105,7 @@ async function main() {
       rol: "docente",
       tutorGrado: 3,
       materias: [
-        { grado: 3, mat: "Comunicación y Literatura" },
+        { grado: 3, mat: "Comunicación" },
         { grado: 3, mat: "Aritmética y Finanzas" },
         { grado: 3, mat: "Ciudadanía y Valores" },
         { grado: 3, mat: "Ciencia y Tecnología" }
@@ -144,7 +144,7 @@ async function main() {
       rol: "docente",
       tutorGrado: 2,
       materias: [
-        { grado: 2, mat: "Comunicación y Literatura" },
+        { grado: 2, mat: "Comunicación" },
         { grado: 2, mat: "Aritmética y Finanzas" },
         { grado: 2, mat: "Ciudadanía y Valores" },
         { grado: 2, mat: "Ciencia y Tecnología" }
@@ -196,9 +196,9 @@ async function main() {
       tutorGrado: 9,
       materias: [
         { grado: 6, mat: "Comunicación y Literatura" },
-        { grado: 7, mat: "Lenguaje y Literatura" },
-        { grado: 8, mat: "Lenguaje y Literatura" },
-        { grado: 9, mat: "Lenguaje y Literatura" }
+        { grado: 7, mat: "Lengua y Literatura" },
+        { grado: 8, mat: "Lengua y Literatura" },
+        { grado: 9, mat: "Lengua y Literatura" }
       ]
     },
     {
