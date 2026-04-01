@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { db } from "@/lib/db";
 import { cookies } from "next/headers";
 
 async function getUsuarioSession() {
@@ -210,6 +211,31 @@ export async function POST(request: NextRequest) {
         materia: { select: { id: true, nombre: true } },
       },
     });
+
+    // Audit log
+    try {
+      const headers = Object.fromEntries(request.headers.entries());
+      const ip = headers["x-forwarded-for"] || headers["x-real-ip"] || "unknown";
+      const userAgent = headers["user-agent"] || "unknown";
+      await db.auditLog.create({
+        data: {
+          usuarioId: session.id,
+          accion: "UPDATE",
+          entidad: "Calificacion",
+          entidadId: result.id,
+          detalles: JSON.stringify({
+            estudiante: result.estudiante?.nombre,
+            materia: result.materia?.nombre,
+            trimestre: parseInt(String(trimestre)),
+            promedioFinal: promFinal
+          }),
+          ip,
+          userAgent
+        }
+      });
+    } catch (auditError) {
+      console.error("[calificaciones] Audit error:", auditError);
+    }
 
     await prisma.$disconnect();
     return NextResponse.json(result);

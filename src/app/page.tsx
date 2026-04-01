@@ -138,6 +138,13 @@ export default function Home() {
   const [borrarCalifEstudianteId, setBorrarCalifEstudianteId] = useState<string | null>(null);
   const [borrarCalifLoading, setBorrarCalifLoading] = useState(false);
 
+  // Audit & Sessions
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [loginSessions, setLoginSessions] = useState<any[]>([]);
+  const [auditLoading, setAuditLoading] = useState(false);
+  const [auditFilter, setAuditFilter] = useState({ accion: "", entidad: "", usuarioId: "" });
+  const [activeAdminTab, setActiveAdminTab] = useState("usuarios");
+
   // Persistence: Cargar de localStorage
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -297,6 +304,32 @@ export default function Home() {
         const data = await res.json();
         setConfiguracion(data);
         setNuevoAño(data.añoEscolar);
+      }
+    } catch { /* ignore */ }
+  }, []);
+
+  const loadAuditLogs = useCallback(async () => {
+    setAuditLoading(true);
+    try {
+      const params = new URLSearchParams({ limit: "100" });
+      if (auditFilter.accion) params.set("accion", auditFilter.accion);
+      if (auditFilter.entidad) params.set("entidad", auditFilter.entidad);
+      if (auditFilter.usuarioId) params.set("usuarioId", auditFilter.usuarioId);
+      const res = await fetch(`/api/audit?${params}`, { cache: "no-store", credentials: "include" });
+      if (res.ok) {
+        const data = await res.json();
+        setAuditLogs(data.logs || []);
+      }
+    } catch { /* ignore */ }
+    finally { setAuditLoading(false); }
+  }, [auditFilter]);
+
+  const loadLoginSessions = useCallback(async () => {
+    try {
+      const res = await fetch("/api/login-sessions?limit=100", { cache: "no-store", credentials: "include" });
+      if (res.ok) {
+        const data = await res.json();
+        setLoginSessions(data.sessions || []);
       }
     } catch { /* ignore */ }
   }, []);
@@ -1553,6 +1586,115 @@ export default function Home() {
                     <Trash2 className="h-4 w-4 mr-1" /> Finalizar Año
                   </Button>
                 </CardFooter>
+              </Card>
+
+              {/* Panel de Auditoría */}
+              <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
+                <CardHeader className={`py-3 px-4 ${darkMode ? 'border-slate-700' : ''}`}>
+                  <CardTitle className="text-sm sm:text-base">Panel de Auditoría</CardTitle>
+                  <CardDescription className={`text-xs ${darkMode ? 'text-slate-400' : ''}`}>Historial de actividad y sesiones del sistema</CardDescription>
+                </CardHeader>
+                <CardContent className="pt-0 space-y-4">
+                  <div className="flex gap-2 border-b">
+                    <button onClick={() => { setActiveAdminTab("usuarios"); }} className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors ${activeAdminTab === "usuarios" ? (darkMode ? 'border-teal-400 text-teal-400' : 'border-teal-600 text-teal-600') : (darkMode ? 'border-transparent text-slate-500 hover:text-slate-300' : 'border-transparent text-slate-500 hover:text-slate-700')}`}>Usuarios</button>
+                    <button onClick={() => { setActiveAdminTab("actividad"); loadAuditLogs(); }} className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors ${activeAdminTab === "actividad" ? (darkMode ? 'border-teal-400 text-teal-400' : 'border-teal-600 text-teal-600') : (darkMode ? 'border-transparent text-slate-500 hover:text-slate-300' : 'border-transparent text-slate-500 hover:text-slate-700')}`}>Actividad</button>
+                    <button onClick={() => { setActiveAdminTab("sesiones"); loadLoginSessions(); }} className={`px-3 py-2 text-sm font-medium border-b-2 transition-colors ${activeAdminTab === "sesiones" ? (darkMode ? 'border-teal-400 text-teal-400' : 'border-teal-600 text-teal-600') : (darkMode ? 'border-transparent text-slate-500 hover:text-slate-300' : 'border-transparent text-slate-500 hover:text-slate-700')}`}>Sesiones</button>
+                  </div>
+
+                  {activeAdminTab === "actividad" && (
+                    <div className="space-y-3">
+                      <div className="flex flex-wrap gap-2">
+                        <Select value={auditFilter.accion} onValueChange={(v) => setAuditFilter({...auditFilter, accion: v})}>
+                          <SelectTrigger className={`w-32 h-8 text-xs ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue placeholder="Acción" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Todas</SelectItem>
+                            <SelectItem value="LOGIN">Login</SelectItem>
+                            <SelectItem value="UPDATE">Update</SelectItem>
+                            <SelectItem value="CREATE">Create</SelectItem>
+                            <SelectItem value="DELETE">Delete</SelectItem>
+                            <SelectItem value="CONFIG_CHANGE">Config</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Select value={auditFilter.entidad} onValueChange={(v) => setAuditFilter({...auditFilter, entidad: v})}>
+                          <SelectTrigger className={`w-36 h-8 text-xs ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue placeholder="Entidad" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">Todas</SelectItem>
+                            <SelectItem value="Calificacion">Calificaciones</SelectItem>
+                            <SelectItem value="Estudiante">Estudiantes</SelectItem>
+                            <SelectItem value="Usuario">Usuarios</SelectItem>
+                            <SelectItem value="ConfigActividad">Configuración</SelectItem>
+                            <SelectItem value="Grado">Grados</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Button size="sm" variant="outline" className={`h-8 text-xs ${darkMode ? 'border-slate-600' : ''}`} onClick={loadAuditLogs}>Actualizar</Button>
+                      </div>
+                      <div className={`rounded border overflow-x-auto ${darkMode ? 'border-slate-700' : ''}`}>
+                        <table className="w-full text-xs">
+                          <thead><tr className={darkMode ? 'bg-slate-800' : 'bg-slate-100'}>
+                            <th className="p-2 text-left">Fecha</th>
+                            <th className="p-2 text-left">Usuario</th>
+                            <th className="p-2 text-left">Acción</th>
+                            <th className="p-2 text-left">Entidad</th>
+                            <th className="p-2 text-left hidden sm:table-cell">Detalles</th>
+                          </tr></thead>
+                          <tbody>
+                            {auditLoading ? <tr><td colSpan={5} className="p-4 text-center text-slate-500">Cargando...</td></tr> :
+                              auditLogs.length === 0 ? <tr><td colSpan={5} className="p-4 text-center text-slate-500">Sin registros</td></tr> :
+                              auditLogs.map((log) => (
+                                <tr key={log.id} className={`border-t ${darkMode ? 'border-slate-700' : ''}`}>
+                                  <td className="p-2 whitespace-nowrap">{new Date(log.createdAt).toLocaleString('es-DO')}</td>
+                                  <td className="p-2 font-medium">{log.usuario?.nombre || 'Desconocido'}</td>
+                                  <td className="p-2">
+                                    <Badge variant={
+                                      log.accion === 'LOGIN' ? 'default' :
+                                      log.accion === 'DELETE' ? 'destructive' :
+                                      log.accion === 'CREATE' ? 'default' : 'secondary'
+                                    } className={`text-[10px] ${log.accion === 'LOGIN' ? (darkMode ? 'bg-blue-600' : 'bg-blue-600') : ''}`}>
+                                      {log.accion}
+                                    </Badge>
+                                  </td>
+                                  <td className="p-2">{log.entidad}</td>
+                                  <td className={`p-2 hidden sm:table-cell max-w-[200px] truncate ${darkMode ? 'text-slate-400' : 'text-slate-500'}`} title={log.detalles}>{log.detalles}</td>
+                                </tr>
+                              ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeAdminTab === "sesiones" && (
+                    <div className="space-y-3">
+                      <div className={`rounded border overflow-x-auto ${darkMode ? 'border-slate-700' : ''}`}>
+                        <table className="w-full text-xs">
+                          <thead><tr className={darkMode ? 'bg-slate-800' : 'bg-slate-100'}>
+                            <th className="p-2 text-left">Usuario</th>
+                            <th className="p-2 text-left">Login</th>
+                            <th className="p-2 text-left hidden sm:table-cell">Logout</th>
+                            <th className="p-2 text-left hidden sm:table-cell">Estado</th>
+                            <th className="p-2 text-left hidden md:table-cell">IP</th>
+                          </tr></thead>
+                          <tbody>
+                            {loginSessions.length === 0 ? <tr><td colSpan={5} className="p-4 text-center text-slate-500">Sin registros</td></tr> :
+                              loginSessions.map((s) => (
+                                <tr key={s.id} className={`border-t ${darkMode ? 'border-slate-700' : ''}`}>
+                                  <td className="p-2 font-medium">{s.usuario?.nombre || 'Desconocido'}</td>
+                                  <td className="p-2 whitespace-nowrap">{new Date(s.loginAt).toLocaleString('es-DO')}</td>
+                                  <td className={`p-2 hidden sm:table-cell ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{s.logoutAt ? new Date(s.logoutAt).toLocaleString('es-DO') : '-'}</td>
+                                  <td className="p-2">
+                                    <Badge variant={s.isActive ? "default" : "secondary"} className={`text-[10px] ${s.isActive ? (darkMode ? 'bg-green-600' : 'bg-green-600') : ''}`}>
+                                      {s.isActive ? 'Activa' : 'Cerrada'}
+                                    </Badge>
+                                  </td>
+                                  <td className={`p-2 hidden md:table-cell ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>{s.ip || '-'}</td>
+                                </tr>
+                              ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
               </Card>
             </TabsContent>
           )}

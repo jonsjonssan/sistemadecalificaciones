@@ -186,3 +186,36 @@ model Asistencia {
   @@index([estado])
   @@index([estudianteId, fecha])
 }
+
+// Registro de Auditoría - rastrea cambios en el sistema
+model AuditLog {
+  id          String   @id @default(cuid())
+  usuarioId   String
+  accion      String   // "CREATE", "UPDATE", "DELETE", "LOGIN", "LOGOUT", "CONFIG_CHANGE"
+  entidad     String   // "Estudiante", "Calificacion", "Usuario", "ConfigActividad", "Grado", "Materia", "Asistencia"
+  entidadId   String?
+  detalles    String?  // JSON con detalles del cambio
+  ip          String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@index([usuarioId])
+  @@index([entidad])
+  @@index([accion])
+  @@index([createdAt])
+}
+
+// Registro de Sesiones - rastrea logins
+model LoginSession {
+  id          String   @id @default(cuid())
+  usuarioId   String
+  ip          String?
+  userAgent   String?
+  loginAt     DateTime @default(now())
+  logoutAt    DateTime?
+  isActive    Boolean  @default(true)
+
+  @@index([usuarioId])
+  @@index([loginAt])
+  @@index([isActive])
+}
