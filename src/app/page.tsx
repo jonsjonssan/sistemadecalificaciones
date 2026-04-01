@@ -341,7 +341,15 @@ export default function Home() {
   };
 
   const handleLogout = async () => {
+    // Guardar estado actual antes de cerrar
     saveUserState({ gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado });
+    
+    // Limpiar localStorage del usuario
+    if (usuario?.id) {
+      localStorage.removeItem(`sis_state_${usuario.id}`);
+      localStorage.removeItem(`sis_last_session_${usuario.id}`);
+    }
+    
     await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
     setUsuario(null);
     setGrados([]);
@@ -866,17 +874,45 @@ export default function Home() {
     }
   }, [usuario, loadUserState]);
 
-  // Guardar estado antes de cerrar la pestaña
+  // Guardar estado antes de cerrar la pestaña - intentar guardar datos primero
   useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+    const handleBeforeUnload = async (e: BeforeUnloadEvent) => {
+      if (usuario && saving) {
+        // Si hay datos sin guardar, intentar guardarlos
+        e.preventDefault();
+        // Intentar guardar sin esperar respuesta ( navigator.sendBeacon no funciona bien con fetch)
+        try {
+          await fetch("/api/auth/logout", { 
+            method: "POST", 
+            credentials: "include",
+            keepalive: true 
+          });
+        } catch {}
+      }
+      
+      // Guardar estado en localStorage
       if (usuario) {
         saveUserState({ gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado, activeTab });
         localStorage.setItem(`sis_last_session_${usuario.id}`, new Date().toISOString());
       }
     };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden" && usuario) {
+        // Cuando la pestaña se oculta, guardar estado
+        saveUserState({ gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado, activeTab });
+        localStorage.setItem(`sis_last_session_${usuario.id}`, new Date().toISOString());
+      }
+    };
+
     window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [usuario, gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado, saveUserState]);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [usuario, gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado, saveUserState, saving, activeTab]);
 
   // Filtrar grados según el usuario
   useEffect(() => {
