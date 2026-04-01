@@ -521,35 +521,41 @@ export default function Home() {
   }, [gradoSeleccionado, asignaturaSeleccionada, estudiantes, calificaciones, trimestreSeleccionado, toast, loadCalificaciones]);
 
   const handleSaveConfig = async () => {
-    if (!editConfig) return;
+    if (!editConfig) { console.error("[handleSaveConfig] editConfig es null"); return; }
+    console.log("[handleSaveConfig] Guardando config:", { editConfig, configAplicarATodas, gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado });
     const total = editConfig.porcentajeAC + editConfig.porcentajeAI + (editConfig.tieneExamen ? editConfig.porcentajeExamen : 0);
     if (Math.abs(total - 100) > 0.1) { toast({ title: `Porcentajes deben sumar 100% (${total.toFixed(1)}%)`, variant: "destructive" }); return; }
+    if (!asignaturaSeleccionada) { toast({ title: "No hay materia seleccionada", variant: "destructive" }); return; }
+    if (!gradoSeleccionado) { toast({ title: "No hay grado seleccionado", variant: "destructive" }); return; }
     try {
+      const payload = {
+        materiaId: asignaturaSeleccionada,
+        trimestre: parseInt(trimestreSeleccionado),
+        numActividadesCotidianas: editConfig.numActividadesCotidianas,
+        numActividadesIntegradoras: editConfig.numActividadesIntegradoras,
+        tieneExamen: editConfig.tieneExamen,
+        porcentajeAC: editConfig.porcentajeAC,
+        porcentajeAI: editConfig.porcentajeAI,
+        porcentajeExamen: editConfig.porcentajeExamen,
+        aplicarATodasLasMateriasDelGrado: configAplicarATodas,
+        gradoId: gradoSeleccionado,
+      };
+      console.log("[handleSaveConfig] Enviando payload:", payload);
       const res = await fetch("/api/config-actividades", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({
-          materiaId: asignaturaSeleccionada,
-          trimestre: parseInt(trimestreSeleccionado),
-          numActividadesCotidianas: editConfig.numActividadesCotidianas,
-          numActividadesIntegradoras: editConfig.numActividadesIntegradoras,
-          tieneExamen: editConfig.tieneExamen,
-          porcentajeAC: editConfig.porcentajeAC,
-          porcentajeAI: editConfig.porcentajeAI,
-          porcentajeExamen: editConfig.porcentajeExamen,
-          aplicarATodasLasMateriasDelGrado: configAplicarATodas,
-          gradoId: gradoSeleccionado,
-        })
+        body: JSON.stringify(payload)
       });
       const data = await res.json();
+      console.log("[handleSaveConfig] Respuesta:", { status: res.status, data });
       if (!res.ok) { toast({ title: data.error || "Error al guardar configuración", variant: "destructive" }); return; }
       setConfigDialogOpen(false);
       loadConfig();
       loadConfigsGrado();
       loadCalificaciones();
       toast({ title: configAplicarATodas ? "Configuración aplicada a todas las materias del grado" : "Configuración guardada" });
-    } catch { toast({ title: "Error", variant: "destructive" }); }
+    } catch (err) { console.error("[handleSaveConfig] Error:", err); toast({ title: "Error de red", variant: "destructive" }); }
   };
 
   const handleBorrarCalifAlumno = async () => {
