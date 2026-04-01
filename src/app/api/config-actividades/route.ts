@@ -21,6 +21,18 @@ export async function GET(request: NextRequest) {
     const gradoId = searchParams.get("gradoId");
     const trimestre = searchParams.get("trimestre");
 
+    if (session.rol === "docente") {
+      const materiasAsignadasIds = session.asignaturasAsignadas?.map((m: any) => m.id) || [];
+      const gradosAsignadosIds = session.asignaturasAsignadas?.map((m: any) => m.gradoId) || [];
+      
+      if (materiaId && !materiasAsignadasIds.includes(materiaId)) {
+        return NextResponse.json({ error: "No autorizado para esta materia" }, { status: 403 });
+      }
+      if (gradoId && !gradosAsignadosIds.includes(gradoId)) {
+        return NextResponse.json({ error: "No autorizado para este grado" }, { status: 403 });
+      }
+    }
+
     if (materiaId && trimestre) {
       let configResult = await sql`
         SELECT * FROM "ConfigActividad"
@@ -103,6 +115,21 @@ export async function POST(request: NextRequest) {
 
     const data = await request.json();
     const { materiaId, gradoId, aplicarATodasLasMateriasDelGrado, trimestre, numActividadesCotidianas, numActividadesIntegradoras, tieneExamen, porcentajeAC, porcentajeAI, porcentajeExamen } = data;
+
+    if (session.rol === "docente") {
+      const materiasAsignadasIds = session.asignaturasAsignadas?.map((m: any) => m.id) || [];
+      const gradosAsignadosIds = session.asignaturasAsignadas?.map((m: any) => m.gradoId) || [];
+      
+      if (materiaId && !materiasAsignadasIds.includes(materiaId)) {
+        return NextResponse.json({ error: "No autorizado para esta materia" }, { status: 403 });
+      }
+      if (gradoId && !gradosAsignadosIds.includes(gradoId)) {
+        return NextResponse.json({ error: "No autorizado para este grado" }, { status: 403 });
+      }
+      if (aplicarATodasLasMateriasDelGrado) {
+        return NextResponse.json({ error: "No autorizado para aplicar a todas las materias" }, { status: 403 });
+      }
+    }
 
     if (!trimestre) return NextResponse.json({ error: "Trimestre es requerido" }, { status: 400 });
 

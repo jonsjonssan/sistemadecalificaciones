@@ -22,6 +22,18 @@ export async function GET(request: NextRequest) {
     const trimestre = searchParams.get("trimestre");
     const estudianteId = searchParams.get("estudianteId");
 
+    if (session.rol === "docente") {
+      const materiasAsignadasIds = session.asignaturasAsignadas?.map((m: any) => m.id) || [];
+      const gradosAsignadosIds = session.asignaturasAsignadas?.map((m: any) => m.gradoId) || [];
+      
+      if (materiaId && !materiasAsignadasIds.includes(materiaId)) {
+        return NextResponse.json({ error: "No autorizado para esta materia" }, { status: 403 });
+      }
+      if (gradoId && !gradosAsignadosIds.includes(gradoId)) {
+        return NextResponse.json({ error: "No autorizado para este grado" }, { status: 403 });
+      }
+    }
+
     const prisma = new PrismaClient();
 
     let calificaciones: any[] = [];
