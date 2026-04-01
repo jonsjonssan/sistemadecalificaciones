@@ -910,7 +910,8 @@ export default function Home() {
 
   // Loading
   const dataReady = usuario && grados.length > 0 && gradosFiltrados.length > 0;
-  if (loading || dataLoading || !dataReady) return <div className="min-h-screen flex items-center justify-center bg-background"><RefreshCw className="h-12 w-8 animate-spin text-teal-600" /></div>;
+  if (loading || dataLoading) return <div className="min-h-screen flex items-center justify-center bg-background"><RefreshCw className="h-12 w-8 animate-spin text-teal-600" /></div>;
+  if (usuario && !dataReady) return <div className="min-h-screen flex items-center justify-center bg-background"><RefreshCw className="h-12 w-8 animate-spin text-teal-600" /></div>;
 
   // Login
   if (!usuario) return (
