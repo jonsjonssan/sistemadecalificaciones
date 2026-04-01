@@ -162,7 +162,7 @@ export async function POST(request: NextRequest) {
       if (materiaId && materiasAsignadasIds.length > 0 && !materiasAsignadasIds.includes(materiaId)) {
         return NextResponse.json({ error: "No autorizado para esta materia" }, { status: 403 });
       }
-      if (gradoId && !todosGradosIds.includes(gradoId)) {
+      if (gradoId && todosGradosIds.length > 0 && !todosGradosIds.includes(gradoId)) {
         return NextResponse.json({ error: "No autorizado para este grado" }, { status: 403 });
       }
       if (aplicarATodasLasMateriasDelGrado) {
