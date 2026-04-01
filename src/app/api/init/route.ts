@@ -51,7 +51,7 @@ export async function POST() {
       return materia[0];
     };
 
-    // Limpiar materias duplicadas o con nombres incorrectos
+    // Nombres válidos de materias por grado (TODAS las materias que existen en el sistema)
     const nombresValidosPorGrado: Record<number, string[]> = {};
     for (let num = 2; num <= 9; num++) {
       const materia6ta = num >= 7 ? "Educación Física y Deportes" : "Desarrollo Corporal";
@@ -63,8 +63,11 @@ export async function POST() {
         "Artes",
         materia6ta,
         "Educación en la Fe",
+        "Comunicación y Literatura",
+        "Aritmética y Finanzas",
       ];
       if (num >= 7) {
+        nombresValidosPorGrado[num].push("Matemática y Datos");
         nombresValidosPorGrado[num].push("Inglés");
       }
     }
@@ -110,9 +113,10 @@ export async function POST() {
         email: "yessenia.carmen.villafuerte@clases.edu.sv",
         password: "docente123",
         rol: "docente",
-        materias: [6, 7, 8, 9].flatMap(g => [
-          { grado: g, mat: "Números y Formas" }
-        ])
+        materias: [
+          ...[4, 5, 6].map(g => ({ grado: g, mat: "Aritmética y Finanzas" })),
+          ...[7, 8, 9].map(g => ({ grado: g, mat: "Matemática y Datos" }))
+        ]
       },
       {
         nombre: "Mónica Gissel Montesino Najarro",
@@ -142,8 +146,8 @@ export async function POST() {
         rol: "docente",
         tutorGrado: 3,
         materias: [3].flatMap(g => [
-          { grado: g, mat: "Comunicación" },
-          { grado: g, mat: "Números y Formas" },
+          { grado: g, mat: "Comunicación y Literatura" },
+          { grado: g, mat: "Aritmética y Finanzas" },
           { grado: g, mat: "Ciudadanía y Valores" },
           { grado: g, mat: "Ciencia y Tecnología" }
         ])
@@ -155,8 +159,8 @@ export async function POST() {
         rol: "docente",
         tutorGrado: 4,
         materias: [4].flatMap(g => [
-          { grado: g, mat: "Comunicación" },
-          { grado: g, mat: "Números y Formas" },
+          { grado: g, mat: "Comunicación y Literatura" },
+          { grado: g, mat: "Aritmética y Finanzas" },
           { grado: g, mat: "Ciudadanía y Valores" },
           { grado: g, mat: "Ciencia y Tecnología" }
         ])
@@ -168,8 +172,8 @@ export async function POST() {
         rol: "docente",
         tutorGrado: 5,
         materias: [5].flatMap(g => [
-          { grado: g, mat: "Comunicación" },
-          { grado: g, mat: "Números y Formas" },
+          { grado: g, mat: "Comunicación y Literatura" },
+          { grado: g, mat: "Aritmética y Finanzas" },
           { grado: g, mat: "Ciudadanía y Valores" },
           { grado: g, mat: "Ciencia y Tecnología" }
         ])
@@ -181,8 +185,8 @@ export async function POST() {
         rol: "docente",
         tutorGrado: 2,
         materias: [2].flatMap(g => [
-          { grado: g, mat: "Comunicación" },
-          { grado: g, mat: "Números y Formas" },
+          { grado: g, mat: "Comunicación y Literatura" },
+          { grado: g, mat: "Aritmética y Finanzas" },
           { grado: g, mat: "Ciudadanía y Valores" },
           { grado: g, mat: "Ciencia y Tecnología" }
         ])
