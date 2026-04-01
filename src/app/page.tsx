@@ -1126,6 +1126,7 @@ export default function Home() {
                             {configActual.tieneExamen && <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-amber-900/60 border-slate-600 text-amber-300' : 'bg-amber-50 border-slate-500 text-amber-700'}`}>Prom Ex</th>}
                             <th className={`w-14 p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-slate-600' : 'border-slate-500'}`}>Rec.</th>
                             <th className={`w-18 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-emerald-800/80 border-emerald-700 text-emerald-100' : 'bg-emerald-600 border-emerald-500'}`}>Prom. Final</th>
+                            <th className={`w-12 p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-slate-600' : 'border-slate-500'}`} title="Estado de guardado">💾</th>
                           </>
                         ) : (
                           <>
@@ -1137,7 +1138,7 @@ export default function Home() {
                             <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-amber-900/60 border-slate-600 text-amber-300' : 'bg-amber-50 border-slate-500 text-amber-700'}`}>Prom Ex</th>
                             <th className={`w-14 p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-slate-600' : 'border-slate-500'}`}>Rec.</th>
                             <th className={`w-18 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-emerald-800/80 border-emerald-700 text-emerald-100' : 'bg-emerald-600 border-emerald-500'}`}>Prom. Final</th>
-                            <th className={`w-12 p-2 border-l border-b ${darkMode ? 'border-slate-600' : 'border-slate-500'}`}></th>
+                            <th className={`w-12 p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-slate-600' : 'border-slate-500'}`} title="Estado de guardado">💾</th>
                           </>
                         )}
                       </tr></thead>
