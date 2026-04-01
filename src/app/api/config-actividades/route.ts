@@ -188,23 +188,22 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const trimestreNum = trimestre ? parseInt(String(trimestre)) : NaN;
+    const trimestreNum = trimestre !== undefined && trimestre !== null ? parseInt(String(trimestre)) : NaN;
     if (!trimestre || isNaN(trimestreNum)) {
       return NextResponse.json({ error: "Trimestre es requerido y debe ser válido" }, { status: 400 });
     }
 
-    const baseData = {
-      trimestre: trimestreNum,
-      numActividadesCotidianas: numActividadesCotidianas ?? 4,
-      numActividadesIntegradoras: numActividadesIntegradoras ?? 1,
-      tieneExamen: tieneExamen ?? true,
-      porcentajeAC: porcentajeAC ?? 35.0,
-      porcentajeAI: porcentajeAI ?? 35.0,
-      porcentajeExamen: porcentajeExamen ?? 30.0,
-    };
+    const numAC = numActividadesCotidianas !== undefined ? parseInt(String(numActividadesCotidianas)) : 4;
+    const numAI = numActividadesIntegradoras !== undefined ? parseInt(String(numActividadesIntegradoras)) : 1;
+    const tieneEx = tieneExamen === true || tieneExamen === "true" || tieneExamen === 1;
+    const porcAC = porcentajeAC !== undefined ? parseFloat(String(porcentajeAC)) : 35.0;
+    const porcAI = porcentajeAI !== undefined ? parseFloat(String(porcentajeAI)) : 35.0;
+    const porcEx = porcentajeExamen !== undefined ? parseFloat(String(porcentajeExamen)) : 30.0;
 
-    console.log("[config-actividades] POST baseData:", JSON.stringify(baseData));
-    console.log("[config-actividades] POST aplicarATodas:", aplicarATodasLasMateriasDelGrado, "gradoId:", gradoId);
+    console.log("[config-actividades] POST parsed values:", {
+      trimestreNum, numAC, numAI, tieneEx, porcAC, porcAI, porcEx,
+      aplicarATodas: aplicarATodasLasMateriasDelGrado, gradoId, materiaId
+    });
 
     if (aplicarATodasLasMateriasDelGrado && gradoId) {
       const materias = await sql`SELECT id FROM "Materia" WHERE "gradoId" = ${gradoId}`;
@@ -213,49 +212,61 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "No hay materias para este grado" }, { status: 404 });
       }
       
+      let count = 0;
       for (const materia of materias) {
-        await sql`
-          INSERT INTO "ConfigActividad" (
-            "materiaId", trimestre, 
-            "numActividadesCotidianas", "numActividadesIntegradoras", 
-            "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen"
-          ) VALUES (
-            ${materia.id}, ${baseData.trimestre},
-            ${baseData.numActividadesCotidianas}, ${baseData.numActividadesIntegradoras},
-            ${baseData.tieneExamen}, ${baseData.porcentajeAC}, ${baseData.porcentajeAI}, ${baseData.porcentajeExamen}
-          )
-          ON CONFLICT ("materiaId", trimestre) DO UPDATE SET
-            "numActividadesCotidianas" = EXCLUDED."numActividadesCotidianas",
-            "numActividadesIntegradoras" = EXCLUDED."numActividadesIntegradoras",
-            "tieneExamen" = EXCLUDED."tieneExamen",
-            "porcentajeAC" = EXCLUDED."porcentajeAC",
-            "porcentajeAI" = EXCLUDED."porcentajeAI",
-            "porcentajeExamen" = EXCLUDED."porcentajeExamen",
-            "updatedAt" = NOW()
+        const exist = await sql`
+          SELECT id FROM "ConfigActividad"
+          WHERE "materiaId" = ${materia.id} AND trimestre = ${trimestreNum}
         `;
+
+        if (exist.length > 0) {
+          await sql`
+            UPDATE "ConfigActividad" SET
+              "numActividadesCotidianas" = ${numAC},
+              "numActividadesIntegradoras" = ${numAI},
+              "tieneExamen" = ${tieneEx},
+              "porcentajeAC" = ${porcAC},
+              "porcentajeAI" = ${porcAI},
+              "porcentajeExamen" = ${porcEx}
+            WHERE "materiaId" = ${materia.id} AND trimestre = ${trimestreNum}
+          `;
+        } else {
+          await sql`
+            INSERT INTO "ConfigActividad" (
+              "materiaId", trimestre, 
+              "numActividadesCotidianas", "numActividadesIntegradoras", 
+              "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen"
+            ) VALUES (
+              ${materia.id}, ${trimestreNum},
+              ${numAC}, ${numAI},
+              ${tieneEx}, ${porcAC}, ${porcAI}, ${porcEx}
+            )
+          `;
+        }
+        count++;
       }
-      return NextResponse.json({ success: true, count: materias.length });
+      console.log("[config-actividades] POST apply-to-all success, count:", count);
+      return NextResponse.json({ success: true, count });
     }
 
     if (!materiaId) return NextResponse.json({ error: "materiaId es requerido" }, { status: 400 });
 
     const exist = await sql`
       SELECT id FROM "ConfigActividad"
-      WHERE "materiaId" = ${materiaId} AND trimestre = ${baseData.trimestre}
+      WHERE "materiaId" = ${materiaId} AND trimestre = ${trimestreNum}
     `;
 
     let result;
     if (exist.length > 0) {
       result = await sql`
         UPDATE "ConfigActividad" SET
-          "numActividadesCotidianas" = ${baseData.numActividadesCotidianas},
-          "numActividadesIntegradoras" = ${baseData.numActividadesIntegradoras},
-          "tieneExamen" = ${baseData.tieneExamen},
-          "porcentajeAC" = ${baseData.porcentajeAC},
-          "porcentajeAI" = ${baseData.porcentajeAI},
-          "porcentajeExamen" = ${baseData.porcentajeExamen},
-          "updatedAt" = NOW()
-        WHERE "materiaId" = ${materiaId} AND trimestre = ${baseData.trimestre}
+          "numActividadesCotidianas" = ${numAC},
+          "numActividadesIntegradoras" = ${numAI},
+          "tieneExamen" = ${tieneEx},
+          "porcentajeAC" = ${porcAC},
+          "porcentajeAI" = ${porcAI},
+          "porcentajeExamen" = ${porcEx}
+        WHERE "materiaId" = ${materiaId} AND trimestre = ${trimestreNum}
         RETURNING *
       `;
     } else {
@@ -265,9 +276,9 @@ export async function POST(request: NextRequest) {
           "numActividadesCotidianas", "numActividadesIntegradoras", 
           "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen"
         ) VALUES (
-          ${materiaId}, ${baseData.trimestre},
-          ${baseData.numActividadesCotidianas}, ${baseData.numActividadesIntegradoras},
-          ${baseData.tieneExamen}, ${baseData.porcentajeAC}, ${baseData.porcentajeAI}, ${baseData.porcentajeExamen}
+          ${materiaId}, ${trimestreNum},
+          ${numAC}, ${numAI},
+          ${tieneEx}, ${porcAC}, ${porcAI}, ${porcEx}
         )
         RETURNING *
       `;
