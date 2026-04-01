@@ -10,7 +10,7 @@ export async function POST() {
     for (let numero = 2; numero <= 9; numero++) {
       const existing = await sql`SELECT id FROM "Grado" WHERE numero = ${numero} LIMIT 1`;
       if (existing.length === 0) {
-        await sql`INSERT INTO "Grado" (id, numero, seccion, año) VALUES (${randomUUID()}, ${numero}, 'A', 2026)`;
+        await sql`INSERT INTO "Grado" (id, numero, seccion, año, "createdAt", "updatedAt") VALUES (${randomUUID()}, ${numero}, 'A', 2026, NOW(), NOW())`;
       }
     }
 
