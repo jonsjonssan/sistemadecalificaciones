@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 
 async function getUsuarioSession() {
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     const todas = searchParams.get("todas");
     const año = searchParams.get("año") ? parseInt(searchParams.get("año")!) : 2026;
 
-    const prisma = new PrismaClient();
+    const prisma = prisma;
 
     let materias;
     if (todas === "true") {
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    await prisma.$disconnect();
+
 
     return NextResponse.json(materias);
   } catch (error) {

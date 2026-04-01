@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 
 async function getUsuarioSession() {
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     const trimestre = searchParams.get("trimestre");
     const estudianteId = searchParams.get("estudianteId");
 
-    const prisma = new PrismaClient();
+    const prisma = prisma;
 
     let calificaciones: any[] = [];
     if (materiaId && trimestre && gradoId) {
@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
     const notasValidasAI = aiNotas.filter((n): n is number => n !== null && n !== undefined);
     const calificacionAI = notasValidasAI.length > 0 ? notasValidasAI.reduce((a, b) => a + b, 0) / notasValidasAI.length : null;
 
-    const prisma = new PrismaClient();
+    const prisma = prisma;
 
     const config = await prisma.configActividad.findFirst({
       where: { materiaId, trimestre: parseInt(String(trimestre)) },

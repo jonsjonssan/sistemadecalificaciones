@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import { randomUUID } from "crypto";
@@ -18,7 +18,7 @@ export async function GET() {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const prisma = new PrismaClient();
+    const prisma = prisma;
 
     const usuarios = await prisma.usuario.findMany({
       orderBy: { createdAt: "desc" },
@@ -36,7 +36,7 @@ export async function GET() {
       },
     });
 
-    await prisma.$disconnect();
+
 
     const usuariosFormateados = usuarios.map((u: any) => ({
       id: u.id,
@@ -79,11 +79,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Todos los campos son requeridos" }, { status: 400 });
     }
 
-    const prisma = new PrismaClient();
+    const prisma = prisma;
 
     const existeEmail = await prisma.usuario.findUnique({ where: { email } });
     if (existeEmail) {
-      await prisma.$disconnect();
+
       return NextResponse.json({ error: "El email ya está registrado" }, { status: 400 });
     }
 
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    await prisma.$disconnect();
+
 
     return NextResponse.json({
       id: nuevoUsuario.id,
@@ -155,11 +155,11 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "No puedes desactivarte a ti mismo" }, { status: 400 });
     }
 
-    const prisma = new PrismaClient();
+    const prisma = prisma;
 
     const current = await prisma.usuario.findUnique({ where: { id } });
     if (!current) {
-      await prisma.$disconnect();
+
       return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
     }
 
@@ -210,7 +210,7 @@ export async function PUT(request: NextRequest) {
       select: { id: true, email: true, nombre: true, rol: true, activo: true },
     });
 
-    await prisma.$disconnect();
+
 
     return NextResponse.json(usuarioActualizado);
   } catch (error: any) {
@@ -241,13 +241,13 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "No puedes eliminarte a ti mismo" }, { status: 400 });
     }
 
-    const prisma = new PrismaClient();
+    const prisma = prisma;
 
     await prisma.grado.updateMany({ where: { docenteId: id }, data: { docenteId: null } });
     await prisma.docenteMateria.deleteMany({ where: { docenteId: id } });
     await prisma.usuario.delete({ where: { id } });
 
-    await prisma.$disconnect();
+
 
     return NextResponse.json({ message: "Usuario eliminado" });
   } catch (error: any) {

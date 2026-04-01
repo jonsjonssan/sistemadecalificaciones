@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 
 export async function GET() {
@@ -12,7 +12,7 @@ export async function GET() {
     }
 
     const sessionData = JSON.parse(session.value);
-    const prisma = new PrismaClient();
+    const prisma = prisma;
 
     const usuario = await prisma.usuario.findUnique({
       where: { id: sessionData.id },
@@ -30,7 +30,7 @@ export async function GET() {
       },
     });
 
-    await prisma.$disconnect();
+
 
     if (!usuario) {
       return NextResponse.json({ usuario: null });
