@@ -15,10 +15,6 @@ export async function POST() {
       }
     }
 
-    const gradosDb = await sql`SELECT * FROM "Grado"`;
-    const getGradoId = (num: number) => gradosDb.find((g: any) => g.numero === num)?.id ?? gradosDb.find((g: any) => g.numero === num)?.id;
-
-    // Refrescar gradosDb después de inserts
     const gradosActualizados = await sql`SELECT * FROM "Grado"`;
     const getGradoIdActual = (num: number) => gradosActualizados.find((g: any) => g.numero === num)?.id;
 
@@ -36,55 +32,23 @@ export async function POST() {
 
         // Configuración de actividades para cada trimestre (por defecto)
         for (let trimestre = 1; trimestre <= 3; trimestre++) {
-          await sql`
-            INSERT INTO "ConfigActividad" (
-              id, "materiaId", trimestre, 
-              "numActividadesCotidianas", "numActividadesIntegradoras", 
-              "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen"
-            ) VALUES (
-              ${randomUUID()}, ${materiaId}, ${trimestre},
-              4, 1, true, 35.0, 35.0, 30.0
-            )
-          `;
+          const existingConfig = await sql`SELECT id FROM "ConfigActividad" WHERE "materiaId" = ${materiaId} AND trimestre = ${trimestre} LIMIT 1`;
+          if (existingConfig.length === 0) {
+            await sql`
+              INSERT INTO "ConfigActividad" (
+                id, "materiaId", trimestre, 
+                "numActividadesCotidianas", "numActividadesIntegradoras", 
+                "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen"
+              ) VALUES (
+                ${randomUUID()}, ${materiaId}, ${trimestre},
+                4, 1, true, 35.0, 35.0, 30.0
+              )
+            `;
+          }
         }
       }
       return materia[0];
     };
-
-    // Nombres válidos de materias por grado (TODAS las materias que existen en el sistema)
-    const nombresValidosPorGrado: Record<number, string[]> = {};
-    for (let num = 2; num <= 9; num++) {
-      const materia6ta = num >= 7 ? "Educación Física y Deportes" : "Desarrollo Corporal";
-      nombresValidosPorGrado[num] = [
-        "Comunicación",
-        "Números y Formas",
-        "Ciencia y Tecnología",
-        "Ciudadanía y Valores",
-        "Artes",
-        materia6ta,
-        "Educación en la Fe",
-        "Comunicación y Literatura",
-        "Aritmética y Finanzas",
-      ];
-      if (num >= 7) {
-        nombresValidosPorGrado[num].push("Matemática y Datos");
-        nombresValidosPorGrado[num].push("Inglés");
-      }
-    }
-
-    // Eliminar materias que no corresponden al grado
-    const todasMaterias = await sql`SELECT * FROM "Materia"`;
-    for (const m of todasMaterias) {
-      const grado = gradosActualizados.find((g: any) => g.id === m.gradoId);
-      if (!grado) continue;
-      const validos = nombresValidosPorGrado[grado.numero] || [];
-      if (!validos.includes(m.nombre)) {
-        await sql`DELETE FROM "ConfigActividad" WHERE "materiaId" = ${m.id}`;
-        await sql`DELETE FROM "DocenteMateria" WHERE "materiaId" = ${m.id}`;
-        await sql`DELETE FROM "Calificacion" WHERE "materiaId" = ${m.id}`;
-        await sql`DELETE FROM "Materia" WHERE id = ${m.id}`;
-      }
-    }
 
     const users = [
       {
@@ -260,8 +224,8 @@ export async function POST() {
       message: "Sistema cargado con usuarios y asignaciones exitosamente",
       count: users.length
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error al inicializar:", error);
-    return NextResponse.json({ error: "Error al cargar los usuarios" }, { status: 500 });
+    return NextResponse.json({ error: error.message || "Error al cargar los usuarios" }, { status: 500 });
   }
 }
