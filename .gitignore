@@ -49,3 +49,13 @@ prompt
 server.log
 # Skills directory
 /skills/
+
+# Logs
+logs/
+*.log
+
+# Husky
+.husky/_
+
+# Prisma
+prisma/migrations/
