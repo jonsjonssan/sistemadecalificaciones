@@ -6,11 +6,10 @@ export async function POST() {
   try {
     // 1. Asegurar grados 2-9
     for (let numero = 2; numero <= 9; numero++) {
-      await sql`
-        INSERT INTO "Grado" (id, numero, seccion, año)
-        VALUES (${randomUUID()}, ${numero}, 'A', 2026)
-        ON CONFLICT DO NOTHING
-      `;
+      const existing = await sql`SELECT id FROM "Grado" WHERE numero = ${numero} LIMIT 1`;
+      if (existing.length === 0) {
+        await sql`INSERT INTO "Grado" (id, numero, seccion, año) VALUES (${randomUUID()}, ${numero}, 'A', 2026)`;
+      }
     }
 
     const grados = await sql`SELECT * FROM "Grado"`;
