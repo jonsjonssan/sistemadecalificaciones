@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
-import { sql } from "@/lib/neon";
 import { cookies } from "next/headers";
 
 async function getUsuarioSession() {
@@ -8,39 +7,6 @@ async function getUsuarioSession() {
   const session = cookieStore.get("session");
   if (!session) return null;
   return JSON.parse(session.value);
-}
-
-async function createAuditLog({
-  usuarioId,
-  accion,
-  entidad,
-  entidadId,
-  detalles,
-  grado,
-  ip,
-  userAgent
-}: {
-  usuarioId: string;
-  accion: string;
-  entidad: string;
-  entidadId?: string | null;
-  detalles?: string | null;
-  grado?: string | null;
-  ip?: string;
-  userAgent?: string;
-}) {
-  try {
-    console.log("[audit-inline] Inserting:", { usuarioId, accion, entidad, grado });
-    const result = await sql`
-      INSERT INTO "AuditLog" ("id", "usuarioId", "accion", "entidad", "entidadId", "detalles", "grado", "ip", "userAgent", "createdAt")
-      VALUES (gen_random_uuid()::text, ${usuarioId}, ${accion}, ${entidad}, ${entidadId || null}, ${detalles || null}, ${grado || null}, ${ip || null}, ${userAgent || null}, NOW())
-      RETURNING id
-    `;
-    console.log("[audit-inline] Inserted:", result);
-  } catch (error) {
-    console.error("[audit-inline] Failed to create log:", error);
-    throw error;
-  }
 }
 
 export async function GET(request: NextRequest) {
@@ -248,38 +214,24 @@ export async function POST(request: NextRequest) {
     // Audit log
     try {
       if (session && session.id) {
-        const headers = Object.fromEntries(request.headers.entries());
-        const ip = headers["x-forwarded-for"] || headers["x-real-ip"] || "unknown";
-        const userAgent = headers["user-agent"] || "unknown";
         const gradoInfo = result.estudiante?.gradoId
           ? await prisma.grado.findUnique({ where: { id: result.estudiante.gradoId }, select: { numero: true, seccion: true } })
           : null;
-        console.log("[audit] Creating log:", JSON.stringify({
-          usuarioId: session.id,
-          accion: "UPDATE",
-          entidad: "Calificacion",
-          grado: gradoInfo ? `${gradoInfo.numero}${gradoInfo.seccion}` : null,
-          estudiante: result.estudiante?.nombre,
-          materia: result.materia?.nombre
-        }));
-        await createAuditLog({
-          usuarioId: session.id,
-          accion: "UPDATE",
-          entidad: "Calificacion",
-          entidadId: result.id,
-          grado: gradoInfo ? `${gradoInfo.numero}${gradoInfo.seccion}` : null,
-          detalles: JSON.stringify({
-            estudiante: result.estudiante?.nombre,
-            materia: result.materia?.nombre,
-            trimestre: parseInt(String(trimestre)),
-            promedioFinal: promFinal
-          }),
-          ip,
-          userAgent
+        await prisma.auditLog.create({
+          data: {
+            usuarioId: session.id,
+            accion: "UPDATE",
+            entidad: "Calificacion",
+            entidadId: result.id,
+            detalles: JSON.stringify({
+              estudiante: result.estudiante?.nombre,
+              materia: result.materia?.nombre,
+              trimestre: parseInt(String(trimestre)),
+              promedioFinal: promFinal,
+              grado: gradoInfo ? `${gradoInfo.numero}${gradoInfo.seccion}` : null
+            }),
+          },
         });
-        console.log("[audit] Log created successfully");
-      } else {
-        console.error("[audit] No session or missing id:", JSON.stringify(session));
       }
     } catch (auditError) {
       console.error("[calificaciones] Audit error:", auditError);
@@ -322,21 +274,18 @@ export async function DELETE(request: NextRequest) {
       });
 
       try {
-        const headers = Object.fromEntries(request.headers.entries());
-        const ip = headers["x-forwarded-for"] || headers["x-real-ip"] || "unknown";
-        const userAgent = headers["user-agent"] || "unknown";
-        await createAuditLog({
-          usuarioId: session.id,
-          accion: "DELETE",
-          entidad: "Calificacion",
-          grado: cal?.estudiante?.grado ? `${cal.estudiante.grado.numero}${cal.estudiante.grado.seccion}` : null,
-          detalles: JSON.stringify({
-            estudiante: cal?.estudiante?.nombre,
-            materia: cal?.materia?.nombre,
-            trimestre: parseInt(trimestre)
-          }),
-          ip,
-          userAgent
+        await prisma.auditLog.create({
+          data: {
+            usuarioId: session.id,
+            accion: "DELETE",
+            entidad: "Calificacion",
+            detalles: JSON.stringify({
+              estudiante: cal?.estudiante?.nombre,
+              materia: cal?.materia?.nombre,
+              trimestre: parseInt(trimestre),
+              grado: cal?.estudiante?.grado ? `${cal.estudiante.grado.numero}${cal.estudiante.grado.seccion}` : null
+            }),
+          },
         });
       } catch (auditError) {
         console.error("[calificaciones] Audit error:", auditError);
@@ -358,21 +307,18 @@ export async function DELETE(request: NextRequest) {
       });
 
       try {
-        const headers = Object.fromEntries(request.headers.entries());
-        const ip = headers["x-forwarded-for"] || headers["x-real-ip"] || "unknown";
-        const userAgent = headers["user-agent"] || "unknown";
-        await createAuditLog({
-          usuarioId: session.id,
-          accion: "DELETE",
-          entidad: "Calificacion",
-          grado: grado ? `${grado.numero}${grado.seccion}` : null,
-          detalles: JSON.stringify({
-            materia: materia?.nombre,
-            trimestre: parseInt(trimestre),
-            cantidad: deleted.count
-          }),
-          ip,
-          userAgent
+        await prisma.auditLog.create({
+          data: {
+            usuarioId: session.id,
+            accion: "DELETE",
+            entidad: "Calificacion",
+            detalles: JSON.stringify({
+              materia: materia?.nombre,
+              trimestre: parseInt(trimestre),
+              cantidad: deleted.count,
+              grado: grado ? `${grado.numero}${grado.seccion}` : null
+            }),
+          },
         });
       } catch (auditError) {
         console.error("[calificaciones] Audit error:", auditError);

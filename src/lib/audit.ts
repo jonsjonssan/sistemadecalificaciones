@@ -1,34 +1,31 @@
-import { sql } from "@/lib/neon";
+import { PrismaClient } from "@prisma/client";
 
 export async function createAuditLog({
   usuarioId,
   accion,
   entidad,
   entidadId,
-  detalles,
-  grado,
-  ip,
-  userAgent
+  detalles
 }: {
   usuarioId: string;
   accion: string;
   entidad: string;
   entidadId?: string | null;
   detalles?: string | null;
-  grado?: string | null;
-  ip?: string;
-  userAgent?: string;
 }) {
   try {
-    console.log("[audit] Inserting:", { usuarioId, accion, entidad, grado });
-    const result = await sql`
-      INSERT INTO "AuditLog" ("id", "usuarioId", "accion", "entidad", "entidadId", "detalles", "grado", "ip", "userAgent", "createdAt")
-      VALUES (gen_random_uuid()::text, ${usuarioId}, ${accion}, ${entidad}, ${entidadId || null}, ${detalles || null}, ${grado || null}, ${ip || null}, ${userAgent || null}, NOW())
-      RETURNING id
-    `;
-    console.log("[audit] Inserted successfully:", result);
+    const prisma = new PrismaClient();
+    await prisma.auditLog.create({
+      data: {
+        usuarioId,
+        accion,
+        entidad,
+        entidadId,
+        detalles,
+      },
+    });
+    await prisma.$disconnect();
   } catch (error) {
     console.error("[audit] Failed to create log:", error);
-    throw error;
   }
 }

@@ -97,8 +97,6 @@ export async function POST(request: NextRequest) {
         entidad: "Usuario",
         entidadId: usuario[0].id,
         detalles: JSON.stringify({ email: usuario[0].email, nombre: usuario[0].nombre }),
-        ip,
-        userAgent
       });
 
       await sql`

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { sql } from "@/lib/neon";
+import { PrismaClient } from "@prisma/client";
 import { cookies } from "next/headers";
 
 async function getUsuarioSession() {
@@ -27,74 +27,46 @@ export async function GET(request: NextRequest) {
     const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
     const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "20")));
     const accion = searchParams.get("accion");
-    const usuarioId = searchParams.get("usuarioId");
     const fechaDesde = searchParams.get("fechaDesde");
     const fechaHasta = searchParams.get("fechaHasta");
-    const skip = (page - 1) * limit;
 
-    try {
-      await sql`DELETE FROM "AuditLog" WHERE "createdAt" < NOW() - INTERVAL '14 days'`;
-    } catch (cleanupError) {
-      console.error("[audit] Cleanup error:", cleanupError);
+    const prisma = new PrismaClient();
+
+    const where: any = {};
+    if (accion) where.accion = accion;
+    if (fechaDesde || fechaHasta) {
+      where.createdAt = {};
+      if (fechaDesde) where.createdAt.gte = new Date(fechaDesde);
+      if (fechaHasta) where.createdAt.lte = new Date(fechaHasta + "T23:59:59.999Z");
     }
 
-    const conditions: string[] = [];
-
-    if (accion) {
-      conditions.push(`a.accion = '${accion.replace(/'/g, "''")}'`);
-    }
-    if (usuarioId) {
-      conditions.push(`a."usuarioId" = '${usuarioId.replace(/'/g, "''")}'`);
-    }
-    if (fechaDesde) {
-      conditions.push(`a."createdAt" >= '${fechaDesde}'::date`);
-    }
-    if (fechaHasta) {
-      conditions.push(`a."createdAt" <= '${fechaHasta}'::date + INTERVAL '1 day'`);
-    }
-
-    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
-
-    const logsQuery = `
-      SELECT a.*, u.nombre as "usuario_nombre"
-      FROM "AuditLog" a
-      JOIN "Usuario" u ON a."usuarioId" = u.id
-      ${whereClause}
-      ORDER BY a."createdAt" DESC
-      LIMIT ${limit} OFFSET ${skip}
-    `;
-
-    const countQuery = `
-      SELECT COUNT(*) FROM "AuditLog" a
-      ${whereClause}
-    `;
-
-    console.log("[audit] Query:", logsQuery);
-
-    const [logs, countResult] = await Promise.all([
-      sql.unsafe(logsQuery),
-      sql.unsafe(countQuery)
+    const [logs, total] = await Promise.all([
+      prisma.auditLog.findMany({
+        where,
+        include: { usuario: { select: { id: true, nombre: true } } },
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.auditLog.count({ where }),
     ]);
-    const total = parseInt((countResult as unknown as any[])[0]?.count || "0");
 
-    console.log("[audit] Found", total, "logs, returning", (logs as unknown as any[]).length);
+    await prisma.$disconnect();
 
-    const formattedLogs = (logs as unknown as any[]).map((l: any) => ({
-      id: l.id,
-      usuarioId: l.usuarioId,
-      accion: l.accion,
-      entidad: l.entidad,
-      entidadId: l.entidadId,
-      detalles: l.detalles,
-      grado: l.grado,
-      ip: l.ip,
-      userAgent: l.userAgent,
-      createdAt: l.createdAt,
-      usuario: {
-        id: l.usuarioId,
-        nombre: l.usuario_nombre
-      }
-    }));
+    const formattedLogs = logs.map((l: any) => {
+      let detalles = {};
+      try { detalles = JSON.parse(l.detalles || "{}"); } catch { /* ignore */ }
+      return {
+        id: l.id,
+        usuarioId: l.usuarioId,
+        accion: l.accion,
+        entidad: l.entidad,
+        detalles: l.detalles,
+        grado: (detalles as any).grado || null,
+        createdAt: l.createdAt,
+        usuario: l.usuario,
+      };
+    });
 
     return NextResponse.json({
       logs: formattedLogs,
@@ -117,30 +89,26 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await request.json();
-    const { accion, entidad, entidadId, detalles, grado } = data;
+    const { accion, entidad, entidadId, detalles } = data;
 
     if (!accion || !entidad) {
       return NextResponse.json({ error: "accion y entidad son requeridos" }, { status: 400 });
     }
 
-    const headers = Object.fromEntries(request.headers.entries());
-    const ip = headers["x-forwarded-for"] || headers["x-real-ip"] || "unknown";
-    const userAgent = headers["user-agent"] || "unknown";
+    const prisma = new PrismaClient();
 
-    const detallesStr = detalles ? JSON.stringify(detalles) : null;
+    const log = await prisma.auditLog.create({
+      data: {
+        usuarioId: session.id,
+        accion,
+        entidad,
+        entidadId,
+        detalles: typeof detalles === "string" ? detalles : JSON.stringify(detalles),
+      },
+      include: { usuario: { select: { id: true, nombre: true } } },
+    });
 
-    const result = await sql`
-      INSERT INTO "AuditLog" ("id", "usuarioId", "accion", "entidad", "entidadId", "detalles", "grado", "ip", "userAgent", "createdAt")
-      VALUES (gen_random_uuid()::text, ${session.id}, ${accion}, ${entidad}, ${entidadId || null}, ${detallesStr}, ${grado || null}, ${ip}, ${userAgent}, NOW())
-      RETURNING *
-    `;
-
-    const usuario = await sql`SELECT id, nombre FROM "Usuario" WHERE id = ${session.id}`;
-
-    const log = {
-      ...result[0],
-      usuario: usuario[0]
-    };
+    await prisma.$disconnect();
 
     return NextResponse.json(log);
   } catch (error) {

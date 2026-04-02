@@ -196,8 +196,7 @@ model AuditLog {
   accion      String   // "UPDATE" = Digitó, "DELETE" = Borró
   entidad     String   // "Calificacion"
   entidadId   String?
-  detalles    String?  // JSON con detalles del cambio
-  grado       String?  // Grado y sección
+  detalles    String?  // JSON: { estudiante, materia, trimestre, grado, promedioFinal }
   ip          String?
   userAgent   String?
   createdAt   DateTime @default(now())

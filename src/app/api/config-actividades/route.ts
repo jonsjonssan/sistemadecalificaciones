@@ -280,9 +280,6 @@ export async function POST(request: NextRequest) {
 
     // Audit log
     try {
-      const headers = Object.fromEntries(request.headers.entries());
-      const ip = headers["x-forwarded-for"] || headers["x-real-ip"] || "unknown";
-      const userAgent = headers["user-agent"] || "unknown";
       await createAuditLog({
         usuarioId: session.id,
         accion: "CONFIG_CHANGE",
@@ -299,8 +296,6 @@ export async function POST(request: NextRequest) {
           porcEx,
           aplicarATodas: aplicarATodasLasMateriasDelGrado
         }),
-        ip,
-        userAgent
       });
     } catch (auditError) {
       console.error("[config-actividades] Audit error:", auditError);

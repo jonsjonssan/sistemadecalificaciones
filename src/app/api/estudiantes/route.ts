@@ -79,15 +79,12 @@ export async function POST(request: NextRequest) {
 
     // Audit log
     if (session && session.id) {
-      const headers = Object.fromEntries(request.headers.entries());
-      const ip = headers["x-forwarded-for"] || headers["x-real-ip"] || "unknown";
       await createAuditLog({
         usuarioId: session.id,
         accion: "CREATE",
         entidad: "Estudiante",
         entidadId: result[0].id,
         detalles: JSON.stringify({ nombre, gradoId }),
-        ip
       });
     }
 
@@ -159,15 +156,12 @@ export async function DELETE(request: NextRequest) {
 
     // Audit log
     if (session && session.id) {
-      const headers = Object.fromEntries(request.headers.entries());
-      const ip = headers["x-forwarded-for"] || headers["x-real-ip"] || "unknown";
       await createAuditLog({
         usuarioId: session.id,
         accion: "DELETE",
         entidad: "Estudiante",
         entidadId: id,
         detalles: JSON.stringify({ nombre: student[0]?.nombre, gradoId: student[0]?.gradoId }),
-        ip
       });
     }
 
