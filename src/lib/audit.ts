@@ -1,5 +1,16 @@
 import { PrismaClient } from "@prisma/client";
 
+// Singleton pattern to avoid connection pool exhaustion
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
+};
+
+const prisma = globalForPrisma.prisma ?? new PrismaClient();
+
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = prisma;
+}
+
 export async function createAuditLog({
   usuarioId,
   accion,
@@ -14,7 +25,6 @@ export async function createAuditLog({
   detalles?: string | null;
 }) {
   try {
-    const prisma = new PrismaClient();
     await prisma.auditLog.create({
       data: {
         usuarioId,
@@ -24,7 +34,6 @@ export async function createAuditLog({
         detalles,
       },
     });
-    await prisma.$disconnect();
   } catch (error) {
     console.error("[audit] Failed to create log:", error);
   }

@@ -72,26 +72,30 @@ export async function POST(request: NextRequest) {
     const nuevoNumero = ultimo.length > 0 ? ultimo[0].numero + 1 : 1;
 
     const result = await sql`
-      INSERT INTO "Estudiante" (numero, nombre, "gradoId", "createdAt", "updatedAt")
-      VALUES (${nuevoNumero}, ${nombre}, ${gradoId}, NOW(), NOW())
+      INSERT INTO "Estudiante" (numero, nombre, "gradoId", activo, "createdAt", "updatedAt")
+      VALUES (${nuevoNumero}, ${nombre}, ${gradoId}, true, NOW(), NOW())
       RETURNING *
     `;
 
-    // Audit log
-    if (session && session.id) {
-      await createAuditLog({
-        usuarioId: session.id,
-        accion: "CREATE",
-        entidad: "Estudiante",
-        entidadId: result[0].id,
-        detalles: JSON.stringify({ nombre, gradoId }),
-      });
+    // Audit log (non-blocking)
+    try {
+      if (session && session.id) {
+        await createAuditLog({
+          usuarioId: session.id,
+          accion: "CREATE_ESTUDIANTE",
+          entidad: "Estudiante",
+          entidadId: result[0].id,
+          detalles: JSON.stringify({ nombre, gradoId }),
+        });
+      }
+    } catch (auditError) {
+      console.error("Error creating audit log:", auditError);
     }
 
     return NextResponse.json(result[0]);
   } catch (error) {
     console.error("Error al crear estudiante:", error);
-    return NextResponse.json({ error: "Error al crear estudiante" }, { status: 500 });
+    return NextResponse.json({ error: "Error al crear estudiante: " + (error instanceof Error ? error.message : String(error)) }, { status: 500 });
   }
 }
 
@@ -108,6 +112,10 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Se requiere un array de nombres" }, { status: 400 });
     }
 
+    if (!gradoId) {
+      return NextResponse.json({ error: "Grado es requerido" }, { status: 400 });
+    }
+
     const ultimo = await sql`
       SELECT numero FROM "Estudiante" 
       WHERE "gradoId" = ${gradoId}
@@ -119,17 +127,31 @@ export async function PUT(request: NextRequest) {
     const creados: any[] = [];
     for (let i = 0; i < estudiantes.length; i++) {
       const result = await sql`
-        INSERT INTO "Estudiante" (numero, nombre, "gradoId", "createdAt", "updatedAt")
-        VALUES (${numeroInicial + i + 1}, ${estudiantes[i]}, ${gradoId}, NOW(), NOW())
+        INSERT INTO "Estudiante" (numero, nombre, "gradoId", activo, "createdAt", "updatedAt")
+        VALUES (${numeroInicial + i + 1}, ${estudiantes[i]}, ${gradoId}, true, NOW(), NOW())
         RETURNING *
       `;
       creados.push(result[0]);
     }
 
+    // Audit log (non-blocking)
+    try {
+      if (session && session.id) {
+        await createAuditLog({
+          usuarioId: session.id,
+          accion: "CREATE_ESTUDIANTES_BULK",
+          entidad: "Estudiante",
+          detalles: JSON.stringify({ count: creados.length, gradoId }),
+        });
+      }
+    } catch (auditError) {
+      console.error("Error creating audit log:", auditError);
+    }
+
     return NextResponse.json({ message: `${creados.length} estudiantes creados`, estudiantes: creados });
   } catch (error) {
     console.error("Error al crear estudiantes:", error);
-    return NextResponse.json({ error: "Error al crear estudiantes" }, { status: 500 });
+    return NextResponse.json({ error: "Error al crear estudiantes: " + (error instanceof Error ? error.message : String(error)) }, { status: 500 });
   }
 }
 
@@ -155,14 +177,18 @@ export async function DELETE(request: NextRequest) {
     await sql`DELETE FROM "Estudiante" WHERE id = ${id}`;
 
     // Audit log
-    if (session && session.id) {
-      await createAuditLog({
-        usuarioId: session.id,
-        accion: "DELETE",
-        entidad: "Estudiante",
-        entidadId: id,
-        detalles: JSON.stringify({ nombre: student[0]?.nombre, gradoId: student[0]?.gradoId }),
-      });
+    try {
+      if (session && session.id) {
+        await createAuditLog({
+          usuarioId: session.id,
+          accion: "DELETE_ESTUDIANTE",
+          entidad: "Estudiante",
+          entidadId: id,
+          detalles: JSON.stringify({ nombre: student[0]?.nombre, gradoId: student[0]?.gradoId }),
+        });
+      }
+    } catch (auditError) {
+      console.error("Error creating audit log:", auditError);
     }
 
     return NextResponse.json({ message: "Estudiante eliminado" });
