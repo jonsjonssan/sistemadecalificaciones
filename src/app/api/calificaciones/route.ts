@@ -16,6 +16,7 @@ async function createAuditLog({
   entidad,
   entidadId,
   detalles,
+  grado,
   ip,
   userAgent
 }: {
@@ -24,13 +25,14 @@ async function createAuditLog({
   entidad: string;
   entidadId?: string | null;
   detalles?: string | null;
+  grado?: string | null;
   ip?: string;
   userAgent?: string;
 }) {
   try {
     await sql`
-      INSERT INTO "AuditLog" ("id", "usuarioId", "accion", "entidad", "entidadId", "detalles", "ip", "userAgent", "createdAt")
-      VALUES (gen_random_uuid()::text, ${usuarioId}, ${accion}, ${entidad}, ${entidadId || null}, ${detalles || null}, ${ip || null}, ${userAgent || null}, NOW())
+      INSERT INTO "AuditLog" ("id", "usuarioId", "accion", "entidad", "entidadId", "detalles", "grado", "ip", "userAgent", "createdAt")
+      VALUES (gen_random_uuid()::text, ${usuarioId}, ${accion}, ${entidad}, ${entidadId || null}, ${detalles || null}, ${grado || null}, ${ip || null}, ${userAgent || null}, NOW())
     `;
   } catch (error) {
     console.error("[audit] Failed to create log:", error);
@@ -245,11 +247,15 @@ export async function POST(request: NextRequest) {
         const headers = Object.fromEntries(request.headers.entries());
         const ip = headers["x-forwarded-for"] || headers["x-real-ip"] || "unknown";
         const userAgent = headers["user-agent"] || "unknown";
+        const gradoInfo = result.estudiante?.gradoId
+          ? await prisma.grado.findUnique({ where: { id: result.estudiante.gradoId }, select: { numero: true, seccion: true } })
+          : null;
         await createAuditLog({
           usuarioId: session.id,
           accion: "UPDATE",
           entidad: "Calificacion",
           entidadId: result.id,
+          grado: gradoInfo ? `${gradoInfo.numero}${gradoInfo.seccion}` : null,
           detalles: JSON.stringify({
             estudiante: result.estudiante?.nombre,
             materia: result.materia?.nombre,
@@ -289,14 +295,45 @@ export async function DELETE(request: NextRequest) {
     const prisma = new PrismaClient();
 
     if (estudianteId && materiaId && trimestre) {
+      const cal = await prisma.calificacion.findFirst({
+        where: { estudianteId, materiaId, trimestre: parseInt(trimestre) },
+        include: {
+          estudiante: { include: { grado: true } },
+          materia: true,
+        },
+      });
       const deleted = await prisma.calificacion.deleteMany({
         where: { estudianteId, materiaId, trimestre: parseInt(trimestre) }
       });
+
+      try {
+        const headers = Object.fromEntries(request.headers.entries());
+        const ip = headers["x-forwarded-for"] || headers["x-real-ip"] || "unknown";
+        const userAgent = headers["user-agent"] || "unknown";
+        await createAuditLog({
+          usuarioId: session.id,
+          accion: "DELETE",
+          entidad: "Calificacion",
+          grado: cal?.estudiante?.grado ? `${cal.estudiante.grado.numero}${cal.estudiante.grado.seccion}` : null,
+          detalles: JSON.stringify({
+            estudiante: cal?.estudiante?.nombre,
+            materia: cal?.materia?.nombre,
+            trimestre: parseInt(trimestre)
+          }),
+          ip,
+          userAgent
+        });
+      } catch (auditError) {
+        console.error("[calificaciones] Audit error:", auditError);
+      }
+
       await prisma.$disconnect();
       return NextResponse.json({ deleted: deleted.count });
     }
 
     if (gradoId && materiaId && trimestre) {
+      const grado = await prisma.grado.findUnique({ where: { id: gradoId }, select: { numero: true, seccion: true } });
+      const materia = await prisma.materia.findUnique({ where: { id: materiaId }, select: { nombre: true } });
       const deleted = await prisma.calificacion.deleteMany({
         where: {
           estudiante: { gradoId },
@@ -304,6 +341,28 @@ export async function DELETE(request: NextRequest) {
           trimestre: parseInt(trimestre)
         }
       });
+
+      try {
+        const headers = Object.fromEntries(request.headers.entries());
+        const ip = headers["x-forwarded-for"] || headers["x-real-ip"] || "unknown";
+        const userAgent = headers["user-agent"] || "unknown";
+        await createAuditLog({
+          usuarioId: session.id,
+          accion: "DELETE",
+          entidad: "Calificacion",
+          grado: grado ? `${grado.numero}${grado.seccion}` : null,
+          detalles: JSON.stringify({
+            materia: materia?.nombre,
+            trimestre: parseInt(trimestre),
+            cantidad: deleted.count
+          }),
+          ip,
+          userAgent
+        });
+      } catch (auditError) {
+        console.error("[calificaciones] Audit error:", auditError);
+      }
+
       await prisma.$disconnect();
       return NextResponse.json({ borradas: deleted.count });
     }

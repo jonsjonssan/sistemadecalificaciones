@@ -27,13 +27,11 @@ export async function GET(request: NextRequest) {
     const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
     const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "20")));
     const accion = searchParams.get("accion");
-    const entidad = searchParams.get("entidad");
     const usuarioId = searchParams.get("usuarioId");
     const fechaDesde = searchParams.get("fechaDesde");
     const fechaHasta = searchParams.get("fechaHasta");
     const skip = (page - 1) * limit;
 
-    // Auto-borrar logs mayores a 14 dias
     try {
       await sql`DELETE FROM "AuditLog" WHERE "createdAt" < NOW() - INTERVAL '14 days'`;
     } catch (cleanupError) {
@@ -44,11 +42,6 @@ export async function GET(request: NextRequest) {
     const params: any[] = [];
     let paramIndex = 1;
 
-    if (entidad) {
-      conditions.push(`a.entidad = $${paramIndex}`);
-      params.push(entidad);
-      paramIndex++;
-    }
     if (accion) {
       conditions.push(`a.accion = $${paramIndex}`);
       params.push(accion);
@@ -73,7 +66,7 @@ export async function GET(request: NextRequest) {
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
     const logsQuery = `
-      SELECT a.*, u.nombre as "usuario_nombre", u.email as "usuario_email", u.rol as "usuario_rol"
+      SELECT a.*, u.nombre as "usuario_nombre"
       FROM "AuditLog" a
       JOIN "Usuario" u ON a."usuarioId" = u.id
       ${whereClause}
@@ -99,14 +92,13 @@ export async function GET(request: NextRequest) {
       entidad: l.entidad,
       entidadId: l.entidadId,
       detalles: l.detalles,
+      grado: l.grado,
       ip: l.ip,
       userAgent: l.userAgent,
       createdAt: l.createdAt,
       usuario: {
         id: l.usuarioId,
-        nombre: l.usuario_nombre,
-        email: l.usuario_email,
-        rol: l.usuario_rol
+        nombre: l.usuario_nombre
       }
     }));
 
@@ -131,7 +123,7 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await request.json();
-    const { accion, entidad, entidadId, detalles } = data;
+    const { accion, entidad, entidadId, detalles, grado } = data;
 
     if (!accion || !entidad) {
       return NextResponse.json({ error: "accion y entidad son requeridos" }, { status: 400 });
@@ -144,12 +136,12 @@ export async function POST(request: NextRequest) {
     const detallesStr = detalles ? JSON.stringify(detalles) : null;
 
     const result = await sql`
-      INSERT INTO "AuditLog" ("id", "usuarioId", "accion", "entidad", "entidadId", "detalles", "ip", "userAgent", "createdAt")
-      VALUES (gen_random_uuid()::text, ${session.id}, ${accion}, ${entidad}, ${entidadId || null}, ${detallesStr}, ${ip}, ${userAgent}, NOW())
+      INSERT INTO "AuditLog" ("id", "usuarioId", "accion", "entidad", "entidadId", "detalles", "grado", "ip", "userAgent", "createdAt")
+      VALUES (gen_random_uuid()::text, ${session.id}, ${accion}, ${entidad}, ${entidadId || null}, ${detallesStr}, ${grado || null}, ${ip}, ${userAgent}, NOW())
       RETURNING *
     `;
 
-    const usuario = await sql`SELECT id, nombre, email, rol FROM "Usuario" WHERE id = ${session.id}`;
+    const usuario = await sql`SELECT id, nombre FROM "Usuario" WHERE id = ${session.id}`;
 
     const log = {
       ...result[0],

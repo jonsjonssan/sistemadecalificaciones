@@ -1598,7 +1598,7 @@ export default function Home() {
               <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
                 <CardHeader className={`py-3 px-4 ${darkMode ? 'border-slate-700' : ''}`}>
                   <CardTitle className="text-sm sm:text-base">Historial de Auditoría</CardTitle>
-                  <CardDescription className={`text-xs ${darkMode ? 'text-slate-400' : ''}`}>Registro de acciones en el sistema</CardDescription>
+                  <CardDescription className={`text-xs ${darkMode ? 'text-slate-400' : ''}`}>Registro de quién digitó o borró calificaciones</CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0 space-y-3">
                   <div className="flex flex-wrap gap-2 items-center">
@@ -1606,30 +1606,13 @@ export default function Home() {
                       <RefreshCw className={`h-3.5 w-3.5 mr-1 ${auditLoading ? 'animate-spin' : ''}`} /> Actualizar
                     </Button>
                     <select
-                      value={auditFilter.entidad}
-                      onChange={e => { setAuditFilter(f => ({ ...f, entidad: e.target.value })); setAuditPage(1); }}
-                      className={`h-8 text-xs rounded border px-2 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-slate-300'}`}
-                    >
-                      <option value="">Todas las entidades</option>
-                      <option value="Calificacion">Calificaciones</option>
-                      <option value="Estudiante">Estudiantes</option>
-                      <option value="Usuario">Usuarios</option>
-                      <option value="ConfigActividad">Configuración</option>
-                      <option value="Grado">Grados</option>
-                      <option value="Materia">Materias</option>
-                      <option value="Asistencia">Asistencia</option>
-                    </select>
-                    <select
                       value={auditFilter.accion}
                       onChange={e => { setAuditFilter(f => ({ ...f, accion: e.target.value })); setAuditPage(1); }}
                       className={`h-8 text-xs rounded border px-2 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-slate-300'}`}
                     >
                       <option value="">Todas las acciones</option>
-                      <option value="CREATE">Crear</option>
-                      <option value="UPDATE">Actualizar</option>
-                      <option value="DELETE">Eliminar</option>
-                      <option value="LOGIN">Login</option>
-                      <option value="CONFIG_CHANGE">Configuración</option>
+                      <option value="UPDATE">Digitó</option>
+                      <option value="DELETE">Borró</option>
                     </select>
                     <input
                       type="date"
@@ -1645,54 +1628,38 @@ export default function Home() {
                       className={`h-8 text-xs rounded border px-2 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-slate-300'}`}
                       placeholder="Hasta"
                     />
-                    {(auditFilter.entidad || auditFilter.accion || auditFilter.fechaDesde || auditFilter.fechaHasta) && (
+                    {(auditFilter.accion || auditFilter.fechaDesde || auditFilter.fechaHasta) && (
                       <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => { setAuditFilter({ accion: "", usuarioId: "", entidad: "", fechaDesde: "", fechaHasta: "" }); setAuditPage(1); }}>
-                        Limpiar filtros
+                        Limpiar
                       </Button>
                     )}
                     <span className={`text-xs ml-auto ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                      {auditTotal} registro(s) total
-                    </span>
-                    <span className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                      Auto-limpieza: 14 días
+                      {auditTotal} registro(s)
                     </span>
                   </div>
                   <div className={`rounded border overflow-x-auto ${darkMode ? 'border-slate-700' : ''}`}>
                     <table className="w-full text-xs">
                       <thead><tr className={darkMode ? 'bg-slate-800' : 'bg-slate-100'}>
-                        <th className="p-2 text-left">Fecha y Hora</th>
+                        <th className="p-2 text-left">Fecha</th>
                         <th className="p-2 text-left">Usuario</th>
-                        <th className="p-2 text-left">Entidad</th>
                         <th className="p-2 text-left">Acción</th>
-                        <th className="p-2 text-left">Detalle</th>
+                        <th className="p-2 text-left">Grado</th>
                       </tr></thead>
                       <tbody>
-                        {auditLoading ? <tr><td colSpan={5} className="p-4 text-center text-slate-500">Cargando...</td></tr> :
-                          auditLogs.length === 0 ? <tr><td colSpan={5} className="p-4 text-center text-slate-500">No hay registros</td></tr> :
-                          auditLogs.map((log) => {
-                            const detalles = log.detalles ? (() => { try { return JSON.parse(log.detalles); } catch { return {}; } })() : {};
-                            return (
-                              <tr key={log.id} className={`border-t ${darkMode ? 'border-slate-700' : ''}`}>
-                                <td className="p-2 whitespace-nowrap">{new Date(log.createdAt).toLocaleString('es-DO')}</td>
-                                <td className="p-2 font-medium">{log.usuario?.nombre || 'Desconocido'}</td>
-                                <td className="p-2">
-                                  <Badge variant="outline" className={`text-[10px] ${darkMode ? 'border-slate-600' : ''}`}>{log.entidad}</Badge>
-                                </td>
-                                <td className="p-2">
-                                  <Badge variant={log.accion === 'DELETE' ? 'destructive' : 'default'} className={`text-[10px] ${log.accion === 'DELETE' ? '' : (log.accion === 'UPDATE' ? (darkMode ? 'bg-teal-600' : 'bg-teal-600') : '')}`}>
-                                    {log.accion === 'DELETE' ? 'Borró' : log.accion === 'UPDATE' ? 'Digitó' : log.accion}
-                                  </Badge>
-                                </td>
-                                <td className={`p-2 ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                                  {detalles.estudiante && <span className="font-medium">{detalles.estudiante}</span>}
-                                  {detalles.materia && <span> — {detalles.materia}</span>}
-                                  {detalles.trimestre && <span> — T{detalles.trimestre}</span>}
-                                  {detalles.promedioFinal !== undefined && detalles.promedioFinal !== null && <span className={`ml-1 font-bold ${detalles.promedioFinal >= 6 ? 'text-teal-500' : 'text-red-500'}`}>({detalles.promedioFinal.toFixed(2)})</span>}
-                                  {!detalles.estudiante && !detalles.materia && log.detalles && <span className="text-slate-400 truncate block max-w-xs">{typeof log.detalles === 'string' ? log.detalles.substring(0, 80) : JSON.stringify(detalles).substring(0, 80)}</span>}
-                                </td>
-                              </tr>
-                            );
-                          })}
+                        {auditLoading ? <tr><td colSpan={4} className="p-4 text-center text-slate-500">Cargando...</td></tr> :
+                          auditLogs.length === 0 ? <tr><td colSpan={4} className="p-4 text-center text-slate-500">No hay registros</td></tr> :
+                          auditLogs.map((log) => (
+                            <tr key={log.id} className={`border-t ${darkMode ? 'border-slate-700' : ''}`}>
+                              <td className="p-2 whitespace-nowrap">{new Date(log.createdAt).toLocaleString('es-DO')}</td>
+                              <td className="p-2 font-medium">{log.usuario?.nombre || 'Desconocido'}</td>
+                              <td className="p-2">
+                                <Badge variant={log.accion === 'DELETE' ? 'destructive' : 'default'} className={`text-[10px] ${log.accion === 'DELETE' ? '' : (darkMode ? 'bg-teal-600' : 'bg-teal-600')}`}>
+                                  {log.accion === 'DELETE' ? 'Borró' : 'Digitó'}
+                                </Badge>
+                              </td>
+                              <td className={`p-2 ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>{log.grado || '—'}</td>
+                            </tr>
+                          ))}
                       </tbody>
                     </table>
                   </div>

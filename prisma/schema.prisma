@@ -193,10 +193,11 @@ model Asistencia {
 model AuditLog {
   id          String   @id @default(cuid())
   usuarioId   String
-  accion      String   // "CREATE", "UPDATE", "DELETE", "LOGIN", "LOGOUT", "CONFIG_CHANGE"
-  entidad     String   // "Estudiante", "Calificacion", "Usuario", "ConfigActividad", "Grado", "Materia", "Asistencia"
+  accion      String   // "UPDATE" = Digitó, "DELETE" = Borró
+  entidad     String   // "Calificacion"
   entidadId   String?
   detalles    String?  // JSON con detalles del cambio
+  grado       String?  // Grado y sección
   ip          String?
   userAgent   String?
   createdAt   DateTime @default(now())
