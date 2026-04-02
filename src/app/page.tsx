@@ -330,6 +330,24 @@ export default function Home() {
     finally { setAuditLoading(false); }
   }, [auditFilter, auditPage]);
 
+  const handleDeleteAuditLogs = useCallback(async () => {
+    if (!confirm("¿Borrar todos los registros de auditoría? Esta acción no se puede deshacer.")) return;
+    setAuditLoading(true);
+    try {
+      const res = await fetch("/api/audit", { method: "DELETE", credentials: "include" });
+      if (res.ok) {
+        const data = await res.json();
+        toast({ title: "Registros borrados", description: `${data.deleted} registro(s) eliminado(s)` });
+        setAuditPage(1);
+        loadAuditLogs();
+      } else {
+        toast({ title: "Error", description: "No autorizado", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Error", description: "No se pudieron borrar los registros", variant: "destructive" });
+    } finally { setAuditLoading(false); }
+  }, [loadAuditLogs, toast]);
+
   const loadLoginSessions = useCallback(async () => {
     try {
       const res = await fetch("/api/login-sessions?limit=100", { cache: "no-store", credentials: "include" });
@@ -1605,6 +1623,11 @@ export default function Home() {
                     <Button size="sm" variant="outline" className={`h-8 text-xs ${darkMode ? 'border-slate-600' : ''}`} onClick={loadAuditLogs} disabled={auditLoading}>
                       <RefreshCw className={`h-3.5 w-3.5 mr-1 ${auditLoading ? 'animate-spin' : ''}`} /> Actualizar
                     </Button>
+                    {usuario.rol === "admin" && (
+                      <Button size="sm" variant="destructive" className="h-8 text-xs" onClick={handleDeleteAuditLogs} disabled={auditLoading || auditTotal === 0}>
+                        <Trash2 className="h-3.5 w-3.5 mr-1" /> Borrar todo
+                      </Button>
+                    )}
                     <select
                       value={auditFilter.accion}
                       onChange={e => { setAuditFilter(f => ({ ...f, accion: e.target.value })); setAuditPage(1); }}

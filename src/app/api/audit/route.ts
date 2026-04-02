@@ -117,3 +117,32 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Error al crear log", details: errMsg }, { status: 500 });
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await getUsuarioSession();
+    if (!session || session.rol !== "admin") {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const olderThan = searchParams.get("olderThan");
+
+    const prisma = new PrismaClient();
+
+    const where: any = {};
+    if (olderThan) {
+      where.createdAt = { lt: new Date(olderThan) };
+    }
+
+    const deleted = await prisma.auditLog.deleteMany({ where });
+
+    await prisma.$disconnect();
+
+    return NextResponse.json({ deleted: deleted.count });
+  } catch (error) {
+    console.error("[audit] DELETE Error:", error);
+    const errMsg = error instanceof Error ? error.message : String(error);
+    return NextResponse.json({ error: "Error al borrar logs", details: errMsg }, { status: 500 });
+  }
+}
