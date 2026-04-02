@@ -1395,14 +1395,14 @@ export default function Home() {
                 <div className="mb-3"><Select value={gradoSeleccionado} onValueChange={setGradoSeleccionado}><SelectTrigger className={`w-full md:w-[250px] h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue /></SelectTrigger><SelectContent>{gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}" ({g._count?.estudiantes || 0})</SelectItem>)}</SelectContent></Select></div>
                 <div className={`rounded border ${darkMode ? 'border-slate-700' : ''}`}>
                   <Table className="text-sm sm:text-base font-medium">
-                    <TableHeader><TableRow className={darkMode ? 'bg-slate-800' : 'bg-slate-100'}><TableHead className="w-10 text-center h-12">N°</TableHead><TableHead>Nombre Completo</TableHead><TableHead className="w-16 text-center">Estado</TableHead><TableHead className="w-12 text-center">Acciones</TableHead></TableRow></TableHeader>
+                    <TableHeader><TableRow className={darkMode ? 'bg-slate-800' : 'bg-slate-100'}><TableHead className="w-10 text-center h-12">N°</TableHead><TableHead>Nombre Completo</TableHead><TableHead className="w-16 text-center">Estado</TableHead>{(usuario.rol === "admin" || usuario.rol === "docente") && <TableHead className="w-12 text-center">Acciones</TableHead>}</TableRow></TableHeader>
                     <TableBody>
-                      {!estudiantes || estudiantes.length === 0 ? <TableRow><TableCell colSpan={4} className={`text-center py-8 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>No hay estudiantes</TableCell></TableRow> :
+                      {!estudiantes || estudiantes.length === 0 ? <TableRow><TableCell colSpan={(usuario.rol === "admin" || usuario.rol === "docente") ? 4 : 3} className={`text-center py-8 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>No hay estudiantes</TableCell></TableRow> :
                         estudiantes.map(est => <TableRow key={est.id} className={darkMode ? 'border-slate-700' : ''}>
                           <TableCell className={`text-center font-medium ${darkMode ? 'text-white' : ''}`}>{est.numero}</TableCell>
                           <TableCell className={darkMode ? 'text-white' : ''}>{est.nombre}</TableCell>
                           <TableCell className="text-center"><Badge variant={est.activo ? "default" : "secondary"} className={`text-xs sm:text-sm font-medium h-5 ${est.activo ? (darkMode ? 'bg-teal-600' : '') : ''}`}>{est.activo ? "Activo" : "Inactivo"}</Badge></TableCell>
-                          <TableCell className="text-center"><Button size="sm" variant="ghost" className={`h-6 w-6 p-0 ${darkMode ? 'text-red-400 hover:text-red-300 hover:bg-red-900/30' : 'text-red-500 hover:text-red-700 hover:bg-red-50'}`} onClick={() => handleDeleteEstudiante(est.id, est.nombre)}><Trash2 className="h-5 w-5" /></Button></TableCell>
+                          {(usuario.rol === "admin" || usuario.rol === "docente") && <TableCell className="text-center"><Button size="sm" variant="ghost" className={`h-6 w-6 p-0 ${darkMode ? 'text-red-400 hover:text-red-300 hover:bg-red-900/30' : 'text-red-500 hover:text-red-700 hover:bg-red-50'}`} onClick={() => handleDeleteEstudiante(est.id, est.nombre)}><Trash2 className="h-5 w-5" /></Button></TableCell>}
                         </TableRow>)}
                     </TableBody>
                   </Table>
