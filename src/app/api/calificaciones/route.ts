@@ -30,12 +30,16 @@ async function createAuditLog({
   userAgent?: string;
 }) {
   try {
-    await sql`
+    console.log("[audit-inline] Inserting:", { usuarioId, accion, entidad, grado });
+    const result = await sql`
       INSERT INTO "AuditLog" ("id", "usuarioId", "accion", "entidad", "entidadId", "detalles", "grado", "ip", "userAgent", "createdAt")
       VALUES (gen_random_uuid()::text, ${usuarioId}, ${accion}, ${entidad}, ${entidadId || null}, ${detalles || null}, ${grado || null}, ${ip || null}, ${userAgent || null}, NOW())
+      RETURNING id
     `;
+    console.log("[audit-inline] Inserted:", result);
   } catch (error) {
-    console.error("[audit] Failed to create log:", error);
+    console.error("[audit-inline] Failed to create log:", error);
+    throw error;
   }
 }
 
@@ -250,6 +254,14 @@ export async function POST(request: NextRequest) {
         const gradoInfo = result.estudiante?.gradoId
           ? await prisma.grado.findUnique({ where: { id: result.estudiante.gradoId }, select: { numero: true, seccion: true } })
           : null;
+        console.log("[audit] Creating log:", JSON.stringify({
+          usuarioId: session.id,
+          accion: "UPDATE",
+          entidad: "Calificacion",
+          grado: gradoInfo ? `${gradoInfo.numero}${gradoInfo.seccion}` : null,
+          estudiante: result.estudiante?.nombre,
+          materia: result.materia?.nombre
+        }));
         await createAuditLog({
           usuarioId: session.id,
           accion: "UPDATE",
@@ -265,6 +277,9 @@ export async function POST(request: NextRequest) {
           ip,
           userAgent
         });
+        console.log("[audit] Log created successfully");
+      } else {
+        console.error("[audit] No session or missing id:", JSON.stringify(session));
       }
     } catch (auditError) {
       console.error("[calificaciones] Audit error:", auditError);

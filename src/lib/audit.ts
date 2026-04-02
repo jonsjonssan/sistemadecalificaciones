@@ -20,11 +20,15 @@ export async function createAuditLog({
   userAgent?: string;
 }) {
   try {
-    await sql`
+    console.log("[audit] Inserting:", { usuarioId, accion, entidad, grado });
+    const result = await sql`
       INSERT INTO "AuditLog" ("id", "usuarioId", "accion", "entidad", "entidadId", "detalles", "grado", "ip", "userAgent", "createdAt")
       VALUES (gen_random_uuid()::text, ${usuarioId}, ${accion}, ${entidad}, ${entidadId || null}, ${detalles || null}, ${grado || null}, ${ip || null}, ${userAgent || null}, NOW())
+      RETURNING id
     `;
+    console.log("[audit] Inserted successfully:", result);
   } catch (error) {
     console.error("[audit] Failed to create log:", error);
+    throw error;
   }
 }
