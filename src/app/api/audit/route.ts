@@ -23,30 +23,76 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    // Auto-borrar logs mayores a 5 dias
+    const { searchParams } = new URL(request.url);
+    const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
+    const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "20")));
+    const accion = searchParams.get("accion");
+    const entidad = searchParams.get("entidad");
+    const usuarioId = searchParams.get("usuarioId");
+    const fechaDesde = searchParams.get("fechaDesde");
+    const fechaHasta = searchParams.get("fechaHasta");
+    const skip = (page - 1) * limit;
+
+    // Auto-borrar logs mayores a 14 dias
     try {
-      await sql`DELETE FROM "AuditLog" WHERE "createdAt" < NOW() - INTERVAL '5 days'`;
+      await sql`DELETE FROM "AuditLog" WHERE "createdAt" < NOW() - INTERVAL '14 days'`;
     } catch (cleanupError) {
       console.error("[audit] Cleanup error:", cleanupError);
     }
 
-    // Always filter by Calificacion entity
-    const logs = await sql`
+    const conditions: string[] = [];
+    const params: any[] = [];
+    let paramIndex = 1;
+
+    if (entidad) {
+      conditions.push(`a.entidad = $${paramIndex}`);
+      params.push(entidad);
+      paramIndex++;
+    }
+    if (accion) {
+      conditions.push(`a.accion = $${paramIndex}`);
+      params.push(accion);
+      paramIndex++;
+    }
+    if (usuarioId) {
+      conditions.push(`a."usuarioId" = $${paramIndex}`);
+      params.push(usuarioId);
+      paramIndex++;
+    }
+    if (fechaDesde) {
+      conditions.push(`a."createdAt" >= $${paramIndex}::date`);
+      params.push(fechaDesde);
+      paramIndex++;
+    }
+    if (fechaHasta) {
+      conditions.push(`a."createdAt" <= $${paramIndex}::date + INTERVAL '1 day'`);
+      params.push(fechaHasta);
+      paramIndex++;
+    }
+
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
+    const logsQuery = `
       SELECT a.*, u.nombre as "usuario_nombre", u.email as "usuario_email", u.rol as "usuario_rol"
       FROM "AuditLog" a
       JOIN "Usuario" u ON a."usuarioId" = u.id
-      WHERE a.entidad = 'Calificacion'
+      ${whereClause}
       ORDER BY a."createdAt" DESC
-      LIMIT 100
+      LIMIT ${limit} OFFSET ${skip}
     `;
 
-    const totalResult = await sql`
+    const countQuery = `
       SELECT COUNT(*) FROM "AuditLog" a
-      WHERE a.entidad = 'Calificacion'
+      ${whereClause}
     `;
-    const total = parseInt(totalResult[0]?.count || "0");
 
-    const formattedLogs = (logs as any[]).map((l: any) => ({
+    const [logs, countResult] = await Promise.all([
+      sql.unsafe(logsQuery),
+      sql.unsafe(countQuery)
+    ]);
+    const total = parseInt((countResult as unknown as any[])[0]?.count || "0");
+
+    const formattedLogs = (logs as unknown as any[]).map((l: any) => ({
       id: l.id,
       usuarioId: l.usuarioId,
       accion: l.accion,
@@ -67,8 +113,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       logs: formattedLogs,
       total,
-      page: 1,
-      totalPages: Math.ceil(total / 100)
+      page,
+      totalPages: Math.ceil(total / limit)
     });
   } catch (error) {
     console.error("[audit] GET Error:", error);

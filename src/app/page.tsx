@@ -142,7 +142,10 @@ export default function Home() {
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [loginSessions, setLoginSessions] = useState<any[]>([]);
   const [auditLoading, setAuditLoading] = useState(false);
-  const [auditFilter, setAuditFilter] = useState({ accion: "", usuarioId: "" });
+  const [auditFilter, setAuditFilter] = useState({ accion: "", usuarioId: "", entidad: "", fechaDesde: "", fechaHasta: "" });
+  const [auditPage, setAuditPage] = useState(1);
+  const [auditTotalPages, setAuditTotalPages] = useState(1);
+  const [auditTotal, setAuditTotal] = useState(0);
 
   // Persistence: Cargar de localStorage
   useEffect(() => {
@@ -310,17 +313,22 @@ export default function Home() {
   const loadAuditLogs = useCallback(async () => {
     setAuditLoading(true);
     try {
-      const params = new URLSearchParams({ limit: "100", entidad: "Calificacion" });
+      const params = new URLSearchParams({ page: String(auditPage), limit: "20" });
       if (auditFilter.accion) params.set("accion", auditFilter.accion);
       if (auditFilter.usuarioId) params.set("usuarioId", auditFilter.usuarioId);
+      if (auditFilter.entidad) params.set("entidad", auditFilter.entidad);
+      if (auditFilter.fechaDesde) params.set("fechaDesde", auditFilter.fechaDesde);
+      if (auditFilter.fechaHasta) params.set("fechaHasta", auditFilter.fechaHasta);
       const res = await fetch(`/api/audit?${params}`, { cache: "no-store", credentials: "include" });
       if (res.ok) {
         const data = await res.json();
         setAuditLogs(data.logs || []);
+        setAuditTotalPages(data.totalPages || 1);
+        setAuditTotal(data.total || 0);
       }
     } catch { /* ignore */ }
     finally { setAuditLoading(false); }
-  }, [auditFilter]);
+  }, [auditFilter, auditPage]);
 
   const loadLoginSessions = useCallback(async () => {
     try {
@@ -1586,22 +1594,67 @@ export default function Home() {
                 </CardFooter>
               </Card>
 
-              {/* Panel de Auditoría - Cambios en Calificaciones */}
+              {/* Panel de Auditoría */}
               <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
                 <CardHeader className={`py-3 px-4 ${darkMode ? 'border-slate-700' : ''}`}>
-                  <CardTitle className="text-sm sm:text-base">Historial de Cambios en Calificaciones</CardTitle>
-                  <CardDescription className={`text-xs ${darkMode ? 'text-slate-400' : ''}`}>Registro de quién digitó o borró calificaciones</CardDescription>
+                  <CardTitle className="text-sm sm:text-base">Historial de Auditoría</CardTitle>
+                  <CardDescription className={`text-xs ${darkMode ? 'text-slate-400' : ''}`}>Registro de acciones en el sistema</CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0 space-y-3">
-                  <div className="flex flex-wrap gap-2">
-                    <Button size="sm" variant="outline" className={`h-8 text-xs ${darkMode ? 'border-slate-600' : ''}`} onClick={loadAuditLogs}>
+                  <div className="flex flex-wrap gap-2 items-center">
+                    <Button size="sm" variant="outline" className={`h-8 text-xs ${darkMode ? 'border-slate-600' : ''}`} onClick={loadAuditLogs} disabled={auditLoading}>
                       <RefreshCw className={`h-3.5 w-3.5 mr-1 ${auditLoading ? 'animate-spin' : ''}`} /> Actualizar
                     </Button>
-                    <span className={`text-xs self-center ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                      {auditLogs.length > 0 ? `${auditLogs.length} registro(s)` : 'Sin cambios registrados'}
+                    <select
+                      value={auditFilter.entidad}
+                      onChange={e => { setAuditFilter(f => ({ ...f, entidad: e.target.value })); setAuditPage(1); }}
+                      className={`h-8 text-xs rounded border px-2 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-slate-300'}`}
+                    >
+                      <option value="">Todas las entidades</option>
+                      <option value="Calificacion">Calificaciones</option>
+                      <option value="Estudiante">Estudiantes</option>
+                      <option value="Usuario">Usuarios</option>
+                      <option value="ConfigActividad">Configuración</option>
+                      <option value="Grado">Grados</option>
+                      <option value="Materia">Materias</option>
+                      <option value="Asistencia">Asistencia</option>
+                    </select>
+                    <select
+                      value={auditFilter.accion}
+                      onChange={e => { setAuditFilter(f => ({ ...f, accion: e.target.value })); setAuditPage(1); }}
+                      className={`h-8 text-xs rounded border px-2 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-slate-300'}`}
+                    >
+                      <option value="">Todas las acciones</option>
+                      <option value="CREATE">Crear</option>
+                      <option value="UPDATE">Actualizar</option>
+                      <option value="DELETE">Eliminar</option>
+                      <option value="LOGIN">Login</option>
+                      <option value="CONFIG_CHANGE">Configuración</option>
+                    </select>
+                    <input
+                      type="date"
+                      value={auditFilter.fechaDesde}
+                      onChange={e => { setAuditFilter(f => ({ ...f, fechaDesde: e.target.value })); setAuditPage(1); }}
+                      className={`h-8 text-xs rounded border px-2 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-slate-300'}`}
+                      placeholder="Desde"
+                    />
+                    <input
+                      type="date"
+                      value={auditFilter.fechaHasta}
+                      onChange={e => { setAuditFilter(f => ({ ...f, fechaHasta: e.target.value })); setAuditPage(1); }}
+                      className={`h-8 text-xs rounded border px-2 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-slate-300'}`}
+                      placeholder="Hasta"
+                    />
+                    {(auditFilter.entidad || auditFilter.accion || auditFilter.fechaDesde || auditFilter.fechaHasta) && (
+                      <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => { setAuditFilter({ accion: "", usuarioId: "", entidad: "", fechaDesde: "", fechaHasta: "" }); setAuditPage(1); }}>
+                        Limpiar filtros
+                      </Button>
+                    )}
+                    <span className={`text-xs ml-auto ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                      {auditTotal} registro(s) total
                     </span>
-                    <span className={`text-xs self-center ml-auto ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                      Se borran automáticamente después de 5 días
+                    <span className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                      Auto-limpieza: 14 días
                     </span>
                   </div>
                   <div className={`rounded border overflow-x-auto ${darkMode ? 'border-slate-700' : ''}`}>
@@ -1609,12 +1662,13 @@ export default function Home() {
                       <thead><tr className={darkMode ? 'bg-slate-800' : 'bg-slate-100'}>
                         <th className="p-2 text-left">Fecha y Hora</th>
                         <th className="p-2 text-left">Usuario</th>
+                        <th className="p-2 text-left">Entidad</th>
                         <th className="p-2 text-left">Acción</th>
                         <th className="p-2 text-left">Detalle</th>
                       </tr></thead>
                       <tbody>
-                        {auditLoading ? <tr><td colSpan={4} className="p-4 text-center text-slate-500">Cargando...</td></tr> :
-                          auditLogs.length === 0 ? <tr><td colSpan={4} className="p-4 text-center text-slate-500">No hay cambios registrados en calificaciones</td></tr> :
+                        {auditLoading ? <tr><td colSpan={5} className="p-4 text-center text-slate-500">Cargando...</td></tr> :
+                          auditLogs.length === 0 ? <tr><td colSpan={5} className="p-4 text-center text-slate-500">No hay registros</td></tr> :
                           auditLogs.map((log) => {
                             const detalles = log.detalles ? (() => { try { return JSON.parse(log.detalles); } catch { return {}; } })() : {};
                             return (
@@ -1622,7 +1676,10 @@ export default function Home() {
                                 <td className="p-2 whitespace-nowrap">{new Date(log.createdAt).toLocaleString('es-DO')}</td>
                                 <td className="p-2 font-medium">{log.usuario?.nombre || 'Desconocido'}</td>
                                 <td className="p-2">
-                                  <Badge variant={log.accion === 'DELETE' ? 'destructive' : 'default'} className={`text-[10px] ${log.accion === 'DELETE' ? '' : (darkMode ? 'bg-teal-600' : 'bg-teal-600')}`}>
+                                  <Badge variant="outline" className={`text-[10px] ${darkMode ? 'border-slate-600' : ''}`}>{log.entidad}</Badge>
+                                </td>
+                                <td className="p-2">
+                                  <Badge variant={log.accion === 'DELETE' ? 'destructive' : 'default'} className={`text-[10px] ${log.accion === 'DELETE' ? '' : (log.accion === 'UPDATE' ? (darkMode ? 'bg-teal-600' : 'bg-teal-600') : '')}`}>
                                     {log.accion === 'DELETE' ? 'Borró' : log.accion === 'UPDATE' ? 'Digitó' : log.accion}
                                   </Badge>
                                 </td>
@@ -1631,6 +1688,7 @@ export default function Home() {
                                   {detalles.materia && <span> — {detalles.materia}</span>}
                                   {detalles.trimestre && <span> — T{detalles.trimestre}</span>}
                                   {detalles.promedioFinal !== undefined && detalles.promedioFinal !== null && <span className={`ml-1 font-bold ${detalles.promedioFinal >= 6 ? 'text-teal-500' : 'text-red-500'}`}>({detalles.promedioFinal.toFixed(2)})</span>}
+                                  {!detalles.estudiante && !detalles.materia && log.detalles && <span className="text-slate-400 truncate block max-w-xs">{typeof log.detalles === 'string' ? log.detalles.substring(0, 80) : JSON.stringify(detalles).substring(0, 80)}</span>}
                                 </td>
                               </tr>
                             );
@@ -1638,6 +1696,38 @@ export default function Home() {
                       </tbody>
                     </table>
                   </div>
+                  {auditTotalPages > 1 && (
+                    <div className="flex items-center justify-between">
+                      <span className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                        Página {auditPage} de {auditTotalPages}
+                      </span>
+                      <div className="flex gap-1">
+                        <Button size="sm" variant="outline" className="h-7 text-xs" disabled={auditPage <= 1} onClick={() => setAuditPage(p => Math.max(1, p - 1))}>
+                          Anterior
+                        </Button>
+                        {Array.from({ length: Math.min(5, auditTotalPages) }, (_, i) => {
+                          let pageNum: number;
+                          if (auditTotalPages <= 5) {
+                            pageNum = i + 1;
+                          } else if (auditPage <= 3) {
+                            pageNum = i + 1;
+                          } else if (auditPage >= auditTotalPages - 2) {
+                            pageNum = auditTotalPages - 4 + i;
+                          } else {
+                            pageNum = auditPage - 2 + i;
+                          }
+                          return (
+                            <Button key={pageNum} size="sm" variant={auditPage === pageNum ? "default" : "outline"} className={`h-7 w-7 text-xs p-0 ${auditPage === pageNum ? '' : (darkMode ? 'border-slate-600' : '')}`} onClick={() => setAuditPage(pageNum)}>
+                              {pageNum}
+                            </Button>
+                          );
+                        })}
+                        <Button size="sm" variant="outline" className="h-7 text-xs" disabled={auditPage >= auditTotalPages} onClick={() => setAuditPage(p => Math.min(auditTotalPages, p + 1))}>
+                          Siguiente
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
