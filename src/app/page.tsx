@@ -474,8 +474,18 @@ export default function Home() {
         credentials: "include",
         body: JSON.stringify({ nombre: nuevoEstudiante.nombre, gradoId: gradoSeleccionado }),
       });
-      if (res.ok) { setNuevoEstudiante({ nombre: "" }); setDialogOpen(false); loadEstudiantes(); toast({ title: "Estudiante agregado" }); }
-    } catch { toast({ title: "Error al agregar", variant: "destructive" }); }
+      if (res.ok) {
+        setNuevoEstudiante({ nombre: "" });
+        setDialogOpen(false);
+        loadEstudiantes();
+        toast({ title: "Estudiante agregado" });
+      } else {
+        const errorData = await res.json();
+        toast({ title: "Error al agregar", description: errorData.error || res.statusText, variant: "destructive" });
+      }
+    } catch (err) {
+      toast({ title: "Error al agregar", description: err instanceof Error ? err.message : "Error de conexión", variant: "destructive" });
+    }
   };
 
   const handleAddMultipleEstudiantes = async () => {
@@ -489,8 +499,20 @@ export default function Home() {
         credentials: "include",
         body: JSON.stringify({ estudiantes: nombres, gradoId: gradoSeleccionado }),
       });
-      if (res.ok) { setListaEstudiantes(""); setListaDialogOpen(false); loadEstudiantes(); loadGrados(); toast({ title: `${nombres.length} estudiantes agregados` }); }
-    } catch { toast({ title: "Error", variant: "destructive" }); }
+      if (res.ok) {
+        const data = await res.json();
+        setListaEstudiantes("");
+        setListaDialogOpen(false);
+        loadEstudiantes();
+        loadGrados();
+        toast({ title: `${nombres.length} estudiantes agregados` });
+      } else {
+        const errorData = await res.json();
+        toast({ title: "Error al agregar", description: errorData.error || res.statusText, variant: "destructive" });
+      }
+    } catch (err) {
+      toast({ title: "Error al agregar", description: err instanceof Error ? err.message : "Error de conexión", variant: "destructive" });
+    }
   };
 
   const handleDeleteEstudiante = async (id: string, nombre: string) => {
