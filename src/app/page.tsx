@@ -466,41 +466,57 @@ export default function Home() {
   };
 
   const handleAddEstudiante = async () => {
-    if (!nuevoEstudiante.nombre || !gradoSeleccionado) return;
+    console.log("[handleAddEstudiante] nombre:", nuevoEstudiante.nombre, "gradoId:", gradoSeleccionado);
+    if (!nuevoEstudiante.nombre || !gradoSeleccionado) {
+      console.log("[handleAddEstudiante] Early return - faltan datos");
+      return;
+    }
     try {
+      console.log("[handleAddEstudiante] Enviando POST...");
       const res = await fetch("/api/estudiantes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ nombre: nuevoEstudiante.nombre, gradoId: gradoSeleccionado }),
       });
+      console.log("[handleAddEstudiante] Response status:", res.status);
       if (res.ok) {
+        const data = await res.json();
+        console.log("[handleAddEstudiante] Success:", data);
         setNuevoEstudiante({ nombre: "" });
         setDialogOpen(false);
         loadEstudiantes();
         toast({ title: "Estudiante agregado" });
       } else {
         const errorData = await res.json();
+        console.log("[handleAddEstudiante] Error:", errorData);
         toast({ title: "Error al agregar", description: errorData.error || res.statusText, variant: "destructive" });
       }
     } catch (err) {
+      console.log("[handleAddEstudiante] Exception:", err);
       toast({ title: "Error al agregar", description: err instanceof Error ? err.message : "Error de conexión", variant: "destructive" });
     }
   };
 
   const handleAddMultipleEstudiantes = async () => {
-    if (!listaEstudiantes.trim() || !gradoSeleccionado) return;
     const nombres = listaEstudiantes.split('\n').map(n => n.trim()).filter(n => n);
-    if (!nombres.length) return;
+    console.log("[handleAddMultiple] nombres:", nombres.length, "gradoId:", gradoSeleccionado);
+    if (!nombres.length || !gradoSeleccionado) {
+      console.log("[handleAddMultiple] Early return - faltan datos");
+      return;
+    }
     try {
+      console.log("[handleAddMultiple] Enviando PUT...");
       const res = await fetch("/api/estudiantes", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ estudiantes: nombres, gradoId: gradoSeleccionado }),
       });
+      console.log("[handleAddMultiple] Response status:", res.status);
       if (res.ok) {
         const data = await res.json();
+        console.log("[handleAddMultiple] Success:", data);
         setListaEstudiantes("");
         setListaDialogOpen(false);
         loadEstudiantes();
@@ -508,9 +524,11 @@ export default function Home() {
         toast({ title: `${nombres.length} estudiantes agregados` });
       } else {
         const errorData = await res.json();
+        console.log("[handleAddMultiple] Error:", errorData);
         toast({ title: "Error al agregar", description: errorData.error || res.statusText, variant: "destructive" });
       }
     } catch (err) {
+      console.log("[handleAddMultiple] Exception:", err);
       toast({ title: "Error al agregar", description: err instanceof Error ? err.message : "Error de conexión", variant: "destructive" });
     }
   };
@@ -1352,6 +1370,7 @@ export default function Home() {
             <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
               <CardHeader className={`py-3 px-4 flex-row items-center justify-between space-y-0 ${darkMode ? 'border-slate-700' : ''}`}>
                 <div><CardTitle className="text-base">Lista de Estudiantes</CardTitle><CardDescription className={`text-sm sm:text-base font-medium ${darkMode ? 'text-slate-400' : ''}`}>Gestiona los estudiantes por grado</CardDescription></div>
+                {(usuario.rol === "admin" || usuario.rol === "docente") && (
                 <div className="flex gap-2">
                   <Dialog open={listaDialogOpen} onOpenChange={setListaDialogOpen}>
                     <DialogTrigger asChild><Button size="sm" variant="outline" className={`h-10 text-xs sm:text-sm ${darkMode ? 'border-slate-600 text-slate-300 hover:bg-slate-700' : ''}`}><ListPlus className="h-5 w-5 mr-1" />Lista</Button></DialogTrigger>
@@ -1370,6 +1389,7 @@ export default function Home() {
                     </DialogContent>
                   </Dialog>
                 </div>
+                )}
               </CardHeader>
               <CardContent className="pt-0">
                 <div className="mb-3"><Select value={gradoSeleccionado} onValueChange={setGradoSeleccionado}><SelectTrigger className={`w-full md:w-[250px] h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue /></SelectTrigger><SelectContent>{gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}" ({g._count?.estudiantes || 0})</SelectItem>)}</SelectContent></Select></div>
