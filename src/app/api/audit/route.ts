@@ -39,28 +39,18 @@ export async function GET(request: NextRequest) {
     }
 
     const conditions: string[] = [];
-    const params: any[] = [];
-    let paramIndex = 1;
 
     if (accion) {
-      conditions.push(`a.accion = $${paramIndex}`);
-      params.push(accion);
-      paramIndex++;
+      conditions.push(`a.accion = '${accion.replace(/'/g, "''")}'`);
     }
     if (usuarioId) {
-      conditions.push(`a."usuarioId" = $${paramIndex}`);
-      params.push(usuarioId);
-      paramIndex++;
+      conditions.push(`a."usuarioId" = '${usuarioId.replace(/'/g, "''")}'`);
     }
     if (fechaDesde) {
-      conditions.push(`a."createdAt" >= $${paramIndex}::date`);
-      params.push(fechaDesde);
-      paramIndex++;
+      conditions.push(`a."createdAt" >= '${fechaDesde}'::date`);
     }
     if (fechaHasta) {
-      conditions.push(`a."createdAt" <= $${paramIndex}::date + INTERVAL '1 day'`);
-      params.push(fechaHasta);
-      paramIndex++;
+      conditions.push(`a."createdAt" <= '${fechaHasta}'::date + INTERVAL '1 day'`);
     }
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
@@ -79,11 +69,15 @@ export async function GET(request: NextRequest) {
       ${whereClause}
     `;
 
+    console.log("[audit] Query:", logsQuery);
+
     const [logs, countResult] = await Promise.all([
       sql.unsafe(logsQuery),
       sql.unsafe(countQuery)
     ]);
     const total = parseInt((countResult as unknown as any[])[0]?.count || "0");
+
+    console.log("[audit] Found", total, "logs, returning", (logs as unknown as any[]).length);
 
     const formattedLogs = (logs as unknown as any[]).map((l: any) => ({
       id: l.id,
