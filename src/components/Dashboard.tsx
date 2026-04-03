@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Users, BookOpen, ClipboardList, School, GraduationCap, CalendarDays, Trophy, AlertTriangle, TrendingUp } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend, Cell } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -83,6 +84,21 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
 
       {usuario.rol === "admin" && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          {loading ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i} className={`shadow-sm overflow-hidden ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-slate-100'}`}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <Skeleton className={`h-5 w-28 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
+                  <Skeleton className={`h-10 w-10 md:h-12 md:w-12 rounded-full ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className={`h-8 w-16 mb-2 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
+                  <Skeleton className={`h-4 w-20 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+          <>
           <Card className={`shadow-sm overflow-hidden ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-teal-100'}`}>
             <div className="h-1 bg-teal-500 w-full" />
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -138,6 +154,8 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
               <p className={`text-xs sm:text-sm md:text-base font-medium mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Activos</p>
             </CardContent>
           </Card>
+          </>
+          )}
         </div>
       )}
 
@@ -229,8 +247,8 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
                 </div>
               </div>
             ) : (
-              <div className={`h-[200px] sm:h-[250px] flex items-center justify-center italic text-xs sm:text-sm ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                Cargando estadísticas...
+              <div className={`h-[200px] sm:h-[250px] flex items-center justify-center`}>
+                <Skeleton className={`h-32 w-3/4 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
               </div>
             )}
           </CardContent>

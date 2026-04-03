@@ -17,6 +17,7 @@ import {
   School, Save, Printer, ChevronDown, ChevronUp, Settings, Upload,
   Download, Trash2, ListPlus, UserPlus, Key, Calendar, LayoutDashboard, CalendarDays
 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import Dashboard from "@/components/Dashboard";
 import AsistenciaBoard from "@/components/AsistenciaBoard";
 import { EstudiantesTable } from "@/components/EstudiantesTable";
@@ -138,6 +139,7 @@ export default function Home() {
   const [borrarCalifTipo, setBorrarCalifTipo] = useState<"alumno" | "grado" | null>(null);
   const [borrarCalifEstudianteId, setBorrarCalifEstudianteId] = useState<string | null>(null);
   const [borrarCalifLoading, setBorrarCalifLoading] = useState(false);
+  const [sectionLoading, setSectionLoading] = useState(false);
 
   // Promedios
   const [promedioAsignatura, setPromedioAsignatura] = useState<number | null>(null);
@@ -1040,8 +1042,8 @@ export default function Home() {
   // Carga de datos base (estudiantes y materias del grado)
   useEffect(() => { 
     if (gradoSeleccionado) {
-      loadEstudiantes(); 
-      loadAsignaturas(); 
+      setSectionLoading(true);
+      Promise.all([loadEstudiantes(), loadAsignaturas()]).finally(() => setSectionLoading(false));
     }
   }, [gradoSeleccionado, loadEstudiantes, loadAsignaturas]);
 
@@ -1049,9 +1051,8 @@ export default function Home() {
   useEffect(() => { 
     if (gradoSeleccionado && asignaturaSeleccionada && trimestreSeleccionado) {
       setCalificaciones([]);
-      loadConfig(); 
-      loadCalificaciones(); 
-      loadConfigsGrado();
+      setSectionLoading(true);
+      Promise.all([loadConfig(), loadCalificaciones(), loadConfigsGrado()]).finally(() => setSectionLoading(false));
     }
   }, [gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado]);
   
@@ -1416,7 +1417,24 @@ export default function Home() {
                         )}
                       </tr></thead>
                       <tbody>
-                        {(estudiantes || []).map((est, idx) => {
+                        {sectionLoading ? (
+                          Array.from({ length: 5 }).map((_, idx) => (
+                            <tr key={`skel-${idx}`} className={idx % 2 === 0 ? (darkMode ? 'bg-[#1e293b]' : '') : (darkMode ? 'bg-slate-800/50' : 'bg-slate-50/50')}>
+                              <td className="p-2 text-center"><Skeleton className={`h-4 w-6 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
+                              <td className="p-2"><Skeleton className={`h-4 w-40 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
+                              <td className="p-2"><Skeleton className={`h-8 w-16 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
+                              <td className="p-2"><Skeleton className={`h-8 w-16 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
+                              <td className="p-2"><Skeleton className={`h-8 w-16 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
+                              <td className="p-2"><Skeleton className={`h-8 w-16 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
+                              <td className="p-2"><Skeleton className={`h-8 w-16 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
+                              <td className="p-2"><Skeleton className={`h-8 w-16 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
+                              <td className="p-2"><Skeleton className={`h-8 w-16 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
+                              <td className="p-2"><Skeleton className={`h-8 w-16 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
+                              <td className="p-2"><Skeleton className={`h-8 w-16 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
+                              <td className="p-2"><Skeleton className={`h-4 w-4 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
+                            </tr>
+                          ))
+                        ) : (estudiantes || []).map((est, idx) => {
                           const calif = getCalificacion(est.id);
                           return <CalificacionRow key={`${est.id}-${asignaturaSeleccionada}-${trimestreSeleccionado}-${configActual?.numActividadesCotidianas ?? 4}-${configActual?.numActividadesIntegradoras ?? 1}`} estudiante={est} materiaId={asignaturaSeleccionada} trimestre={trimestreSeleccionado} calificacion={calif} config={configActual} onSave={handleSaveCalificacion} saving={saving} darkMode={darkMode} evenRow={idx % 2 === 0} isAdmin={usuario.rol === "admin"} onBorrar={(estId) => { setBorrarCalifEstudianteId(estId); setBorrarCalifTipo("alumno"); setBorrarCalifDialogOpen(true); }} />
                         })}
@@ -1428,13 +1446,13 @@ export default function Home() {
                     <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${darkMode ? 'bg-blue-900/30 border border-blue-700' : 'bg-blue-50 border border-blue-200'}`}>
                       <div className={`text-xs font-medium ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>Promedio por Asignatura</div>
                       <div className={`text-lg font-bold ${darkMode ? 'text-blue-400' : 'text-blue-800'}`}>
-                        {promedioAsignatura !== null ? promedioAsignatura.toFixed(2) : "—"}
+                        {sectionLoading ? <Skeleton className={`h-5 w-12 ${darkMode ? 'bg-blue-800' : 'bg-blue-200'}`} /> : (promedioAsignatura !== null ? promedioAsignatura.toFixed(2) : "—")}
                       </div>
                     </div>
                     <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${darkMode ? 'bg-emerald-900/30 border border-emerald-700' : 'bg-emerald-50 border border-emerald-200'}`}>
                       <div className={`text-xs font-medium ${darkMode ? 'text-emerald-300' : 'text-emerald-700'}`}>Promedio del Grado</div>
                       <div className={`text-lg font-bold ${darkMode ? 'text-emerald-400' : 'text-emerald-800'}`}>
-                        {promedioGrado !== null ? promedioGrado.toFixed(2) : "—"}
+                        {sectionLoading ? <Skeleton className={`h-5 w-12 ${darkMode ? 'bg-emerald-800' : 'bg-emerald-200'}`} /> : (promedioGrado !== null ? promedioGrado.toFixed(2) : "—")}
                       </div>
                     </div>
                   </div>
@@ -1476,6 +1494,7 @@ export default function Home() {
                     estudiantes={estudiantes}
                     darkMode={darkMode}
                     isAdmin={usuario.rol === "admin"}
+                    loading={sectionLoading}
                     onReorder={handleReordenarEstudiantes}
                     onDelete={handleDeleteEstudiante}
                   />
@@ -2133,14 +2152,18 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
   const [resumenAsistencia, setResumenAsistencia] = useState<any[]>([]);
   const [todasCalificaciones, setTodasCalificaciones] = useState<Calificacion[]>([]);
   const [resumenAsistenciaAnual, setResumenAsistenciaAnual] = useState<any[]>([]);
+  const [loadingAsistencia, setLoadingAsistencia] = useState(true);
+  const [loadingAnual, setLoadingAnual] = useState(true);
 
   useEffect(() => {
     const fetchAsistencia = async () => {
       if (!grado?.id) return;
+      setLoadingAsistencia(true);
       try {
         const res = await fetch(`/api/asistencia/resumen?gradoId=${grado.id}&trimestre=${trimestre}`, { credentials: "include" });
         if (res.ok) setResumenAsistencia(await res.json());
       } catch (e) { console.error(e); }
+      finally { setLoadingAsistencia(false); }
     };
     fetchAsistencia();
   }, [grado?.id, trimestre]);
@@ -2148,6 +2171,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
   useEffect(() => {
     const fetchDatosAnuales = async () => {
       if (!grado?.id) return;
+      setLoadingAnual(true);
       try {
         const resCal = await fetch(`/api/calificaciones?gradoId=${grado.id}`, { credentials: "include" });
         if (resCal.ok) setTodasCalificaciones(await resCal.json());
@@ -2155,6 +2179,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
         const resAsist = await fetch(`/api/asistencia/resumen?gradoId=${grado.id}&anual=true`, { credentials: "include" });
         if (resAsist.ok) setResumenAsistenciaAnual(await resAsist.json());
       } catch (e) { console.error(e); }
+      finally { setLoadingAnual(false); }
     };
     fetchDatosAnuales();
   }, [grado?.id]);
@@ -2830,14 +2855,26 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
 
   return (
     <div className="space-y-1.5">
-      <div className="flex flex-col sm:flex-row justify-end gap-2 mb-2">
-         <Button onClick={imprimirTodasAnual} size="sm" variant="outline" className={`text-xs sm:text-sm ${darkMode ? 'text-teal-400 border-teal-700 hover:bg-teal-900/30' : 'text-teal-700 border-teal-200 hover:bg-teal-50'}`}>
-            <Printer className="h-4 w-4 mr-2" /> Consolidado Anual (Todos)
-         </Button>
-         <Button onClick={imprimirTodas} size="sm" className={`text-xs sm:text-sm shadow-sm transition-colors ${darkMode ? 'bg-teal-600 hover:bg-teal-500 text-white' : 'bg-teal-600 hover:bg-teal-700 text-white'}`}>
-            <Printer className="h-4 w-4 mr-2" /> Imprimir Todas (Trimestre)
-         </Button>
-       </div>
+      {(loadingAsistencia || loadingAnual) && (
+        <div className="space-y-2 mb-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Card key={i} className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
+              <div className="p-2.5 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Skeleton className={`h-3 w-5 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
+                  <Skeleton className={`h-3 w-36 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
+                  <Skeleton className={`h-4 w-16 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
+                </div>
+                <div className="flex items-center gap-1">
+                  <Skeleton className={`h-6 w-14 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
+                  <Skeleton className={`h-6 w-14 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
+                  <Skeleton className={`h-4 w-4 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
       {(estudiantes || []).map(est => {
         const califs = getCalifs(est.id), prom = calcProm(califs), open = expandedBoleta === est.id;
         return (

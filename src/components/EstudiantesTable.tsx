@@ -4,6 +4,7 @@ import React from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ChevronUp, ChevronDown, GripVertical, Trash2 } from "lucide-react";
 import { DndContext, closestCenter, DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
@@ -22,11 +23,30 @@ interface EstudiantesTableProps {
   estudiantes: Estudiante[];
   darkMode: boolean;
   isAdmin: boolean;
+  loading?: boolean;
   onReorder: (nuevos: Estudiante[]) => void;
   onDelete: (id: string, nombre: string) => void;
 }
 
-export function EstudiantesTable({ estudiantes, darkMode, isAdmin, onReorder, onDelete }: EstudiantesTableProps) {
+const SkeletonRows = ({ darkMode, isAdmin }: { darkMode: boolean; isAdmin: boolean }) => (
+  <>
+    {Array.from({ length: 5 }).map((_, idx) => (
+      <TableRow key={`skeleton-${idx}`} className={idx % 2 === 0 ? (darkMode ? 'bg-[#1e293b]' : '') : (darkMode ? 'bg-slate-800/50' : 'bg-slate-50/50')}>
+        <TableCell className="text-center"><Skeleton className={`h-4 w-6 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
+        <TableCell><Skeleton className={`h-4 w-48 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
+        <TableCell className="text-center"><Skeleton className={`h-5 w-14 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
+        {isAdmin && (
+          <>
+            <TableCell className="text-center"><Skeleton className={`h-6 w-12 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
+            <TableCell className="text-center"><Skeleton className={`h-6 w-6 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
+          </>
+        )}
+      </TableRow>
+    ))}
+  </>
+);
+
+export function EstudiantesTable({ estudiantes, darkMode, isAdmin, loading = false, onReorder, onDelete }: EstudiantesTableProps) {
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -70,7 +90,9 @@ export function EstudiantesTable({ estudiantes, darkMode, isAdmin, onReorder, on
           </TableRow>
         </TableHeader>
         <TableBody>
-          {!estudiantes || estudiantes.length === 0 ? (
+          {loading ? (
+            <SkeletonRows darkMode={darkMode} isAdmin={isAdmin} />
+          ) : !estudiantes || estudiantes.length === 0 ? (
             <TableRow>
               <TableCell colSpan={3} className={`text-center py-8 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                 No hay estudiantes
@@ -108,7 +130,9 @@ export function EstudiantesTable({ estudiantes, darkMode, isAdmin, onReorder, on
             </TableRow>
           </TableHeader>
           <TableBody>
-            {!estudiantes || estudiantes.length === 0 ? (
+          {loading ? (
+            <SkeletonRows darkMode={darkMode} isAdmin={isAdmin} />
+          ) : !estudiantes || estudiantes.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className={`text-center py-8 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                   No hay estudiantes
