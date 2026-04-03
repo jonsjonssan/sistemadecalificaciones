@@ -89,7 +89,9 @@ npm run db:push
 
 **Credenciales por defecto:**
 - Email: `admin@escuela.edu`
-- Contraseña: `admin123` (cambiar inmediatamente)
+- Contraseña: `admin123` (el sistema /api/init asigna las credenciales; cambiar inmediatamente tras el primer login)
+
+> **Nota de seguridad**: Las credenciales por defecto solo funcionan en desarrollo. En producción el endpoint `/api/init` está deshabilitado.
 
 ## Scripts Disponibles
 
