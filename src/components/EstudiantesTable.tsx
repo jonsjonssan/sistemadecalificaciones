@@ -153,7 +153,7 @@ function SortableEstudianteRow({ est, idx, total, darkMode, onMoveUp, onMoveDown
     <TableRow ref={setNodeRef} style={style} className={`${darkMode ? 'border-slate-700' : ''} ${isDragging ? 'bg-teal-900/30' : ''}`}>
       <TableCell className={`text-center font-medium ${darkMode ? 'text-white' : ''}`}>{est.numero}</TableCell>
       <TableCell className={`flex items-center gap-2 ${darkMode ? 'text-white' : ''}`}>
-        <button {...attributes} {...listeners} className={`cursor-grab active:cursor-grabbing p-1 rounded hover:bg-slate-700 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+        <button aria-label={`Arrastrar para reordenar a ${est.nombre}`} {...attributes} {...listeners} className={`cursor-grab active:cursor-grabbing p-1 rounded hover:bg-slate-700 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
           <GripVertical className="h-4 w-4" />
         </button>
         {est.nombre}
@@ -165,16 +165,16 @@ function SortableEstudianteRow({ est, idx, total, darkMode, onMoveUp, onMoveDown
       </TableCell>
       <TableCell className="text-center">
         <div className="flex items-center justify-center gap-1">
-          <Button size="sm" variant="ghost" className={`h-6 w-6 p-0 ${idx === 0 ? 'opacity-30 cursor-not-allowed' : ''} ${darkMode ? 'text-slate-400 hover:text-teal-400' : 'text-slate-500 hover:text-teal-600'}`} onClick={onMoveUp} disabled={idx === 0}>
+          <Button size="sm" variant="ghost" aria-label="Mover arriba" className={`h-6 w-6 p-0 ${idx === 0 ? 'opacity-30 cursor-not-allowed' : ''} ${darkMode ? 'text-slate-400 hover:text-teal-400' : 'text-slate-500 hover:text-teal-600'}`} onClick={onMoveUp} disabled={idx === 0}>
             <ChevronUp className="h-4 w-4" />
           </Button>
-          <Button size="sm" variant="ghost" className={`h-6 w-6 p-0 ${idx === total - 1 ? 'opacity-30 cursor-not-allowed' : ''} ${darkMode ? 'text-slate-400 hover:text-teal-400' : 'text-slate-500 hover:text-teal-600'}`} onClick={onMoveDown} disabled={idx === total - 1}>
+          <Button size="sm" variant="ghost" aria-label="Mover abajo" className={`h-6 w-6 p-0 ${idx === total - 1 ? 'opacity-30 cursor-not-allowed' : ''} ${darkMode ? 'text-slate-400 hover:text-teal-400' : 'text-slate-500 hover:text-teal-600'}`} onClick={onMoveDown} disabled={idx === total - 1}>
             <ChevronDown className="h-4 w-4" />
           </Button>
         </div>
       </TableCell>
       <TableCell className="text-center">
-        <Button size="sm" variant="ghost" className={`h-6 w-6 p-0 ${darkMode ? 'text-red-400 hover:text-red-300 hover:bg-red-900/30' : 'text-red-500 hover:text-red-700 hover:bg-red-50'}`} onClick={onDelete}>
+        <Button size="sm" variant="ghost" aria-label={`Eliminar estudiante ${est.nombre}`} className={`h-6 w-6 p-0 ${darkMode ? 'text-red-400 hover:text-red-300 hover:bg-red-900/30' : 'text-red-500 hover:text-red-700 hover:bg-red-50'}`} onClick={onDelete}>
           <Trash2 className="h-5 w-5" />
         </Button>
       </TableCell>
