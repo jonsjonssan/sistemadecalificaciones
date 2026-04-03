@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
 
     const estudiantes = await prisma.estudiante.findMany({
       where,
-      orderBy: { numero: "asc" },
+      orderBy: [{ orden: "asc" }, { numero: "asc" }],
     });
 
     return NextResponse.json(estudiantes);
@@ -168,6 +168,41 @@ export async function DELETE(request: NextRequest) {
   } catch (error) {
     console.error("Error al eliminar estudiante:", error);
     return NextResponse.json({ error: "Error al eliminar estudiante" }, { status: 500 });
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const session = await getUsuarioSession();
+    if (!session) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    if (session.rol !== "admin") {
+      return NextResponse.json({ error: "Solo administradores pueden reordenar" }, { status: 403 });
+    }
+
+    const { ordenes } = await request.json();
+
+    if (!ordenes || !Array.isArray(ordenes)) {
+      return NextResponse.json({ error: "Se requiere un array de ordenes" }, { status: 400 });
+    }
+
+    await Promise.all(
+      ordenes.map((item: { id: string; orden: number }) =>
+        prisma.estudiante.update({
+          where: { id: item.id },
+          data: { orden: item.orden },
+        })
+      )
+    );
+
+    return NextResponse.json({ message: "Orden actualizado" });
+  } catch (error) {
+    console.error("Error al reordenar estudiantes:", error);
+    return NextResponse.json({ error: "Error al reordenar estudiantes" }, { status: 500 });
   } finally {
     await prisma.$disconnect();
   }

@@ -54,6 +54,7 @@ model Estudiante {
   numero    Int      // Número de lista
   nombre    String   // Nombre completo
   gradoId   String
+  orden     Int      @default(0) // Orden manual para drag-and-drop
   activo    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
