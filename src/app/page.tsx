@@ -139,6 +139,10 @@ export default function Home() {
   const [borrarCalifEstudianteId, setBorrarCalifEstudianteId] = useState<string | null>(null);
   const [borrarCalifLoading, setBorrarCalifLoading] = useState(false);
 
+  // Promedios
+  const [promedioAsignatura, setPromedioAsignatura] = useState<number | null>(null);
+  const [promedioGrado, setPromedioGrado] = useState<number | null>(null);
+
   // Audit & Sessions
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [loginSessions, setLoginSessions] = useState<any[]>([]);
@@ -283,15 +287,41 @@ export default function Home() {
       if (res.ok) {
         const data = await res.json();
         setCalificaciones(data);
+        
+        // Calcular promedio por asignatura
+        const promsFinalesValidos = data.filter((c: Calificacion) => c.promedioFinal !== null).map((c: Calificacion) => c.promedioFinal);
+        if (promsFinalesValidos.length > 0) {
+          const suma = promsFinalesValidos.reduce((a: number, b: number) => a + b, 0);
+          setPromedioAsignatura(Math.round((suma / promsFinalesValidos.length) * 100) / 100);
+        } else {
+          setPromedioAsignatura(null);
+        }
       } else {
         console.error("Error al cargar calificaciones:", res.status);
         setCalificaciones([]);
+        setPromedioAsignatura(null);
       }
     } catch { 
       console.error("Error al cargar calificaciones"); 
       setCalificaciones([]);
+      setPromedioAsignatura(null);
     }
   }, [gradoSeleccionado, trimestreSeleccionado, asignaturaSeleccionada]);
+
+  const loadPromedioGrado = useCallback(async () => {
+    if (!gradoSeleccionado || !trimestreSeleccionado) return;
+    try {
+      const res = await fetch(`/api/calificaciones/promedio-grado?gradoId=${gradoSeleccionado}&trimestre=${trimestreSeleccionado}`, { cache: "no-store", credentials: "include" });
+      if (res.ok) {
+        const data = await res.json();
+        setPromedioGrado(data.promedio);
+      } else {
+        setPromedioGrado(null);
+      }
+    } catch {
+      setPromedioGrado(null);
+    }
+  }, [gradoSeleccionado, trimestreSeleccionado]);
 
   const loadUsuarios = useCallback(async () => {
     try {
@@ -1024,6 +1054,13 @@ export default function Home() {
       loadConfigsGrado();
     }
   }, [gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado]);
+  
+  // Cargar promedio del grado cuando cambie el grado o trimestre
+  useEffect(() => {
+    if (gradoSeleccionado && trimestreSeleccionado) {
+      loadPromedioGrado();
+    }
+  }, [gradoSeleccionado, trimestreSeleccionado, loadPromedioGrado]);
   // Auto-selección inicial de grado - restaurar estado guardado o usar primero disponible
   useEffect(() => {
     if (gradosFiltrados && gradosFiltrados.length > 0 && !gradoSeleccionado) {
@@ -1385,6 +1422,21 @@ export default function Home() {
                         })}
                       </tbody>
                     </table>
+                  </div>
+                  {/* Resumen de promedios */}
+                  <div className={`flex flex-wrap gap-4 p-3 mt-2 border-t ${darkMode ? 'border-slate-700 bg-slate-800/50' : 'border-slate-200 bg-slate-50'}`}>
+                    <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${darkMode ? 'bg-blue-900/30 border border-blue-700' : 'bg-blue-50 border border-blue-200'}`}>
+                      <div className={`text-xs font-medium ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>Promedio por Asignatura</div>
+                      <div className={`text-lg font-bold ${darkMode ? 'text-blue-400' : 'text-blue-800'}`}>
+                        {promedioAsignatura !== null ? promedioAsignatura.toFixed(2) : "—"}
+                      </div>
+                    </div>
+                    <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${darkMode ? 'bg-emerald-900/30 border border-emerald-700' : 'bg-emerald-50 border border-emerald-200'}`}>
+                      <div className={`text-xs font-medium ${darkMode ? 'text-emerald-300' : 'text-emerald-700'}`}>Promedio del Grado</div>
+                      <div className={`text-lg font-bold ${darkMode ? 'text-emerald-400' : 'text-emerald-800'}`}>
+                        {promedioGrado !== null ? promedioGrado.toFixed(2) : "—"}
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
