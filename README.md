@@ -247,9 +247,39 @@ npx shadcn@latest add <componente>
 
 ### Vercel (Recomendado)
 
-1. Conectar tu repositorio a Vercel
-2. Configurar las variables de entorno
-3. Deploy automático en cada push
+1. **Conectar repositorio**
+   - Ve a [Vercel](https://vercel.com) e inicia sesión
+   - Click "Add New..." → "Project"
+   - Importa tu repositorio de GitHub
+
+2. **Configurar variables de entorno**
+   En la configuración del proyecto en Vercel, agrega:
+   ```
+   DATABASE_URL=postgresql://usuario:password@host:5432/dbname?sslmode=require
+   NEXTAUTH_URL=https://tu-proyecto.vercel.app
+   NEXTAUTH_SECRET=genera-una-clave-segura-minimo-32-caracteres
+   ```
+   - Para generar `NEXTAUTH_SECRET`: `openssl rand -base64 32`
+
+3. **Deploy**
+   - Vercel detectará automáticamente Next.js
+   - Cada push a `master` activará un nuevo deploy
+   - El build corre automáticamente `prisma generate` y `next build`
+
+### Variables requeridas en producción
+
+| Variable | Descripción | Ejemplo |
+|----------|-------------|---------|
+| `DATABASE_URL` | URL de PostgreSQL (Neon, Supabase, etc.) | `postgresql://user:pass@host:5432/db` |
+| `NEXTAUTH_URL` | URL de producción | `https://tu-dominio.vercel.app` |
+| `NEXTAUTH_SECRET` | Clave secreta para cookies | (generar con openssl) |
+
+### Verificación del despliegue
+
+Después del primer deploy:
+1. Visita `/api/init` en desarrollo para cargar datos iniciales
+2. Verifica que el login funcione
+3. Las credenciales por defecto funcionan solo en desarrollo (producción deshabilita `/api/init`)
 
 ### Docker
 
@@ -259,10 +289,30 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
+RUN npx prisma generate
 RUN npm run build
 EXPOSE 3000
 CMD ["npm", "start"]
 ```
+
+## Pruebas
+
+El proyecto incluye pruebas automatizadas con Vitest.
+
+```bash
+# Ejecutar tests
+npm run test
+
+# Ejecutar tests una vez
+npm run test:run
+
+# Ejecutar tests con coverage
+npm run test:coverage
+```
+
+Los tests se encuentran en `src/**/*.test.ts` y cubren:
+- Funciones utilitarias (promedios, validaciones, formateo)
+- Lógica de negocio del sistema de calificaciones
 
 ## Contribución
 
