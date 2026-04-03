@@ -59,3 +59,19 @@ logs/
 
 # Prisma
 prisma/migrations/
+
+# Logs and runtime files
+.accesslog
+.stats
+.stats.json
+.config
+.config.bak
+
+# Uploaded/downloaded files
+upload/
+download/
+uploads/
+downloads/
+
+# Test coverage
+/coverage

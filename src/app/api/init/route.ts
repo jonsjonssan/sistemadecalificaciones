@@ -3,6 +3,13 @@ import { neon } from "@neondatabase/serverless";
 import { randomUUID } from "crypto";
 
 export async function POST() {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json(
+      { error: "Endpoint deshabilitado en producción" },
+      { status: 403 }
+    );
+  }
+
   const sql = neon(process.env.DATABASE_URL!);
 
   try {
@@ -39,19 +46,19 @@ export async function POST() {
 
     console.log("[init] Paso 3: Usuarios...");
     const users = [
-      { nombre: "Administrador General", email: "jonathan.araujo.mendoza@clases.edu.sv", password: "admin", rol: "admin", materias: [] },
-      { nombre: "Mónica Lissette Tobar Gómez", email: "monica.lissette.tobar@clases.edu.sv", password: "admin123", rol: "admin", materias: [] },
-      { nombre: "Claudia Jasmin Arce Castillo", email: "claudia.jasmin.arce@clases.edu.sv", password: "admin123", rol: "admin", materias: [] },
-      { nombre: "Yessenia del Carmen Villafuerte Mejía", email: "yessenia.carmen.villafuerte@clases.edu.sv", password: "docente123", rol: "docente", materias: [{ grado: 6, mat: "Aritmética y Finanzas" }, { grado: 7, mat: "Matemática y Datos" }, { grado: 8, mat: "Matemática y Datos" }, { grado: 9, mat: "Matemática y Datos" }] },
-      { nombre: "Mónica Gissel Montesino Najarro", email: "monica.montesino.najarro@clases.edu.sv", password: "docente123", rol: "docente", materias: [{ grado: 2, mat: "Desarrollo Corporal" }, { grado: 3, mat: "Desarrollo Corporal" }, { grado: 4, mat: "Desarrollo Corporal" }, { grado: 5, mat: "Desarrollo Corporal" }, { grado: 6, mat: "Desarrollo Corporal" }, { grado: 7, mat: "Educación Física y Deportes" }, { grado: 8, mat: "Educación Física y Deportes" }, { grado: 9, mat: "Educación Física y Deportes" }] },
-      { nombre: "Jaqueline Lissette Landaverde de Gómez", email: "jaqueline.lissette.landaverde@clases.edu.sv", password: "docente123", rol: "docente", materias: [{ grado: 6, mat: "Ciencia y Tecnología" }, { grado: 7, mat: "Ciencia y Tecnología" }, { grado: 8, mat: "Ciencia y Tecnología" }, { grado: 9, mat: "Ciencia y Tecnología" }] },
-      { nombre: "Ana del Carmen Romero González", email: "ana.carmen.romero@clases.edu.sv", password: "docente123", rol: "docente", materias: [{ grado: 6, mat: "Ciudadanía y Valores" }, { grado: 7, mat: "Ciudadanía y Valores" }, { grado: 8, mat: "Ciudadanía y Valores" }, { grado: 9, mat: "Ciudadanía y Valores" }] },
-      { nombre: "Yency Yesenia Mejía Nerio", email: "04876579-1@clases.edu.sv", password: "docente123", rol: "docente", tutorGrado: 3, materias: [{ grado: 3, mat: "Comunicación" }, { grado: 3, mat: "Números y Formas" }, { grado: 3, mat: "Ciudadanía y Valores" }, { grado: 3, mat: "Ciencia y Tecnología" }] },
-      { nombre: "Silverio Mónico Mulato", email: "silverio.silverio.monico@clases.edu.sv", password: "docente123", rol: "docente", tutorGrado: 4, materias: [{ grado: 4, mat: "Comunicación y Literatura" }, { grado: 4, mat: "Aritmética y Finanzas" }, { grado: 4, mat: "Ciudadanía y Valores" }, { grado: 4, mat: "Ciencia y Tecnología" }] },
-      { nombre: "Emilia Etel Peraza", email: "emilia.peraza.publicos698@clases.edu.sv", password: "docente123", rol: "docente", tutorGrado: 5, materias: [{ grado: 5, mat: "Comunicación y Literatura" }, { grado: 5, mat: "Aritmética y Finanzas" }, { grado: 5, mat: "Ciudadanía y Valores" }, { grado: 5, mat: "Ciencia y Tecnología" }] },
-      { nombre: "Deysi Elizabeth Umanzor Cruz", email: "deysi.elizabeth.umanzor@clases.edu.sv", password: "docente123", rol: "docente", tutorGrado: 2, materias: [{ grado: 2, mat: "Comunicación" }, { grado: 2, mat: "Números y Formas" }, { grado: 2, mat: "Ciudadanía y Valores" }, { grado: 2, mat: "Ciencia y Tecnología" }] },
-      { nombre: "Helen Alicia Cabezas de Golcher", email: "03533849-6@clases.edu.sv", password: "docente123", rol: "docente", materias: [{ grado: 2, mat: "Educación en la Fe" }, { grado: 3, mat: "Educación en la Fe" }, { grado: 4, mat: "Educación en la Fe" }, { grado: 5, mat: "Educación en la Fe" }, { grado: 6, mat: "Educación en la Fe" }, { grado: 7, mat: "Educación en la Fe" }, { grado: 8, mat: "Educación en la Fe" }, { grado: 9, mat: "Educación en la Fe" }] },
-      { nombre: "Diana Nicole Rojas Urias", email: "05980194-0@clases.edu.sv", password: "docente123", rol: "docente", materias: [{ grado: 2, mat: "Artes" }, { grado: 3, mat: "Artes" }, { grado: 7, mat: "Inglés" }, { grado: 8, mat: "Inglés" }, { grado: 9, mat: "Inglés" }] },
+      { nombre: "Administrador General", email: "jonathan.araujo.mendoza@clases.edu.sv", password: "Adm1n2026!", rol: "admin", materias: [] },
+      { nombre: "Mónica Lissette Tobar Gómez", email: "monica.lissette.tobar@clases.edu.sv", password: "Adm1n2026!", rol: "admin", materias: [] },
+      { nombre: "Claudia Jasmin Arce Castillo", email: "claudia.jasmin.arce@clases.edu.sv", password: "Adm1n2026!", rol: "admin", materias: [] },
+      { nombre: "Yessenia del Carmen Villafuerte Mejía", email: "yessenia.carmen.villafuerte@clases.edu.sv", password: "Doc3nt3@2026", rol: "docente", materias: [{ grado: 6, mat: "Aritmética y Finanzas" }, { grado: 7, mat: "Matemática y Datos" }, { grado: 8, mat: "Matemática y Datos" }, { grado: 9, mat: "Matemática y Datos" }] },
+      { nombre: "Mónica Gissel Montesino Najarro", email: "monica.montesino.najarro@clases.edu.sv", password: "Doc3nt3@2026", rol: "docente", materias: [{ grado: 2, mat: "Desarrollo Corporal" }, { grado: 3, mat: "Desarrollo Corporal" }, { grado: 4, mat: "Desarrollo Corporal" }, { grado: 5, mat: "Desarrollo Corporal" }, { grado: 6, mat: "Desarrollo Corporal" }, { grado: 7, mat: "Educación Física y Deportes" }, { grado: 8, mat: "Educación Física y Deportes" }, { grado: 9, mat: "Educación Física y Deportes" }] },
+      { nombre: "Jaqueline Lissette Landaverde de Gómez", email: "jaqueline.lissette.landaverde@clases.edu.sv", password: "Doc3nt3@2026", rol: "docente", materias: [{ grado: 6, mat: "Ciencia y Tecnología" }, { grado: 7, mat: "Ciencia y Tecnología" }, { grado: 8, mat: "Ciencia y Tecnología" }, { grado: 9, mat: "Ciencia y Tecnología" }] },
+      { nombre: "Ana del Carmen Romero González", email: "ana.carmen.romero@clases.edu.sv", password: "Doc3nt3@2026", rol: "docente", materias: [{ grado: 6, mat: "Ciudadanía y Valores" }, { grado: 7, mat: "Ciudadanía y Valores" }, { grado: 8, mat: "Ciudadanía y Valores" }, { grado: 9, mat: "Ciudadanía y Valores" }] },
+      { nombre: "Yency Yesenia Mejía Nerio", email: "04876579-1@clases.edu.sv", password: "Doc3nt3@2026", rol: "docente", tutorGrado: 3, materias: [{ grado: 3, mat: "Comunicación" }, { grado: 3, mat: "Números y Formas" }, { grado: 3, mat: "Ciudadanía y Valores" }, { grado: 3, mat: "Ciencia y Tecnología" }] },
+      { nombre: "Silverio Mónico Mulato", email: "silverio.silverio.monico@clases.edu.sv", password: "Doc3nt3@2026", rol: "docente", tutorGrado: 4, materias: [{ grado: 4, mat: "Comunicación y Literatura" }, { grado: 4, mat: "Aritmética y Finanzas" }, { grado: 4, mat: "Ciudadanía y Valores" }, { grado: 4, mat: "Ciencia y Tecnología" }] },
+      { nombre: "Emilia Etel Peraza", email: "emilia.peraza.publicos698@clases.edu.sv", password: "Doc3nt3@2026", rol: "docente", tutorGrado: 5, materias: [{ grado: 5, mat: "Comunicación y Literatura" }, { grado: 5, mat: "Aritmética y Finanzas" }, { grado: 5, mat: "Ciudadanía y Valores" }, { grado: 5, mat: "Ciencia y Tecnología" }] },
+      { nombre: "Deysi Elizabeth Umanzor Cruz", email: "deysi.elizabeth.umanzor@clases.edu.sv", password: "Doc3nt3@2026", rol: "docente", tutorGrado: 2, materias: [{ grado: 2, mat: "Comunicación" }, { grado: 2, mat: "Números y Formas" }, { grado: 2, mat: "Ciudadanía y Valores" }, { grado: 2, mat: "Ciencia y Tecnología" }] },
+      { nombre: "Helen Alicia Cabezas de Golcher", email: "03533849-6@clases.edu.sv", password: "Doc3nt3@2026", rol: "docente", materias: [{ grado: 2, mat: "Educación en la Fe" }, { grado: 3, mat: "Educación en la Fe" }, { grado: 4, mat: "Educación en la Fe" }, { grado: 5, mat: "Educación en la Fe" }, { grado: 6, mat: "Educación en la Fe" }, { grado: 7, mat: "Educación en la Fe" }, { grado: 8, mat: "Educación en la Fe" }, { grado: 9, mat: "Educación en la Fe" }] },
+      { nombre: "Diana Nicole Rojas Urias", email: "05980194-0@clases.edu.sv", password: "Doc3nt3@2026", rol: "docente", materias: [{ grado: 2, mat: "Artes" }, { grado: 3, mat: "Artes" }, { grado: 7, mat: "Inglés" }, { grado: 8, mat: "Inglés" }, { grado: 9, mat: "Inglés" }] },
     ];
 
     for (const u of users) {
