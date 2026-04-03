@@ -13,7 +13,11 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getUsuarioSession();
     if (!session) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+      return NextResponse.json({ 
+        error: "Sesión no válida", 
+        code: "UNAUTHORIZED",
+        message: "Tu sesión ha expirado. Por favor, inicia sesión nuevamente."
+      }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -22,26 +26,32 @@ export async function GET(request: NextRequest) {
     const trimestre = searchParams.get("trimestre");
     const estudianteId = searchParams.get("estudianteId");
 
+    if (!materiaId || !trimestre) {
+      return NextResponse.json({ 
+        error: "Parámetros incompletos", 
+        code: "MISSING_PARAMS",
+        message: "Selecciona una materia y un trimestre para ver las calificaciones."
+      }, { status: 400 });
+    }
+
     if (session.rol === "docente") {
       const materiasAsignadasIds = session.asignaturasAsignadas?.map((m: any) => m.id) || [];
       const gradosByMaterias = session.asignaturasAsignadas?.map((m: any) => m.gradoId) || [];
       const gradosByTutor = session.gradosAsignados?.map((g: any) => g.id) || [];
       const todosGradosIds = [...new Set([...gradosByMaterias, ...gradosByTutor])];
-
-      console.log("[calificaciones] docentes session:", JSON.stringify({ materiasAsignadasIds, todosGradosIds, rol: session.rol }));
       
       if (materiaId && materiasAsignadasIds.length > 0 && !materiasAsignadasIds.includes(materiaId)) {
-        console.log("[calificaciones] No autorizado para materia:", materiaId);
         return NextResponse.json({ 
-          error: "No autorizado para esta materia",
-          debug: { solicitada: materiaId, permitidas: materiasAsignadasIds }
+          error: "Materia no asignada", 
+          code: "MATERIA_FORBIDDEN",
+          message: "No tienes permiso para ver las calificaciones de esta materia."
         }, { status: 403 });
       }
       if (gradoId && todosGradosIds.length > 0 && !todosGradosIds.includes(gradoId)) {
-        console.log("[calificaciones] No autorizado para grado:", gradoId, "permitidos:", todosGradosIds);
         return NextResponse.json({ 
-          error: "No autorizado para este grado",
-          debug: { solicitado: gradoId, permitidos: todosGradosIds, gradosByTutor, gradosByMaterias }
+          error: "Grado no asignado", 
+          code: "GRADO_FORBIDDEN",
+          message: "No tienes permiso para ver las calificaciones de este grado."
         }, { status: 403 });
       }
     }
@@ -87,8 +97,12 @@ export async function GET(request: NextRequest) {
     await prisma.$disconnect();
     return NextResponse.json(calificaciones);
   } catch (error) {
-    console.error("Error al obtener calificaciones:", error);
-    return NextResponse.json({ error: "Error al obtener calificaciones", details: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    console.error("[calificaciones/GET] Error:", error);
+    return NextResponse.json({ 
+      error: "Error al cargar calificaciones",
+      code: "CALIFICACIONES_LOAD_ERROR",
+      message: "Hubo un problema al obtener las calificaciones. Por favor, intenta de nuevo."
+    }, { status: 500 });
   }
 }
 

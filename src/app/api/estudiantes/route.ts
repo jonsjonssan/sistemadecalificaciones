@@ -15,12 +15,24 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getUsuarioSession();
     if (!session) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+      return NextResponse.json({ 
+        error: "Sesión no encontrada", 
+        code: "UNAUTHORIZED",
+        message: "Debes iniciar sesión para acceder a esta información"
+      }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
     const gradoId = searchParams.get("gradoId");
     const activos = searchParams.get("activos");
+
+    if (!gradoId) {
+      return NextResponse.json({ 
+        error: "Grado no especificado", 
+        code: "MISSING_GRADO",
+        message: "Selecciona un grado para ver los estudiantes"
+      }, { status: 400 });
+    }
 
     let where: any = {};
     if (gradoId) where.gradoId = gradoId;
@@ -34,8 +46,12 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(estudiantes);
   } catch (error) {
-    console.error("Error al obtener estudiantes:", error);
-    return NextResponse.json({ error: "Error al obtener estudiantes" }, { status: 500 });
+    console.error("[estudiantes/GET] Error:", error);
+    return NextResponse.json({ 
+      error: "Error al cargar estudiantes",
+      code: "ESTUDIANTES_LOAD_ERROR",
+      message: "Hubo un problema al obtener la lista de estudiantes. Intenta de nuevo."
+    }, { status: 500 });
   } finally {
     await prisma.$disconnect();
   }
