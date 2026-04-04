@@ -90,6 +90,7 @@ export async function POST(request: NextRequest) {
       data: {
         numero: nuevoNumero,
         nombre,
+        email: data.email || null,
         gradoId,
         activo: true,
       },
@@ -137,11 +138,12 @@ export async function PUT(request: NextRequest) {
     const numeroInicial = ultimo ? ultimo.numero : 0;
 
     const creados = await Promise.all(
-      estudiantes.map((nombre: string, i: number) =>
+      estudiantes.map((item: { nombre: string; email?: string }, i: number) =>
         prisma.estudiante.create({
           data: {
             numero: numeroInicial + i + 1,
-            nombre,
+            nombre: item.nombre,
+            email: item.email || null,
             gradoId,
             activo: true,
           },

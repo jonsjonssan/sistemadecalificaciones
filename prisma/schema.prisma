@@ -51,10 +51,11 @@ model Grado {
 // Estudiante
 model Estudiante {
   id        String   @id @default(cuid())
-  numero    Int      // Número de lista
-  nombre    String   // Nombre completo
+  numero    Int
+  nombre    String
+  email     String?
   gradoId   String
-  orden     Int      @default(0) // Orden manual para drag-and-drop
+  orden     Int      @default(0)
   activo    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

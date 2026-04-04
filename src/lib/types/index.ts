@@ -23,6 +23,7 @@ export interface Estudiante {
   id: string;
   numero: number;
   nombre: string;
+  email?: string;
   gradoId: string;
   activo: boolean;
   createdAt: Date;

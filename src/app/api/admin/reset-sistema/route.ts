@@ -24,10 +24,13 @@ export async function DELETE(request: NextRequest) {
     // 2. Eliminar toda la asistencia
     await db.asistencia.deleteMany({});
     
-    // 3. Eliminar asignaciones de materias (grados 6-9)
+    // 3. Eliminar todos los estudiantes
+    await db.estudiante.deleteMany({});
+    
+    // 4. Eliminar asignaciones de materias (grados 6-9)
     await db.docenteMateria.deleteMany({});
     
-    // 4. Limpiar tutores de los grados (grados 2-5)
+    // 5. Limpiar tutores de los grados (grados 2-5)
     await db.grado.updateMany({
       data: {
         docenteId: null

@@ -61,17 +61,22 @@ export const estudianteNombreSchema = z
 
 export const estudianteCreateSchema = z.object({
   nombre: estudianteNombreSchema,
+  email: z.string().email("Email inválido").max(255).optional().or(z.literal("")),
   gradoId: z.string().cuid("ID de grado inválido"),
 });
 
 export const estudiantesBulkCreateSchema = z.object({
-  estudiantes: z.array(estudianteNombreSchema).min(1).max(100),
+  estudiantes: z.array(z.object({
+    nombre: estudianteNombreSchema,
+    email: z.string().email("Email inválido").max(255).optional().or(z.literal("")),
+  })).min(1).max(100),
   gradoId: z.string().cuid("ID de grado inválido"),
 });
 
 export const estudianteUpdateSchema = z.object({
   id: z.string().cuid("ID de estudiante inválido"),
   nombre: estudianteNombreSchema.optional(),
+  email: z.string().email("Email inválido").max(255).optional().or(z.literal("")),
   numero: z.number().int().positive().optional(),
   activo: z.boolean().optional(),
 });

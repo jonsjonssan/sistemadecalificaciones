@@ -103,7 +103,7 @@ export default function Home() {
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
   const [passwordForm, setPasswordForm] = useState({ actual: "", nueva: "", confirmar: "" });
   const [passwordLoading, setPasswordLoading] = useState(false);
-  const [nuevoEstudiante, setNuevoEstudiante] = useState({ nombre: "" });
+  const [nuevoEstudiante, setNuevoEstudiante] = useState({ nombre: "", email: "" });
   const [listaEstudiantes, setListaEstudiantes] = useState("");
   const [saving, setSaving] = useState(false);
   const [initialized, setInitialized] = useState(false);
@@ -510,13 +510,13 @@ export default function Home() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ nombre: nuevoEstudiante.nombre, gradoId: gradoSeleccionado }),
+        body: JSON.stringify({ nombre: nuevoEstudiante.nombre, email: nuevoEstudiante.email || undefined, gradoId: gradoSeleccionado }),
       });
       console.log("[handleAddEstudiante] Response status:", res.status);
       if (res.ok) {
         const data = await res.json();
         console.log("[handleAddEstudiante] Success:", data);
-        setNuevoEstudiante({ nombre: "" });
+        setNuevoEstudiante({ nombre: "", email: "" });
         setDialogOpen(false);
         loadEstudiantes();
         toast({ title: "Estudiante agregado" });
@@ -532,9 +532,16 @@ export default function Home() {
   };
 
   const handleAddMultipleEstudiantes = async () => {
-    const nombres = listaEstudiantes.split('\n').map(n => n.trim()).filter(n => n);
-    console.log("[handleAddMultiple] nombres:", nombres.length, "gradoId:", gradoSeleccionado);
-    if (!nombres.length || !gradoSeleccionado) {
+    const lineas = listaEstudiantes.split('\n').map(n => n.trim()).filter(n => n);
+    const estudiantes = lineas.map(linea => {
+      const partes = linea.split(',');
+      if (partes.length >= 3 && partes[2].includes('@')) {
+        return { nombre: partes.slice(0, 2).join(',').trim(), email: partes[2].trim() };
+      }
+      return { nombre: linea, email: undefined };
+    }).filter(e => e.nombre);
+    console.log("[handleAddMultiple] estudiantes:", estudiantes.length, "gradoId:", gradoSeleccionado);
+    if (!estudiantes.length || !gradoSeleccionado) {
       console.log("[handleAddMultiple] Early return - faltan datos");
       return;
     }
@@ -544,7 +551,7 @@ export default function Home() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ estudiantes: nombres, gradoId: gradoSeleccionado }),
+        body: JSON.stringify({ estudiantes, gradoId: gradoSeleccionado }),
       });
       console.log("[handleAddMultiple] Response status:", res.status);
       if (res.ok) {
@@ -554,7 +561,7 @@ export default function Home() {
         setListaDialogOpen(false);
         loadEstudiantes();
         loadGrados();
-        toast({ title: `${nombres.length} estudiantes agregados` });
+        toast({ title: `${estudiantes.length} estudiantes agregados` });
       } else {
         const errorData = await res.json();
         console.log("[handleAddMultiple] Error:", errorData);
@@ -586,6 +593,27 @@ export default function Home() {
         body: JSON.stringify({ ordenes }),
       });
     } catch { toast({ title: "Error al guardar orden", variant: "destructive" }); }
+  };
+
+  const handleUpdateEstudiante = async (id: string, data: { nombre?: string; email?: string }) => {
+    try {
+      const res = await fetch(`/api/estudiantes/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(data),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setEstudiantes(prev => prev.map(e => e.id === id ? { ...e, ...updated } : e));
+        toast({ title: "Estudiante actualizado" });
+      } else {
+        const errorData = await res.json();
+        toast({ title: "Error al actualizar", description: errorData.error, variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Error de conexión", variant: "destructive" });
+    }
   };
 
   const moverEstudiante = (index: number, direccion: 'arriba' | 'abajo') => {
@@ -1471,16 +1499,16 @@ export default function Home() {
                   <Dialog open={listaDialogOpen} onOpenChange={setListaDialogOpen}>
                     <DialogTrigger asChild><Button size="sm" variant="outline" className={`h-10 text-xs sm:text-sm ${darkMode ? 'border-slate-600 text-slate-300 hover:bg-slate-700' : ''}`}><ListPlus className="h-5 w-5 mr-1" />Lista</Button></DialogTrigger>
                     <DialogContent className={`max-w-md ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
-                      <DialogHeader><DialogTitle>Agregar Lista de Estudiantes</DialogTitle><DialogDescription>Ingresa los nombres de los estudiantes, uno por línea.</DialogDescription></DialogHeader>
-                      <div className="space-y-2"><Label>Un nombre por línea</Label><textarea className={`w-full h-48 p-2 text-sm border rounded-md ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} value={listaEstudiantes} onChange={e => setListaEstudiantes(e.target.value)} placeholder="Apellido, Nombre&#10;Apellido, Nombre&#10;..." /></div>
+                      <DialogHeader><DialogTitle>Agregar Lista de Estudiantes</DialogTitle><DialogDescription>Ingresa los nombres de los estudiantes, uno por línea. Opcional: agrega correo separado por coma (Nombre, correo@email.com).</DialogDescription></DialogHeader>
+                      <div className="space-y-2"><Label>Un nombre por línea</Label><textarea className={`w-full h-48 p-2 text-sm border rounded-md ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} value={listaEstudiantes} onChange={e => setListaEstudiantes(e.target.value)} placeholder="Apellido, Nombre&#10;Apellido, Nombre, correo@email.com&#10;..." /></div>
                       <DialogFooter><Button variant="outline" size="sm" onClick={() => { setListaDialogOpen(false); setListaEstudiantes(""); }}>Cancelar</Button><Button size="sm" onClick={handleAddMultipleEstudiantes} className="bg-teal-600">Agregar {listaEstudiantes.split('\n').filter(n => n.trim()).length}</Button></DialogFooter>
                     </DialogContent>
                   </Dialog>
                   <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                     <DialogTrigger asChild><Button size="sm" className={`h-10 text-xs sm:text-sm ${darkMode ? 'bg-teal-600 hover:bg-teal-500' : 'bg-teal-600'}`}><Plus className="h-5 w-5 mr-1" />Uno</Button></DialogTrigger>
                     <DialogContent className={`max-w-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
-                      <DialogHeader><DialogTitle>Agregar Estudiante</DialogTitle><DialogDescription>Ingresa el nombre completo del nuevo estudiante.</DialogDescription></DialogHeader>
-                      <div className="space-y-2"><Label>Nombre completo</Label><Input value={nuevoEstudiante.nombre} onChange={e => setNuevoEstudiante({ nombre: e.target.value })} placeholder="Apellidos, Nombres" /></div>
+                      <DialogHeader><DialogTitle>Agregar Estudiante</DialogTitle><DialogDescription>Ingresa el nombre completo y correo (opcional) del nuevo estudiante.</DialogDescription></DialogHeader>
+                      <div className="space-y-2"><Label>Nombre completo</Label><Input value={nuevoEstudiante.nombre} onChange={e => setNuevoEstudiante(prev => ({ ...prev, nombre: e.target.value }))} placeholder="Apellidos, Nombres" /><Label>Correo electrónico (opcional)</Label><Input value={nuevoEstudiante.email} onChange={e => setNuevoEstudiante(prev => ({ ...prev, email: e.target.value }))} placeholder="correo@ejemplo.com" type="email" /></div>
                       <DialogFooter><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Cancelar</Button><Button size="sm" onClick={handleAddEstudiante} className="bg-teal-600">Guardar</Button></DialogFooter>
                     </DialogContent>
                   </Dialog>
@@ -1497,6 +1525,7 @@ export default function Home() {
                     loading={sectionLoading}
                     onReorder={handleReordenarEstudiantes}
                     onDelete={handleDeleteEstudiante}
+                    onUpdateEstudiante={usuario.rol === "admin" ? handleUpdateEstudiante : undefined}
                   />
                 </div>
               </CardContent>
