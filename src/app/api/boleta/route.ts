@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
   try {
     const cookieStore = await cookies();
     const session = cookieStore.get("session");
-    
+
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
                d.nombre as docente_nombre
         FROM "Estudiante" e
         JOIN "Grado" g ON e."gradoId" = g.id
-        LEFT JOIN "Usuario" d ON g."docenteId" = d.id
+        LEFT JOIN "Usuario" d ON false
         WHERE e.id = ${estudianteId}
       `;
 
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
       const promediosValidos = calificaciones
         .map((c: any) => c.promedioFinal)
         .filter((p: number | null): p is number => p !== null);
-      
+
       const promedioGeneral = promediosValidos.length > 0
         ? promediosValidos.reduce((a: number, b: number) => a + b, 0) / promediosValidos.length
         : null;
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
              d.nombre as docente_nombre
       FROM "Estudiante" e
       JOIN "Grado" g ON e."gradoId" = g.id
-      LEFT JOIN "Usuario" d ON g."docenteId" = d.id
+      LEFT JOIN "Usuario" d ON false
       WHERE e."gradoId" = ${gradoId}
       ORDER BY e.numero
     `;
@@ -107,11 +107,11 @@ export async function GET(request: NextRequest) {
 
     const boletasPorEstudiante = estudiantes.map((est: any) => {
       const califEstudiante = calificaciones.filter((c: any) => c.estudianteId === est.id);
-      
+
       const promediosValidos = califEstudiante
         .map((c: any) => c.promedioFinal)
         .filter((p: number | null): p is number => p !== null);
-      
+
       const promedioGeneral = promediosValidos.length > 0
         ? promediosValidos.reduce((a: number, b: number) => a + b, 0) / promediosValidos.length
         : null;
