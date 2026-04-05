@@ -10,7 +10,9 @@
       "Bash(npx *)",
       "Bash(curl *)",
       "Bash(timeout *)",
-      "Bash(taskkill *)"
+      "Bash(taskkill *)",
+      "Bash(rmdir *)",
+      "Bash(echo.)"
     ]
   },
   "$version": 3
