@@ -15,12 +15,15 @@ import { useToast } from "@/hooks/use-toast";
 import { 
   LogOut, Users, User, ClipboardList, FileText, Plus, RefreshCw,
   School, Save, Printer, ChevronDown, ChevronUp, Settings, Upload,
-  Download, Trash2, ListPlus, UserPlus, Key, Calendar, LayoutDashboard, CalendarDays
+  Download, Trash2, ListPlus, UserPlus, Key, Calendar, LayoutDashboard, CalendarDays, Lightbulb
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import Dashboard from "@/components/Dashboard";
 import AsistenciaBoard from "@/components/AsistenciaBoard";
 import { EstudiantesTable } from "@/components/EstudiantesTable";
+import GettingStartedWizard from "@/components/GettingStartedWizard";
+import PredictiveAlerts from "@/components/PredictiveAlerts";
+import { ContextualHelp } from "@/components/ContextualHelp";
 
 // Interfaces
 interface UsuarioSesion { id: string; email: string; nombre: string; rol: string; gradosAsignados?: { id: string; numero: number; seccion: string; }[]; asignaturasAsignadas?: { id: string; nombre: string; gradoId: string; gradoNumero?: number; gradoSeccion?: string; }[]; }
@@ -34,7 +37,7 @@ interface Usuario {
   gradosComoTutor?: { id: string; numero: number; seccion: string; año: number; }[]; 
   materias?: AsignaturaConGrado[];
 }
-interface Estudiante { id: string; numero: number; nombre: string; gradoId: string; activo: boolean; orden?: number; }
+interface Estudiante { id: string; numero: number; nombre: string; email?: string; gradoId: string; activo: boolean; orden?: number; }
 interface Asignatura { id: string; nombre: string; gradoId: string; }
 interface ConfigActividad { id: string; materiaId: string; trimestre: number; numActividadesCotidianas: number; numActividadesIntegradoras: number; tieneExamen: boolean; porcentajeAC: number; porcentajeAI: number; porcentajeExamen: number; asignaturaNombre?: string; }
 type ConfigActividadPartial = Partial<ConfigActividad> & { numActividadesCotidianas: number; numActividadesIntegradoras: number; tieneExamen: boolean; porcentajeAC: number; porcentajeAI: number; porcentajeExamen: number; };
@@ -140,6 +143,9 @@ export default function Home() {
   const [borrarCalifEstudianteId, setBorrarCalifEstudianteId] = useState<string | null>(null);
   const [borrarCalifLoading, setBorrarCalifLoading] = useState(false);
   const [sectionLoading, setSectionLoading] = useState(false);
+  const [showWizard, setShowWizard] = useState(false);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [quickActionsOpen, setQuickActionsOpen] = useState(false);
 
   // Promedios
   const [promedioAsignatura, setPromedioAsignatura] = useState<number | null>(null);
@@ -161,8 +167,12 @@ export default function Home() {
       const gr = localStorage.getItem("ss_grado"); if (gr) setGradoSeleccionado(gr);
       const mt = localStorage.getItem("ss_materia"); if (mt) setAsignaturaSeleccionada(mt);
       const tr = localStorage.getItem("ss_trimestre"); if (tr) setTrimestreSeleccionado(tr);
+      const wizardDone = localStorage.getItem("ss_wizard_completed");
+      if (!wizardDone && usuario) {
+        setShowWizard(true);
+      }
     }
-  }, []);
+  }, [usuario]);
 
   // Persistence: Guardar en localStorage
   useEffect(() => { if (typeof window !== "undefined") localStorage.setItem("ss_tab", activeTab); }, [activeTab]);
@@ -634,6 +644,7 @@ export default function Home() {
   useEffect(() => { materiaRef.current = asignaturaSeleccionada; }, [asignaturaSeleccionada]);
 
   const handleSaveCalificacion = useCallback(async (estudianteId: string, materiaId: string, data: { actividadesCotidianas: (number | null)[]; actividadesIntegradoras: (number | null)[]; examenTrimestral: number | null; recuperacion: number | null; }) => {
+    setAutoSaveStatus("saving");
     setSaving(true);
     const trimestre = parseInt(trimestreRef.current);
     try {
@@ -654,12 +665,16 @@ export default function Home() {
           }
           return [...prev, { ...saved, estudiante: undefined, asignatura: undefined }];
         });
+        setAutoSaveStatus("saved");
+        setTimeout(() => setAutoSaveStatus("idle"), 2000);
       } else {
         const err = await res.json();
         console.error("Error API:", err);
+        setAutoSaveStatus("idle");
       }
     } catch (e) {
       console.error("Error conexión:", e);
+      setAutoSaveStatus("idle");
     } finally { setSaving(false); }
   }, []);
 
@@ -1286,6 +1301,7 @@ export default function Home() {
                 <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
               )}
             </button>
+            <Button variant="ghost" size="sm" onClick={() => setShowWizard(true)} className={`h-8 sm:h-10 px-1.5 sm:px-2 text-xs ${darkMode ? 'text-slate-200 hover:bg-slate-700' : 'text-white hover:bg-teal-700'}`} title="Guía de inicio"><Lightbulb className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Ayuda</span></Button>
             <div className={`text-right text-xs font-medium hidden sm:block ${darkMode ? '' : ''}`}><p className="font-medium cursor-pointer hover:underline" onClick={() => setPerfilDialogOpen(true)}>{usuario.nombre}</p><p className={`capitalize ${darkMode ? 'text-slate-400' : 'text-teal-200'}`}>{usuario.rol}</p></div>
             <Button variant="ghost" size="sm" onClick={() => setPerfilDialogOpen(true)} className={`h-8 sm:h-10 px-1.5 sm:px-2 text-xs ${darkMode ? 'text-slate-200 hover:bg-slate-700' : 'text-white hover:bg-teal-700'}`}><User className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Perfil</span></Button>
             <Button variant="ghost" size="sm" onClick={() => setPasswordDialogOpen(true)} className={`h-8 sm:h-10 px-1.5 sm:px-2 text-xs ${darkMode ? 'text-slate-200 hover:bg-slate-700' : 'text-white hover:bg-teal-700'}`}><Key className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Clave</span></Button>
@@ -1320,6 +1336,19 @@ export default function Home() {
             <TabsTrigger value="boletas" aria-label="Ver boletas" className={`text-sm font-medium px-3 gap-1 shrink-0 ${darkMode ? 'data-[state=active]:bg-slate-700 data-[state=active]:text-teal-400' : ''}`}><FileText className="h-4 w-4" />Boletas</TabsTrigger>
             {usuario.rol === "admin" && <TabsTrigger value="admin" aria-label="Administración" className={`text-sm font-medium px-3 gap-1 shrink-0 ${darkMode ? 'data-[state=active]:bg-slate-700 data-[state=active]:text-teal-400' : ''}`}><Settings className="h-4 w-4" />Admin</TabsTrigger>}
           </TabsList>
+          <div className="hidden md:flex items-center gap-2 ml-auto">
+            <ContextualHelp section={activeTab} darkMode={darkMode} />
+            {autoSaveStatus === "saving" && (
+              <span className={`text-xs flex items-center gap-1 ${darkMode ? 'text-amber-400' : 'text-amber-600'}`}>
+                <RefreshCw className="h-3 w-3 animate-spin" /> Guardando...
+              </span>
+            )}
+            {autoSaveStatus === "saved" && (
+              <span className={`text-xs flex items-center gap-1 ${darkMode ? 'text-green-400' : 'text-green-600'}`}>
+                Guardado
+              </span>
+            )}
+          </div>
 
           {/* Mobile bottom nav */}
           <nav className={`md:hidden fixed bottom-0 left-0 right-0 z-50 border-t ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'bg-white border-slate-200'} safe-area-bottom`}>
@@ -1362,6 +1391,13 @@ export default function Home() {
                 grado: m.gradoNumero ? { numero: m.gradoNumero, seccion: m.gradoSeccion || "" } : undefined
               }))}
             />
+            <div className="mt-4">
+              <PredictiveAlerts 
+                gradoId={gradoSeleccionado} 
+                trimestre={trimestreSeleccionado} 
+                darkMode={darkMode} 
+              />
+            </div>
           </TabsContent>
 
           {/* Asistencia */}
@@ -1887,6 +1923,14 @@ export default function Home() {
           )}
         </Tabs>
       </main>
+
+      <GettingStartedWizard 
+        open={showWizard} 
+        onClose={() => setShowWizard(false)} 
+        darkMode={darkMode} 
+        userRole={usuario.rol} 
+        onNavigateTo={(tab) => { setActiveTab(tab); saveUserState({ activeTab: tab }); }} 
+      />
 
       {/* Dialogs */}
       <Dialog open={configDialogOpen} onOpenChange={setConfigDialogOpen}>
