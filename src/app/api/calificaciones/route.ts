@@ -11,22 +11,40 @@ async function getUsuarioSession() {
 
 /**
  * Transforma calificaciones para incluir notas individuales como arrays (compatibilidad con frontend)
+ * Preserva las posiciones vacías (null) para que el frontend muestre campos vacíos correctamente
  */
 function transformCalificacion(cal: any) {
-  const notasCotidianas = (cal.notasActividad || [])
-    .filter((n: any) => n.tipo === "cotidiana")
-    .sort((a: any, b: any) => a.numeroActividad - b.numeroActividad)
-    .map((n: any) => n.nota);
+  const notasCotidianasMap = new Map<number, number>();
+  const notasIntegradorasMap = new Map<number, number>();
+  let maxCotidiana = 0;
+  let maxIntegradora = 0;
 
-  const notasIntegradoras = (cal.notasActividad || [])
-    .filter((n: any) => n.tipo === "integradora")
-    .sort((a: any, b: any) => a.numeroActividad - b.numeroActividad)
-    .map((n: any) => n.nota);
+  // Primero pasamos: construir mapa y encontrar el máximo
+  for (const nota of (cal.notasActividad || [])) {
+    if (nota.tipo === "cotidiana") {
+      notasCotidianasMap.set(nota.numeroActividad, nota.nota);
+      if (nota.numeroActividad > maxCotidiana) maxCotidiana = nota.numeroActividad;
+    } else if (nota.tipo === "integradora") {
+      notasIntegradorasMap.set(nota.numeroActividad, nota.nota);
+      if (nota.numeroActividad > maxIntegradora) maxIntegradora = nota.numeroActividad;
+    }
+  }
+
+  // Segundo paso: reconstruir arrays preservando posiciones vacías (null)
+  const notasCotidianas: (number | null)[] = [];
+  for (let i = 1; i <= maxCotidiana; i++) {
+    notasCotidianas.push(notasCotidianasMap.has(i) ? notasCotidianasMap.get(i)! : null);
+  }
+
+  const notasIntegradoras: (number | null)[] = [];
+  for (let i = 1; i <= maxIntegradora; i++) {
+    notasIntegradoras.push(notasIntegradorasMap.has(i) ? notasIntegradorasMap.get(i)! : null);
+  }
 
   return {
     ...cal,
-    actividadesCotidianas: JSON.stringify(notasCotidianas.length > 0 ? notasCotidianas : []),
-    actividadesIntegradoras: JSON.stringify(notasIntegradoras.length > 0 ? notasIntegradoras : []),
+    actividadesCotidianas: JSON.stringify(notasCotidianas),
+    actividadesIntegradoras: JSON.stringify(notasIntegradoras),
   };
 }
 
