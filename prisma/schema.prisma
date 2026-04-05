@@ -139,26 +139,43 @@ model Calificacion {
   estudianteId String
   materiaId    String
   trimestre    Int      @default(1)
-  
-  // Notas de actividades (JSON arrays)
-  actividadesCotidianas   String?  // JSON array: [10, 9, 8, 7]
-  calificacionAC          Float?   // Promedio calculado
-  actividadesIntegradoras String?  // JSON array: [10, 9]
-  calificacionAI          Float?   // Promedio calculado
+
+  // Promedios calculados
+  calificacionAC          Float?   // Promedio actividades cotidianas
+  calificacionAI          Float?   // Promedio actividades integradoras
   examenTrimestral        Float?   // Nota del examen
   promedioFinal           Float?   // Promedio final calculado
   recuperacion            Float?   // Nota de recuperación
-  
+
+  // Relación con notas individuales (nueva estructura normalizada)
+  notasActividad   NotaActividad[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   estudiante Estudiante @relation(fields: [estudianteId], references: [id])
   materia    Materia    @relation(fields: [materiaId], references: [id])
-  
+
   @@unique([estudianteId, materiaId, trimestre])
   @@index([estudianteId])
   @@index([materiaId])
   @@index([trimestre])
+}
+
+// Notas individuales de actividades (estructura normalizada)
+model NotaActividad {
+  id              String   @id @default(cuid())
+  calificacionId  String
+  tipo            String   // "cotidiana" | "integradora"
+  numeroActividad Int      // 1, 2, 3, 4...
+  nota            Float    // Nota individual (0-10)
+  createdAt       DateTime @default(now())
+
+  calificacion Calificacion @relation(fields: [calificacionId], references: [id], onDelete: Cascade)
+
+  @@index([calificacionId, tipo, numeroActividad])
+  @@index([calificacionId])
+  @@index([tipo])
 }
 
 // Registro de Asistencia Diaria

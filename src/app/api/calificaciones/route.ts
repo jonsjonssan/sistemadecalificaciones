@@ -9,12 +9,35 @@ async function getUsuarioSession() {
   return JSON.parse(session.value);
 }
 
+/**
+ * Transforma calificaciones para incluir notas individuales como arrays (compatibilidad con frontend)
+ */
+function transformCalificacion(cal: any) {
+  const notasCotidianas = (cal.notasActividad || [])
+    .filter((n: any) => n.tipo === "cotidiana")
+    .sort((a: any, b: any) => a.numeroActividad - b.numeroActividad)
+    .map((n: any) => n.nota);
+
+  const notasIntegradoras = (cal.notasActividad || [])
+    .filter((n: any) => n.tipo === "integradora")
+    .sort((a: any, b: any) => a.numeroActividad - b.numeroActividad)
+    .map((n: any) => n.nota);
+
+  return {
+    ...cal,
+    actividadesCotidianas: JSON.stringify(notasCotidianas.length > 0 ? notasCotidianas : []),
+    actividadesIntegradoras: JSON.stringify(notasIntegradoras.length > 0 ? notasIntegradoras : []),
+  };
+}
+
+// ==================== GET: Obtener calificaciones ====================
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getUsuarioSession();
     if (!session) {
-      return NextResponse.json({ 
-        error: "Sesión no válida", 
+      return NextResponse.json({
+        error: "Sesión no válida",
         code: "UNAUTHORIZED",
         message: "Tu sesión ha expirado. Por favor, inicia sesión nuevamente."
       }, { status: 401 });
@@ -27,29 +50,28 @@ export async function GET(request: NextRequest) {
     const estudianteId = searchParams.get("estudianteId");
 
     if (!materiaId || !trimestre) {
-      return NextResponse.json({ 
-        error: "Parámetros incompletos", 
+      return NextResponse.json({
+        error: "Parámetros incompletos",
         code: "MISSING_PARAMS",
         message: "Selecciona una materia y un trimestre para ver las calificaciones."
       }, { status: 400 });
     }
 
-    if (session.rol === "docente") {
+    if (session.rol === "docente" || session.rol === "docente-orientador") {
       const materiasAsignadasIds = session.asignaturasAsignadas?.map((m: any) => m.id) || [];
       const gradosByMaterias = session.asignaturasAsignadas?.map((m: any) => m.gradoId) || [];
-      const gradosByTutor = session.gradosAsignados?.map((g: any) => g.id) || [];
-      const todosGradosIds = [...new Set([...gradosByMaterias, ...gradosByTutor])];
-      
+      const todosGradosIds = [...new Set([...gradosByMaterias])];
+
       if (materiaId && materiasAsignadasIds.length > 0 && !materiasAsignadasIds.includes(materiaId)) {
-        return NextResponse.json({ 
-          error: "Materia no asignada", 
+        return NextResponse.json({
+          error: "Materia no asignada",
           code: "MATERIA_FORBIDDEN",
           message: "No tienes permiso para ver las calificaciones de esta materia."
         }, { status: 403 });
       }
       if (gradoId && todosGradosIds.length > 0 && !todosGradosIds.includes(gradoId)) {
-        return NextResponse.json({ 
-          error: "Grado no asignado", 
+        return NextResponse.json({
+          error: "Grado no asignado",
           code: "GRADO_FORBIDDEN",
           message: "No tienes permiso para ver las calificaciones de este grado."
         }, { status: 403 });
@@ -69,6 +91,7 @@ export async function GET(request: NextRequest) {
         include: {
           estudiante: { select: { id: true, numero: true, nombre: true, gradoId: true } },
           materia: { select: { id: true, nombre: true } },
+          notasActividad: true, // Incluir notas normalizadas
         },
         orderBy: { estudiante: { numero: "asc" } },
       });
@@ -78,6 +101,7 @@ export async function GET(request: NextRequest) {
         include: {
           estudiante: { select: { id: true, numero: true, nombre: true, gradoId: true } },
           materia: { select: { id: true, nombre: true } },
+          notasActividad: true,
         },
         orderBy: { estudiante: { numero: "asc" } },
       });
@@ -89,22 +113,26 @@ export async function GET(request: NextRequest) {
         include: {
           estudiante: { select: { id: true, numero: true, nombre: true, gradoId: true } },
           materia: { select: { id: true, nombre: true } },
+          notasActividad: true,
         },
         orderBy: { estudiante: { numero: "asc" } },
       });
     }
 
     await prisma.$disconnect();
-    return NextResponse.json(calificaciones);
+    // Transformar para compatibilidad con frontend
+    return NextResponse.json(calificaciones.map(transformCalificacion));
   } catch (error) {
     console.error("[calificaciones/GET] Error:", error);
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: "Error al cargar calificaciones",
       code: "CALIFICACIONES_LOAD_ERROR",
       message: "Hubo un problema al obtener las calificaciones. Por favor, intenta de nuevo."
     }, { status: 500 });
   }
 }
+
+// ==================== POST: Guardar calificación ====================
 
 export async function POST(request: NextRequest) {
   try {
@@ -128,25 +156,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Estudiante, materia y trimestre son requeridos" }, { status: 400 });
     }
 
+    // Parsear notas de actividades
     let acNotas: (number | null)[] = [];
     let aiNotas: (number | null)[] = [];
-    
+
     if (actividadesCotidianas) {
       try {
-        acNotas = typeof actividadesCotidianas === 'string' 
-          ? JSON.parse(actividadesCotidianas) 
+        acNotas = typeof actividadesCotidianas === 'string'
+          ? JSON.parse(actividadesCotidianas)
           : actividadesCotidianas;
       } catch { acNotas = []; }
     }
-    
+
     if (actividadesIntegradoras) {
       try {
-        aiNotas = typeof actividadesIntegradoras === 'string' 
-          ? JSON.parse(actividadesIntegradoras) 
+        aiNotas = typeof actividadesIntegradoras === 'string'
+          ? JSON.parse(actividadesIntegradoras)
           : actividadesIntegradoras;
       } catch { aiNotas = []; }
     }
 
+    // Calcular promedios
     const notasValidasAC = acNotas.filter((n): n is number => n !== null && n !== undefined);
     const calificacionAC = notasValidasAC.length > 0 ? notasValidasAC.reduce((a, b) => a + b, 0) / notasValidasAC.length : null;
 
@@ -164,7 +194,7 @@ export async function POST(request: NextRequest) {
       const porcAC = config.porcentajeAC / 100;
       const porcAI = config.porcentajeAI / 100;
       const porcExam = config.tieneExamen ? config.porcentajeExamen / 100 : 0;
-      
+
       const tieneNotas = calificacionAC !== null || calificacionAI !== null || examenTrimestral !== null;
       if (tieneNotas) {
         const suma = (calificacionAC ?? 0) * porcAC + (calificacionAI ?? 0) * porcAI + ((examenTrimestral ?? 0)) * porcExam;
@@ -190,6 +220,7 @@ export async function POST(request: NextRequest) {
     const aiFinal = (calificacionAI !== null && !isNaN(calificacionAI)) ? calificacionAI : null;
     const promFinal = (promedioFinal !== null && !isNaN(promedioFinal)) ? promedioFinal : null;
 
+    // Upsert calificación
     const result = await prisma.calificacion.upsert({
       where: {
         estudianteId_materiaId_trimestre: {
@@ -199,9 +230,7 @@ export async function POST(request: NextRequest) {
         },
       },
       update: {
-        actividadesCotidianas: JSON.stringify(acNotas),
         calificacionAC: acFinal,
-        actividadesIntegradoras: JSON.stringify(aiNotas),
         calificacionAI: aiFinal,
         examenTrimestral: examenVal,
         promedioFinal: promFinal,
@@ -211,9 +240,7 @@ export async function POST(request: NextRequest) {
         estudianteId,
         materiaId,
         trimestre: parseInt(String(trimestre)),
-        actividadesCotidianas: JSON.stringify(acNotas),
         calificacionAC: acFinal,
-        actividadesIntegradoras: JSON.stringify(aiNotas),
         calificacionAI: aiFinal,
         examenTrimestral: examenVal,
         promedioFinal: promFinal,
@@ -222,14 +249,61 @@ export async function POST(request: NextRequest) {
       include: {
         estudiante: { select: { id: true, numero: true, nombre: true, gradoId: true } },
         materia: { select: { id: true, nombre: true } },
+        notasActividad: true,
+      },
+    });
+
+    // Actualizar notas de actividades cotidianas (borrar y recrear)
+    await prisma.notaActividad.deleteMany({
+      where: { calificacionId: result.id, tipo: "cotidiana" },
+    });
+
+    for (let i = 0; i < acNotas.length; i++) {
+      if (acNotas[i] !== null && acNotas[i] !== undefined) {
+        await prisma.notaActividad.create({
+          data: {
+            calificacionId: result.id,
+            tipo: "cotidiana",
+            numeroActividad: i + 1,
+            nota: acNotas[i] as number,
+          },
+        });
+      }
+    }
+
+    // Actualizar notas de actividades integradoras
+    await prisma.notaActividad.deleteMany({
+      where: { calificacionId: result.id, tipo: "integradora" },
+    });
+
+    for (let i = 0; i < aiNotas.length; i++) {
+      if (aiNotas[i] !== null && aiNotas[i] !== undefined) {
+        await prisma.notaActividad.create({
+          data: {
+            calificacionId: result.id,
+            tipo: "integradora",
+            numeroActividad: i + 1,
+            nota: aiNotas[i] as number,
+          },
+        });
+      }
+    }
+
+    // Obtener resultado final con notas
+    const finalResult = await prisma.calificacion.findUnique({
+      where: { id: result.id },
+      include: {
+        estudiante: { select: { id: true, numero: true, nombre: true, gradoId: true } },
+        materia: { select: { id: true, nombre: true } },
+        notasActividad: true,
       },
     });
 
     // Audit log
     try {
       if (session && session.id) {
-        const gradoInfo = result.estudiante?.gradoId
-          ? await prisma.grado.findUnique({ where: { id: result.estudiante.gradoId }, select: { numero: true, seccion: true } })
+        const gradoInfo = finalResult?.estudiante?.gradoId
+          ? await prisma.grado.findUnique({ where: { id: finalResult.estudiante.gradoId }, select: { numero: true, seccion: true } })
           : null;
         await prisma.auditLog.create({
           data: {
@@ -238,8 +312,8 @@ export async function POST(request: NextRequest) {
             entidad: "Calificacion",
             entidadId: result.id,
             detalles: JSON.stringify({
-              estudiante: result.estudiante?.nombre,
-              materia: result.materia?.nombre,
+              estudiante: finalResult?.estudiante?.nombre,
+              materia: finalResult?.materia?.nombre,
               trimestre: parseInt(String(trimestre)),
               promedioFinal: promFinal,
               grado: gradoInfo ? `${gradoInfo.numero}${gradoInfo.seccion}` : null
@@ -252,13 +326,15 @@ export async function POST(request: NextRequest) {
     }
 
     await prisma.$disconnect();
-    return NextResponse.json(result);
+    return NextResponse.json(transformCalificacion(finalResult));
   } catch (error) {
     console.error("Error al guardar calificación:", error);
     const errMsg = error instanceof Error ? error.message : String(error);
     return NextResponse.json({ error: "Error al guardar calificación", details: errMsg }, { status: 500 });
   }
 }
+
+// ==================== DELETE: Eliminar calificación ====================
 
 export async function DELETE(request: NextRequest) {
   try {
