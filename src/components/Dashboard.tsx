@@ -77,8 +77,8 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
         Hola, {usuario.nombre} 👋
       </h2>
       <p className={`text-base sm:text-lg font-medium mb-6 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-        {usuario.rol === "admin" 
-          ? "Bienvenido al panel de administración del sistema." 
+        {usuario.rol === "admin"
+          ? "Bienvenido al panel de administración del sistema."
           : "Te damos la bienvenida al ciclo escolar."}
       </p>
 
@@ -98,63 +98,63 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
               </Card>
             ))
           ) : (
-          <>
-          <Card className={`shadow-sm overflow-hidden ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-teal-100'}`}>
-            <div className="h-1 bg-teal-500 w-full" />
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className={`text-sm sm:text-lg font-medium ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>Total Estudiantes</CardTitle>
-              <div className={`h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center ${darkMode ? 'bg-teal-900/50' : 'bg-teal-50'}`}>
-                <Users className={`h-6 w-6 md:h-8 md:w-8 ${darkMode ? 'text-teal-400' : 'text-teal-600'}`} />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className={`text-2xl md:text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{totalEstudiantes}</div>
-              <p className={`text-xs sm:text-sm md:text-base font-medium mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Registrados</p>
-            </CardContent>
-          </Card>
-          
-          <Card className={`shadow-sm overflow-hidden ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-emerald-100'}`}>
-            <div className="h-1 bg-emerald-500 w-full" />
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className={`text-sm sm:text-lg font-medium ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>Grados Activos</CardTitle>
-              <div className={`h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center ${darkMode ? 'bg-emerald-900/50' : 'bg-emerald-50'}`}>
-                <School className={`h-6 w-6 md:h-8 md:w-8 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className={`text-2xl md:text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{grados.length}</div>
-              <p className={`text-xs sm:text-sm md:text-base font-medium mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Secciones</p>
-            </CardContent>
-          </Card>
+            <>
+              <Card className={`shadow-sm overflow-hidden ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-teal-100'}`}>
+                <div className="h-1 bg-teal-500 w-full" />
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className={`text-sm sm:text-lg font-medium ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>Total Estudiantes</CardTitle>
+                  <div className={`h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center ${darkMode ? 'bg-teal-900/50' : 'bg-teal-50'}`}>
+                    <Users className={`h-6 w-6 md:h-8 md:w-8 ${darkMode ? 'text-teal-400' : 'text-teal-600'}`} />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className={`text-2xl md:text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{totalEstudiantes}</div>
+                  <p className={`text-xs sm:text-sm md:text-base font-medium mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Registrados</p>
+                </CardContent>
+              </Card>
 
-          <Card className={`shadow-sm overflow-hidden ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-blue-100'}`}>
-            <div className="h-1 bg-blue-500 w-full" />
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className={`text-sm sm:text-lg font-medium ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>Asignaturas</CardTitle>
-              <div className={`h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center ${darkMode ? 'bg-blue-900/50' : 'bg-blue-50'}`}>
-                <BookOpen className={`h-6 w-6 md:h-8 md:w-8 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className={`text-2xl md:text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{totalAsignaturas}</div>
-              <p className={`text-xs sm:text-sm md:text-base font-medium mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Impartidas</p>
-            </CardContent>
-          </Card>
+              <Card className={`shadow-sm overflow-hidden ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-emerald-100'}`}>
+                <div className="h-1 bg-emerald-500 w-full" />
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className={`text-sm sm:text-lg font-medium ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>Grados Activos</CardTitle>
+                  <div className={`h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center ${darkMode ? 'bg-emerald-900/50' : 'bg-emerald-50'}`}>
+                    <School className={`h-6 w-6 md:h-8 md:w-8 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className={`text-2xl md:text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{grados.length}</div>
+                  <p className={`text-xs sm:text-sm md:text-base font-medium mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Secciones</p>
+                </CardContent>
+              </Card>
 
-          <Card className={`shadow-sm overflow-hidden ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-amber-100'}`}>
-            <div className="h-1 bg-amber-500 w-full" />
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className={`text-sm sm:text-lg font-medium ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>Docentes</CardTitle>
-              <div className={`h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center ${darkMode ? 'bg-amber-900/50' : 'bg-amber-50'}`}>
-                <GraduationCap className={`h-6 w-6 md:h-8 md:w-8 ${darkMode ? 'text-amber-400' : 'text-amber-600'}`} />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className={`text-2xl md:text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{totalDocentes}</div>
-              <p className={`text-xs sm:text-sm md:text-base font-medium mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Activos</p>
-            </CardContent>
-          </Card>
-          </>
+              <Card className={`shadow-sm overflow-hidden ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-blue-100'}`}>
+                <div className="h-1 bg-blue-500 w-full" />
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className={`text-sm sm:text-lg font-medium ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>Asignaturas</CardTitle>
+                  <div className={`h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center ${darkMode ? 'bg-blue-900/50' : 'bg-blue-50'}`}>
+                    <BookOpen className={`h-6 w-6 md:h-8 md:w-8 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className={`text-2xl md:text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{totalAsignaturas}</div>
+                  <p className={`text-xs sm:text-sm md:text-base font-medium mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Impartidas</p>
+                </CardContent>
+              </Card>
+
+              <Card className={`shadow-sm overflow-hidden ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-amber-100'}`}>
+                <div className="h-1 bg-amber-500 w-full" />
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className={`text-sm sm:text-lg font-medium ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>Docentes</CardTitle>
+                  <div className={`h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center ${darkMode ? 'bg-amber-900/50' : 'bg-amber-50'}`}>
+                    <GraduationCap className={`h-6 w-6 md:h-8 md:w-8 ${darkMode ? 'text-amber-400' : 'text-amber-600'}`} />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className={`text-2xl md:text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{totalDocentes}</div>
+                  <p className={`text-xs sm:text-sm md:text-base font-medium mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Activos</p>
+                </CardContent>
+              </Card>
+            </>
           )}
         </div>
       )}
@@ -191,7 +191,7 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={darkMode ? "#334155" : "#E2E8F0"} />
                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: darkMode ? '#94a3b8' : '#64748b' }} />
                     <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: darkMode ? '#94a3b8' : '#64748b' }} />
-                    <Tooltip cursor={{fill: darkMode ? '#334155' : '#f1f5f9'}} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '11px', backgroundColor: darkMode ? '#1e293b' : '#fff', color: darkMode ? '#fff' : '#333' }} />
+                    <Tooltip cursor={{ fill: darkMode ? '#334155' : '#f1f5f9' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '11px', backgroundColor: darkMode ? '#1e293b' : '#fff', color: darkMode ? '#fff' : '#333' }} />
                     <Bar dataKey="estudiantes" name="N° Estudiantes" fill="#0d9488" radius={[4, 4, 0, 0]} barSize={30} />
                   </BarChart>
                 </ResponsiveContainer>
@@ -204,7 +204,7 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
                       <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={darkMode ? "#334155" : "#E2E8F0"} />
                       <XAxis type="number" domain={[0, 10]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: darkMode ? '#94a3b8' : '#64748b' }} />
                       <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: darkMode ? '#94a3b8' : '#64748b' }} width={80} />
-                      <Tooltip cursor={{fill: darkMode ? '#334155' : '#f1f5f9'}} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '11px', backgroundColor: darkMode ? '#1e293b' : '#fff', color: darkMode ? '#fff' : '#333' }} />
+                      <Tooltip cursor={{ fill: darkMode ? '#334155' : '#f1f5f9' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '11px', backgroundColor: darkMode ? '#1e293b' : '#fff', color: darkMode ? '#fff' : '#333' }} />
                       <Bar dataKey="valor" name="Promedio" radius={[0, 4, 4, 0]} barSize={25}>
                         {categoryChartData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
@@ -216,12 +216,12 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-3 sm:gap-4">
                   <div className={`p-3 sm:p-4 rounded-xl border ${darkMode ? 'bg-teal-900/30 border-teal-800' : 'bg-teal-50/50 border-teal-100'}`}>
                     <h4 className={`text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2 ${darkMode ? 'text-teal-300' : 'text-teal-800'}`}>
-                       <Trophy className="h-4 w-4 text-amber-500" /> Cuadro de Honor
+                      <Trophy className="h-4 w-4 text-amber-500" /> Cuadro de Honor
                     </h4>
                     <div className="space-y-2">
                       {selectedStats.topEstudiantes.length > 0 ? selectedStats.topEstudiantes.map((est, i) => (
                         <div key={est.id} className="flex items-center justify-between text-xs sm:text-sm">
-                          <span className={`truncate max-w-[100px] sm:max-w-[150px] ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>{i+1}. {est.nombre}</span>
+                          <span className={`truncate max-w-[100px] sm:max-w-[150px] ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>{i + 1}. {est.nombre}</span>
                           <Badge variant="outline" className={`py-0 h-5 text-xs ${darkMode ? 'bg-slate-800 text-teal-400 border-teal-700' : 'bg-white text-teal-700 border-teal-200'}`}>
                             {est.promedio.toFixed(1)}
                           </Badge>
@@ -255,22 +255,22 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
         </Card>
 
         <div className="flex flex-col gap-3 sm:gap-4 lg:col-span-1 xl:col-span-1">
-          {usuario.rol === "docente" && asignaturasAsignadas && asignaturasAsignadas.length > 0 && (
-             <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-slate-100'}`}>
-               <CardHeader className={`py-3 px-4 border-b ${darkMode ? 'border-slate-700' : ''}`}>
-                 <CardTitle className={`text-xs font-bold uppercase ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Mis Asignaturas</CardTitle>
-               </CardHeader>
-               <CardContent className="p-3 max-h-[200px] overflow-y-auto">
-                 <div className="space-y-2">
-                   {asignaturasAsignadas.map(m => (
-                     <div key={m.id} className={`p-2 rounded border text-xs flex justify-between items-center ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border'}`}>
-                       <span className={`font-medium truncate mr-2 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>{m.nombre}</span>
-                       <Badge variant="secondary" className={`text-[10px] whitespace-nowrap ${darkMode ? 'bg-slate-700 text-slate-300' : ''}`}>{m.grado?.numero}°{m.grado?.seccion}</Badge>
-                     </div>
-                   ))}
-                 </div>
-               </CardContent>
-             </Card>
+          {(usuario.rol === "docente" || usuario.rol === "docente-orientador") && asignaturasAsignadas && asignaturasAsignadas.length > 0 && (
+            <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-slate-100'}`}>
+              <CardHeader className={`py-3 px-4 border-b ${darkMode ? 'border-slate-700' : ''}`}>
+                <CardTitle className={`text-xs font-bold uppercase ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Mis Asignaturas</CardTitle>
+              </CardHeader>
+              <CardContent className="p-3 max-h-[200px] overflow-y-auto">
+                <div className="space-y-2">
+                  {asignaturasAsignadas.map(m => (
+                    <div key={m.id} className={`p-2 rounded border text-xs flex justify-between items-center ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border'}`}>
+                      <span className={`font-medium truncate mr-2 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>{m.nombre}</span>
+                      <Badge variant="secondary" className={`text-[10px] whitespace-nowrap ${darkMode ? 'bg-slate-700 text-slate-300' : ''}`}>{m.grado?.numero}°{m.grado?.seccion}</Badge>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           )}
 
           <Card className={`shadow-sm flex-1 ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-slate-100'}`}>
