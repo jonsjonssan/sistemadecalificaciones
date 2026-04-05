@@ -2096,19 +2096,36 @@ export default function Home() {
 }
 
 // Componentes
-const NotaInput = React.memo(({ value, onChange, darkMode }: { value: string | number; onChange: (v: string) => void; darkMode: boolean }) => {
+const NotaInput = React.memo(({ value, onChange, darkMode, hasError, onBlur }: { value: string | number; onChange: (v: string) => void; darkMode: boolean; hasError?: boolean; onBlur?: () => void }) => {
   const inputBg = darkMode ? 'focus:bg-slate-700/60 text-white placeholder-slate-500' : 'focus:bg-teal-50/60 placeholder-slate-300';
+  const errorBg = darkMode ? 'bg-yellow-800/60' : 'bg-yellow-200';
   return (
-    <input
-      type="number"
-      inputMode="decimal"
-      min="0"
-      max="10"
-      step="0.1"
-      className={`w-10 sm:w-12 h-7 sm:h-8 text-xs sm:text-sm font-medium text-center border border-transparent focus:border-teal-400/50 bg-transparent rounded-md transition-all ${inputBg}`}
-      value={value}
-      onChange={e => onChange(e.target.value)}
-    />
+    <div className="relative inline-block group">
+      {hasError && (
+        <div className="absolute -top-[1px] -right-[1px] w-0 h-0 border-t-[6px] border-t-yellow-500 border-l-[6px] border-l-transparent z-10 pointer-events-none" />
+      )}
+      {hasError && (
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block z-50">
+          <div className="relative">
+            <div className="bg-slate-800 text-white text-[10px] leading-tight rounded px-2 py-1 whitespace-nowrap shadow-lg">
+              Debe digitar un número, no puede dejar espacios en blanco
+            </div>
+            <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[4px] border-t-slate-800" />
+          </div>
+        </div>
+      )}
+      <input
+        type="number"
+        inputMode="decimal"
+        min="0"
+        max="10"
+        step="0.1"
+        className={`w-10 sm:w-12 h-7 sm:h-8 text-xs sm:text-sm font-medium text-center border border-transparent focus:border-teal-400/50 rounded-md transition-all ${hasError ? errorBg : 'bg-transparent'} ${inputBg}`}
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        onBlur={onBlur}
+      />
+    </div>
   );
 });
 
@@ -2124,6 +2141,10 @@ const CalificacionRow = React.memo(function CalificacionRow({ estudiante, materi
   const [examen, setExamen] = useState<number | null>(() => calificacion?.examenTrimestral ?? null);
   const [recup, setRecup] = useState<number | null>(() => calificacion?.recuperacion ?? null);
   const [dirty, setDirty] = useState(false);
+  const [acErrors, setAcErrors] = useState<Set<number>>(new Set());
+  const [aiErrors, setAiErrors] = useState<Set<number>>(new Set());
+  const [examenError, setExamenError] = useState(false);
+  const [recupError, setRecupError] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -2150,10 +2171,14 @@ const CalificacionRow = React.memo(function CalificacionRow({ estudiante, materi
   const promFinal = config ? calcularPromedioFinal(promAC, promAI, examen, config, recup) : (promAC !== null || promAI !== null || examen !== null ? ((promAC ?? 0) * 0.35 + (promAI ?? 0) * 0.30 + (examen ?? 0) * 0.35) : null);
   const parseVal = useCallback((v: string): number | null => { const n = parseFloat(v); return isNaN(n) ? null : Math.min(10, Math.max(0, n)); }, []);
 
-  const updateAC = useCallback((i: number, v: string) => { setAcNotas(n => { const arr = [...n]; arr[i] = parseVal(v); return arr; }); setDirty(true); }, [parseVal]);
-  const updateAI = useCallback((i: number, v: string) => { setAiNotas(n => { const arr = [...n]; arr[i] = parseVal(v); return arr; }); setDirty(true); }, [parseVal]);
-  const handleExamen = useCallback((v: string) => { setExamen(parseVal(v)); setDirty(true); }, [parseVal]);
-  const handleRecup = useCallback((v: string) => { setRecup(parseVal(v)); setDirty(true); }, [parseVal]);
+  const updateAC = useCallback((i: number, v: string) => { setAcNotas(n => { const arr = [...n]; arr[i] = parseVal(v); return arr; }); setDirty(true); if (v !== '') setAcErrors(prev => { const next = new Set(prev); next.delete(i); return next; }); }, [parseVal]);
+  const updateAI = useCallback((i: number, v: string) => { setAiNotas(n => { const arr = [...n]; arr[i] = parseVal(v); return arr; }); setDirty(true); if (v !== '') setAiErrors(prev => { const next = new Set(prev); next.delete(i); return next; }); }, [parseVal]);
+  const handleExamen = useCallback((v: string) => { setExamen(parseVal(v)); setDirty(true); if (v !== '') setExamenError(false); }, [parseVal]);
+  const handleRecup = useCallback((v: string) => { setRecup(parseVal(v)); setDirty(true); if (v !== '') setRecupError(false); }, [parseVal]);
+  const blurAC = useCallback((i: number, v: string | number | null) => { setAcErrors(prev => { const next = new Set(prev); if (v === '' || v === null) next.add(i); else next.delete(i); return next; }); }, []);
+  const blurAI = useCallback((i: number, v: string | number | null) => { setAiErrors(prev => { const next = new Set(prev); if (v === '' || v === null) next.add(i); else next.delete(i); return next; }); }, []);
+  const blurExamen = useCallback((v: string | number | null) => { setExamenError(v === '' || v === null); }, []);
+  const blurRecup = useCallback((v: string | number | null) => { setRecupError(v === '' || v === null); }, []);
 
   useEffect(() => {
     return () => {
@@ -2192,13 +2217,13 @@ const CalificacionRow = React.memo(function CalificacionRow({ estudiante, materi
       <tr className={`border-b transition-colors ${rowBg}`}>
         <td className={`p-2 text-center font-semibold sticky-col shadow-right left-0 z-10 border-r ${stickyBg} ${cellBorder}`}>{estudiante.numero}</td>
         <td className={`p-2 font-medium sticky-col shadow-right left-10 z-10 whitespace-nowrap border-r ${stickyBg} ${cellBorder}`}>{estudiante.nombre}</td>
-        {Array.from({ length: numAC }).map((_, i) => <td key={`ac-${i}`} className={`p-1 border-l ${cellBorder}`}><NotaInput value={acNotas[i] ?? ""} onChange={v => updateAC(i, v)} darkMode={darkMode} /></td>)}
+        {Array.from({ length: numAC }).map((_, i) => <td key={`ac-${i}`} className={`p-1 border-l ${cellBorder}`}><NotaInput value={acNotas[i] ?? ""} onChange={v => updateAC(i, v)} darkMode={darkMode} hasError={acErrors.has(i)} onBlur={() => blurAC(i, acNotas[i])} /></td>)}
         <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promACBg} text-base`}>{promACPeso !== null ? promACPeso.toFixed(2) : "-"}</td>
-        {Array.from({ length: numAI }).map((_, i) => <td key={`ai-${i}`} className={`p-1 border-l ${cellBorder}`}><NotaInput value={aiNotas[i] ?? ""} onChange={v => updateAI(i, v)} darkMode={darkMode} /></td>)}
+        {Array.from({ length: numAI }).map((_, i) => <td key={`ai-${i}`} className={`p-1 border-l ${cellBorder}`}><NotaInput value={aiNotas[i] ?? ""} onChange={v => updateAI(i, v)} darkMode={darkMode} hasError={aiErrors.has(i)} onBlur={() => blurAI(i, aiNotas[i])} /></td>)}
         <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promAIBg} text-base`}>{promAIPeso !== null ? promAIPeso.toFixed(2) : "-"}</td>
-        {tieneExamen && <td className={`p-1 border-l ${cellBorder}`}><NotaInput value={examen ?? ""} onChange={handleExamen} darkMode={darkMode} /></td>}
+        {tieneExamen && <td className={`p-1 border-l ${cellBorder}`}><NotaInput value={examen ?? ""} onChange={handleExamen} darkMode={darkMode} hasError={examenError} onBlur={() => blurExamen(examen)} /></td>}
         {tieneExamen && <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promExBg} text-base`}>{promExPeso !== null ? promExPeso.toFixed(2) : "-"}</td>}
-        <td className={`p-1 border-l ${cellBorder}`}><NotaInput value={recup ?? ""} onChange={handleRecup} darkMode={darkMode} /></td>
+        <td className={`p-1 border-l ${cellBorder}`}><NotaInput value={recup ?? ""} onChange={handleRecup} darkMode={darkMode} hasError={recupError} onBlur={() => blurRecup(recup)} /></td>
         <td className={`p-2 text-center border-l ${cellBorder} ${finalBg}`}><span className={`inline-block px-2 py-0.5 rounded-md text-xs sm:text-sm font-bold shadow ${finalBadgeClass}`}>{promFinal !== null ? promFinal.toFixed(2) : "-"}</span></td>
         <td className={`p-2 border-l ${cellBorder} text-center`}>{statusIcon}</td>
         {isAdmin && onBorrar && <td className={`p-1 border-l ${cellBorder} text-center`}><button onClick={() => onBorrar(estudiante.id)} title="Borrar calificaciones de este alumno" className="text-red-500 hover:text-red-700 p-1">🗑️</button></td>}
@@ -2210,13 +2235,13 @@ const CalificacionRow = React.memo(function CalificacionRow({ estudiante, materi
     <tr className={`border-b transition-colors ${rowBg}`}>
       <td className={`p-2 text-center font-semibold sticky-col shadow-right left-0 z-10 border-r ${stickyBg} ${cellBorder}`}>{estudiante.numero}</td>
       <td className={`p-2 font-medium sticky-col shadow-right left-10 z-10 whitespace-nowrap border-r ${stickyBg} ${cellBorder}`}>{estudiante.nombre}</td>
-      {acNotas.map((n, i) => <td key={`ac-${i}`} className={`p-1 border-l ${cellBorder}`}><NotaInput value={n ?? ""} onChange={v => updateAC(i, v)} darkMode={darkMode} /></td>)}
+      {acNotas.map((n, i) => <td key={`ac-${i}`} className={`p-1 border-l ${cellBorder}`}><NotaInput value={n ?? ""} onChange={v => updateAC(i, v)} darkMode={darkMode} hasError={acErrors.has(i)} onBlur={() => blurAC(i, n)} /></td>)}
       <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promACBg} text-sm sm:text-base`}>{promACPeso !== null ? promACPeso.toFixed(2) : "-"}</td>
-      {aiNotas.map((n, i) => <td key={`ai-${i}`} className={`p-1 border-l ${cellBorder}`}><NotaInput value={n ?? ""} onChange={v => updateAI(i, v)} darkMode={darkMode} /></td>)}
+      {aiNotas.map((n, i) => <td key={`ai-${i}`} className={`p-1 border-l ${cellBorder}`}><NotaInput value={n ?? ""} onChange={v => updateAI(i, v)} darkMode={darkMode} hasError={aiErrors.has(i)} onBlur={() => blurAI(i, n)} /></td>)}
       <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promAIBg} text-sm sm:text-base`}>{promAIPeso !== null ? promAIPeso.toFixed(2) : "-"}</td>
-      {config.tieneExamen && <td className={`p-1 border-l ${cellBorder}`}><NotaInput value={examen ?? ""} onChange={handleExamen} darkMode={darkMode} /></td>}
+      {config.tieneExamen && <td className={`p-1 border-l ${cellBorder}`}><NotaInput value={examen ?? ""} onChange={handleExamen} darkMode={darkMode} hasError={examenError} onBlur={() => blurExamen(examen)} /></td>}
       {config.tieneExamen && <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promExBg} text-sm sm:text-base`}>{promExPeso !== null ? promExPeso.toFixed(2) : "-"}</td>}
-      <td className={`p-1 border-l ${cellBorder}`}><NotaInput value={recup ?? ""} onChange={handleRecup} darkMode={darkMode} /></td>
+      <td className={`p-1 border-l ${cellBorder}`}><NotaInput value={recup ?? ""} onChange={handleRecup} darkMode={darkMode} hasError={recupError} onBlur={() => blurRecup(recup)} /></td>
       <td className={`p-2 text-center border-l ${cellBorder} ${finalBg}`}><span className={`inline-block px-2 py-0.5 rounded-md text-xs sm:text-sm font-bold shadow ${finalBadgeClass}`}>{promFinal !== null ? promFinal.toFixed(2) : "-"}</span></td>
       <td className={`p-2 border-l ${cellBorder} text-center`}>{statusIcon}</td>
     </tr>
