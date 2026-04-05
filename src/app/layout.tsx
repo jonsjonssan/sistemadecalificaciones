@@ -4,6 +4,9 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
+import { NetworkStatusIndicator } from "@/components/NetworkStatusIndicator";
 
 const nunito = Nunito({
   variable: "--font-nunito",
@@ -15,6 +18,7 @@ export const metadata: Metadata = {
   description: "Sistema de gestión de calificaciones para grados 2° a 9°",
   keywords: ["Calificaciones", "Escuela", "Educación", "Boletas"],
   authors: [{ name: "Escuela Parroquial de San José de la Montaña" }],
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
@@ -30,18 +34,23 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="mobile-web-app-capable" content="yes" />
+        <link rel="manifest" href="/manifest.json" />
       </head>
       <body
         className={`${nunito.variable} antialiased bg-background text-foreground`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-        </ThemeProvider>
+        <ErrorBoundary>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+            <ServiceWorkerRegistration />
+            <NetworkStatusIndicator />
+          </ThemeProvider>
+        </ErrorBoundary>
         <Toaster />
         <SpeedInsights />
       </body>
