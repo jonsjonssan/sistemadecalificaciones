@@ -16,13 +16,12 @@ model Usuario {
   email     String   @unique
   password  String
   nombre    String
-  rol       String   // "admin" o "docente"
+  rol       String   // "admin", "admin-directora", "admin-codirectora", "docente", "docente-orientador"
   activo    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  gradosComoTutor   Grado[]          @relation("TutorGrado") // Para grados 2-5 (tutor)
-  materiasAsignadas DocenteMateria[] // Para grados 6-9 (materias específicas)
+
+  materiasAsignadas DocenteMateria[] // Para todos los grados (2-9)
   auditLogs         AuditLog[]
   loginSessions     LoginSession[]
 
@@ -36,16 +35,14 @@ model Grado {
   numero    Int      // 2, 3, 4, 5, 6, 7, 8, 9
   seccion   String   @default("A")
   año       Int      @default(2026)
-  docenteId String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  docente     Usuario?    @relation("TutorGrado", fields: [docenteId], references: [id])
+
   estudiantes Estudiante[]
   materias    Materia[]
   asistencias Asistencia[]
 
-  @@index([docenteId])
+  @@index([numero])
 }
 
 // Estudiante
@@ -87,16 +84,16 @@ model Materia {
   @@index([nombre])
 }
 
-// Asignación de docentes a materias (para grados 6-9)
+// Asignación de docentes a materias (para todos los grados 2-9)
 model DocenteMateria {
   id        String   @id @default(cuid())
   docenteId String
   materiaId String
   createdAt DateTime @default(now())
-  
+
   docente Usuario @relation(fields: [docenteId], references: [id], onDelete: Cascade)
   materia Materia @relation(fields: [materiaId], references: [id], onDelete: Cascade)
-  
+
   @@unique([docenteId, materiaId])
   @@index([docenteId])
   @@index([materiaId])

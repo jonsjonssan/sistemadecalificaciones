@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { 
+import {
   LogOut, Users, User, ClipboardList, FileText, Plus, RefreshCw,
   School, Save, Printer, ChevronDown, ChevronUp, Settings, Upload,
   Download, Trash2, ListPlus, UserPlus, Key, Calendar, LayoutDashboard, CalendarDays, Lightbulb
@@ -28,13 +28,13 @@ import { ContextualHelp } from "@/components/ContextualHelp";
 // Interfaces
 interface UsuarioSesion { id: string; email: string; nombre: string; rol: string; gradosAsignados?: { id: string; numero: number; seccion: string; }[]; asignaturasAsignadas?: { id: string; nombre: string; gradoId: string; gradoNumero?: number; gradoSeccion?: string; }[]; }
 interface AsignaturaConGrado { id: string; nombre: string; gradoId: string; grado?: { id: string; numero: number; seccion: string; }; gradoNumero?: number; }
-interface Usuario { 
-  id: string; 
-  email: string; 
-  nombre: string; 
-  rol: string; 
-  activo: boolean; 
-  gradosComoTutor?: { id: string; numero: number; seccion: string; año: number; }[]; 
+interface Usuario {
+  id: string;
+  email: string;
+  nombre: string;
+  rol: string;
+  activo: boolean;
+  gradosComoTutor?: { id: string; numero: number; seccion: string; año: number; }[];
   materias?: AsignaturaConGrado[];
 }
 interface Estudiante { id: string; numero: number; nombre: string; email?: string; gradoId: string; activo: boolean; orden?: number; }
@@ -77,7 +77,7 @@ export default function Home() {
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
   const [loginError, setLoginError] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
-  
+
   // Datos
   const [grados, setGrados] = useState<Grado[]>([]);
   const [gradosFiltrados, setGradosFiltrados] = useState<Grado[]>([]);
@@ -89,14 +89,18 @@ export default function Home() {
   const [configActual, setConfigActual] = useState<ConfigActividadPartial | null>(null);
   const [configsGrado, setConfigsGrado] = useState<ConfigActividad[]>([]);
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
-  
+
   // Selecciones
   const [gradoSeleccionado, setGradoSeleccionado] = useState<string>("");
   const [trimestreSeleccionado, setTrimestreSeleccionado] = useState<string>("1");
   const [asignaturaSeleccionada, setAsignaturaSeleccionada] = useState<string>("");
-  
+
   // UI
   const [activeTab, setActiveTab] = useState("dashboard");
+
+  // ==================== Helpers de Roles ====================
+  const isAdmin = (rol: string) => ["admin", "admin-directora", "admin-codirectora"].includes(rol);
+  const canDeleteUsers = (user: typeof usuario) => user?.email === "jonathan.araujo.mendoza@clases.edu.sv";
   const [dialogOpen, setDialogOpen] = useState(false);
   const [configDialogOpen, setConfigDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
@@ -121,12 +125,11 @@ export default function Home() {
   const [editConfig, setEditConfig] = useState<ConfigActividadPartial | null>(null);
   const [configAplicarATodas, setConfigAplicarATodas] = useState(false);
   const [importData, setImportData] = useState("");
-  const [nuevoUsuario, setNuevoUsuario] = useState({ 
-    email: "", 
-    password: "", 
-    nombre: "", 
-    rol: "docente", 
-    gradosAsignados: [] as string[],
+  const [nuevoUsuario, setNuevoUsuario] = useState({
+    email: "",
+    password: "",
+    nombre: "",
+    rol: "docente",
     materiasAsignadas: [] as string[]
   });
   const [configuracion, setConfiguracion] = useState<ConfiguracionSistema | null>(null);
@@ -134,7 +137,7 @@ export default function Home() {
   const [añoDialogOpen, setAñoDialogOpen] = useState(false);
   const [añoLoading, setAñoLoading] = useState(false);
   const [resetPasswordDialogOpen, setResetPasswordDialogOpen] = useState(false);
-  const [resetPasswordUser, setResetPasswordUser] = useState<{id: string; nombre: string} | null>(null);
+  const [resetPasswordUser, setResetPasswordUser] = useState<{ id: string; nombre: string } | null>(null);
   const [resetPasswordForm, setResetPasswordForm] = useState({ password: "docente123" });
   const [resetPasswordLoading, setResetPasswordLoading] = useState(false);
   const [perfilDialogOpen, setPerfilDialogOpen] = useState(false);
@@ -185,18 +188,18 @@ export default function Home() {
     // Timeout de seguridad de 10 segundos para no quedar atrapado en el spinner
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
-    
+
     try {
       const res = await fetch("/api/auth/me", { cache: "no-store", signal: controller.signal, credentials: "include" });
       const data = await res.json();
       setUsuario(data.usuario);
-    } catch (err) { 
+    } catch (err) {
       console.error("Auth check failed:", err);
-      setUsuario(null); 
+      setUsuario(null);
     }
-    finally { 
+    finally {
       clearTimeout(timeoutId);
-      setLoading(false); 
+      setLoading(false);
     }
   }, []);
 
@@ -220,8 +223,8 @@ export default function Home() {
         console.error("Error al cargar grados:", res.status);
         setGrados([]);
       }
-    } catch { 
-      console.error("Error al cargar grados"); 
+    } catch {
+      console.error("Error al cargar grados");
       setGrados([]);
     }
   }, []);
@@ -237,8 +240,8 @@ export default function Home() {
         console.error("Error al cargar estudiantes:", res.status);
         setEstudiantes([]);
       }
-    } catch { 
-      console.error("Error al cargar estudiantes"); 
+    } catch {
+      console.error("Error al cargar estudiantes");
       setEstudiantes([]);
     }
   }, [gradoSeleccionado]);
@@ -254,8 +257,8 @@ export default function Home() {
         console.error("Error al cargar asignaturas:", res.status);
         setAsignaturas([]);
       }
-    } catch { 
-      console.error("Error al cargar asignaturas"); 
+    } catch {
+      console.error("Error al cargar asignaturas");
       setAsignaturas([]);
     }
   }, [gradoSeleccionado]);
@@ -278,8 +281,8 @@ export default function Home() {
         console.error("Error al cargar config:", res.status);
         setConfigActual({ numActividadesCotidianas: 4, numActividadesIntegradoras: 1, tieneExamen: true, porcentajeAC: 35, porcentajeAI: 35, porcentajeExamen: 30 });
       }
-    } catch { 
-      console.error("Error al cargar config"); 
+    } catch {
+      console.error("Error al cargar config");
       setConfigActual({ numActividadesCotidianas: 4, numActividadesIntegradoras: 1, tieneExamen: true, porcentajeAC: 35, porcentajeAI: 35, porcentajeExamen: 30 });
     }
   }, [asignaturaSeleccionada, trimestreSeleccionado]);
@@ -299,7 +302,7 @@ export default function Home() {
       if (res.ok) {
         const data = await res.json();
         setCalificaciones(data);
-        
+
         // Calcular promedio por asignatura
         const promsFinalesValidos = data.filter((c: Calificacion) => c.promedioFinal !== null).map((c: Calificacion) => c.promedioFinal);
         if (promsFinalesValidos.length > 0) {
@@ -313,8 +316,8 @@ export default function Home() {
         setCalificaciones([]);
         setPromedioAsignatura(null);
       }
-    } catch { 
-      console.error("Error al cargar calificaciones"); 
+    } catch {
+      console.error("Error al cargar calificaciones");
       setCalificaciones([]);
       setPromedioAsignatura(null);
     }
@@ -437,12 +440,12 @@ export default function Home() {
         body: JSON.stringify(loginForm),
       });
       const data = await res.json();
-      if (res.ok) { 
+      if (res.ok) {
         setLoginForm({ email: "", password: "" });
         // Immediately call checkAuth to get full user data
         await checkAuth();
-      } else { 
-        setLoginError(data.error || "Error"); 
+      } else {
+        setLoginError(data.error || "Error");
       }
     } catch { setLoginError("Error de conexión"); }
     finally { setLoginLoading(false); }
@@ -451,13 +454,13 @@ export default function Home() {
   const handleLogout = async () => {
     // Guardar estado actual antes de cerrar
     saveUserState({ gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado });
-    
+
     // Limpiar localStorage del usuario
     if (usuario?.id) {
       localStorage.removeItem(`sis_state_${usuario.id}`);
       localStorage.removeItem(`sis_last_session_${usuario.id}`);
     }
-    
+
     await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
     setUsuario(null);
     setGrados([]);
@@ -728,7 +731,7 @@ export default function Home() {
     try {
       const trimestreNum = parseInt(trimestreSeleccionado);
       console.log("[handleSaveConfig] Trimestre parseado:", trimestreNum, "tipo:", typeof trimestreNum);
-      
+
       const payload = {
         materiaId: asignaturaSeleccionada,
         trimestre: trimestreNum,
@@ -814,42 +817,42 @@ export default function Home() {
     if (lines.length < 2) return;
     const headers = lines[0].split(/[,;\t]/).map(h => h.trim().toLowerCase());
     const nombreIdx = headers.findIndex(h => h.includes('nombre') || h.includes('estudiante') || h.includes('alumno'));
-    
+
     const acCols: number[] = [];
     const aiCols: number[] = [];
     let examenCol: number | null = null;
     let recupCol: number | null = null;
-    
+
     headers.forEach((h, i) => {
       if (/^ac\d*$/.test(h)) acCols.push(i);
       if (/^ai\d*$/.test(h)) aiCols.push(i);
       if (/^(examen|ex)$/.test(h)) examenCol = i;
       if (/^(recup|recuperacion|rec)$/.test(h)) recupCol = i;
     });
-    
+
     let importados = 0;
     let errores = 0;
-    
+
     for (let i = 1; i < lines.length; i++) {
       const cols = lines[i].split(/[,;\t]/).map(c => c.trim());
       if (nombreIdx < 0 || nombreIdx >= cols.length) continue;
       const nombreBusqueda = cols[nombreIdx].toLowerCase();
       const est = estudiantes.find(e => e.nombre.toLowerCase().includes(nombreBusqueda) || nombreBusqueda.includes(e.nombre.toLowerCase().split(',')[0].trim()));
       if (!est) continue;
-      
+
       const acNotas: (number | null)[] = acCols.map(idx => {
         const val = parseFloat(cols[idx]);
         return isNaN(val) ? null : Math.min(10, Math.max(0, val));
       });
-      
+
       const aiNotas: (number | null)[] = aiCols.map(idx => {
         const val = parseFloat(cols[idx]);
         return isNaN(val) ? null : Math.min(10, Math.max(0, val));
       });
-      
+
       const examenVal = examenCol !== null ? (() => { const v = parseFloat(cols[examenCol!]); return isNaN(v) ? null : Math.min(10, Math.max(0, v)); })() : null;
       const recupVal = recupCol !== null ? (() => { const v = parseFloat(cols[recupCol!]); return isNaN(v) ? null : Math.min(10, Math.max(0, v)); })() : null;
-      
+
       const res = await fetch("/api/calificaciones", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -901,12 +904,12 @@ export default function Home() {
       });
       const data = await res.json();
       console.log("[handleAddUsuario] Respuesta:", res.status, data);
-      if (res.ok) { 
-        setNuevoUsuario({ email: "", password: "", nombre: "", rol: "docente", gradosAsignados: [], materiasAsignadas: [] }); 
+      if (res.ok) {
+        setNuevoUsuario({ email: "", password: "", nombre: "", rol: "docente", materiasAsignadas: [] });
         setEditUsuarioId(null);
-        setUserDialogOpen(false); 
-        loadUsuarios(); 
-        toast({ title: isEdit ? "Usuario actualizado" : "Usuario creado" }); 
+        setUserDialogOpen(false);
+        loadUsuarios();
+        toast({ title: isEdit ? "Usuario actualizado" : "Usuario creado" });
       }
       else { toast({ title: data.error, variant: "destructive" }); }
     } catch { toast({ title: "Error", variant: "destructive" }); }
@@ -918,7 +921,6 @@ export default function Home() {
       password: "",
       nombre: u.nombre,
       rol: u.rol,
-      gradosAsignados: u.gradosComoTutor?.map((g) => g.id) || [],
       materiasAsignadas: u.materias?.map((m) => m.id) || []
     });
     setEditUsuarioId(u.id);
@@ -931,7 +933,7 @@ export default function Home() {
       const res = await fetch(`/api/usuarios?id=${id}`, { method: "DELETE", credentials: "include" });
       const data = await res.json();
       if (res.ok) {
-        loadUsuarios(); 
+        loadUsuarios();
         toast({ title: "Usuario eliminado correctamente" });
       } else {
         toast({ title: data.error || "Error al eliminar usuario", variant: "destructive" });
@@ -1047,8 +1049,8 @@ export default function Home() {
         const err = await res.json();
         toast({ title: err.error || "Error al cambiar año", variant: "destructive" });
       }
-    } catch { 
-      toast({ title: "Error de conexión", variant: "destructive" }); 
+    } catch {
+      toast({ title: "Error de conexión", variant: "destructive" });
     } finally {
       setAñoLoading(false);
     }
@@ -1074,16 +1076,16 @@ export default function Home() {
   // Effects
   // Auth
   useEffect(() => { checkAuth(); }, [checkAuth]);
-  
+
   // Carga inicial de datos estructurales
-  useEffect(() => { 
-    if (usuario) { 
+  useEffect(() => {
+    if (usuario) {
       setDataLoading(true);
       Promise.all([loadGrados(), loadUsuarios(), loadTodasAsignaturas(), loadConfiguracion()]).finally(() => setDataLoading(false));
-    } 
+    }
   }, [usuario, loadGrados, loadUsuarios, loadTodasAsignaturas, loadConfiguracion]);
   // Carga de datos base (estudiantes y materias del grado)
-  useEffect(() => { 
+  useEffect(() => {
     if (gradoSeleccionado) {
       setSectionLoading(true);
       Promise.all([loadEstudiantes(), loadAsignaturas()]).finally(() => setSectionLoading(false));
@@ -1091,14 +1093,14 @@ export default function Home() {
   }, [gradoSeleccionado, loadEstudiantes, loadAsignaturas]);
 
   // Carga de configuración y calificaciones sincronizada
-  useEffect(() => { 
+  useEffect(() => {
     if (gradoSeleccionado && asignaturaSeleccionada && trimestreSeleccionado) {
       setCalificaciones([]);
       setSectionLoading(true);
       Promise.all([loadConfig(), loadCalificaciones(), loadConfigsGrado()]).finally(() => setSectionLoading(false));
     }
   }, [gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado]);
-  
+
   // Cargar promedio del grado cuando cambie el grado o trimestre
   useEffect(() => {
     if (gradoSeleccionado && trimestreSeleccionado) {
@@ -1120,7 +1122,7 @@ export default function Home() {
         saveUserState({ gradoSeleccionado: gradosFiltrados[0].id });
       }
     }
-  }, [ gradosFiltrados, gradoSeleccionado, loadUserState, saveUserState ]);
+  }, [gradosFiltrados, gradoSeleccionado, loadUserState, saveUserState]);
 
   // Auto-selección de asignatura restaurada o primera disponible
   useEffect(() => {
@@ -1164,14 +1166,14 @@ export default function Home() {
         e.preventDefault();
         // Intentar guardar sin esperar respuesta ( navigator.sendBeacon no funciona bien con fetch)
         try {
-          await fetch("/api/auth/logout", { 
-            method: "POST", 
+          await fetch("/api/auth/logout", {
+            method: "POST",
             credentials: "include",
-            keepalive: true 
+            keepalive: true
           });
-        } catch {}
+        } catch { }
       }
-      
+
       // Guardar estado en localStorage
       if (usuario) {
         saveUserState({ gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado, activeTab });
@@ -1189,7 +1191,7 @@ export default function Home() {
 
     window.addEventListener("beforeunload", handleBeforeUnload);
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    
+
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
@@ -1202,18 +1204,15 @@ export default function Home() {
       setGradosFiltrados([]);
       return;
     }
-    
-    if (usuario.rol === "admin") {
+
+    if (isAdmin(usuario.rol)) {
       setGradosFiltrados(grados);
     } else {
-      const gradoIdsTutor = new Set((usuario.gradosAsignados || []).map((g: any) => g.id));
       const gradoIdsAsignaturas = new Set((usuario.asignaturasAsignadas || []).map((m: any) => m.gradoId));
-      const todosIds = new Set([...gradoIdsTutor, ...gradoIdsAsignaturas]);
-      
-      const filtrados = grados.filter((g: any) => todosIds.has(g.id));
-      
+      const filtrados = grados.filter((g: any) => gradoIdsAsignaturas.has(g.id));
+
       setGradosFiltrados(filtrados);
-      
+
       if (filtrados.length > 0 && !filtrados.some((g: any) => g.id === gradoSeleccionado)) {
         setGradoSeleccionado(filtrados[0].id);
       }
@@ -1226,8 +1225,8 @@ export default function Home() {
       setAsignaturasFiltradas(asignaturas);
       return;
     }
-    
-    if (usuario.rol === "admin") {
+
+    if (isAdmin(usuario.rol)) {
       // Admin ve todas las asignaturas
       setAsignaturasFiltradas(asignaturas);
     } else {
@@ -1239,7 +1238,7 @@ export default function Home() {
       );
       const filtradas = asignaturas.filter(m => asignaturasDelGrado.has(m.id));
       setAsignaturasFiltradas(filtradas);
-      
+
       // Si la asignatura seleccionada no está en las filtradas, seleccionar la primera
       if (filtradas.length > 0 && !filtradas.some(m => m.id === asignaturaSeleccionada)) {
         setAsignaturaSeleccionada(filtradas[0].id);
@@ -1270,8 +1269,8 @@ export default function Home() {
             </div>
           ) : (
             <form onSubmit={handleLogin} className="space-y-3">
-              <div><Label className="text-sm">Email</Label><Input type="email" value={loginForm.email} onChange={e => setLoginForm({...loginForm, email: e.target.value})} placeholder="correo@ejemplo.edu" required className="mobile-input" /></div>
-              <div><Label className="text-sm">Contraseña</Label><Input type="password" autoComplete="current-password" value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} required className="mobile-input" /></div>
+              <div><Label className="text-sm">Email</Label><Input type="email" value={loginForm.email} onChange={e => setLoginForm({ ...loginForm, email: e.target.value })} placeholder="correo@ejemplo.edu" required className="mobile-input" /></div>
+              <div><Label className="text-sm">Contraseña</Label><Input type="password" autoComplete="current-password" value={loginForm.password} onChange={e => setLoginForm({ ...loginForm, password: e.target.value })} required className="mobile-input" /></div>
               {loginError && <p className="text-sm text-red-500 text-center">{loginError}</p>}
               <Button type="submit" className="w-full bg-teal-600 hover:bg-teal-700 mobile-button" disabled={loginLoading}>{loginLoading ? "Ingresando..." : "Ingresar"}</Button>
               <p className="text-sm font-medium text-center text-muted-foreground">Ingrese sus credenciales para continuar</p>
@@ -1315,9 +1314,9 @@ export default function Home() {
         <DialogContent className="max-w-sm">
           <DialogHeader><DialogTitle>Cambiar Contraseña</DialogTitle><DialogDescription>Actualiza tu contraseña de acceso al sistema.</DialogDescription></DialogHeader>
           <div className="space-y-3">
-            <div><Label className="text-base font-medium">Contraseña Actual</Label><Input type="password" value={passwordForm.actual} onChange={e => setPasswordForm({...passwordForm, actual: e.target.value})} /></div>
-            <div><Label className="text-base font-medium">Nueva Contraseña</Label><Input type="password" value={passwordForm.nueva} onChange={e => setPasswordForm({...passwordForm, nueva: e.target.value})} /></div>
-            <div><Label className="text-base font-medium">Confirmar Nueva Contraseña</Label><Input type="password" value={passwordForm.confirmar} onChange={e => setPasswordForm({...passwordForm, confirmar: e.target.value})} /></div>
+            <div><Label className="text-base font-medium">Contraseña Actual</Label><Input type="password" value={passwordForm.actual} onChange={e => setPasswordForm({ ...passwordForm, actual: e.target.value })} /></div>
+            <div><Label className="text-base font-medium">Nueva Contraseña</Label><Input type="password" value={passwordForm.nueva} onChange={e => setPasswordForm({ ...passwordForm, nueva: e.target.value })} /></div>
+            <div><Label className="text-base font-medium">Confirmar Nueva Contraseña</Label><Input type="password" value={passwordForm.confirmar} onChange={e => setPasswordForm({ ...passwordForm, confirmar: e.target.value })} /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" size="sm" onClick={() => { setPasswordDialogOpen(false); setPasswordForm({ actual: "", nueva: "", confirmar: "" }); }}>Cancelar</Button>
@@ -1334,7 +1333,7 @@ export default function Home() {
             <TabsTrigger id="tab-asistencia" value="asistencia" className={`text-sm font-medium px-3 gap-1 shrink-0 ${darkMode ? 'data-[state=active]:bg-slate-700 data-[state=active]:text-teal-400' : ''}`}><CalendarDays className="h-4 w-4" />Asistencia</TabsTrigger>
             <TabsTrigger value="estudiantes" aria-label="Ver estudiantes" className={`text-sm font-medium px-3 gap-1 shrink-0 ${darkMode ? 'data-[state=active]:bg-slate-700 data-[state=active]:text-teal-400' : ''}`}><Users className="h-4 w-4" />Estudiantes</TabsTrigger>
             <TabsTrigger value="boletas" aria-label="Ver boletas" className={`text-sm font-medium px-3 gap-1 shrink-0 ${darkMode ? 'data-[state=active]:bg-slate-700 data-[state=active]:text-teal-400' : ''}`}><FileText className="h-4 w-4" />Boletas</TabsTrigger>
-            {usuario.rol === "admin" && <TabsTrigger value="admin" aria-label="Administración" className={`text-sm font-medium px-3 gap-1 shrink-0 ${darkMode ? 'data-[state=active]:bg-slate-700 data-[state=active]:text-teal-400' : ''}`}><Settings className="h-4 w-4" />Admin</TabsTrigger>}
+            {isAdmin(usuario.rol) && <TabsTrigger value="admin" aria-label="Administración" className={`text-sm font-medium px-3 gap-1 shrink-0 ${darkMode ? 'data-[state=active]:bg-slate-700 data-[state=active]:text-teal-400' : ''}`}><Settings className="h-4 w-4" />Admin</TabsTrigger>}
           </TabsList>
           <div className="hidden md:flex items-center gap-2 ml-auto">
             <ContextualHelp section={activeTab} darkMode={darkMode} />
@@ -1359,16 +1358,15 @@ export default function Home() {
                 { value: "asistencia", icon: CalendarDays, label: "Asist." },
                 { value: "estudiantes", icon: Users, label: "Estud." },
                 { value: "boletas", icon: FileText, label: "Boletas" },
-                ...(usuario.rol === "admin" ? [{ value: "admin", icon: Settings, label: "Admin" }] : []),
+                ...(isAdmin(usuario.rol) ? [{ value: "admin", icon: Settings, label: "Admin" }] : []),
               ].map((item) => (
                 <button
                   key={item.value}
                   onClick={() => { setActiveTab(item.value); saveUserState({ activeTab: item.value }); }}
-                  className={`flex flex-col items-center justify-center flex-1 h-full text-xs transition-colors ${
-                    activeTab === item.value
-                      ? (darkMode ? 'text-teal-400' : 'text-teal-600')
-                      : (darkMode ? 'text-slate-500' : 'text-slate-400')
-                  }`}
+                  className={`flex flex-col items-center justify-center flex-1 h-full text-xs transition-colors ${activeTab === item.value
+                    ? (darkMode ? 'text-teal-400' : 'text-teal-600')
+                    : (darkMode ? 'text-slate-500' : 'text-slate-400')
+                    }`}
                 >
                   <item.icon className="h-5 w-5" />
                   <span className="text-[10px] mt-0.5">{item.label}</span>
@@ -1379,7 +1377,7 @@ export default function Home() {
 
           {/* Dashboard */}
           <TabsContent value="dashboard" className="mt-3">
-            <Dashboard 
+            <Dashboard
               usuario={usuario}
               grados={grados}
               totalEstudiantes={grados.reduce((sum, g) => sum + (g._count?.estudiantes || 0), 0)}
@@ -1392,23 +1390,23 @@ export default function Home() {
               }))}
             />
             <div className="mt-4">
-              <PredictiveAlerts 
-                gradoId={gradoSeleccionado} 
-                trimestre={trimestreSeleccionado} 
-                darkMode={darkMode} 
+              <PredictiveAlerts
+                gradoId={gradoSeleccionado}
+                trimestre={trimestreSeleccionado}
+                darkMode={darkMode}
               />
             </div>
           </TabsContent>
 
           {/* Asistencia */}
           <TabsContent value="asistencia" className="mt-3">
-            <AsistenciaBoard 
+            <AsistenciaBoard
               grados={gradosFiltrados}
               asignaturas={asignaturasFiltradas}
               estudiantes={estudiantes}
               gradoInicial={gradoSeleccionado}
               asignaturaInicial={asignaturaSeleccionada}
-              isAdmin={usuario.rol === "admin"}
+              isAdmin={isAdmin(usuario.rol)}
             />
           </TabsContent>
 
@@ -1420,30 +1418,30 @@ export default function Home() {
                   <School className="h-12 w-12 mx-auto text-slate-300 mb-3" />
                   <h3 className="text-lg font-medium text-slate-600 mb-2">No hay grados disponibles</h3>
                   <p className="text-slate-500">
-                    {usuario.rol === "admin" 
+                    {isAdmin(usuario.rol)
                       ? "No existen grados registrados en el sistema. Crea un grado desde la pestaña Admin."
                       : "No tienes grados o materias asignados. Contacta al administrador."}
                   </p>
                 </CardContent>
               </Card>
             ) : (
-            <Card className={`shadow-lg border ${darkMode ? 'bg-[#1e293b] border-slate-700 text-white' : 'bg-white border-slate-200'}`}>
-              <CardContent className="p-2 sm:p-3">
-                <div className="flex flex-wrap items-end gap-2 sm:gap-3">
-                  <div className="flex-1 min-w-[120px] sm:min-w-[140px]"><Label className={`text-sm font-medium mb-1 block ${darkMode ? 'text-slate-300' : ''}`}>Grado</Label><Select value={gradoSeleccionado || ""} onValueChange={(val) => { setGradoSeleccionado(val); saveUserState({ gradoSeleccionado: val }); }}><SelectTrigger className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue placeholder="Seleccionar grado" /></SelectTrigger><SelectContent>{ gradosFiltrados && gradosFiltrados.length > 0 ? gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}" - {g.año}</SelectItem>) : <SelectItem value="no-grados" disabled>No hay grados</SelectItem>}</SelectContent></Select></div>
+              <Card className={`shadow-lg border ${darkMode ? 'bg-[#1e293b] border-slate-700 text-white' : 'bg-white border-slate-200'}`}>
+                <CardContent className="p-2 sm:p-3">
+                  <div className="flex flex-wrap items-end gap-2 sm:gap-3">
+                    <div className="flex-1 min-w-[120px] sm:min-w-[140px]"><Label className={`text-sm font-medium mb-1 block ${darkMode ? 'text-slate-300' : ''}`}>Grado</Label><Select value={gradoSeleccionado || ""} onValueChange={(val) => { setGradoSeleccionado(val); saveUserState({ gradoSeleccionado: val }); }}><SelectTrigger className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue placeholder="Seleccionar grado" /></SelectTrigger><SelectContent>{gradosFiltrados && gradosFiltrados.length > 0 ? gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}" - {g.año}</SelectItem>) : <SelectItem value="no-grados" disabled>No hay grados</SelectItem>}</SelectContent></Select></div>
 
-                  <div className="flex-1 min-w-[140px] sm:min-w-[180px]"><Label className={`text-sm font-medium mb-1 block ${darkMode ? 'text-slate-300' : ''}`}>Asignatura</Label><Select value={asignaturaSeleccionada || ""} onValueChange={(val) => { setAsignaturaSeleccionada(val); saveUserState({ asignaturaSeleccionada: val }); }}><SelectTrigger className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue placeholder="Seleccionar materia" /></SelectTrigger><SelectContent>{asignaturasFiltradas && asignaturasFiltradas.length > 0 ? asignaturasFiltradas.map(m => <SelectItem key={m.id} value={m.id} className="text-sm">{m.nombre}</SelectItem>) : <SelectItem value="no-materias" disabled>No hay materias</SelectItem>}</SelectContent></Select></div>
-                  <div className="w-20 sm:w-28"><Label className={`text-sm font-medium mb-1 block ${darkMode ? 'text-slate-300' : ''}`}>Trimestre</Label><Select value={trimestreSeleccionado} onValueChange={setTrimestreSeleccionado}><SelectTrigger className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="1" className="text-sm">I</SelectItem><SelectItem value="2" className="text-sm">II</SelectItem><SelectItem value="3" className="text-sm">III</SelectItem></SelectContent></Select></div>
-                  {configActual && <div className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded ${darkMode ? 'text-slate-400 bg-slate-800' : 'text-slate-500 bg-slate-50'}`}><span>{configActual.numActividadesCotidianas} AC ({configActual.porcentajeAC}%)</span><span>•</span><span>{configActual.numActividadesIntegradoras} AI ({configActual.porcentajeAI}%)</span>{configActual.tieneExamen && <><span>•</span><span>Ex ({configActual.porcentajeExamen}%)</span></>}</div>}
-                  <Button size="sm" aria-label={saving ? "Guardando calificaciones" : "Guardar todas las calificaciones"} className={`h-11 sm:h-12 font-semibold text-sm ${darkMode ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white'} mobile-button`} onClick={handleGuardarTodo} disabled={saving}><Save className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">{saving ? 'Guardando...' : 'Guardar Todo'}</span><span className="sm:hidden">{saving ? '...' : 'Guardar'}</span></Button>
-                  <Button size="sm" variant="outline" className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''} mobile-button`} onClick={() => { setEditConfig(configActual); setConfigDialogOpen(true); }}><Settings className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Config</span></Button>
-                  <Button size="sm" variant="outline" className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''} mobile-button`} onClick={() => setImportDialogOpen(true)}><Upload className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Importar</span></Button>
-                  {usuario.rol === "admin" && (
-                    <Button size="sm" variant="destructive" className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-red-700 hover:bg-red-600 border-red-600' : ''} mobile-button`} onClick={() => { setBorrarCalifTipo("grado"); setBorrarCalifDialogOpen(true); }}><Trash2 className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Borrar Todo</span></Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                    <div className="flex-1 min-w-[140px] sm:min-w-[180px]"><Label className={`text-sm font-medium mb-1 block ${darkMode ? 'text-slate-300' : ''}`}>Asignatura</Label><Select value={asignaturaSeleccionada || ""} onValueChange={(val) => { setAsignaturaSeleccionada(val); saveUserState({ asignaturaSeleccionada: val }); }}><SelectTrigger className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue placeholder="Seleccionar materia" /></SelectTrigger><SelectContent>{asignaturasFiltradas && asignaturasFiltradas.length > 0 ? asignaturasFiltradas.map(m => <SelectItem key={m.id} value={m.id} className="text-sm">{m.nombre}</SelectItem>) : <SelectItem value="no-materias" disabled>No hay materias</SelectItem>}</SelectContent></Select></div>
+                    <div className="w-20 sm:w-28"><Label className={`text-sm font-medium mb-1 block ${darkMode ? 'text-slate-300' : ''}`}>Trimestre</Label><Select value={trimestreSeleccionado} onValueChange={setTrimestreSeleccionado}><SelectTrigger className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="1" className="text-sm">I</SelectItem><SelectItem value="2" className="text-sm">II</SelectItem><SelectItem value="3" className="text-sm">III</SelectItem></SelectContent></Select></div>
+                    {configActual && <div className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded ${darkMode ? 'text-slate-400 bg-slate-800' : 'text-slate-500 bg-slate-50'}`}><span>{configActual.numActividadesCotidianas} AC ({configActual.porcentajeAC}%)</span><span>•</span><span>{configActual.numActividadesIntegradoras} AI ({configActual.porcentajeAI}%)</span>{configActual.tieneExamen && <><span>•</span><span>Ex ({configActual.porcentajeExamen}%)</span></>}</div>}
+                    <Button size="sm" aria-label={saving ? "Guardando calificaciones" : "Guardar todas las calificaciones"} className={`h-11 sm:h-12 font-semibold text-sm ${darkMode ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white'} mobile-button`} onClick={handleGuardarTodo} disabled={saving}><Save className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">{saving ? 'Guardando...' : 'Guardar Todo'}</span><span className="sm:hidden">{saving ? '...' : 'Guardar'}</span></Button>
+                    <Button size="sm" variant="outline" className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''} mobile-button`} onClick={() => { setEditConfig(configActual); setConfigDialogOpen(true); }}><Settings className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Config</span></Button>
+                    <Button size="sm" variant="outline" className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''} mobile-button`} onClick={() => setImportDialogOpen(true)}><Upload className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Importar</span></Button>
+                    {isAdmin(usuario.rol) && (
+                      <Button size="sm" variant="destructive" className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-red-700 hover:bg-red-600 border-red-600' : ''} mobile-button`} onClick={() => { setBorrarCalifTipo("grado"); setBorrarCalifDialogOpen(true); }}><Trash2 className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Borrar Todo</span></Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
 
             )}
             {gradoSeleccionado && asignaturaSeleccionada && (
@@ -1500,7 +1498,7 @@ export default function Home() {
                           ))
                         ) : (estudiantes || []).map((est, idx) => {
                           const calif = getCalificacion(est.id);
-                          return <CalificacionRow key={`${est.id}-${asignaturaSeleccionada}-${trimestreSeleccionado}-${configActual?.numActividadesCotidianas ?? 4}-${configActual?.numActividadesIntegradoras ?? 1}`} estudiante={est} materiaId={asignaturaSeleccionada} trimestre={trimestreSeleccionado} calificacion={calif} config={configActual} onSave={handleSaveCalificacion} saving={saving} darkMode={darkMode} evenRow={idx % 2 === 0} isAdmin={usuario.rol === "admin"} onBorrar={(estId) => { setBorrarCalifEstudianteId(estId); setBorrarCalifTipo("alumno"); setBorrarCalifDialogOpen(true); }} />
+                          return <CalificacionRow key={`${est.id}-${asignaturaSeleccionada}-${trimestreSeleccionado}-${configActual?.numActividadesCotidianas ?? 4}-${configActual?.numActividadesIntegradoras ?? 1}`} estudiante={est} materiaId={asignaturaSeleccionada} trimestre={trimestreSeleccionado} calificacion={calif} config={configActual} onSave={handleSaveCalificacion} saving={saving} darkMode={darkMode} evenRow={idx % 2 === 0} isAdmin={isAdmin(usuario.rol)} onBorrar={(estId) => { setBorrarCalifEstudianteId(estId); setBorrarCalifTipo("alumno"); setBorrarCalifDialogOpen(true); }} />
                         })}
                       </tbody>
                     </table>
@@ -1530,25 +1528,25 @@ export default function Home() {
             <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
               <CardHeader className={`py-3 px-4 flex-row items-center justify-between space-y-0 ${darkMode ? 'border-slate-700' : ''}`}>
                 <div><CardTitle className="text-base">Lista de Estudiantes</CardTitle><CardDescription className={`text-sm sm:text-base font-medium ${darkMode ? 'text-slate-400' : ''}`}>Gestiona los estudiantes por grado</CardDescription></div>
-                {(usuario.rol === "admin" || usuario.rol === "docente") && (
-                <div className="flex gap-2">
-                  <Dialog open={listaDialogOpen} onOpenChange={setListaDialogOpen}>
-                    <DialogTrigger asChild><Button size="sm" variant="outline" className={`h-10 text-xs sm:text-sm ${darkMode ? 'border-slate-600 text-slate-300 hover:bg-slate-700' : ''}`}><ListPlus className="h-5 w-5 mr-1" />Lista</Button></DialogTrigger>
-                    <DialogContent className={`max-w-md ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
-                      <DialogHeader><DialogTitle>Agregar Lista de Estudiantes</DialogTitle><DialogDescription>Ingresa los nombres de los estudiantes, uno por línea. Opcional: agrega correo separado por coma (Nombre, correo@email.com).</DialogDescription></DialogHeader>
-                      <div className="space-y-2"><Label>Un nombre por línea</Label><textarea className={`w-full h-48 p-2 text-sm border rounded-md ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} value={listaEstudiantes} onChange={e => setListaEstudiantes(e.target.value)} placeholder="Apellido, Nombre&#10;Apellido, Nombre, correo@email.com&#10;..." /></div>
-                      <DialogFooter><Button variant="outline" size="sm" onClick={() => { setListaDialogOpen(false); setListaEstudiantes(""); }}>Cancelar</Button><Button size="sm" onClick={handleAddMultipleEstudiantes} className="bg-teal-600">Agregar {listaEstudiantes.split('\n').filter(n => n.trim()).length}</Button></DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                  <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                    <DialogTrigger asChild><Button size="sm" className={`h-10 text-xs sm:text-sm ${darkMode ? 'bg-teal-600 hover:bg-teal-500' : 'bg-teal-600'}`}><Plus className="h-5 w-5 mr-1" />Uno</Button></DialogTrigger>
-                    <DialogContent className={`max-w-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
-                      <DialogHeader><DialogTitle>Agregar Estudiante</DialogTitle><DialogDescription>Ingresa el nombre completo y correo (opcional) del nuevo estudiante.</DialogDescription></DialogHeader>
-                      <div className="space-y-2"><Label>Nombre completo</Label><Input value={nuevoEstudiante.nombre} onChange={e => setNuevoEstudiante(prev => ({ ...prev, nombre: e.target.value }))} placeholder="Apellidos, Nombres" /><Label>Correo electrónico (opcional)</Label><Input value={nuevoEstudiante.email} onChange={e => setNuevoEstudiante(prev => ({ ...prev, email: e.target.value }))} placeholder="correo@ejemplo.com" type="email" /></div>
-                      <DialogFooter><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Cancelar</Button><Button size="sm" onClick={handleAddEstudiante} className="bg-teal-600">Guardar</Button></DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                </div>
+                {(isAdmin(usuario.rol) || (usuario.rol === "docente" || usuario.rol === "docente-orientador")) && (
+                  <div className="flex gap-2">
+                    <Dialog open={listaDialogOpen} onOpenChange={setListaDialogOpen}>
+                      <DialogTrigger asChild><Button size="sm" variant="outline" className={`h-10 text-xs sm:text-sm ${darkMode ? 'border-slate-600 text-slate-300 hover:bg-slate-700' : ''}`}><ListPlus className="h-5 w-5 mr-1" />Lista</Button></DialogTrigger>
+                      <DialogContent className={`max-w-md ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
+                        <DialogHeader><DialogTitle>Agregar Lista de Estudiantes</DialogTitle><DialogDescription>Ingresa los nombres de los estudiantes, uno por línea. Opcional: agrega correo separado por coma (Nombre, correo@email.com).</DialogDescription></DialogHeader>
+                        <div className="space-y-2"><Label>Un nombre por línea</Label><textarea className={`w-full h-48 p-2 text-sm border rounded-md ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} value={listaEstudiantes} onChange={e => setListaEstudiantes(e.target.value)} placeholder="Apellido, Nombre&#10;Apellido, Nombre, correo@email.com&#10;..." /></div>
+                        <DialogFooter><Button variant="outline" size="sm" onClick={() => { setListaDialogOpen(false); setListaEstudiantes(""); }}>Cancelar</Button><Button size="sm" onClick={handleAddMultipleEstudiantes} className="bg-teal-600">Agregar {listaEstudiantes.split('\n').filter(n => n.trim()).length}</Button></DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                      <DialogTrigger asChild><Button size="sm" className={`h-10 text-xs sm:text-sm ${darkMode ? 'bg-teal-600 hover:bg-teal-500' : 'bg-teal-600'}`}><Plus className="h-5 w-5 mr-1" />Uno</Button></DialogTrigger>
+                      <DialogContent className={`max-w-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
+                        <DialogHeader><DialogTitle>Agregar Estudiante</DialogTitle><DialogDescription>Ingresa el nombre completo y correo (opcional) del nuevo estudiante.</DialogDescription></DialogHeader>
+                        <div className="space-y-2"><Label>Nombre completo</Label><Input value={nuevoEstudiante.nombre} onChange={e => setNuevoEstudiante(prev => ({ ...prev, nombre: e.target.value }))} placeholder="Apellidos, Nombres" /><Label>Correo electrónico (opcional)</Label><Input value={nuevoEstudiante.email} onChange={e => setNuevoEstudiante(prev => ({ ...prev, email: e.target.value }))} placeholder="correo@ejemplo.com" type="email" /></div>
+                        <DialogFooter><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Cancelar</Button><Button size="sm" onClick={handleAddEstudiante} className="bg-teal-600">Guardar</Button></DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
                 )}
               </CardHeader>
               <CardContent className="pt-0">
@@ -1557,11 +1555,11 @@ export default function Home() {
                   <EstudiantesTable
                     estudiantes={estudiantes}
                     darkMode={darkMode}
-                    isAdmin={usuario.rol === "admin"}
+                    isAdmin={isAdmin(usuario.rol)}
                     loading={sectionLoading}
                     onReorder={handleReordenarEstudiantes}
                     onDelete={handleDeleteEstudiante}
-                    onUpdateEstudiante={usuario.rol === "admin" ? handleUpdateEstudiante : undefined}
+                    onUpdateEstudiante={isAdmin(usuario.rol) ? handleUpdateEstudiante : undefined}
                   />
                 </div>
               </CardContent>
@@ -1579,7 +1577,7 @@ export default function Home() {
                 </div>
                 {gradoSeleccionado && estudiantes.length > 0 && (
                   <>
-                    {usuario.rol === "admin" && (
+                    {isAdmin(usuario.rol) && (
                       <div className="space-y-2 mb-2">
                         <div className="flex items-center gap-2 flex-wrap">
                           <Label className="text-xs sm:text-sm font-medium whitespace-nowrap">Asignaturas en boleta:</Label>
@@ -1605,11 +1603,10 @@ export default function Home() {
                                 setMateriasEnBoleta(next);
                                 if (typeof window !== "undefined") localStorage.setItem("ss_materiasBoleta", JSON.stringify(next));
                               }}
-                              className={`px-2 py-0.5 rounded-full text-xs font-medium border transition-colors ${
-                                materiasEnBoleta.length > 0 && materiasEnBoleta.includes(m.id)
-                                  ? (darkMode ? 'bg-teal-700 text-white border-teal-600' : 'bg-teal-600 text-white border-teal-600')
-                                  : (darkMode ? 'bg-slate-800 text-slate-300 border-slate-600 hover:border-teal-600' : 'bg-white text-slate-700 border-slate-300 hover:border-teal-400')
-                              }`}
+                              className={`px-2 py-0.5 rounded-full text-xs font-medium border transition-colors ${materiasEnBoleta.length > 0 && materiasEnBoleta.includes(m.id)
+                                ? (darkMode ? 'bg-teal-700 text-white border-teal-600' : 'bg-teal-600 text-white border-teal-600')
+                                : (darkMode ? 'bg-slate-800 text-slate-300 border-slate-600 hover:border-teal-600' : 'bg-white text-slate-700 border-slate-300 hover:border-teal-400')
+                                }`}
                             >
                               {m.nombre}
                             </button>
@@ -1625,67 +1622,54 @@ export default function Home() {
           </TabsContent>
 
           {/* Admin */}
-          {usuario.rol === "admin" && (
+          {isAdmin(usuario.rol) && (
             <TabsContent value="admin" className="mt-3 space-y-3 sm:space-y-4">
               {/* Gestión de Usuarios */}
               <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
                 <CardHeader className={`py-3 px-4 flex-row items-center justify-between space-y-0 ${darkMode ? 'border-slate-700' : ''}`}>
                   <div><CardTitle className="text-sm sm:text-base">Gestión de Usuarios</CardTitle><CardDescription className={`text-xs ${darkMode ? 'text-slate-400' : ''}`}>Crea y administra usuarios del sistema</CardDescription></div>
                   <Dialog open={userDialogOpen} onOpenChange={setUserDialogOpen}>
-                    <DialogTrigger asChild><Button size="sm" className={`h-7 text-xs ${darkMode ? 'bg-teal-600 hover:bg-teal-500' : 'bg-teal-600'}`} onClick={() => { setEditUsuarioId(null); setNuevoUsuario({ email: "", password: "", nombre: "", rol: "docente", gradosAsignados: [], materiasAsignadas: [] }); }}><UserPlus className="h-3.5 w-3.5 mr-1" />Nuevo Usuario</Button></DialogTrigger>
+                    <DialogTrigger asChild><Button size="sm" className={`h-7 text-xs ${darkMode ? 'bg-teal-600 hover:bg-teal-500' : 'bg-teal-600'}`} onClick={() => { setEditUsuarioId(null); setNuevoUsuario({ email: "", password: "", nombre: "", rol: "docente", materiasAsignadas: [] }); }}><UserPlus className="h-3.5 w-3.5 mr-1" />Nuevo Usuario</Button></DialogTrigger>
                     <DialogContent className={`max-w-lg max-h-[90vh] overflow-y-auto ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
                       <DialogHeader><DialogTitle>{editUsuarioId ? "Editar Usuario" : "Crear Usuario"}</DialogTitle><DialogDescription>Completa la información del usuario del sistema.</DialogDescription></DialogHeader>
                       <div className="space-y-3">
-                        <div><Label className="text-xs">Nombre</Label><Input value={nuevoUsuario.nombre} onChange={e => setNuevoUsuario({...nuevoUsuario, nombre: e.target.value})} placeholder="Nombre completo" /></div>
-                        <div><Label className="text-xs">Email</Label><Input type="email" value={nuevoUsuario.email} onChange={e => setNuevoUsuario({...nuevoUsuario, email: e.target.value})} placeholder="correo@escuela.edu" /></div>
-                        <div><Label className="text-xs">Contraseña</Label><Input type="password" value={nuevoUsuario.password} onChange={e => setNuevoUsuario({...nuevoUsuario, password: e.target.value})} placeholder="••••••••" /></div>
-                        <div><Label className="text-xs">Rol</Label><Select value={nuevoUsuario.rol} onValueChange={v => setNuevoUsuario({...nuevoUsuario, rol: v})}><SelectTrigger className={`h-8 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="admin">Administrador</SelectItem><SelectItem value="docente">Docente</SelectItem></SelectContent></Select></div>
-                        
-                        {/* Grados 2-5: Tutor */}
-                        <div>
-                          <Label className="text-xs">Tutor de Grados (2° a 5°)</Label>
-                          <p className={`text-[10px] mb-1 ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>El usuario será tutor del grado completo</p>
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                            {gradosInferiores.map(g => (
-                              <label key={g.id} className={`flex items-center gap-1 text-xs p-1.5 border rounded cursor-pointer ${darkMode ? 'border-slate-700 hover:bg-slate-800' : 'hover:bg-slate-50'}`}>
-                                <input 
-                                  type="checkbox" 
-                                  checked={nuevoUsuario.gradosAsignados.includes(g.id)} 
-                                  onChange={e => setNuevoUsuario({
-                                    ...nuevoUsuario, 
-                                    gradosAsignados: e.target.checked 
-                                      ? [...nuevoUsuario.gradosAsignados, g.id] 
-                                      : nuevoUsuario.gradosAsignados.filter(id => id !== g.id)
-                                  })} 
-                                  className="h-3 w-3" 
-                                />
-                                {g.numero}°{g.seccion}
-                              </label>
-                            ))}
-                          </div>
+                        <div><Label className="text-xs">Nombre</Label><Input value={nuevoUsuario.nombre} onChange={e => setNuevoUsuario({ ...nuevoUsuario, nombre: e.target.value })} placeholder="Nombre completo" /></div>
+                        <div><Label className="text-xs">Email</Label><Input type="email" value={nuevoUsuario.email} onChange={e => setNuevoUsuario({ ...nuevoUsuario, email: e.target.value })} placeholder="correo@escuela.edu" /></div>
+                        <div><Label className="text-xs">Contraseña</Label><Input type="password" value={nuevoUsuario.password} onChange={e => setNuevoUsuario({ ...nuevoUsuario, password: e.target.value })} placeholder="••••••••" /></div>
+                        <div><Label className="text-xs">Rol</Label>
+                          <Select value={nuevoUsuario.rol} onValueChange={v => setNuevoUsuario({ ...nuevoUsuario, rol: v })}>
+                            <SelectTrigger className={`h-8 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="admin">Administrador</SelectItem>
+                              <SelectItem value="admin-directora">Administradora - Directora</SelectItem>
+                              <SelectItem value="admin-codirectora">Administradora - Codirectora</SelectItem>
+                              <SelectItem value="docente">Docente</SelectItem>
+                              <SelectItem value="docente-orientador">Docente-Orientador</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
-                        
-                        {/* Grados 6-9: Materias específicas */}
+
+                        {/* Asignaturas para todos los grados */}
                         <div>
-                          <Label className="text-xs">Asignaturas Asignadas (6° a 9°)</Label>
-                          <p className={`text-[10px] mb-1 ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>El usuario califica estas asignaturas específicas</p>
-                          <div className={`border rounded max-h-48 overflow-y-auto ${darkMode ? 'border-slate-700' : ''}`}>
-                            {gradosSuperiores.map(grado => (
+                          <Label className="text-xs">Asignaturas Asignadas</Label>
+                          <p className={`text-[10px] mb-1 ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Seleccione las asignaturas que calificará</p>
+                          <div className={`border rounded max-h-64 overflow-y-auto ${darkMode ? 'border-slate-700' : ''}`}>
+                            {grados.map(grado => (
                               <div key={grado.id} className={`border-b last:border-b-0 ${darkMode ? 'border-slate-700' : ''}`}>
                                 <div className={`px-2 py-1 text-xs font-medium ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>{grado.numero}° "{grado.seccion}"</div>
                                 <div className="p-2 grid grid-cols-2 gap-1">
                                   {todasAsignaturas.filter(m => m.gradoId === grado.id).map(m => (
                                     <label key={m.id} className={`flex items-center gap-1 text-xs p-1 rounded cursor-pointer ${darkMode ? 'hover:bg-slate-800' : 'hover:bg-slate-50'}`}>
-                                      <input 
-                                        type="checkbox" 
-                                        checked={nuevoUsuario.materiasAsignadas.includes(m.id)} 
+                                      <input
+                                        type="checkbox"
+                                        checked={nuevoUsuario.materiasAsignadas.includes(m.id)}
                                         onChange={e => setNuevoUsuario({
-                                          ...nuevoUsuario, 
-                                          materiasAsignadas: e.target.checked 
-                                            ? [...nuevoUsuario.materiasAsignadas, m.id] 
+                                          ...nuevoUsuario,
+                                          materiasAsignadas: e.target.checked
+                                            ? [...nuevoUsuario.materiasAsignadas, m.id]
                                             : nuevoUsuario.materiasAsignadas.filter(id => id !== m.id)
-                                        })} 
-                                        className="h-3 w-3" 
+                                        })}
+                                        className="h-3 w-3"
                                       />
                                       {m.nombre}
                                     </label>
@@ -1709,24 +1693,27 @@ export default function Home() {
                           <TableRow key={u.id} className={darkMode ? 'border-slate-700' : ''}>
                             <TableCell className={`font-medium ${darkMode ? 'text-white' : ''}`}>{u.nombre}</TableCell>
                             <TableCell className={darkMode ? 'text-slate-400' : ''}>{u.email}</TableCell>
-                            <TableCell><Badge variant={u.rol === "admin" ? "default" : "secondary"} className={`text-[10px] ${u.rol === "admin" ? '' : (darkMode ? 'bg-slate-700 text-slate-300' : '')}`}>{u.rol === "admin" ? "Admin" : "Docente"}</Badge></TableCell>
+                            <TableCell>
+                              <Badge variant={isAdmin(u.rol) ? "default" : u.rol === "docente-orientador" ? "outline" : "secondary"} className={`text-[10px] ${isAdmin(u.rol) ? '' : (u.rol === "docente-orientador" ? (darkMode ? 'border-slate-600 text-slate-300' : '') : (darkMode ? 'bg-slate-700 text-slate-300' : ''))}`}>
+                                {u.rol === "admin" ? "Admin" : u.rol === "admin-directora" ? "Directora" : u.rol === "admin-codirectora" ? "Codirectora" : u.rol === "docente-orientador" ? "Docente-Orient." : "Docente"}
+                              </Badge>
+                            </TableCell>
                             <TableCell><Badge variant={u.activo ? "default" : "destructive"} className={`text-[10px] ${u.activo ? (darkMode ? 'bg-teal-600' : 'bg-teal-600') : ''}`}>{u.activo ? "Activo" : "Inactivo"}</Badge></TableCell>
                             <TableCell>
                               <div className="space-y-0.5">
-                                {u.gradosComoTutor && u.gradosComoTutor.length > 0 && (
-                                  <div><span className={`text-[10px] ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Tutor: </span>{u.gradosComoTutor.map(g => `${g.numero}°${g.seccion}`).join(", ")}</div>
-                                )}
                                 {u.materias && u.materias.length > 0 && (
-                                  <div><span className={`text-[10px] ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Asignaturas: </span>{u.materias.map(m => `${m.nombre} (${m.gradoNumero}º)`).join(", ")}</div>
+                                  <div><span className={`text-[10px] ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Asignaturas: </span>{u.materias.map(m => `${m.nombre} (${m.gradoNumero}°)`).slice(0, 3).join(", ")}{u.materias.length > 3 ? ` +${u.materias.length - 3}` : ""}</div>
                                 )}
-                                {(!u.gradosComoTutor || u.gradosComoTutor.length === 0) && (!u.materias || u.materias.length === 0) && "-"}
+                                {(!u.materias || u.materias.length === 0) && (isAdmin(u.rol) ? "Acceso total" : "-")}
                               </div>
                             </TableCell>
                             <TableCell className="text-center">
                               <Button size="sm" variant="ghost" className={`h-6 w-6 p-0 mr-1 ${darkMode ? 'text-amber-400' : 'text-amber-500'}`} title="Editar" onClick={() => abrirEditarUsuario(u as Usuario)}><Settings className="h-3.5 w-3.5" /></Button>
                               <Button size="sm" variant="ghost" className="h-6 w-6 p-0 mr-1" title={u.activo ? "Bloquear" : "Desbloquear"} onClick={() => handleToggleUsuario(u.id, u.activo)}>{u.activo ? "🔒" : "🔓"}</Button>
                               <Button size="sm" variant="ghost" className={`h-6 w-6 p-0 mr-1 ${darkMode ? 'text-blue-400' : 'text-blue-500'}`} title="Restablecer contraseña" onClick={() => openResetPassword({ id: u.id, nombre: u.nombre })}>🔑</Button>
-                              <Button size="sm" variant="ghost" className={`h-6 w-6 p-0 ${darkMode ? 'text-red-400' : 'text-red-500'}`} title="Eliminar" onClick={() => handleDeleteUsuario(u.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                              {canDeleteUsers(usuario) && (
+                                <Button size="sm" variant="ghost" className={`h-6 w-6 p-0 ${darkMode ? 'text-red-400' : 'text-red-500'}`} title="Eliminar" onClick={() => handleDeleteUsuario(u.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                              )}
                             </TableCell>
                           </TableRow>
                         ))}
@@ -1762,11 +1749,11 @@ export default function Home() {
                       <div className="space-y-3">
                         <div>
                           <Label className="text-xs">Año Escolar</Label>
-                          <Input 
-                            type="number" 
-                            value={nuevoAño} 
-                            onChange={e => setNuevoAño(parseInt(e.target.value) || 2026)} 
-                            min={2020} 
+                          <Input
+                            type="number"
+                            value={nuevoAño}
+                            onChange={e => setNuevoAño(parseInt(e.target.value) || 2026)}
+                            min={2020}
                             max={2100}
                             className={`h-8 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}
                           />
@@ -1822,7 +1809,7 @@ export default function Home() {
                     <Button size="sm" variant="outline" className={`h-8 text-xs ${darkMode ? 'border-slate-600' : ''}`} onClick={loadAuditLogs} disabled={auditLoading}>
                       <RefreshCw className={`h-3.5 w-3.5 mr-1 ${auditLoading ? 'animate-spin' : ''}`} /> Actualizar
                     </Button>
-                    {usuario.rol === "admin" && (
+                    {isAdmin(usuario.rol) && (
                       <Button size="sm" variant="destructive" className="h-8 text-xs" onClick={handleDeleteAuditLogs} disabled={auditLoading || auditTotal === 0}>
                         <Trash2 className="h-3.5 w-3.5 mr-1" /> Borrar todo
                       </Button>
@@ -1870,18 +1857,18 @@ export default function Home() {
                       <tbody>
                         {auditLoading ? <tr><td colSpan={4} className="p-4 text-center text-slate-500">Cargando...</td></tr> :
                           auditLogs.length === 0 ? <tr><td colSpan={4} className="p-4 text-center text-slate-500">No hay registros</td></tr> :
-                          auditLogs.map((log) => (
-                            <tr key={log.id} className={`border-t ${darkMode ? 'border-slate-700' : ''}`}>
-                              <td className="p-2 whitespace-nowrap">{new Date(log.createdAt).toLocaleString('es-DO')}</td>
-                              <td className="p-2 font-medium">{log.usuario?.nombre || 'Desconocido'}</td>
-                              <td className="p-2">
-                                <Badge variant={log.accion === 'DELETE' ? 'destructive' : 'default'} className={`text-[10px] ${log.accion === 'DELETE' ? '' : (darkMode ? 'bg-teal-600' : 'bg-teal-600')}`}>
-                                  {log.accion === 'DELETE' ? 'Borró' : 'Digitó'}
-                                </Badge>
-                              </td>
-                              <td className={`p-2 ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>{log.grado || '—'}</td>
-                            </tr>
-                          ))}
+                            auditLogs.map((log) => (
+                              <tr key={log.id} className={`border-t ${darkMode ? 'border-slate-700' : ''}`}>
+                                <td className="p-2 whitespace-nowrap">{new Date(log.createdAt).toLocaleString('es-DO')}</td>
+                                <td className="p-2 font-medium">{log.usuario?.nombre || 'Desconocido'}</td>
+                                <td className="p-2">
+                                  <Badge variant={log.accion === 'DELETE' ? 'destructive' : 'default'} className={`text-[10px] ${log.accion === 'DELETE' ? '' : (darkMode ? 'bg-teal-600' : 'bg-teal-600')}`}>
+                                    {log.accion === 'DELETE' ? 'Borró' : 'Digitó'}
+                                  </Badge>
+                                </td>
+                                <td className={`p-2 ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>{log.grado || '—'}</td>
+                              </tr>
+                            ))}
                       </tbody>
                     </table>
                   </div>
@@ -1924,12 +1911,12 @@ export default function Home() {
         </Tabs>
       </main>
 
-      <GettingStartedWizard 
-        open={showWizard} 
-        onClose={() => setShowWizard(false)} 
-        darkMode={darkMode} 
-        userRole={usuario.rol} 
-        onNavigateTo={(tab) => { setActiveTab(tab); saveUserState({ activeTab: tab }); }} 
+      <GettingStartedWizard
+        open={showWizard}
+        onClose={() => setShowWizard(false)}
+        darkMode={darkMode}
+        userRole={usuario.rol}
+        onNavigateTo={(tab) => { setActiveTab(tab); saveUserState({ activeTab: tab }); }}
       />
 
       {/* Dialogs */}
@@ -1937,9 +1924,9 @@ export default function Home() {
         <DialogContent className={`max-w-sm mx-4 ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
           <DialogHeader><DialogTitle className="text-base">Configurar Actividades</DialogTitle><DialogDescription className="text-sm">Define cuántas actividades y sus porcentajes por trimestre.</DialogDescription></DialogHeader>
           {editConfig && <div className="space-y-3">
-            <div><Label className="text-sm">Actividades Cotidianas</Label><div className="flex items-center gap-2 mt-1"><Input type="number" min="1" max="10" value={editConfig.numActividadesCotidianas} onChange={e => setEditConfig({...editConfig, numActividadesCotidianas: parseInt(e.target.value) || 1})} className={`w-16 h-11 text-base ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-sm">u.</span><Input type="number" min="0" max="100" value={editConfig.porcentajeAC} onChange={e => setEditConfig({...editConfig, porcentajeAC: parseFloat(e.target.value) || 0})} className={`w-16 h-11 text-base ml-auto ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-sm">%</span></div></div>
-            <div><Label className="text-sm">Actividades Integradoras</Label><div className="flex items-center gap-2 mt-1"><Input type="number" min="1" max="10" value={editConfig.numActividadesIntegradoras} onChange={e => setEditConfig({...editConfig, numActividadesIntegradoras: parseInt(e.target.value) || 1})} className={`w-16 h-11 text-base ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-sm">u.</span><Input type="number" min="0" max="100" value={editConfig.porcentajeAI} onChange={e => setEditConfig({...editConfig, porcentajeAI: parseFloat(e.target.value) || 0})} className={`w-16 h-11 text-base ml-auto ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-sm">%</span></div></div>
-            <div className="flex items-center justify-between"><Label className="text-sm">Examen</Label><div className="flex items-center gap-2"><input type="checkbox" checked={editConfig.tieneExamen} onChange={e => setEditConfig({...editConfig, tieneExamen: e.target.checked})} className="h-5 w-5" />{editConfig.tieneExamen && <><Input type="number" min="0" max="100" value={editConfig.porcentajeExamen} onChange={e => setEditConfig({...editConfig, porcentajeExamen: parseFloat(e.target.value) || 0})} className={`w-16 h-11 text-base ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-sm">%</span></>}</div></div>
+            <div><Label className="text-sm">Actividades Cotidianas</Label><div className="flex items-center gap-2 mt-1"><Input type="number" min="1" max="10" value={editConfig.numActividadesCotidianas} onChange={e => setEditConfig({ ...editConfig, numActividadesCotidianas: parseInt(e.target.value) || 1 })} className={`w-16 h-11 text-base ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-sm">u.</span><Input type="number" min="0" max="100" value={editConfig.porcentajeAC} onChange={e => setEditConfig({ ...editConfig, porcentajeAC: parseFloat(e.target.value) || 0 })} className={`w-16 h-11 text-base ml-auto ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-sm">%</span></div></div>
+            <div><Label className="text-sm">Actividades Integradoras</Label><div className="flex items-center gap-2 mt-1"><Input type="number" min="1" max="10" value={editConfig.numActividadesIntegradoras} onChange={e => setEditConfig({ ...editConfig, numActividadesIntegradoras: parseInt(e.target.value) || 1 })} className={`w-16 h-11 text-base ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-sm">u.</span><Input type="number" min="0" max="100" value={editConfig.porcentajeAI} onChange={e => setEditConfig({ ...editConfig, porcentajeAI: parseFloat(e.target.value) || 0 })} className={`w-16 h-11 text-base ml-auto ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-sm">%</span></div></div>
+            <div className="flex items-center justify-between"><Label className="text-sm">Examen</Label><div className="flex items-center gap-2"><input type="checkbox" checked={editConfig.tieneExamen} onChange={e => setEditConfig({ ...editConfig, tieneExamen: e.target.checked })} className="h-5 w-5" />{editConfig.tieneExamen && <><Input type="number" min="0" max="100" value={editConfig.porcentajeExamen} onChange={e => setEditConfig({ ...editConfig, porcentajeExamen: parseFloat(e.target.value) || 0 })} className={`w-16 h-11 text-base ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-sm">%</span></>}</div></div>
             <div className={`p-3 rounded-lg text-sm flex justify-between ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}><span>Total:</span><span className={`font-bold ${Math.abs(editConfig.porcentajeAC + editConfig.porcentajeAI + (editConfig.tieneExamen ? editConfig.porcentajeExamen : 0) - 100) > 0.1 ? 'text-red-500' : (darkMode ? 'text-teal-400' : 'text-teal-600')}`}>{(editConfig.porcentajeAC + editConfig.porcentajeAI + (editConfig.tieneExamen ? editConfig.porcentajeExamen : 0)).toFixed(1)}%</span></div>
             <div className={`flex items-center gap-2 mt-4 pt-4 border-t ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
               <input type="checkbox" id="aplicarATodas" checked={configAplicarATodas} onChange={e => setConfigAplicarATodas(e.target.checked)} className="h-5 w-5 text-teal-600" />
@@ -1972,7 +1959,7 @@ export default function Home() {
           <DialogHeader>
             <DialogTitle className="text-red-600 flex items-center gap-2"><Trash2 className="h-5 w-5" />Borrar Calificaciones</DialogTitle>
             <DialogDescription>
-              {borrarCalifTipo === "grado" 
+              {borrarCalifTipo === "grado"
                 ? `Esto borrará TODAS las calificaciones del grado "${estudiantes[0]?.nombre ? 'seleccionado' : ''}" en la materia y trimestre seleccionados. Esta acción no se puede deshacer.`
                 : "Esto borrará las calificaciones del estudiante seleccionado. Esta acción no se puede deshacer."}
             </DialogDescription>
@@ -1995,7 +1982,7 @@ export default function Home() {
           </DialogHeader>
           <div className="py-4">
             <Label>Nueva Contraseña</Label>
-            <Input 
+            <Input
               type="password"
               value={resetPasswordForm.password}
               onChange={(e) => setResetPasswordForm({ password: e.target.value })}
@@ -2034,7 +2021,7 @@ export default function Home() {
                 <p className={`font-medium capitalize ${darkMode ? 'text-white' : ''}`}>{usuario.rol}</p>
               </div>
             </div>
-            
+
             {usuario.gradosAsignados && usuario.gradosAsignados.length > 0 && (
               <div>
                 <p className={`text-xs mb-1 ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Grados como Tutor</p>
@@ -2045,7 +2032,7 @@ export default function Home() {
                 </div>
               </div>
             )}
-            
+
             {usuario.asignaturasAsignadas && usuario.asignaturasAsignadas.length > 0 && (
               <div>
                 <p className={`text-xs mb-1 ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Materias Asignadas</p>
@@ -2056,11 +2043,11 @@ export default function Home() {
                 </div>
               </div>
             )}
-            
-            {(!usuario.gradosAsignados || usuario.gradosAsignados.length === 0) && 
-             (!usuario.asignaturasAsignadas || usuario.asignaturasAsignadas.length === 0) && (
-              <p className={`text-sm italic ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>No tienes grados o materias asignados. Contacta al administrador.</p>
-            )}
+
+            {(!usuario.gradosAsignados || usuario.gradosAsignados.length === 0) &&
+              (!usuario.asignaturasAsignadas || usuario.asignaturasAsignadas.length === 0) && (
+                <p className={`text-sm italic ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>No tienes grados o materias asignados. Contacta al administrador.</p>
+              )}
           </div>
           <DialogFooter>
             <Button onClick={() => setPerfilDialogOpen(false)} className="bg-teal-600">Cerrar</Button>
@@ -2076,7 +2063,7 @@ export default function Home() {
         <button onClick={() => { setActiveTab("calificaciones"); saveUserState({ activeTab: "calificaciones" }); }} aria-label="Ir a Calificaciones" className={`flex flex-col items-center p-1.5 px-2 rounded-xl transition-colors ${activeTab === "calificaciones" ? (darkMode ? "text-teal-400 bg-slate-800" : "text-teal-700 bg-teal-50") : (darkMode ? "text-slate-500" : "text-slate-500")}`}><ClipboardList className="h-5 w-5 mb-0.5" /><span className="text-[9px] sm:text-[10px] font-medium">Notas</span></button>
         <button onClick={() => { setActiveTab("asistencia"); saveUserState({ activeTab: "asistencia" }); }} aria-label="Ir a Asistencia" className={`flex flex-col items-center p-1.5 px-2 rounded-xl transition-colors ${activeTab === "asistencia" ? (darkMode ? "text-teal-400 bg-slate-800" : "text-teal-700 bg-teal-50") : (darkMode ? "text-slate-500" : "text-slate-500")}`}><CalendarDays className="h-5 w-5 mb-0.5" /><span className="text-[9px] sm:text-[10px] font-medium">Lista</span></button>
         <button onClick={() => { setActiveTab("estudiantes"); saveUserState({ activeTab: "estudiantes" }); }} aria-label="Ir a Estudiantes" className={`flex flex-col items-center p-1.5 px-2 rounded-xl transition-colors ${activeTab === "estudiantes" ? (darkMode ? "text-teal-400 bg-slate-800" : "text-teal-700 bg-teal-50") : (darkMode ? "text-slate-500" : "text-slate-500")}`}><Users className="h-5 w-5 mb-0.5" /><span className="text-[9px] sm:text-[10px] font-medium">Alumnos</span></button>
-        {usuario.rol === "admin" && (
+        {isAdmin(usuario.rol) && (
           <button onClick={() => { setActiveTab("admin"); saveUserState({ activeTab: "admin" }); }} aria-label="Ir a Administración" className={`flex flex-col items-center p-1.5 px-2 rounded-xl transition-colors ${activeTab === "admin" ? (darkMode ? "text-teal-400 bg-slate-800" : "text-teal-700 bg-teal-50") : (darkMode ? "text-slate-500" : "text-slate-500")}`}><Settings className="h-5 w-5 mb-0.5" /><span className="text-[9px] sm:text-[10px] font-medium">Admin</span></button>
         )}
       </nav>
@@ -2105,15 +2092,15 @@ const CalificacionRow = React.memo(function CalificacionRow({ estudiante, materi
   const numAC = config?.numActividadesCotidianas ?? 4;
   const numAI = config?.numActividadesIntegradoras ?? 1;
   const tieneExamen = config?.tieneExamen ?? true;
-  
+
   const key = `${materiaId}-${trimestre}-${calificacion?.id || 'none'}-${numAC}-${numAI}`;
-  
+
   const [acNotas, setAcNotas] = useState<(number | null)[]>(() => parseNotas(calificacion?.actividadesCotidianas ?? null, numAC));
   const [aiNotas, setAiNotas] = useState<(number | null)[]>(() => parseNotas(calificacion?.actividadesIntegradoras ?? null, numAI));
   const [examen, setExamen] = useState<number | null>(() => calificacion?.examenTrimestral ?? null);
   const [recup, setRecup] = useState<number | null>(() => calificacion?.recuperacion ?? null);
   const [dirty, setDirty] = useState(false);
-  
+
   useEffect(() => {
     const timer = setTimeout(() => {
       const newAC = parseNotas(calificacion?.actividadesCotidianas ?? null, numAC);
@@ -2128,7 +2115,7 @@ const CalificacionRow = React.memo(function CalificacionRow({ estudiante, materi
     }, 0);
     return () => clearTimeout(timer);
   }, [key, numAC, numAI, calificacion?.actividadesCotidianas, calificacion?.actividadesIntegradoras, calificacion?.examenTrimestral, calificacion?.recuperacion]);
-  
+
   const stateRef = useRef({ dirty, acNotas, aiNotas, examen, recup });
   useEffect(() => { stateRef.current = { dirty, acNotas, aiNotas, examen, recup }; }, [dirty, acNotas, aiNotas, examen, recup]);
 
@@ -2138,7 +2125,7 @@ const CalificacionRow = React.memo(function CalificacionRow({ estudiante, materi
   const promExPeso = config && config.tieneExamen && examen !== null ? examen * (config.porcentajeExamen / 100) : (examen !== null ? examen * 0.35 : null);
   const promFinal = config ? calcularPromedioFinal(promAC, promAI, examen, config, recup) : (promAC !== null || promAI !== null || examen !== null ? ((promAC ?? 0) * 0.35 + (promAI ?? 0) * 0.30 + (examen ?? 0) * 0.35) : null);
   const parseVal = useCallback((v: string): number | null => { const n = parseFloat(v); return isNaN(n) ? null : Math.min(10, Math.max(0, n)); }, []);
-  
+
   const updateAC = useCallback((i: number, v: string) => { setAcNotas(n => { const arr = [...n]; arr[i] = parseVal(v); return arr; }); setDirty(true); }, [parseVal]);
   const updateAI = useCallback((i: number, v: string) => { setAiNotas(n => { const arr = [...n]; arr[i] = parseVal(v); return arr; }); setDirty(true); }, [parseVal]);
   const handleExamen = useCallback((v: string) => { setExamen(parseVal(v)); setDirty(true); }, [parseVal]);
@@ -2172,7 +2159,7 @@ const CalificacionRow = React.memo(function CalificacionRow({ estudiante, materi
   const promAIBg = darkMode ? 'bg-purple-900/50' : 'bg-purple-50/70';
   const promExBg = darkMode ? 'bg-amber-900/50' : 'bg-amber-50/70';
   const finalBg = darkMode ? 'bg-emerald-900/60' : 'bg-emerald-50/80';
-  const hasData = acNotas.some(n=>n!==null) || aiNotas.some(n=>n!==null) || examen!==null;
+  const hasData = acNotas.some(n => n !== null) || aiNotas.some(n => n !== null) || examen !== null;
   const statusIcon = saving && dirty ? <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 text-teal-500 animate-spin mx-auto" /> : (!dirty && hasData) ? <span title="Guardado">✅</span> : <span className={darkMode ? 'text-slate-600' : 'text-slate-300'}>-</span>;
   const finalBadgeClass = promFinal !== null && promFinal >= 6 ? (darkMode ? 'bg-emerald-700/80 text-emerald-100 ring-1 ring-emerald-500' : 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-200') : promFinal !== null ? (darkMode ? 'bg-rose-700/80 text-rose-100 ring-1 ring-rose-500' : 'bg-rose-100 text-rose-800 ring-1 ring-rose-200') : (darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-400');
 
@@ -2248,7 +2235,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
       try {
         const resCal = await fetch(`/api/calificaciones?gradoId=${grado.id}`, { credentials: "include" });
         if (resCal.ok) setTodasCalificaciones(await resCal.json());
-        
+
         const resAsist = await fetch(`/api/asistencia/resumen?gradoId=${grado.id}&anual=true`, { credentials: "include" });
         if (resAsist.ok) setResumenAsistenciaAnual(await resAsist.json());
       } catch (e) { console.error(e); }
@@ -2257,18 +2244,18 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
     fetchDatosAnuales();
   }, [grado?.id]);
 
-  const getCalifs = (id: string) => todasCalificaciones.length > 0 
+  const getCalifs = (id: string) => todasCalificaciones.length > 0
     ? todasCalificaciones.filter(c => c.estudianteId === id && c.trimestre === trimestre)
     : calificaciones.filter(c => c.estudianteId === id && c.trimestre === trimestre);
-  const calcProm = (c: Calificacion[]) => { 
+  const calcProm = (c: Calificacion[]) => {
     const notas = materias.map(m => {
       const cal = c.find(x => x.materiaId === m.id);
       if (!cal || cal.promedioFinal === null || cal.promedioFinal === undefined) return null;
       return cal.promedioFinal;
     }).filter((x): x is number => x !== null && x > 0);
-    return notas.length ? notas.reduce((a, b) => a + b, 0) / notas.length : null; 
+    return notas.length ? notas.reduce((a, b) => a + b, 0) / notas.length : null;
   };
-  
+
   const getTrimestreRomano = (t: number) => {
     const romanos = ['I', 'II', 'III'];
     return romanos[t - 1] || t.toString();
@@ -2296,8 +2283,8 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
       const c = califs.find(x => x.materiaId === m.id);
       const notaFinal = c?.promedioFinal?.toFixed(1) ?? '-';
       const recupVal = c?.recuperacion !== null && c?.recuperacion !== undefined ? c.recuperacion.toFixed(1) : '-';
-      const estado = c?.promedioFinal !== null && c?.promedioFinal !== undefined 
-        ? (c.promedioFinal >= 6 ? 'A' : 'R') 
+      const estado = c?.promedioFinal !== null && c?.promedioFinal !== undefined
+        ? (c.promedioFinal >= 6 ? 'A' : 'R')
         : '-';
       return `<tr>
         <td style="text-align:left;padding:6px 8px">${m.nombre}</td>
@@ -2490,7 +2477,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
 
   const imprimirTodas = async () => {
     if (!estudiantes.length) return;
-    
+
     let allBoletasHtml = '';
     const año = grado?.año || new Date().getFullYear();
     const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
@@ -2505,8 +2492,8 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
         const c = califs.find(x => x.materiaId === m.id);
         const notaFinal = c?.promedioFinal?.toFixed(1) ?? '-';
         const recupVal = c?.recuperacion !== null && c?.recuperacion !== undefined ? c.recuperacion.toFixed(1) : '-';
-        const estado = c?.promedioFinal !== null && c?.promedioFinal !== undefined 
-          ? (c.promedioFinal >= 6 ? 'A' : 'R') 
+        const estado = c?.promedioFinal !== null && c?.promedioFinal !== undefined
+          ? (c.promedioFinal >= 6 ? 'A' : 'R')
           : '-';
         return `<tr>
           <td style="text-align:left;padding:6px 8px">${m.nombre}</td>
@@ -2693,7 +2680,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
   const imprimirAnual = async (id: string) => {
     const est = estudiantes.find(e => e.id === id);
     if (!est) return;
-    
+
     const año = grado?.año || new Date().getFullYear();
     const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
     const asistAnual = resumenAsistenciaAnual.find(r => r.id === id) || { asistencias: 0, ausencias: 0, tardanzas: 0, total: 0 };
@@ -2705,11 +2692,11 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
       const c1 = califsEst.find(c => c.materiaId === m.id && c.trimestre === 1);
       const c2 = califsEst.find(c => c.materiaId === m.id && c.trimestre === 2);
       const c3 = califsEst.find(c => c.materiaId === m.id && c.trimestre === 3);
-      
+
       const n1 = c1?.promedioFinal;
       const n2 = c2?.promedioFinal;
       const n3 = c3?.promedioFinal;
-      
+
       const notasValidas = [n1, n2, n3].filter((n): n is number => n !== null && n !== undefined);
       const promAnual = notasValidas.length ? notasValidas.reduce((a, b) => a + b, 0) / notasValidas.length : null;
       const estado = promAnual !== null ? (promAnual >= 6 ? 'APROBADO' : 'REPROBADO') : '-';
@@ -2837,7 +2824,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
 
   const imprimirTodasAnual = async () => {
     if (!estudiantes.length) return;
-    
+
     let allBoletasHtml = '';
     const año = grado?.año || new Date().getFullYear();
     const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });

@@ -1,8 +1,10 @@
+export type RolUsuario = "admin" | "admin-directora" | "admin-codirectora" | "docente" | "docente-orientador";
+
 export interface Usuario {
   id: string;
   email: string;
   nombre: string;
-  rol: "admin" | "docente";
+  rol: RolUsuario;
   activo: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -13,7 +15,6 @@ export interface Grado {
   numero: number;
   seccion: string;
   año: number;
-  docenteId: string | null;
   activo: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -70,7 +71,7 @@ export interface Session {
   id: string;
   email: string;
   nombre: string;
-  rol: "admin" | "docente";
+  rol: RolUsuario;
 }
 
 export interface ApiResponse<T> {

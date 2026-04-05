@@ -13,14 +13,13 @@ export const nombreSchema = z
   .max(255)
   .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, "El nombre solo puede contener letras y espacios");
 
-export const rolSchema = z.enum(["admin", "docente"]);
+export const rolSchema = z.enum(["admin", "admin-directora", "admin-codirectora", "docente", "docente-orientador"]);
 
 export const usuarioCreateSchema = z.object({
   email: emailSchema,
   password: passwordSchema,
   nombre: nombreSchema,
   rol: rolSchema,
-  gradosAsignados: z.array(z.string()).optional(),
   materiasAsignadas: z.array(z.string()).optional(),
 });
 
@@ -31,7 +30,6 @@ export const usuarioUpdateSchema = z.object({
   rol: rolSchema.optional(),
   activo: z.boolean().optional(),
   password: passwordSchema.optional(),
-  gradosAsignados: z.array(z.string()).optional(),
   materiasAsignadas: z.array(z.string()).optional(),
 });
 
@@ -50,7 +48,6 @@ export const gradoUpdateSchema = z.object({
   numero: gradoNumeroSchema.optional(),
   seccion: gradoSeccionSchema.optional(),
   año: gradoAnioSchema.optional(),
-  docenteId: z.string().cuid("ID de docente inválido").nullable().optional(),
 });
 
 export const estudianteNombreSchema = z

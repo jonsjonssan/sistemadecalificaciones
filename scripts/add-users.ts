@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const db = new PrismaClient();
 
@@ -12,14 +13,12 @@ async function main() {
   }
 
   for (const g of gradosData) {
-    await db.grado.upsert({
-      where: {
-        // No hay un constraint único por grado en el schema simple, buscaremos el primero
-        id: (await db.grado.findFirst({ where: { numero: g.numero } }))?.id || "not-found",
-      },
-      update: {},
-      create: { numero: g.numero, seccion: g.seccion, año: g.año },
-    });
+    const existing = await db.grado.findFirst({ where: { numero: g.numero } });
+    if (!existing) {
+      await db.grado.create({
+        data: { numero: g.numero, seccion: g.seccion, año: g.año },
+      });
+    }
   }
 
   const gradosDb = await db.grado.findMany();
@@ -29,7 +28,7 @@ async function main() {
   const asegurarMateria = async (nombre: string, numGrado: number) => {
     const gradoId = getGradoId(numGrado);
     if (!gradoId) return null;
-    
+
     let materia = await db.materia.findFirst({
       where: { nombre, gradoId },
     });
@@ -42,13 +41,42 @@ async function main() {
     return materia;
   };
 
+  // Hash de contraseña
+  const hashPassword = async (password: string) => {
+    return await bcrypt.hash(password, 10);
+  };
+
   const users = [
+    // ==================== ADMINISTRADORES ====================
+    {
+      nombre: "Jonathan Adonay Araujo Mendoza",
+      email: "jonathan.araujo.mendoza@clases.edu.sv",
+      password: "docente123",
+      rol: "admin" as const,
+      materias: [] // Acceso total
+    },
+    {
+      nombre: "Mónica Lissette Tobar Gómez",
+      email: "monica.lissette.tobar@clases.edu.sv",
+      password: "admin123",
+      rol: "admin-directora" as const,
+      materias: [] // Acceso total, no puede eliminar usuarios
+    },
+    {
+      nombre: "Claudia Jasmin Arce Castillo",
+      email: "claudia.jasmin.arce@clases.edu.sv",
+      password: "admin123",
+      rol: "admin-codirectora" as const,
+      materias: [] // Acceso total, no puede eliminar usuarios
+    },
+
+    // ==================== DOCENTES-ORIENTADORES (6-9 grado) ====================
+    // Califican una asignatura específica en 6°, 7°, 8° y 9°
     {
       nombre: "Yessenia del Carmen Villafuerte Mejía",
       email: "yessenia.carmen.villafuerte@clases.edu.sv",
       password: "docente123",
-      rol: "docente",
-      tutorGrado: 6,
+      rol: "docente-orientador" as const,
       materias: [
         { grado: 6, mat: "Aritmética y Finanzas" },
         { grado: 7, mat: "Matemática y Datos" },
@@ -57,27 +85,10 @@ async function main() {
       ]
     },
     {
-      nombre: "Mónica Gissel Montesino Najarro",
-      email: "monica.montesino.najarro@clases.edu.sv",
-      password: "docente123",
-      rol: "docente",
-      materias: [
-        { grado: 2, mat: "Desarrollo Corporal" },
-        { grado: 3, mat: "Desarrollo Corporal" },
-        { grado: 4, mat: "Desarrollo Corporal" },
-        { grado: 5, mat: "Desarrollo Corporal" },
-        { grado: 6, mat: "Desarrollo Corporal" },
-        { grado: 7, mat: "Educación Física y Deportes" },
-        { grado: 8, mat: "Educación Física y Deportes" },
-        { grado: 9, mat: "Educación Física y Deportes" }
-      ]
-    },
-    {
       nombre: "Jaqueline Lissette Landaverde de Gómez",
       email: "jaqueline.lissette.landaverde@clases.edu.sv",
       password: "docente123",
-      rol: "docente",
-      tutorGrado: 7,
+      rol: "docente-orientador" as const,
       materias: [
         { grado: 6, mat: "Ciencia y Tecnología" },
         { grado: 7, mat: "Ciencia y Tecnología" },
@@ -89,8 +100,7 @@ async function main() {
       nombre: "Ana del Carmen Romero González",
       email: "ana.carmen.romero@clases.edu.sv",
       password: "docente123",
-      rol: "docente",
-      tutorGrado: 8,
+      rol: "docente-orientador" as const,
       materias: [
         { grado: 6, mat: "Ciudadanía y Valores" },
         { grado: 7, mat: "Ciudadanía y Valores" },
@@ -99,13 +109,39 @@ async function main() {
       ]
     },
     {
+      nombre: "Mónica Gissel Montesino Najarro",
+      email: "monica.montesino.najarro@clases.edu.sv",
+      password: "docente123",
+      rol: "docente-orientador" as const,
+      materias: [
+        { grado: 6, mat: "Desarrollo Corporal" },
+        { grado: 7, mat: "Educación Física y Deportes" },
+        { grado: 8, mat: "Educación Física y Deportes" },
+        { grado: 9, mat: "Educación Física y Deportes" }
+      ]
+    },
+
+    // ==================== DOCENTES (2-5 grado con asignaturas) ====================
+    // Califican múltiples asignaturas en un grado específico (como asignaturas, no como tutor)
+    {
+      nombre: "Deysi Elizabeth Umanzor Cruz",
+      email: "deysi.elizabeth.umanzor@clases.edu.sv",
+      password: "docente123",
+      rol: "docente" as const,
+      materias: [
+        { grado: 2, mat: "Comunicación y Literatura" },
+        { grado: 2, mat: "Aritmética y Finanzas" },
+        { grado: 2, mat: "Ciudadanía y Valores" },
+        { grado: 2, mat: "Ciencia y Tecnología" }
+      ]
+    },
+    {
       nombre: "Yency Yesenia Mejía Nerio",
       email: "04876579-1@clases.edu.sv",
       password: "docente123",
-      rol: "docente",
-      tutorGrado: 3,
+      rol: "docente" as const,
       materias: [
-        { grado: 3, mat: "Comunicación" },
+        { grado: 3, mat: "Comunicación y Literatura" },
         { grado: 3, mat: "Aritmética y Finanzas" },
         { grado: 3, mat: "Ciudadanía y Valores" },
         { grado: 3, mat: "Ciencia y Tecnología" }
@@ -115,8 +151,7 @@ async function main() {
       nombre: "Silverio Mónico Mulato",
       email: "silverio.silverio.monico@clases.edu.sv",
       password: "docente123",
-      rol: "docente",
-      tutorGrado: 4,
+      rol: "docente" as const,
       materias: [
         { grado: 4, mat: "Comunicación y Literatura" },
         { grado: 4, mat: "Aritmética y Finanzas" },
@@ -128,8 +163,7 @@ async function main() {
       nombre: "Emilia Etel Peraza",
       email: "emilia.peraza.publicos698@clases.edu.sv",
       password: "docente123",
-      rol: "docente",
-      tutorGrado: 5,
+      rol: "docente" as const,
       materias: [
         { grado: 5, mat: "Comunicación y Literatura" },
         { grado: 5, mat: "Aritmética y Finanzas" },
@@ -137,31 +171,21 @@ async function main() {
         { grado: 5, mat: "Ciencia y Tecnología" }
       ]
     },
-    {
-      nombre: "Deysi Elizabeth Umanzor Cruz",
-      email: "deysi.elizabeth.umanzor@clases.edu.sv",
-      password: "docente123",
-      rol: "docente",
-      tutorGrado: 2,
-      materias: [
-        { grado: 2, mat: "Comunicación" },
-        { grado: 2, mat: "Aritmética y Finanzas" },
-        { grado: 2, mat: "Ciudadanía y Valores" },
-        { grado: 2, mat: "Ciencia y Tecnología" }
-      ]
-    },
+
+    // ==================== DOCENTES ESPECIALISTAS ====================
+    // Califican una asignatura en múltiples grados
     {
       nombre: "Helen Alicia Cabezas de Golcher",
       email: "03533849-6@clases.edu.sv",
       password: "docente123",
-      rol: "docente",
-      materias: [2,3,4,5,6,7,8,9].map(g => ({ grado: g, mat: "Educación en la Fe" }))
+      rol: "docente" as const,
+      materias: [2, 3, 4, 5, 6, 7, 8, 9].map(g => ({ grado: g, mat: "Educación en la Fe" }))
     },
     {
       nombre: "Diana Nicole Rojas Urias",
       email: "05980194-0@clases.edu.sv",
       password: "docente123",
-      rol: "docente",
+      rol: "docente" as const,
       materias: [
         { grado: 2, mat: "Artes" },
         { grado: 3, mat: "Artes" },
@@ -169,52 +193,13 @@ async function main() {
         { grado: 8, mat: "Inglés" },
         { grado: 9, mat: "Inglés" }
       ]
-    },
-    {
-      nombre: "Mónica Lissette Tobar Gómez",
-      email: "monica.lissette.tobar@clases.edu.sv",
-      password: "admin123",
-      rol: "admin",
-      materias: [
-        { grado: 4, mat: "Artes" },
-        { grado: 5, mat: "Artes" },
-        { grado: 6, mat: "Artes" }
-      ]
-    },
-    {
-      nombre: "Administrador",
-      email: "admin@escuela.edu",
-      password: "admin",
-      rol: "admin",
-      materias: []
-    },
-    {
-      nombre: "Claudia Jasmin Arce Castillo",
-      email: "claudia.jasmin.arce@clases.edu.sv",
-      password: "admin123",
-      rol: "admin",
-      tutorGrado: 9,
-      materias: [
-        { grado: 6, mat: "Comunicación y Literatura" },
-        { grado: 7, mat: "Lengua y Literatura" },
-        { grado: 8, mat: "Lengua y Literatura" },
-        { grado: 9, mat: "Lengua y Literatura" }
-      ]
-    },
-    {
-      nombre: "Jonathan Adonay Araujo Mendoza",
-      email: "jonathan.araujo.mendoza@clases.edu.sv",
-      password: "docente123",
-      rol: "docente",
-      materias: [
-        { grado: 4, mat: "Artes" },
-        { grado: 5, mat: "Artes" },
-        { grado: 6, mat: "Artes" }
-      ]
     }
   ];
 
   for (const u of users) {
+    // Hash password
+    const hashedPassword = await hashPassword(u.password);
+
     // Upsert usuario
     let user = await db.usuario.findUnique({ where: { email: u.email } });
     if (!user) {
@@ -222,50 +207,41 @@ async function main() {
         data: {
           email: u.email,
           nombre: u.nombre,
-          password: u.password,
+          password: hashedPassword,
           rol: u.rol,
         }
       });
-      console.log(`Creado usuario: ${u.nombre}`);
+      console.log(`✓ Creado usuario: ${u.nombre} (${u.rol})`);
     } else {
       user = await db.usuario.update({
         where: { email: u.email },
-        data: { rol: u.rol, password: u.password, nombre: u.nombre }
+        data: { rol: u.rol, password: hashedPassword, nombre: u.nombre }
       });
-      console.log(`Actualizado usuario: ${u.nombre}`);
+      console.log(`✓ Actualizado usuario: ${u.nombre} (${u.rol})`);
     }
 
-    // Set Tutor
-    if (u.tutorGrado) {
-      const gradoId = getGradoId(u.tutorGrado);
-      if (gradoId) {
-        await db.grado.update({
-          where: { id: gradoId },
-          data: { docenteId: user.id }
-        });
-      }
-    }
+    // Limpiar asignaciones anteriores
+    await db.docenteMateria.deleteMany({
+      where: { docenteId: user.id }
+    });
 
-    // Assign Materias
+    // Asignar Materias
     if (u.materias && u.materias.length > 0) {
       for (const mat of u.materias) {
         const materiaRecord = await asegurarMateria(mat.mat, mat.grado);
         if (materiaRecord) {
-          // Verify assignment
-          const existingAssign = await db.docenteMateria.findFirst({
-            where: { docenteId: user.id, materiaId: materiaRecord.id }
+          await db.docenteMateria.create({
+            data: { docenteId: user.id, materiaId: materiaRecord.id }
           });
-          if (!existingAssign) {
-            await db.docenteMateria.create({
-              data: { docenteId: user.id, materiaId: materiaRecord.id }
-            });
-          }
         }
       }
+      console.log(`  → ${u.materias.length} materia(s) asignada(s)`);
     }
   }
 
-  console.log("Completado!");
+  console.log("\n✅ ¡Completado! Todos los usuarios han sido creados/actualizados.");
 }
 
-main().catch(console.error).finally(() => db.$disconnect());
+main()
+  .catch(console.error)
+  .finally(() => db.$disconnect());

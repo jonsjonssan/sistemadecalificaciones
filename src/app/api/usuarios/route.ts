@@ -4,6 +4,8 @@ import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import { randomUUID } from "crypto";
 
+// ==================== Helpers ====================
+
 async function getUsuarioSession() {
   const cookieStore = await cookies();
   const session = cookieStore.get("session");
@@ -11,11 +13,40 @@ async function getUsuarioSession() {
   return JSON.parse(session.value);
 }
 
+/**
+ * Verifica si el usuario tiene rol de administrador (cualquier variante)
+ */
+function isAdmin(rol: string): boolean {
+  return ["admin", "admin-directora", "admin-codirectora"].includes(rol);
+}
+
+/**
+ * Verifica si el usuario puede eliminar otros usuarios
+ * Solo el admin principal (jonathan.araujo.mendoza@clases.edu.sv) puede eliminar
+ */
+function canDeleteUsers(session: any): boolean {
+  return session.email === "jonathan.araujo.mendoza@clases.edu.sv";
+}
+
+/**
+ * Verifica si el usuario puede ver todas las calificaciones
+ */
+function canViewAll(session: any): boolean {
+  return isAdmin(session.rol);
+}
+
+// ==================== GET: Listar usuarios ====================
+
 export async function GET() {
   try {
     const session = await getUsuarioSession();
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    // Solo admins pueden ver la lista completa de usuarios
+    if (!isAdmin(session.rol)) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 
     const usuarios = await sql`
@@ -25,13 +56,8 @@ export async function GET() {
     `;
 
     const usuariosFormateados = await Promise.all(usuarios.map(async (u: any) => {
-      const grados = await sql`
-        SELECT g.id, g.numero, g.seccion, g.año
-        FROM "Grado" g WHERE g."docenteId" = ${u.id}
-      `;
-
       const materiasRaw = await sql`
-        SELECT dm.id, m.id as materia_id, m.nombre as materia_nombre, 
+        SELECT dm.id, m.id as materia_id, m.nombre as materia_nombre,
                g.id as grado_id, g.numero as grado_numero, g.seccion as grado_seccion
         FROM "DocenteMateria" dm
         JOIN "Materia" m ON dm."materiaId" = m.id
@@ -41,7 +67,6 @@ export async function GET() {
 
       return {
         ...u,
-        gradosComoTutor: grados,
         materias: materiasRaw.map((m: any) => ({
           id: m.materia_id,
           nombre: m.materia_nombre,
@@ -59,21 +84,21 @@ export async function GET() {
   }
 }
 
+// ==================== POST: Crear usuario ====================
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getUsuarioSession();
-    console.log("[usuarios POST] Session:", JSON.stringify(session));
-    
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    if (session.rol !== "admin") {
-      return NextResponse.json({ error: "Solo administradores pueden crear usuarios" }, { status: 403 });
+    // Solo admin principal puede crear usuarios
+    if (!canDeleteUsers(session)) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 
-    const { email, password, nombre, rol, gradosAsignados, materiasAsignadas } = await request.json();
-    console.log("[usuarios POST] Data:", { email, nombre, rol, gradosAsignados, materiasAsignadas });
+    const { email, password, nombre, rol, materiasAsignadas } = await request.json();
 
     if (!email || !password || !nombre || !rol) {
       return NextResponse.json({ error: "Todos los campos son requeridos" }, { status: 400 });
@@ -92,12 +117,6 @@ export async function POST(request: NextRequest) {
       RETURNING id, email, nombre, rol, activo
     `;
 
-    if (gradosAsignados && gradosAsignados.length > 0) {
-      for (const gradoId of gradosAsignados) {
-        await sql`UPDATE "Grado" SET "docenteId" = ${nuevoUsuario[0].id} WHERE id = ${gradoId}`;
-      }
-    }
-
     if (materiasAsignadas && materiasAsignadas.length > 0) {
       for (const materiaId of materiasAsignadas) {
         await sql`
@@ -115,6 +134,8 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// ==================== PUT: Actualizar usuario ====================
+
 export async function PUT(request: NextRequest) {
   try {
     const session = await getUsuarioSession();
@@ -122,14 +143,13 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    if (session.rol !== "admin") {
-      return NextResponse.json({ error: "Solo administradores pueden modificar usuarios" }, { status: 403 });
+    // Solo admin principal puede modificar usuarios
+    if (!canDeleteUsers(session)) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 
     const body = await request.json();
-    const { id, nombre, rol, activo, password, gradosAsignados, materiasAsignadas } = body;
-
-    const gradosReales = body.gradoAsignados || body.gradosAsignados || gradosAsignados;
+    const { id, nombre, rol, activo, password, materiasAsignadas } = body;
 
     if (!id) {
       return NextResponse.json({ error: "ID requerido" }, { status: 400 });
@@ -144,7 +164,7 @@ export async function PUT(request: NextRequest) {
       if (current.length === 0) {
         return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
       }
-      
+
       let finalPassword = current[0].password;
       if (password) {
         finalPassword = await bcrypt.hash(password, 10);
@@ -159,15 +179,6 @@ export async function PUT(request: NextRequest) {
           "updatedAt" = NOW()
         WHERE id = ${id}
       `;
-    }
-
-    if (gradosReales !== undefined) {
-      await sql`UPDATE "Grado" SET "docenteId" = NULL WHERE "docenteId" = ${id}`;
-      if (gradosReales && gradosReales.length > 0) {
-        for (const gradoId of gradosReales) {
-          await sql`UPDATE "Grado" SET "docenteId" = ${id} WHERE id = ${gradoId}`;
-        }
-      }
     }
 
     if (materiasAsignadas !== undefined) {
@@ -191,6 +202,8 @@ export async function PUT(request: NextRequest) {
   }
 }
 
+// ==================== DELETE: Eliminar usuario ====================
+
 export async function DELETE(request: NextRequest) {
   try {
     const session = await getUsuarioSession();
@@ -198,8 +211,9 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    if (session.rol !== "admin") {
-      return NextResponse.json({ error: "Solo administradores pueden eliminar usuarios" }, { status: 403 });
+    // Solo el admin principal puede eliminar usuarios
+    if (!canDeleteUsers(session)) {
+      return NextResponse.json({ error: "Solo el administrador principal puede eliminar usuarios" }, { status: 403 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -213,7 +227,6 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "No puedes eliminarte a ti mismo" }, { status: 400 });
     }
 
-    await sql`UPDATE "Grado" SET "docenteId" = NULL WHERE "docenteId" = ${id}`;
     await sql`DELETE FROM "DocenteMateria" WHERE "docenteId" = ${id}`;
     await sql`DELETE FROM "Usuario" WHERE id = ${id}`;
 
