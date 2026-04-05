@@ -7,7 +7,10 @@
       "Bash(git add *)",
       "Bash(git commit *)",
       "Bash(git *)",
-      "Bash(npx *)"
+      "Bash(npx *)",
+      "Bash(curl *)",
+      "Bash(timeout *)",
+      "Bash(taskkill *)"
     ]
   },
   "$version": 3
