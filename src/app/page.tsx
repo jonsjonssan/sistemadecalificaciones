@@ -101,6 +101,19 @@ export default function Home() {
   // ==================== Helpers de Roles ====================
   const isAdmin = (rol: string) => ["admin", "admin-directora", "admin-codirectora"].includes(rol);
   const canDeleteUsers = (user: typeof usuario) => user?.email === "jonathan.araujo.mendoza@clases.edu.sv";
+
+  // Obtener docentes asignados a un grado (basado en DocenteMateria)
+  const getDocentesDelGrado = (gradoId: string) => {
+    const docentes = new Set<string>();
+    usuarios.forEach(u => {
+      u.materias?.forEach(m => {
+        if (m.gradoId === gradoId) {
+          docentes.add(u.nombre);
+        }
+      });
+    });
+    return Array.from(docentes);
+  };
   const [dialogOpen, setDialogOpen] = useState(false);
   const [configDialogOpen, setConfigDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
@@ -1382,7 +1395,7 @@ export default function Home() {
               grados={grados}
               totalEstudiantes={grados.reduce((sum, g) => sum + (g._count?.estudiantes || 0), 0)}
               totalAsignaturas={todasAsignaturas.length}
-              totalDocentes={usuarios.filter(u => u.rol === "docente" && u.activo).length}
+              totalDocentes={usuarios.filter(u => (u.rol === "docente" || u.rol === "docente-orientador") && u.activo).length}
               asignaturasAsignadas={(usuario.asignaturasAsignadas || []).map((m: any) => ({
                 id: m.id,
                 nombre: m.nombre,
@@ -1728,7 +1741,18 @@ export default function Home() {
                 <CardHeader className={`py-3 px-4 ${darkMode ? 'border-slate-700' : ''}`}><CardTitle className="text-sm sm:text-base">Grados Registrados</CardTitle></CardHeader>
                 <CardContent className="pt-0">
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
-                    {grados.map(g => <div key={g.id} className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50'}`}><p className={`font-medium text-xs sm:text-sm ${darkMode ? 'text-white' : ''}`}>{g.numero}° "{g.seccion}"</p><p className={`text-[10px] ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>{g._count?.estudiantes || 0} estudiantes • {g.docente?.nombre || "Sin docente"}</p></div>)}
+                    {grados.map(g => {
+                      const docentesDelGrado = getDocentesDelGrado(g.id);
+                      const docentesTexto = docentesDelGrado.length > 0
+                        ? (docentesDelGrado.length === 1 ? docentesDelGrado[0] : `${docentesDelGrado.length} docentes`)
+                        : "Sin docente";
+                      return (
+                        <div key={g.id} className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50'}`}>
+                          <p className={`font-medium text-xs sm:text-sm ${darkMode ? 'text-white' : ''}`}>{g.numero}° "{g.seccion}"</p>
+                          <p className={`text-[10px] ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>{g._count?.estudiantes || 0} estudiantes • {docentesTexto}</p>
+                        </div>
+                      );
+                    })}
                   </div>
                 </CardContent>
               </Card>
