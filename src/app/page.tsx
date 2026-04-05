@@ -2346,6 +2346,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
     <div class="info-estudiante">
       <div>
         <p><span class="label">Estudiante:</span> ${est.nombre}</p>
+        ${est.email ? `<p><span class="label">Correo:</span> ${est.email}</p>` : ''}
         <p><span class="label">Grado:</span> ${grado?.numero}° Grado "${grado?.seccion}"</p>
       </div>
       <div style="text-align: right;">
@@ -2493,6 +2494,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
         <div class="info-estudiante">
           <div>
             <p><span class="label">Estudiante:</span> ${est.nombre}</p>
+            ${est.email ? `<p><span class="label">Correo:</span> ${est.email}</p>` : ''}
             <p><span class="label">Grado:</span> ${grado?.numero}° Grado "${grado?.seccion}"</p>
           </div>
           <div style="text-align: right;">
@@ -2735,6 +2737,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
     <div class="info-estudiante">
       <div>
         <p><span class="label">Estudiante:</span> ${est.nombre}</p>
+        ${est.email ? `<p><span class="label">Correo:</span> ${est.email}</p>` : ''}
         <p><span class="label">Grado:</span> ${grado?.numero}° Grado "${grado?.seccion}"</p>
       </div>
       <div style="text-align: right;">
@@ -2826,7 +2829,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
         </div>
         <div class="titulo-boleta"><h3>BOLETA DE CALIFICACIONES CONSOLIDADA - ANUAL</h3></div>
         <div class="info-estudiante">
-          <div><p><span class="label">Estudiante:</span> ${est.nombre}</p><p><span class="label">Grado:</span> ${grado?.numero}° Grado "${grado?.seccion}"</p></div>
+          <div><p><span class="label">Estudiante:</span> ${est.nombre}</p>${est.email ? `<p><span class="label">Correo:</span> ${est.email}</p>` : ''}<p><span class="label">Grado:</span> ${grado?.numero}° Grado "${grado?.seccion}"</p></div>
           <div style="text-align: right;"><p><span class="label">Año Lectivo:</span> ${año}</p><p><span class="label">N° Lista:</span> ${est.numero}</p></div>
         </div>
         <table>
