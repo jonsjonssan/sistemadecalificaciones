@@ -46,6 +46,61 @@ async function main() {
     return await bcrypt.hash(password, 10);
   };
 
+  // ===================================================================
+  // DEFINICIÓN DE ASIGNATURAS POR CICLO
+  // ===================================================================
+
+  // Primer ciclo: 2° y 3° grado
+  const materiasPrimerCiclo = [
+    "Comunicación",
+    "Números y formas",
+    "Ciencia y Tecnología",
+    "Ciudadanía y Valores",
+    "Inglés",
+    "Desarrollo Corporal",
+    "Artes"
+  ];
+
+  // Segundo ciclo: 4°, 5° y 6° grado
+  const materiasSegundoCiclo = [
+    "Comunicación y Literatura",
+    "Aritmética y Finanzas",
+    "Ciencia y Tecnología",
+    "Ciudadanía y Valores",
+    "Inglés",
+    "Desarrollo Corporal",
+    "Artes"
+  ];
+
+  // Tercer ciclo: 7°, 8° y 9° grado
+  const materiasTercerCiclo = [
+    "Lengua y Literatura",
+    "Matemática y Datos",
+    "Ciencia y Tecnología",
+    "Ciudadanía y Valores",
+    "Inglés",
+    "Educación Física"
+  ];
+
+  // Crear TODAS las materias para todos los grados
+  for (let grado = 2; grado <= 9; grado++) {
+    let materias: string[];
+
+    if (grado <= 3) {
+      materias = materiasPrimerCiclo;
+    } else if (grado <= 6) {
+      materias = materiasSegundoCiclo;
+    } else {
+      materias = materiasTercerCiclo;
+    }
+
+    for (const mat of materias) {
+      await asegurarMateria(mat, grado);
+    }
+  }
+
+  console.log("✓ Materias creadas para todos los grados");
+
   const users = [
     // ==================== ADMINISTRADORES ====================
     {
@@ -114,62 +169,46 @@ async function main() {
       password: "docente123",
       rol: "docente-orientador" as const,
       materias: [
+        { grado: 2, mat: "Desarrollo Corporal" },
+        { grado: 3, mat: "Desarrollo Corporal" },
+        { grado: 4, mat: "Desarrollo Corporal" },
+        { grado: 5, mat: "Desarrollo Corporal" },
         { grado: 6, mat: "Desarrollo Corporal" },
-        { grado: 7, mat: "Educación Física y Deportes" },
-        { grado: 8, mat: "Educación Física y Deportes" },
-        { grado: 9, mat: "Educación Física y Deportes" }
+        { grado: 7, mat: "Educación Física" },
+        { grado: 8, mat: "Educación Física" },
+        { grado: 9, mat: "Educación Física" }
       ]
     },
 
-    // ==================== DOCENTES (2-5 grado con asignaturas) ====================
-    // Califican múltiples asignaturas en un grado específico (como asignaturas, no como tutor)
+    // ==================== DOCENTES-ORIENTADORES (2-5 grado) ====================
+    // Califican TODAS las asignaturas de un grado específico
     {
       nombre: "Deysi Elizabeth Umanzor Cruz",
       email: "deysi.elizabeth.umanzor@clases.edu.sv",
       password: "docente123",
-      rol: "docente" as const,
-      materias: [
-        { grado: 2, mat: "Comunicación y Literatura" },
-        { grado: 2, mat: "Aritmética y Finanzas" },
-        { grado: 2, mat: "Ciudadanía y Valores" },
-        { grado: 2, mat: "Ciencia y Tecnología" }
-      ]
+      rol: "docente-orientador" as const,
+      materias: materiasPrimerCiclo.flatMap(mat => [{ grado: 2, mat }])
     },
     {
       nombre: "Yency Yesenia Mejía Nerio",
       email: "04876579-1@clases.edu.sv",
       password: "docente123",
-      rol: "docente" as const,
-      materias: [
-        { grado: 3, mat: "Comunicación y Literatura" },
-        { grado: 3, mat: "Aritmética y Finanzas" },
-        { grado: 3, mat: "Ciudadanía y Valores" },
-        { grado: 3, mat: "Ciencia y Tecnología" }
-      ]
+      rol: "docente-orientador" as const,
+      materias: materiasPrimerCiclo.flatMap(mat => [{ grado: 3, mat }])
     },
     {
       nombre: "Silverio Mónico Mulato",
       email: "silverio.silverio.monico@clases.edu.sv",
       password: "docente123",
-      rol: "docente" as const,
-      materias: [
-        { grado: 4, mat: "Comunicación y Literatura" },
-        { grado: 4, mat: "Aritmética y Finanzas" },
-        { grado: 4, mat: "Ciudadanía y Valores" },
-        { grado: 4, mat: "Ciencia y Tecnología" }
-      ]
+      rol: "docente-orientador" as const,
+      materias: materiasSegundoCiclo.flatMap(mat => [{ grado: 4, mat }])
     },
     {
       nombre: "Emilia Etel Peraza",
       email: "emilia.peraza.publicos698@clases.edu.sv",
       password: "docente123",
-      rol: "docente" as const,
-      materias: [
-        { grado: 5, mat: "Comunicación y Literatura" },
-        { grado: 5, mat: "Aritmética y Finanzas" },
-        { grado: 5, mat: "Ciudadanía y Valores" },
-        { grado: 5, mat: "Ciencia y Tecnología" }
-      ]
+      rol: "docente-orientador" as const,
+      materias: materiasSegundoCiclo.flatMap(mat => [{ grado: 5, mat }])
     },
 
     // ==================== DOCENTES ESPECIALISTAS ====================
@@ -179,7 +218,11 @@ async function main() {
       email: "03533849-6@clases.edu.sv",
       password: "docente123",
       rol: "docente" as const,
-      materias: [2, 3, 4, 5, 6, 7, 8, 9].map(g => ({ grado: g, mat: "Educación en la Fe" }))
+      materias: [2, 3, 4, 5, 6, 7, 8, 9].flatMap(g => {
+        if (g <= 3) return [{ grado: g, mat: "Desarrollo Corporal" }];
+        if (g <= 6) return [{ grado: g, mat: "Desarrollo Corporal" }];
+        return [{ grado: g, mat: "Educación Física" }];
+      })
     },
     {
       nombre: "Diana Nicole Rojas Urias",
@@ -189,6 +232,9 @@ async function main() {
       materias: [
         { grado: 2, mat: "Artes" },
         { grado: 3, mat: "Artes" },
+        { grado: 4, mat: "Artes" },
+        { grado: 5, mat: "Artes" },
+        { grado: 6, mat: "Artes" },
         { grado: 7, mat: "Inglés" },
         { grado: 8, mat: "Inglés" },
         { grado: 9, mat: "Inglés" }
