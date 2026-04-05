@@ -25,12 +25,10 @@ export async function GET(request: NextRequest) {
     }
 
     const grados = await sql`
-      SELECT g.*, 
-             d.id as docente_id, d.nombre as docente_nombre, d.email as docente_email,
+      SELECT g.id, g.numero, g.seccion, g.año, g."createdAt", g."updatedAt",
              (SELECT COUNT(*) FROM "Estudiante" e WHERE e."gradoId" = g.id) as estudiantes_count,
              (SELECT COUNT(*) FROM "Materia" m WHERE m."gradoId" = g.id) as materias_count
       FROM "Grado" g
-      LEFT JOIN "Usuario" d ON g."docenteId" = d.id
       WHERE g.año = ${año}
       ORDER BY g.numero, g.seccion
     `;
@@ -40,12 +38,8 @@ export async function GET(request: NextRequest) {
       numero: g.numero,
       seccion: g.seccion,
       año: g.año,
-      docenteId: g.docenteId,
-      docente: g.docente_id ? {
-        id: g.docente_id,
-        nombre: g.docente_nombre,
-        email: g.docente_email
-      } : null,
+      docenteId: null,
+      docente: null,
       _count: {
         estudiantes: parseInt(g.estudiantes_count) || 0,
         materias: parseInt(g.materias_count) || 0
@@ -67,25 +61,26 @@ export async function POST(request: NextRequest) {
     }
 
     const usuario = JSON.parse(session.value);
-    if (usuario.rol !== "admin") {
+    const isAdmin = ["admin", "admin-directora", "admin-codirectora"].includes(usuario.rol);
+    if (!isAdmin) {
       return NextResponse.json({ error: "Solo administradores pueden crear grados" }, { status: 403 });
     }
 
-    const { numero, seccion, año, docenteId } = await request.json();
+    const { numero, seccion, año } = await request.json();
 
     if (!numero || numero < 2 || numero > 9) {
       return NextResponse.json({ error: "El grado debe estar entre 2 y 9" }, { status: 400 });
     }
 
     const gradoResult = await sql`
-      INSERT INTO "Grado" (numero, seccion, año, "docenteId")
-      VALUES (${numero}, ${seccion || "A"}, ${año || 2026}, ${docenteId})
+      INSERT INTO "Grado" (numero, seccion, año)
+      VALUES (${numero}, ${seccion || "A"}, ${año || 2026})
       RETURNING *
     `;
     const grado = gradoResult[0];
 
     const materia6ta = numero >= 7 ? "Educación Física y Deportes" : "Desarrollo Corporal";
-    
+
     const materiasNombres = [
       "Comunicación",
       "Números y Formas",
@@ -103,7 +98,7 @@ export async function POST(request: NextRequest) {
         RETURNING *
       `;
       const materia = materiaResult[0];
-      
+
       for (let trimestre = 1; trimestre <= 3; trimestre++) {
         await sql`
           INSERT INTO "ConfigActividad" (
@@ -118,14 +113,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const gradoConDocente = await sql`
-      SELECT g.*, d.id as docente_id, d.nombre as docente_nombre, d.email as docente_email
-      FROM "Grado" g
-      LEFT JOIN "Usuario" d ON g."docenteId" = d.id
-      WHERE g.id = ${grado.id}
-    `;
-
-    return NextResponse.json(gradoConDocente[0]);
+    return NextResponse.json(grado);
   } catch (error) {
     console.error("Error al crear grado:", error);
     return NextResponse.json({ error: "Error al crear grado" }, { status: 500 });
