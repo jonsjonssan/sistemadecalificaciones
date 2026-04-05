@@ -193,7 +193,7 @@ function SortableEstudianteRow({ est, idx, total, darkMode, onMoveUp, onMoveDown
     if (!editNombre.trim() || !onUpdate) return;
     setSaving(true);
     try {
-      await onUpdate(est.id, { nombre: editNombre.trim(), email: editEmail.trim() || undefined });
+      await onUpdate(est.id, { nombre: editNombre.trim(), email: editEmail.trim() });
       setEditing(false);
     } finally {
       setSaving(false);
