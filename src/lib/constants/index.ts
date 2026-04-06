@@ -37,7 +37,7 @@ export const ESTANDARES_PORCENTAJES = {
   EXAMEN: 30,
 } as const;
 
-export const NOTA_MINIMA_APROBATORIA = 6.0;
+export const NOTA_MINIMA_APROBATORIA = 5.0;
 
 export const MAX_ACTIVIDADES_COTIDIANAS = 10;
 export const MAX_ACTIVIDADES_INTEGRADORAS = 5;

@@ -14,7 +14,8 @@
       "Bash(rmdir *)",
       "Bash(echo.)",
       "Bash(-h)",
-      "Bash(\")\")"
+      "Bash(\")\")",
+      "WebSearch"
     ]
   },
   "$version": 3

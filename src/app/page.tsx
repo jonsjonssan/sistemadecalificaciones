@@ -2210,7 +2210,7 @@ const CalificacionRow = React.memo(function CalificacionRow({ estudiante, materi
   const finalBg = darkMode ? 'bg-emerald-900/60' : 'bg-emerald-50/80';
   const hasData = acNotas.some(n => n !== null) || aiNotas.some(n => n !== null) || examen !== null;
   const statusIcon = saving && dirty ? <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 text-teal-500 animate-spin mx-auto" /> : (!dirty && hasData) ? <span title="Guardado">✅</span> : <span className={darkMode ? 'text-slate-600' : 'text-slate-300'}>-</span>;
-  const finalBadgeClass = promFinal !== null && promFinal >= 6 ? (darkMode ? 'bg-emerald-700/80 text-emerald-100 ring-1 ring-emerald-500' : 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-200') : promFinal !== null ? (darkMode ? 'bg-rose-700/80 text-rose-100 ring-1 ring-rose-500' : 'bg-rose-100 text-rose-800 ring-1 ring-rose-200') : (darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-400');
+  const finalBadgeClass = promFinal !== null && promFinal >= 5 ? (darkMode ? 'bg-emerald-700/80 text-emerald-100 ring-1 ring-emerald-500' : 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-200') : promFinal !== null ? (darkMode ? 'bg-rose-700/80 text-rose-100 ring-1 ring-rose-500' : 'bg-rose-100 text-rose-800 ring-1 ring-rose-200') : (darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-400');
 
   if (!config) {
     return (
@@ -2312,7 +2312,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
 
   const getEstadoFinal = (promedio: number | null) => {
     if (promedio === null) return 'PENDIENTE';
-    return promedio >= 6 ? 'APROBADO' : 'REPROBADO';
+    return promedio >= 5 ? 'APROBADO' : 'REPROBADO';
   };
 
   const getAsistInfo = (id: string) => resumenAsistencia.find(r => r.id === id) || { asistencias: 0, ausencias: 0, tardanzas: 0, total: 0 };
@@ -2333,7 +2333,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
       const notaFinal = c?.promedioFinal?.toFixed(1) ?? '-';
       const recupVal = c?.recuperacion !== null && c?.recuperacion !== undefined ? c.recuperacion.toFixed(1) : '-';
       const estado = c?.promedioFinal !== null && c?.promedioFinal !== undefined
-        ? (c.promedioFinal >= 6 ? 'A' : 'R')
+        ? (c.promedioFinal >= 5 ? 'A' : 'R')
         : '-';
       return `<tr>
         <td style="text-align:left;padding:6px 8px">${m.nombre}</td>
@@ -2542,7 +2542,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
         const notaFinal = c?.promedioFinal?.toFixed(1) ?? '-';
         const recupVal = c?.recuperacion !== null && c?.recuperacion !== undefined ? c.recuperacion.toFixed(1) : '-';
         const estado = c?.promedioFinal !== null && c?.promedioFinal !== undefined
-          ? (c.promedioFinal >= 6 ? 'A' : 'R')
+          ? (c.promedioFinal >= 5 ? 'A' : 'R')
           : '-';
         return `<tr>
           <td style="text-align:left;padding:6px 8px">${m.nombre}</td>
@@ -2748,7 +2748,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
 
       const notasValidas = [n1, n2, n3].filter((n): n is number => n !== null && n !== undefined);
       const promAnual = notasValidas.length ? notasValidas.reduce((a, b) => a + b, 0) / notasValidas.length : null;
-      const estado = promAnual !== null ? (promAnual >= 6 ? 'APROBADO' : 'REPROBADO') : '-';
+      const estado = promAnual !== null ? (promAnual >= 5 ? 'APROBADO' : 'REPROBADO') : '-';
 
       return `<tr>
         <td style="text-align:left;padding:6px 8px">${m.nombre}</td>
@@ -2855,7 +2855,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
         <div class="etiqueta">PROMEDIO FINAL ANUAL</div>
       </div>
       <div class="resumen-item">
-        <div class="valor" style="color:${pFinal && pFinal >= 6 ? '#059669' : '#dc2626'}">${pFinal && pFinal >= 6 ? 'APROBADO' : 'REPROBADO'}</div>
+        <div class="valor" style="color:${pFinal && pFinal >= 5 ? '#059669' : '#dc2626'}">${pFinal && pFinal >= 5 ? 'APROBADO' : 'REPROBADO'}</div>
         <div class="etiqueta">ESTADO FINAL</div>
       </div>
     </div>
@@ -2889,7 +2889,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
         const n1 = c1?.promedioFinal, n2 = c2?.promedioFinal, n3 = c3?.promedioFinal;
         const notasValidas = [n1, n2, n3].filter((n): n is number => n !== null && n !== undefined);
         const promAnual = notasValidas.length ? notasValidas.reduce((a, b) => a + b, 0) / notasValidas.length : null;
-        const estado = promAnual !== null ? (promAnual >= 6 ? 'APROBADO' : 'REPROBADO') : '-';
+        const estado = promAnual !== null ? (promAnual >= 5 ? 'APROBADO' : 'REPROBADO') : '-';
         return `<tr><td style="text-align:left;padding:6px 8px">${m.nombre}</td><td>${n1?.toFixed(1) ?? '-'}</td><td>${n2?.toFixed(1) ?? '-'}</td><td>${n3?.toFixed(1) ?? '-'}</td><td style="font-weight:bold">${promAnual?.toFixed(1) ?? '-'}</td><td style="font-weight:bold;color:${estado === 'APROBADO' ? '#059669' : estado === 'REPROBADO' ? '#dc2626' : '#666'}">${estado}</td></tr>`;
       }).join('');
 
@@ -2927,7 +2927,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
         </div>
         <div class="resumen-anual">
           <div class="resumen-item"><div class="valor" style="color:#1e293b">${pFinal?.toFixed(2) ?? 'N/A'}</div><div class="etiqueta">PROMEDIO FINAL ANUAL</div></div>
-          <div class="resumen-item"><div class="valor" style="color:${pFinal && pFinal >= 6 ? '#059669' : '#dc2626'}">${pFinal && pFinal >= 6 ? 'APROBADO' : 'REPROBADO'}</div><div class="etiqueta">ESTADO FINAL</div></div>
+          <div class="resumen-item"><div class="valor" style="color:${pFinal && pFinal >= 5 ? '#059669' : '#dc2626'}">${pFinal && pFinal >= 5 ? 'APROBADO' : 'REPROBADO'}</div><div class="etiqueta">ESTADO FINAL</div></div>
         </div>
         <div class="firmas"><div class="firma"><p>Firma del Docente</p></div><div class="firma"><p>Firma de la Directora</p></div></div>
       </div>`;
@@ -2992,7 +2992,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
         return (
           <Card key={est.id} className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
             <div className={`p-2.5 flex items-center justify-between cursor-pointer ${darkMode ? 'hover:bg-slate-800' : 'hover:bg-slate-50'}`} onClick={() => setExpandedBoleta(open ? null : est.id)}>
-              <div className="flex items-center gap-2"><span className={`text-xs w-5 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>{est.numero}</span><span className={`text-xs sm:text-sm font-medium ${darkMode ? 'text-white' : ''}`}>{est.nombre}</span><Badge variant={prom !== null && prom >= 6 ? "default" : prom !== null ? "destructive" : "secondary"} className={`text-[10px] h-5 ${prom !== null && prom >= 6 ? (darkMode ? 'bg-teal-600' : 'bg-teal-600') : ''}`}>Prom: {prom !== null ? prom.toFixed(1) : "N/A"}</Badge></div>
+              <div className="flex items-center gap-2"><span className={`text-xs w-5 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>{est.numero}</span><span className={`text-xs sm:text-sm font-medium ${darkMode ? 'text-white' : ''}`}>{est.nombre}</span><Badge variant={prom !== null && prom >= 5 ? "default" : prom !== null ? "destructive" : "secondary"} className={`text-[10px] h-5 ${prom !== null && prom >= 5 ? (darkMode ? 'bg-teal-600' : 'bg-teal-600') : ''}`}>Prom: {prom !== null ? prom.toFixed(1) : "N/A"}</Badge></div>
               <div className="flex items-center gap-1">
                 <Button size="sm" variant="ghost" title="Consolidado Anual" className={`h-6 px-2 text-xs ${darkMode ? 'text-teal-400' : 'text-teal-600'}`} onClick={e => { e.stopPropagation(); imprimirAnual(est.id); }}>
                   <FileText className="h-3.5 w-3.5 mr-1" />Anual
