@@ -191,7 +191,7 @@ function calcularAsignaturasCriticas(calificaciones: any[]) {
     if (conNotas.length === 0) continue;
 
     const promedioMateria = conNotas.reduce((sum, c) => sum + c.promedioFinal, 0) / conNotas.length;
-    const estudiantesEnRiesgo = conNotas.filter(c => c.promedioFinal < 6.0).length;
+    const estudiantesEnRiesgo = conNotas.filter(c => c.promedioFinal < 5.0).length;
     const porcentajeEnRiesgo = (estudiantesEnRiesgo / conNotas.length) * 100;
 
     if (promedioMateria < 7.0) {
@@ -231,16 +231,16 @@ function calcularPrediccionReprobacion(calificaciones: any[], configs: any[]) {
     if (conNotas.length === 0) continue;
 
     const promedioGeneral = conNotas.reduce((sum, c) => sum + c.promedioFinal, 0) / conNotas.length;
-    const materiasEnRiesgo = conNotas.filter(c => c.promedioFinal < 6.0).length;
-    const materiasCriticas = conNotas.filter(c => c.promedioFinal < 5.0).length;
+    const materiasEnRiesgo = conNotas.filter(c => c.promedioFinal < 5.0).length;
+    const materiasCriticas = conNotas.filter(c => c.promedioFinal < 4.0).length;
 
     // Fórmula simple de predicción
     let probabilidad = 0;
-    if (promedioGeneral < 5.0) probabilidad = 90;
-    else if (promedioGeneral < 5.5) probabilidad = 75;
-    else if (promedioGeneral < 6.0) probabilidad = 60;
-    else if (promedioGeneral < 6.5) probabilidad = 40;
-    else if (promedioGeneral < 7.0) probabilidad = 20;
+    if (promedioGeneral < 4.0) probabilidad = 90;
+    else if (promedioGeneral < 4.5) probabilidad = 75;
+    else if (promedioGeneral < 5.0) probabilidad = 60;
+    else if (promedioGeneral < 5.5) probabilidad = 40;
+    else if (promedioGeneral < 6.0) probabilidad = 20;
     else probabilidad = 5;
 
     // Ajustar por materias críticas

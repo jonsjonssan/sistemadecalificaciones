@@ -41,7 +41,7 @@ const helpContent: Record<string, { title: string; tips: string[]; links?: { lab
       "Las actividades cotidianas valen 35% del promedio trimestral",
       "Las actividades integradoras valen 35% del promedio trimestral",
       "El examen trimestral vale 30% del promedio trimestral",
-      "Si el promedio final es menor a 6.0, el estudiante puede presentar recuperación",
+      "Si el promedio final es menor a 5.0, el estudiante puede presentar recuperación",
       "Puedes importar calificaciones desde un archivo CSV",
       "Las calificaciones se guardan automáticamente mientras escribes",
       "Usa el botón 'Config' para ajustar cantidades y porcentajes de actividades"
@@ -110,9 +110,8 @@ export function ContextualHelp({ section, darkMode }: ContextualHelpProps) {
       <Tooltip>
         <TooltipTrigger asChild>
           <button
-            className={`p-1.5 rounded-md transition-colors ${
-              darkMode ? 'hover:bg-slate-700 text-slate-400' : 'hover:bg-slate-100 text-slate-500'
-            }`}
+            className={`p-1.5 rounded-md transition-colors ${darkMode ? 'hover:bg-slate-700 text-slate-400' : 'hover:bg-slate-100 text-slate-500'
+              }`}
             aria-label="Ayuda contextual"
           >
             <HelpCircle className="h-4 w-4" />
