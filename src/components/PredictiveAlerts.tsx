@@ -118,9 +118,9 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode }: Predi
             />
             <StatCard
               label="Estado"
-              value={(data.resumen?.promedioGeneral || 0) >= 6 ? "OK" : "Atención"}
+              value={(data.resumen?.promedioGeneral || 0) >= 5 ? "OK" : "Atención"}
               icon={CheckCircle2}
-              color={(data.resumen?.promedioGeneral || 0) >= 6 ? "text-green-600" : "text-amber-600"}
+              color={(data.resumen?.promedioGeneral || 0) >= 5 ? "text-green-600" : "text-amber-600"}
               darkMode={darkMode}
             />
           </div>
@@ -222,8 +222,8 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode }: Predi
             <div className="space-y-2">
               {data.asignaturasCriticas.slice(0, 10).map((a: any, i: number) => (
                 <div key={i} className={`p-3 rounded-lg border ${a.nivel === "critico" ? (darkMode ? 'bg-red-900/20 border-red-800' : 'bg-red-50 border-red-200') :
-                    a.nivel === "preocupante" ? (darkMode ? 'bg-amber-900/20 border-amber-800' : 'bg-amber-50 border-amber-200') :
-                      (darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200')
+                  a.nivel === "preocupante" ? (darkMode ? 'bg-amber-900/20 border-amber-800' : 'bg-amber-50 border-amber-200') :
+                    (darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200')
                   }`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -297,8 +297,8 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode }: Predi
         >
           {data.comparacionHistorica ? (
             <div className={`p-4 rounded-lg border ${data.comparacionHistorica.estado === "sobre_umbral"
-                ? (darkMode ? 'bg-green-900/20 border-green-800' : 'bg-green-50 border-green-200')
-                : (darkMode ? 'bg-red-900/20 border-red-800' : 'bg-red-50 border-red-200')
+              ? (darkMode ? 'bg-green-900/20 border-green-800' : 'bg-green-50 border-green-200')
+              : (darkMode ? 'bg-red-900/20 border-red-800' : 'bg-red-50 border-red-200')
               }`}>
               <div className="flex items-center justify-between mb-3">
                 <div>
@@ -344,15 +344,15 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode }: Predi
             <div className="space-y-3">
               {data.recomendaciones.map((r: any, i: number) => (
                 <div key={i} className={`p-4 rounded-lg border ${r.tipo === "urgente" ? (darkMode ? 'bg-red-900/20 border-red-800' : 'bg-red-50 border-red-200') :
-                    r.tipo === "academica" ? (darkMode ? 'bg-amber-900/20 border-amber-800' : 'bg-amber-50 border-amber-200') :
-                      r.tipo === "asistencia" ? (darkMode ? 'bg-blue-900/20 border-blue-800' : 'bg-blue-50 border-blue-200') :
-                        (darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200')
+                  r.tipo === "academica" ? (darkMode ? 'bg-amber-900/20 border-amber-800' : 'bg-amber-50 border-amber-200') :
+                    r.tipo === "asistencia" ? (darkMode ? 'bg-blue-900/20 border-blue-800' : 'bg-blue-50 border-blue-200') :
+                      (darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200')
                   }`}>
                   <div className="flex items-start gap-3">
                     <Lightbulb className={`h-5 w-5 mt-0.5 shrink-0 ${r.tipo === "urgente" ? 'text-red-600' :
-                        r.tipo === "academica" ? 'text-amber-600' :
-                          r.tipo === "asistencia" ? 'text-blue-600' :
-                            'text-green-600'
+                      r.tipo === "academica" ? 'text-amber-600' :
+                        r.tipo === "asistencia" ? 'text-blue-600' :
+                          'text-green-600'
                       }`} />
                     <div className="flex-1">
                       <h4 className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{r.titulo}</h4>
