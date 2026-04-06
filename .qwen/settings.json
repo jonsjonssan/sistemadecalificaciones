@@ -12,7 +12,9 @@
       "Bash(timeout *)",
       "Bash(taskkill *)",
       "Bash(rmdir *)",
-      "Bash(echo.)"
+      "Bash(echo.)",
+      "Bash(-h)",
+      "Bash(\")\")"
     ]
   },
   "$version": 3

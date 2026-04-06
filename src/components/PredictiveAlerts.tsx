@@ -4,20 +4,13 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, TrendingDown, TrendingUp, Users, Eye, CheckCircle2, Clock } from "lucide-react";
+import {
+  AlertTriangle, TrendingDown, TrendingUp, Users, CheckCircle2, Clock,
+  CalendarX, BookOpen, Target, Lightbulb, ChevronDown, ChevronUp,
+  ArrowDownCircle, ArrowUpCircle, MinusCircle, BarChart3
+} from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-
-interface AlertData {
-  id: string;
-  estudianteId: string;
-  nombre: string;
-  tipo: "bajo_rendimiento" | "riesgo_absentismo" | "mejora_reciente" | "caida_reciente";
-  gravedad: "alta" | "media" | "baja";
-  mensaje: string;
-  promedio?: number;
-  ausencias?: number;
-  tendencia?: "subiendo" | "bajando" | "estable";
-}
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface PredictiveAlertsProps {
   gradoId?: string;
@@ -26,128 +19,43 @@ interface PredictiveAlertsProps {
 }
 
 export default function PredictiveAlerts({ gradoId, trimestre, darkMode }: PredictiveAlertsProps) {
-  const [alerts, setAlerts] = useState<AlertData[]>([]);
+  const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [dismissed, setDismissed] = useState<string[]>([]);
+  const [expandedSection, setExpandedSection] = useState<string | null>("tendencias");
 
   useEffect(() => {
-    if (gradoId && trimestre) {
-      fetchAlerts();
+    if (gradoId) {
+      fetchData();
     }
-  }, [gradoId, trimestre]);
+  }, [gradoId]);
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("ss_dismissed_alerts");
-      if (stored) setDismissed(JSON.parse(stored));
-    }
-  }, []);
-
-  const fetchAlerts = async () => {
+  const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/calificaciones?gradoId=${gradoId}&trimestre=${trimestre}`, {
+      const res = await fetch(`/api/alerts/predictive?gradoId=${gradoId}`, {
         credentials: "include"
       });
       if (res.ok) {
-        const calificaciones = await res.json();
-        const generatedAlerts = generateAlerts(calificaciones);
-        setAlerts(generatedAlerts);
+        const result = await res.json();
+        setData(result);
       }
     } catch (error) {
-      console.error("Error fetching alerts:", error);
+      console.error("Error fetching predictive alerts:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const generateAlerts = (calificaciones: any[]): AlertData[] => {
-    const alerts: AlertData[] = [];
-
-    calificaciones.forEach((calif: any) => {
-      const estudianteNombre = calif.estudiante?.nombre || "Estudiante";
-      const promedio = calif.promedioFinal;
-
-      if (promedio !== null && promedio !== undefined) {
-        if (promedio < 5.0) {
-          alerts.push({
-            id: `alert-${calif.estudianteId}-bajo`,
-            estudianteId: calif.estudianteId,
-            nombre: estudianteNombre,
-            tipo: "bajo_rendimiento",
-            gravedad: "alta",
-            mensaje: `Rendimiento crítico: ${promedio.toFixed(1)}/10. Necesita atención inmediata.`,
-            promedio
-          });
-        } else if (promedio < 6.0) {
-          alerts.push({
-            id: `alert-${calif.estudianteId}-riesgo`,
-            estudianteId: calif.estudianteId,
-            nombre: estudianteNombre,
-            tipo: "bajo_rendimiento",
-            gravedad: "media",
-            mensaje: `En riesgo de reprobación: ${promedio.toFixed(1)}/10. Considerar apoyo adicional.`,
-            promedio
-          });
-        } else if (promedio >= 8.5) {
-          alerts.push({
-            id: `alert-${calif.estudianteId}-excelente`,
-            estudianteId: calif.estudianteId,
-            nombre: estudianteNombre,
-            tipo: "mejora_reciente",
-            gravedad: "baja",
-            mensaje: `Excelente rendimiento: ${promedio.toFixed(1)}/10. ¡Felicitaciones!`,
-            promedio
-          });
-        }
-      }
-
-      if (calif.recuperacion !== null && calif.recuperacion !== undefined) {
-        const mejora = calif.recuperacion - (promedio || 0);
-        if (mejora > 1.5) {
-          alerts.push({
-            id: `alert-${calif.estudianteId}-mejora`,
-            estudianteId: calif.estudianteId,
-            nombre: estudianteNombre,
-            tipo: "mejora_reciente",
-            gravedad: "baja",
-            mensaje: `Mejora notable en recuperación: +${mejora.toFixed(1)} puntos.`,
-            tendencia: "subiendo"
-          });
-        }
-      }
-    });
-
-    return alerts.sort((a, b) => {
-      const gravedadOrder = { alta: 0, media: 1, baja: 2 };
-      return gravedadOrder[a.gravedad] - gravedadOrder[b.gravedad];
-    });
-  };
-
-  const dismissAlert = (alertId: string) => {
-    const newDismissed = [...dismissed, alertId];
-    setDismissed(newDismissed);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("ss_dismissed_alerts", JSON.stringify(newDismissed));
-    }
-  };
-
-  const visibleAlerts = alerts.filter(a => !dismissed.includes(a.id));
-  const highPriority = visibleAlerts.filter(a => a.gravedad === "alta");
-  const mediumPriority = visibleAlerts.filter(a => a.gravedad === "media");
-  const lowPriority = visibleAlerts.filter(a => a.gravedad === "baja");
-
   if (loading) {
     return (
       <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
-        <CardHeader className="pb-3">
+        <CardHeader>
           <Skeleton className={`h-5 w-48 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
-          <Skeleton className={`h-4 w-64 mt-2 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className={`h-16 w-full ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className={`h-20 w-full ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
             ))}
           </div>
         </CardContent>
@@ -155,130 +63,379 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode }: Predi
     );
   }
 
-  if (visibleAlerts.length === 0) {
+  if (!data) {
     return (
       <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
-        <CardHeader className="pb-3">
-          <CardTitle className={`text-base flex items-center gap-2 ${darkMode ? 'text-white' : 'text-slate-800'}`}>
-            <CheckCircle2 className="h-5 w-5 text-green-600" />
-            Alertas Predictivas
-          </CardTitle>
-          <CardDescription className={`text-sm ${darkMode ? 'text-slate-400' : ''}`}>
-            No hay alertas activas
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className={`text-sm ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-            Todos los estudiantes muestran un rendimiento adecuado.
+        <CardContent className="p-6 text-center">
+          <BarChart3 className={`h-12 w-12 mx-auto mb-3 ${darkMode ? 'text-slate-600' : 'text-slate-300'}`} />
+          <p className={`text-sm ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+            Selecciona un grado para ver el análisis predictivo
           </p>
         </CardContent>
       </Card>
     );
   }
 
+  const toggleSection = (section: string) => {
+    setExpandedSection(expandedSection === section ? null : section);
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Resumen General */}
+      <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
+        <CardHeader className="pb-3">
+          <CardTitle className={`text-base flex items-center gap-2 ${darkMode ? 'text-white' : 'text-slate-800'}`}>
+            <BarChart3 className="h-5 w-5 text-teal-600" />
+            Análisis Predictivo Avanzado
+          </CardTitle>
+          <CardDescription className={`text-sm ${darkMode ? 'text-slate-400' : ''}`}>
+            Diagnóstico inteligente del rendimiento estudiantil
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <StatCard
+              label="Total Estudiantes"
+              value={data.resumen?.totalEstudiantes || 0}
+              icon={Users}
+              color="text-blue-600"
+              darkMode={darkMode}
+            />
+            <StatCard
+              label="Promedio General"
+              value={data.resumen?.promedioGeneral?.toFixed(1) || "-"}
+              icon={BarChart3}
+              color="text-teal-600"
+              darkMode={darkMode}
+            />
+            <StatCard
+              label="En Riesgo"
+              value={data.resumen?.estudiantesEnRiesgo || 0}
+              icon={AlertTriangle}
+              color="text-red-600"
+              darkMode={darkMode}
+            />
+            <StatCard
+              label="Estado"
+              value={(data.resumen?.promedioGeneral || 0) >= 6 ? "OK" : "Atención"}
+              icon={CheckCircle2}
+              color={(data.resumen?.promedioGeneral || 0) >= 6 ? "text-green-600" : "text-amber-600"}
+              darkMode={darkMode}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Secciones Expandibles */}
+      <div className="space-y-2">
+        {/* 1. Tendencia de Rendimiento */}
+        <SectionCard
+          title="Tendencia de Rendimiento"
+          subtitle="Evolución del rendimiento por estudiante entre trimestres"
+          icon={TrendingUp}
+          expanded={expandedSection === "tendencias"}
+          onToggle={() => toggleSection("tendencias")}
+          count={data.tendencias?.length || 0}
+          darkMode={darkMode}
+        >
+          {data.tendencias && data.tendencias.length > 0 ? (
+            <div className="space-y-2">
+              {data.tendencias.slice(0, 10).map((t: any, i: number) => (
+                <div key={i} className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {t.tendencia === "mejorando" ? (
+                        <ArrowUpCircle className="h-4 w-4 text-green-600" />
+                      ) : t.tendencia === "empeorando" ? (
+                        <ArrowDownCircle className="h-4 w-4 text-red-600" />
+                      ) : (
+                        <MinusCircle className="h-4 w-4 text-blue-600" />
+                      )}
+                      <span className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-slate-800'}`}>{t.nombre}</span>
+                      <Badge variant="outline" className={`text-[10px] ${darkMode ? 'border-slate-600 text-slate-400' : ''}`}>
+                        {t.grado}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                        {t.primerPromedio?.toFixed(1)} → {t.ultimoPromedio?.toFixed(1)}
+                      </span>
+                      <span className={`text-xs font-semibold ${t.cambio > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {t.cambio > 0 ? '+' : ''}{t.cambio?.toFixed(1)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyState message="No hay datos suficientes para calcular tendencias" darkMode={darkMode} />
+          )}
+        </SectionCard>
+
+        {/* 2. Correlación Ausencias-Notas */}
+        <SectionCard
+          title="Correlación Ausencias-Notas"
+          subtitle="Relación entre inasistencias y rendimiento académico"
+          icon={CalendarX}
+          expanded={expandedSection === "ausencias"}
+          onToggle={() => toggleSection("ausencias")}
+          count={data.correlaciones?.length || 0}
+          darkMode={darkMode}
+        >
+          {data.correlaciones && data.correlaciones.length > 0 ? (
+            <div className="space-y-2">
+              {data.correlaciones.slice(0, 10).map((c: any, i: number) => (
+                <div key={i} className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <CalendarX className="h-4 w-4 text-amber-600" />
+                      <span className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-slate-800'}`}>{c.nombre}</span>
+                      <Badge variant={c.impacto === "alto" ? "destructive" : "outline"} className="text-[10px]">
+                        {c.totalAusencias} ausencias
+                      </Badge>
+                    </div>
+                    <span className={`text-xs ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                      Promedio: {c.promedio?.toFixed(1)}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyState message="No hay ausencias registradas" darkMode={darkMode} />
+          )}
+        </SectionCard>
+
+        {/* 3. Asignaturas Críticas */}
+        <SectionCard
+          title="Asignaturas Críticas"
+          subtitle="Materias con rendimiento bajo 7.0 que requieren atención"
+          icon={BookOpen}
+          expanded={expandedSection === "asignaturas"}
+          onToggle={() => toggleSection("asignaturas")}
+          count={data.asignaturasCriticas?.length || 0}
+          darkMode={darkMode}
+        >
+          {data.asignaturasCriticas && data.asignaturasCriticas.length > 0 ? (
+            <div className="space-y-2">
+              {data.asignaturasCriticas.slice(0, 10).map((a: any, i: number) => (
+                <div key={i} className={`p-3 rounded-lg border ${a.nivel === "critico" ? (darkMode ? 'bg-red-900/20 border-red-800' : 'bg-red-50 border-red-200') :
+                    a.nivel === "preocupante" ? (darkMode ? 'bg-amber-900/20 border-amber-800' : 'bg-amber-50 border-amber-200') :
+                      (darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200')
+                  }`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <BookOpen className={`h-4 w-4 ${a.nivel === "critico" ? 'text-red-600' : a.nivel === "preocupante" ? 'text-amber-600' : 'text-blue-600'}`} />
+                      <span className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-slate-800'}`}>{a.materiaNombre}</span>
+                      <Badge variant="outline" className={`text-[10px] ${darkMode ? 'border-slate-600 text-slate-400' : ''}`}>
+                        {a.grado}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className={`text-xs ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                        {a.estudiantesEnRiesgo}/{a.totalEstudiantes} en riesgo
+                      </span>
+                      <span className={`text-sm font-bold ${a.promedioMateria < 5 ? 'text-red-600' : 'text-amber-600'}`}>
+                        {a.promedioMateria?.toFixed(1)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyState message="Todas las asignaturas tienen promedio aceptable" darkMode={darkMode} />
+          )}
+        </SectionCard>
+
+        {/* 4. Predicción de Reprobación */}
+        <SectionCard
+          title="Predicción de Reprobación"
+          subtitle="Probabilidad estimada de reprobación por estudiante"
+          icon={Target}
+          expanded={expandedSection === "prediccion"}
+          onToggle={() => toggleSection("prediccion")}
+          count={data.predicciones?.filter((p: any) => p.probabilidadReprobacion > 30).length || 0}
+          darkMode={darkMode}
+        >
+          {data.predicciones && data.predicciones.length > 0 ? (
+            <div className="space-y-2">
+              {data.predicciones.filter((p: any) => p.probabilidadReprobacion > 30).slice(0, 10).map((p: any, i: number) => (
+                <div key={i} className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-slate-800'}`}>{p.nombre}</span>
+                    <Badge variant={p.nivel === "muy_alto" || p.nivel === "alto" ? "destructive" : p.nivel === "medio" ? "outline" : "secondary"} className="text-[10px]">
+                      {p.probabilidadReprobacion}% riesgo
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-3 text-xs">
+                    <span className={darkMode ? 'text-slate-400' : 'text-slate-500'}>Prom: {p.promedioGeneral?.toFixed(1)}</span>
+                    <span className={darkMode ? 'text-slate-400' : 'text-slate-500'}>•</span>
+                    <span className={darkMode ? 'text-slate-400' : 'text-slate-500'}>{p.materiasCriticas} materias críticas</span>
+                    <span className={darkMode ? 'text-slate-400' : 'text-slate-500'}>•</span>
+                    <span className={darkMode ? 'text-slate-400' : 'text-slate-500'}>{p.materiasEnRiesgo} en riesgo</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyState message="No hay estudiantes con probabilidad significativa de reprobación" darkMode={darkMode} />
+          )}
+        </SectionCard>
+
+        {/* 5. Comparación Histórica */}
+        <SectionCard
+          title="Comparación vs Umbral"
+          subtitle="Distancia del promedio general respecto al umbral de aprobación (6.0)"
+          icon={BarChart3}
+          expanded={expandedSection === "comparacion"}
+          onToggle={() => toggleSection("comparacion")}
+          count={data.comparacionHistorica ? 1 : 0}
+          darkMode={darkMode}
+        >
+          {data.comparacionHistorica ? (
+            <div className={`p-4 rounded-lg border ${data.comparacionHistorica.estado === "sobre_umbral"
+                ? (darkMode ? 'bg-green-900/20 border-green-800' : 'bg-green-50 border-green-200')
+                : (darkMode ? 'bg-red-900/20 border-red-800' : 'bg-red-50 border-red-200')
+              }`}>
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <p className={`text-xs ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Promedio Actual</p>
+                  <p className={`text-2xl font-bold ${data.comparacionHistorica.estado === "sobre_umbral" ? 'text-green-600' : 'text-red-600'}`}>
+                    {data.comparacionHistorica.promedioActual?.toFixed(2)}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className={`text-xs ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Umbral</p>
+                  <p className={`text-2xl font-bold ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>6.00</p>
+                </div>
+                <div className="text-right">
+                  <p className={`text-xs ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Diferencia</p>
+                  <p className={`text-2xl font-bold ${data.comparacionHistorica.distancia >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {data.comparacionHistorica.distancia >= 0 ? '+' : ''}{data.comparacionHistorica.distancia?.toFixed(2)}
+                  </p>
+                </div>
+              </div>
+              <div className={`h-2 rounded-full overflow-hidden ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`}>
+                <div
+                  className={`h-full rounded-full transition-all ${data.comparacionHistorica.estado === "sobre_umbral" ? 'bg-green-600' : 'bg-red-600'}`}
+                  style={{ width: `${Math.min(100, Math.max(0, ((data.comparacionHistorica.promedioActual || 0) / 10) * 100))}%` }}
+                />
+              </div>
+            </div>
+          ) : (
+            <EmptyState message="No hay datos disponibles" darkMode={darkMode} />
+          )}
+        </SectionCard>
+
+        {/* 6. Recomendaciones Accionables */}
+        <SectionCard
+          title="Recomendaciones Accionables"
+          subtitle="Sugerencias automáticas basadas en el análisis de datos"
+          icon={Lightbulb}
+          expanded={expandedSection === "recomendaciones"}
+          onToggle={() => toggleSection("recomendaciones")}
+          count={data.recomendaciones?.length || 0}
+          darkMode={darkMode}
+        >
+          {data.recomendaciones && data.recomendaciones.length > 0 ? (
+            <div className="space-y-3">
+              {data.recomendaciones.map((r: any, i: number) => (
+                <div key={i} className={`p-4 rounded-lg border ${r.tipo === "urgente" ? (darkMode ? 'bg-red-900/20 border-red-800' : 'bg-red-50 border-red-200') :
+                    r.tipo === "academica" ? (darkMode ? 'bg-amber-900/20 border-amber-800' : 'bg-amber-50 border-amber-200') :
+                      r.tipo === "asistencia" ? (darkMode ? 'bg-blue-900/20 border-blue-800' : 'bg-blue-50 border-blue-200') :
+                        (darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200')
+                  }`}>
+                  <div className="flex items-start gap-3">
+                    <Lightbulb className={`h-5 w-5 mt-0.5 shrink-0 ${r.tipo === "urgente" ? 'text-red-600' :
+                        r.tipo === "academica" ? 'text-amber-600' :
+                          r.tipo === "asistencia" ? 'text-blue-600' :
+                            'text-green-600'
+                      }`} />
+                    <div className="flex-1">
+                      <h4 className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{r.titulo}</h4>
+                      <p className={`text-xs mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>{r.descripcion}</p>
+                      {r.estudiantes && r.estudiantes.length > 0 && (
+                        <p className={`text-[10px] mt-2 ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>
+                          Estudiantes: {r.estudiantes.join(", ")}
+                        </p>
+                      )}
+                      {r.materias && r.materias.length > 0 && (
+                        <p className={`text-[10px] mt-2 ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>
+                          Materias: {r.materias.join(", ")}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <EmptyState message="No hay recomendaciones pendientes" darkMode={darkMode} />
+          )}
+        </SectionCard>
+      </div>
+    </div>
+  );
+}
+
+function StatCard({ label, value, icon: Icon, color, darkMode }: any) {
+  return (
+    <div className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+      <div className="flex items-center gap-2 mb-1">
+        <Icon className={`h-4 w-4 ${color}`} />
+        <span className={`text-[10px] uppercase tracking-wide ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{label}</span>
+      </div>
+      <p className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{value}</p>
+    </div>
+  );
+}
+
+function SectionCard({ title, subtitle, icon: Icon, expanded, onToggle, count, darkMode, children }: any) {
   return (
     <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
-      <CardHeader className="pb-3">
-        <CardTitle className={`text-base flex items-center gap-2 ${darkMode ? 'text-white' : 'text-slate-800'}`}>
-          <AlertTriangle className="h-5 w-5 text-amber-600" />
-          Alertas Predictivas
-          {highPriority.length > 0 && (
-            <Badge variant="destructive" className="text-xs">
-              {highPriority.length} urgente{highPriority.length > 1 ? 's' : ''}
-            </Badge>
-          )}
-        </CardTitle>
-        <CardDescription className={`text-sm ${darkMode ? 'text-slate-400' : ''}`}>
-          Identificación temprana de estudiantes en riesgo
-        </CardDescription>
+      <CardHeader
+        className={`pb-3 cursor-pointer hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors ${darkMode ? 'border-slate-700' : ''}`}
+        onClick={onToggle}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Icon className={`h-5 w-5 ${darkMode ? 'text-teal-400' : 'text-teal-600'}`} />
+            <div>
+              <CardTitle className={`text-sm ${darkMode ? 'text-white' : 'text-slate-800'}`}>{title}</CardTitle>
+              <CardDescription className={`text-xs ${darkMode ? 'text-slate-400' : ''}`}>{subtitle}</CardDescription>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {count > 0 && (
+              <Badge variant="outline" className={`text-[10px] ${darkMode ? 'border-slate-600 text-slate-400' : ''}`}>
+                {count}
+              </Badge>
+            )}
+            {expanded ? (
+              <ChevronUp className={`h-4 w-4 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`} />
+            ) : (
+              <ChevronDown className={`h-4 w-4 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`} />
+            )}
+          </div>
+        </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {highPriority.length > 0 && (
-          <div>
-            <h4 className="text-xs font-semibold text-red-600 dark:text-red-400 mb-2 uppercase tracking-wide">
-              Atención Inmediata
-            </h4>
-            <div className="space-y-2">
-              {highPriority.map(alert => (
-                <AlertCard key={alert.id} alert={alert} darkMode={darkMode} onDismiss={() => dismissAlert(alert.id)} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {mediumPriority.length > 0 && (
-          <div>
-            <h4 className="text-xs font-semibold text-amber-600 dark:text-amber-400 mb-2 uppercase tracking-wide">
-              Seguimiento Recomendado
-            </h4>
-            <div className="space-y-2">
-              {mediumPriority.map(alert => (
-                <AlertCard key={alert.id} alert={alert} darkMode={darkMode} onDismiss={() => dismissAlert(alert.id)} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {lowPriority.length > 0 && (
-          <div>
-            <h4 className="text-xs font-semibold text-green-600 dark:text-green-400 mb-2 uppercase tracking-wide">
-              Reconocimientos
-            </h4>
-            <div className="space-y-2">
-              {lowPriority.map(alert => (
-                <AlertCard key={alert.id} alert={alert} darkMode={darkMode} onDismiss={() => dismissAlert(alert.id)} />
-              ))}
-            </div>
-          </div>
-        )}
-      </CardContent>
+      {expanded && (
+        <CardContent>
+          {children}
+        </CardContent>
+      )}
     </Card>
   );
 }
 
-function AlertCard({ alert, darkMode, onDismiss }: { alert: AlertData; darkMode: boolean; onDismiss: () => void }) {
-  const getIcon = () => {
-    switch (alert.tipo) {
-      case "bajo_rendimiento":
-        return <TrendingDown className="h-4 w-4 text-red-600" />;
-      case "mejora_reciente":
-        return <TrendingUp className="h-4 w-4 text-green-600" />;
-      default:
-        return <Clock className="h-4 w-4 text-blue-600" />;
-    }
-  };
-
-  const getBorderColor = () => {
-    switch (alert.gravedad) {
-      case "alta":
-        return darkMode ? 'border-red-800 bg-red-900/20' : 'border-red-200 bg-red-50/50';
-      case "media":
-        return darkMode ? 'border-amber-800 bg-amber-900/20' : 'border-amber-200 bg-amber-50/50';
-      case "baja":
-        return darkMode ? 'border-green-800 bg-green-900/20' : 'border-green-200 bg-green-50/50';
-    }
-  };
-
+function EmptyState({ message, darkMode }: any) {
   return (
-    <div className={`p-3 rounded-lg border ${getBorderColor()} flex items-start gap-3`}>
-      <div className="p-1.5 rounded-md shrink-0 mt-0.5">
-        {getIcon()}
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium truncate">{alert.nombre}</p>
-        <p className={`text-xs mt-0.5 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-          {alert.mensaje}
-        </p>
-      </div>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={onDismiss}
-        className="h-6 w-6 p-0 shrink-0"
-        title="Descartar alerta"
-      >
-        <Eye className="h-3.5 w-3.5" />
-      </Button>
+    <div className="text-center py-4">
+      <CheckCircle2 className={`h-8 w-8 mx-auto mb-2 ${darkMode ? 'text-slate-600' : 'text-slate-300'}`} />
+      <p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>{message}</p>
     </div>
   );
 }
