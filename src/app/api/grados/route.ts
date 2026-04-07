@@ -25,10 +25,12 @@ export async function GET(request: NextRequest) {
     }
 
     const grados = await sql`
-      SELECT g.id, g.numero, g.seccion, g.año, g."createdAt", g."updatedAt",
+      SELECT g.id, g.numero, g.seccion, g.año, g."docenteId", g."createdAt", g."updatedAt",
+             d.id as docente_id, d.nombre as docente_nombre, d.email as docente_email,
              (SELECT COUNT(*) FROM "Estudiante" e WHERE e."gradoId" = g.id) as estudiantes_count,
              (SELECT COUNT(*) FROM "Materia" m WHERE m."gradoId" = g.id) as materias_count
       FROM "Grado" g
+      LEFT JOIN "Usuario" d ON g."docenteId" = d.id
       WHERE g.año = ${año}
       ORDER BY g.numero, g.seccion
     `;
@@ -38,8 +40,12 @@ export async function GET(request: NextRequest) {
       numero: g.numero,
       seccion: g.seccion,
       año: g.año,
-      docenteId: null,
-      docente: null,
+      docenteId: g.docenteId || null,
+      docente: g.docente_id ? {
+        id: g.docente_id,
+        nombre: g.docente_nombre,
+        email: g.docente_email
+      } : null,
       _count: {
         estudiantes: parseInt(g.estudiantes_count) || 0,
         materias: parseInt(g.materias_count) || 0

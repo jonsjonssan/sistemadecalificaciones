@@ -25,11 +25,11 @@ export async function GET(request: NextRequest) {
 
     if (estudianteId) {
       const estudiante = await sql`
-        SELECT e.*, g.numero as grado_numero, g.seccion as grado_seccion, g.año as grado_año,
+        SELECT e.*, g.numero as grado_numero, g.seccion as grado_seccion, g.año as grado_año, g."docenteId",
                d.nombre as docente_nombre
         FROM "Estudiante" e
         JOIN "Grado" g ON e."gradoId" = g.id
-        LEFT JOIN "Usuario" d ON false
+        LEFT JOIN "Usuario" d ON g."docenteId" = d.id
         WHERE e.id = ${estudianteId}
       `;
 
@@ -78,11 +78,11 @@ export async function GET(request: NextRequest) {
     }
 
     const estudiantes = await sql`
-      SELECT e.*, g.numero as grado_numero, g.seccion as grado_seccion, g.año as grado_año,
+      SELECT e.*, g.numero as grado_numero, g.seccion as grado_seccion, g.año as grado_año, g."docenteId",
              d.nombre as docente_nombre
       FROM "Estudiante" e
       JOIN "Grado" g ON e."gradoId" = g.id
-      LEFT JOIN "Usuario" d ON false
+      LEFT JOIN "Usuario" d ON g."docenteId" = d.id
       WHERE e."gradoId" = ${gradoId}
       ORDER BY e.numero
     `;
