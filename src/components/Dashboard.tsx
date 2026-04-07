@@ -275,7 +275,7 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
       )}
 
       {/* Asignaturas por Ciclo */}
-      {usuario.rol === "admin" && todasAsignaturasList.length > 0 && (
+      {esDirectiva && todasAsignaturasList.length > 0 && (
         <div>
           <h3 className={`text-base font-semibold mb-3 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
             <BookOpen className="h-5 w-5 inline mr-2 text-teal-600" />
