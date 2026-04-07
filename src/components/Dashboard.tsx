@@ -4,10 +4,12 @@ import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Users, BookOpen, ClipboardList, School, GraduationCap, CalendarDays, Trophy, AlertTriangle, TrendingUp, ChevronDown, ChevronRight, Book } from "lucide-react";
+import { Users, BookOpen, ClipboardList, School, GraduationCap, CalendarDays, Trophy, AlertTriangle, TrendingUp, ChevronDown, ChevronRight, Book, FileText } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend, Cell } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import InformeTecnicoDialog from "./InformeTecnicoDialog";
 
 interface UsuarioSesion { id: string; email: string; nombre: string; rol: string; }
 interface Grado { id: string; numero: number; seccion: string; _count?: { estudiantes: number; materias: number; }; }
@@ -20,6 +22,7 @@ interface DashboardProps {
   totalAsignaturas: number;
   asignaturasAsignadas?: MateriaConGrado[];
   totalDocentes: number;
+  configuracion?: { añoEscolar: number; escuela: string };
 }
 
 interface GradeStats {
@@ -140,12 +143,15 @@ function CiclosSection({ asignaturas, darkMode }: { asignaturas: MateriaConGrado
   );
 }
 
-export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsignaturas, asignaturasAsignadas, totalDocentes }: DashboardProps) {
+export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsignaturas, asignaturasAsignadas, totalDocentes, configuracion }: DashboardProps) {
   const { resolvedTheme } = useTheme();
   const darkMode = resolvedTheme === "dark";
   const [stats, setStats] = useState<GradeStats[]>([]);
   const [selectedGradoId, setSelectedGradoId] = useState<string>("all");
   const [loading, setLoading] = useState(true);
+  const [informeOpen, setInformeOpen] = useState(false);
+
+  const esDirectiva = ["admin", "admin-directora", "admin-codirectora"].includes(usuario.rol);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -276,7 +282,32 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
             Asignaturas por Ciclo
           </h3>
           <CiclosSection asignaturas={todasAsignaturasList} darkMode={darkMode} />
+          {esDirectiva && (
+            <div className="mt-4">
+              <Button
+                size="sm"
+                onClick={() => setInformeOpen(true)}
+                className={`w-full sm:w-auto bg-teal-600 hover:bg-teal-700 text-white shadow-sm`}
+              >
+                <FileText className="h-4 w-4 mr-2" />
+                Generar Informe Técnico Pedagógico-Didáctico
+              </Button>
+            </div>
+          )}
         </div>
+      )}
+
+      {/* Dialog de Informe */}
+      {esDirectiva && configuracion && (
+        <InformeTecnicoDialog
+          open={informeOpen}
+          onOpenChange={setInformeOpen}
+          darkMode={darkMode}
+          usuario={{ nombre: usuario.nombre, rol: usuario.rol }}
+          configuracion={configuracion}
+          stats={stats}
+          grados={grados}
+        />
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">

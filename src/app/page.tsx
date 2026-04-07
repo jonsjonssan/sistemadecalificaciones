@@ -1459,6 +1459,7 @@ export default function Home() {
               totalEstudiantes={grados.reduce((sum, g) => sum + (g._count?.estudiantes || 0), 0)}
               totalAsignaturas={todasAsignaturas.length}
               totalDocentes={usuarios.filter(u => (u.rol === "docente" || u.rol === "docente-orientador") && u.activo).length}
+              configuracion={configuracion ? { añoEscolar: configuracion.añoEscolar, escuela: configuracion.escuela } : undefined}
               asignaturasAsignadas={(
                 isAdmin(usuario.rol)
                   ? todasAsignaturas.map((m: any) => ({
