@@ -7,14 +7,15 @@ export async function GET(req: Request) {
     const gradoId = searchParams.get("gradoId");
     const mes = searchParams.get("mes");
     const trimestre = searchParams.get("trimestre");
-    
+    const incluirFechas = searchParams.get("incluirFechas") === "true";
+
     if (!gradoId) {
       return NextResponse.json({ error: "Faltan parámetros requeridos" }, { status: 400 });
     }
 
     let startDate: string | undefined;
     let endDate: string | undefined;
-    
+
     if (trimestre) {
       const t = parseInt(trimestre);
       const año = new Date().getFullYear();
@@ -33,40 +34,72 @@ export async function GET(req: Request) {
     let asistencia;
     if (startDate && endDate) {
       asistencia = await sql`
-        SELECT a.estado, a."estudianteId", e.nombre as estudiante_nombre, e.numero as estudiante_numero
+        SELECT a.estado, a.fecha, a."estudianteId", e.nombre as estudiante_nombre, e.numero as estudiante_numero
         FROM "Asistencia" a
         JOIN "Estudiante" e ON a."estudianteId" = e.id
         WHERE e."gradoId" = ${gradoId} AND a.fecha >= ${startDate} AND a.fecha <= ${endDate}
+        ORDER BY a.fecha DESC
       `;
     } else {
       asistencia = await sql`
-        SELECT a.estado, a."estudianteId", e.nombre as estudiante_nombre, e.numero as estudiante_numero
+        SELECT a.estado, a.fecha, a."estudianteId", e.nombre as estudiante_nombre, e.numero as estudiante_numero
         FROM "Asistencia" a
         JOIN "Estudiante" e ON a."estudianteId" = e.id
         WHERE e."gradoId" = ${gradoId}
+        ORDER BY a.fecha DESC
       `;
     }
 
-    const resumen: Record<string, { id: string, nombre: string, numero: number, ausencias: number, tardanzas: number, asistencias: number, total: number }> = {};
+    const resumen: Record<string, {
+      id: string,
+      nombre: string,
+      numero: number,
+      ausencias: number,
+      tardanzas: number,
+      asistencias: number,
+      total: number,
+      fechasPresente: string[],
+      fechasAusente: string[],
+      fechasTardanza: string[]
+    }> = {};
 
     asistencia.forEach((a: any) => {
       const eid = a.estudianteId;
       if (!resumen[eid]) {
-        resumen[eid] = { 
-          id: eid, 
-          nombre: a.estudiante_nombre, 
+        resumen[eid] = {
+          id: eid,
+          nombre: a.estudiante_nombre,
           numero: a.estudiante_numero,
-          ausencias: 0, 
-          tardanzas: 0, 
-          asistencias: 0, 
-          total: 0 
+          ausencias: 0,
+          tardanzas: 0,
+          asistencias: 0,
+          total: 0,
+          fechasPresente: [],
+          fechasAusente: [],
+          fechasTardanza: []
         };
       }
-      
+
       resumen[eid].total++;
-      if (a.estado === "ausente") resumen[eid].ausencias++;
-      else if (a.estado === "tarde") resumen[eid].tardanzas++;
-      else if (a.estado === "presente") resumen[eid].asistencias++;
+
+      const fechaStr = new Date(a.fecha).toLocaleDateString('es-SV', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+
+      if (a.estado === "ausente") {
+        resumen[eid].ausencias++;
+        if (incluirFechas) resumen[eid].fechasAusente.push(fechaStr);
+      }
+      else if (a.estado === "tarde") {
+        resumen[eid].tardanzas++;
+        if (incluirFechas) resumen[eid].fechasTardanza.push(fechaStr);
+      }
+      else if (a.estado === "presente") {
+        resumen[eid].asistencias++;
+        if (incluirFechas) resumen[eid].fechasPresente.push(fechaStr);
+      }
     });
 
     return NextResponse.json(Object.values(resumen).sort((a: any, b: any) => a.numero - b.numero));

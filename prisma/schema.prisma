@@ -135,6 +135,7 @@ model ConfiguracionSistema {
   id           String   @id @default(cuid())
   añoEscolar   Int      @default(2026)
   escuela      String   @default("Centro Escolar")
+  nombreDirectora String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }

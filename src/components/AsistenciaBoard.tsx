@@ -18,7 +18,18 @@ interface Grado { id: string; numero: number; seccion: string; }
 interface Asignatura { id: string; nombre: string; gradoId: string; }
 interface Estudiante { id: string; numero: number; nombre: string; activo: boolean; }
 interface AsistenciaRecord { id?: string; estudianteId: string; estado: string; }
-interface ResumenAsistencia { id: string; nombre: string; numero: number; ausencias: number; tardanzas: number; asistencias: number; total: number; }
+interface ResumenAsistencia {
+  id: string;
+  nombre: string;
+  numero: number;
+  ausencias: number;
+  tardanzas: number;
+  asistencias: number;
+  total: number;
+  fechasPresente?: string[];
+  fechasAusente?: string[];
+  fechasTardanza?: string[];
+}
 
 interface AsistenciaBoardProps {
   grados: Grado[];
@@ -36,7 +47,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
   const [gradoId, setGradoId] = useState<string>(gradoInicial);
   const [asignaturaId, setAsignaturaId] = useState<string>(asignaturaInicial);
   const [fecha, setFecha] = useState<string>(new Date().toISOString().split('T')[0]);
-  
+
   const [asistencias, setAsistencias] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [resumen, setResumen] = useState<ResumenAsistencia[]>([]);
@@ -44,6 +55,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
   const [summaryRange, setSummaryRange] = useState<"month" | "all">("all");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [expandedStudent, setExpandedStudent] = useState<string | null>(null);
 
   const initializeAttendance = useCallback(() => {
     const initial: Record<string, string> = {};
@@ -59,7 +71,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     try {
       let url = `/api/asistencia?gradoId=${gradoId}&fecha=${fecha}T00:00:00.000Z`;
       if (asignaturaId) url += `&materiaId=${asignaturaId}`;
-      
+
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
@@ -83,7 +95,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     if (!gradoId) return;
     setLoading(true);
     try {
-      let url = `/api/asistencia/resumen?gradoId=${gradoId}`;
+      let url = `/api/asistencia/resumen?gradoId=${gradoId}&incluirFechas=true`;
       if (summaryRange === "month") {
         url += `&mes=${new Date().toISOString().slice(0, 7)}`;
       }
@@ -120,7 +132,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
   useEffect(() => {
     setGradoId(gradoInicial);
   }, [gradoInicial]);
-  
+
   useEffect(() => {
     if (asignaturas.some(m => m.id === asignaturaInicial)) {
       setAsignaturaId(asignaturaInicial);
@@ -144,7 +156,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
   const handleSave = async () => {
     if (!gradoId || !fecha) return;
     setSaving(true);
-    
+
     const records = Object.entries(asistencias).map(([estudianteId, estado]) => ({
       estudianteId,
       estado
@@ -161,7 +173,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
           materiaId: asignaturaId || null
         })
       });
-      
+
       if (res.ok) {
         toast({ title: "Asistencia guardada correctamente" });
       } else {
@@ -216,17 +228,17 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
             <CardDescription className={`text-sm font-medium ${darkMode ? 'text-slate-400' : ''}`}>Registro y visualización histórica</CardDescription>
           </div>
           <div className={`flex p-1 rounded-lg gap-1 self-start sm:self-center ${darkMode ? 'bg-slate-700' : 'bg-slate-200/50'}`}>
-            <Button 
-              variant={view === "pass" ? "default" : "ghost"} 
-              size="sm" 
+            <Button
+              variant={view === "pass" ? "default" : "ghost"}
+              size="sm"
               className={`h-9 text-sm px-4 ${view === "pass" ? (darkMode ? "bg-slate-600 text-white shadow-sm hover:bg-slate-500" : "bg-white text-slate-800 shadow-sm hover:bg-white") : (darkMode ? "text-slate-400" : "text-slate-500")}`}
               onClick={() => setView("pass")}
             >
               Pasar Lista
             </Button>
-            <Button 
-              variant={view === "summary" ? "default" : "ghost"} 
-              size="sm" 
+            <Button
+              variant={view === "summary" ? "default" : "ghost"}
+              size="sm"
               className={`h-9 text-sm px-4 ${view === "summary" ? (darkMode ? "bg-slate-600 text-white shadow-sm hover:bg-slate-500" : "bg-white text-slate-800 shadow-sm hover:bg-white") : (darkMode ? "text-slate-400" : "text-slate-500")}`}
               onClick={() => setView("summary")}
             >
@@ -235,48 +247,48 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent className="pt-4 space-y-4">
         {view === "pass" ? (
           <>
             <div className={`flex flex-wrap items-end gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl border ${darkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50'}`}>
               <div className="flex-1 min-w-[150px] sm:min-w-[200px]">
-                 <Label className={`text-xs sm:text-sm font-bold mb-1 block ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Grado</Label>
-                 <Select value={gradoId} onValueChange={setGradoId}>
-                   <SelectTrigger className={`h-10 text-xs sm:text-sm font-medium ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white'}`}>
-                     <SelectValue placeholder="Seleccione Grado" />
-                   </SelectTrigger>
-                   <SelectContent>
-                     {grados.map(g => (
-                       <SelectItem key={g.id} value={g.id} className="text-xs sm:text-sm font-medium">
-                         {g.numero}° "{g.seccion}"
-                       </SelectItem>
-                     ))}
-                   </SelectContent>
-                 </Select>
+                <Label className={`text-xs sm:text-sm font-bold mb-1 block ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Grado</Label>
+                <Select value={gradoId} onValueChange={setGradoId}>
+                  <SelectTrigger className={`h-10 text-xs sm:text-sm font-medium ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white'}`}>
+                    <SelectValue placeholder="Seleccione Grado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {grados.map(g => (
+                      <SelectItem key={g.id} value={g.id} className="text-xs sm:text-sm font-medium">
+                        {g.numero}° "{g.seccion}"
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              
+
               <div className="flex-1 min-w-[150px] sm:min-w-[200px]">
-                 <Label className={`text-xs sm:text-sm font-bold mb-1 block ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Asignatura (Opcional)</Label>
-                 <Select value={asignaturaId || "ninguna"} onValueChange={(v) => setAsignaturaId(v === "ninguna" ? "" : v)}>
-                   <SelectTrigger className={`h-10 text-xs sm:text-sm font-medium ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white'}`}>
-                     <SelectValue placeholder="General / Tutor" />
-                   </SelectTrigger>
-                   <SelectContent>
-                     <SelectItem value={"ninguna"} className="text-xs sm:text-sm font-medium italic">Asistencia General</SelectItem>
-                     {asignaturas.map(m => (
-                       <SelectItem key={m.id} value={m.id} className="text-xs sm:text-sm font-medium">
-                         {m.nombre}
-                       </SelectItem>
-                     ))}
-                   </SelectContent>
-                 </Select>
+                <Label className={`text-xs sm:text-sm font-bold mb-1 block ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Asignatura (Opcional)</Label>
+                <Select value={asignaturaId || "ninguna"} onValueChange={(v) => setAsignaturaId(v === "ninguna" ? "" : v)}>
+                  <SelectTrigger className={`h-10 text-xs sm:text-sm font-medium ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white'}`}>
+                    <SelectValue placeholder="General / Tutor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={"ninguna"} className="text-xs sm:text-sm font-medium italic">Asistencia General</SelectItem>
+                    {asignaturas.map(m => (
+                      <SelectItem key={m.id} value={m.id} className="text-xs sm:text-sm font-medium">
+                        {m.nombre}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="min-w-[100px] sm:min-w-[120px] flex-1 sm:flex-none">
                 <Label className={`text-xs sm:text-sm font-bold mb-1 block ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Fecha</Label>
-                <input 
-                  type="date" 
+                <input
+                  type="date"
                   className={`flex h-10 w-full rounded-md border px-3 py-1 text-xs sm:text-sm font-medium shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 ${darkMode ? 'bg-slate-800 border-slate-600 text-white focus-visible:ring-slate-400' : 'bg-white border-slate-200 focus-visible:ring-slate-950'}`}
                   value={fecha}
                   onChange={e => setFecha(e.target.value)}
@@ -284,8 +296,8 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                 />
               </div>
 
-              <Button 
-                className={`h-10 text-white w-full sm:w-auto px-6 font-bold text-xs sm:text-sm ${darkMode ? 'bg-teal-600 hover:bg-teal-500' : 'bg-teal-600 hover:bg-teal-700'}`} 
+              <Button
+                className={`h-10 text-white w-full sm:w-auto px-6 font-bold text-xs sm:text-sm ${darkMode ? 'bg-teal-600 hover:bg-teal-500' : 'bg-teal-600 hover:bg-teal-700'}`}
                 onClick={handleSave}
                 disabled={saving || activeStudents.length === 0}
               >
@@ -293,8 +305,8 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                 {saving ? "Guardando..." : "Guardar Lista"}
               </Button>
               {isAdmin && (
-                <Button 
-                  className={`h-10 text-white w-full sm:w-auto px-4 font-bold text-xs sm:text-sm ${darkMode ? 'bg-red-700 hover:bg-red-600' : 'bg-red-600 hover:bg-red-700'}`} 
+                <Button
+                  className={`h-10 text-white w-full sm:w-auto px-4 font-bold text-xs sm:text-sm ${darkMode ? 'bg-red-700 hover:bg-red-600' : 'bg-red-600 hover:bg-red-700'}`}
                   onClick={handleDelete}
                   disabled={deleting || activeStudents.length === 0}
                 >
@@ -357,7 +369,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                       const evenRow = idx % 2 === 0;
                       const rowBg = evenRow ? (darkMode ? 'bg-[#1e293b]' : '') : (darkMode ? 'bg-slate-800/50' : 'bg-slate-50/50');
                       const stickyBg = evenRow ? (darkMode ? 'bg-[#1e293b]' : 'bg-white') : (darkMode ? 'bg-slate-800/50' : 'bg-slate-50/50');
-                      
+
                       return (
                         <TableRow key={est.id} className={`${rowBg} ${darkMode ? 'hover:bg-slate-700/50' : 'hover:bg-slate-100/50'} transition-colors`}>
                           <TableCell className={`text-center font-bold sticky-col left-0 z-10 shadow-right ${darkMode ? 'text-slate-500' : 'text-slate-400'}`} style={{ backgroundColor: stickyBg }}>
@@ -370,37 +382,34 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                             <div className={`flex justify-center p-1 rounded-lg w-full max-w-[160px] sm:max-w-[280px] mx-auto border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-100/50 border-slate-200'}`}>
                               <button
                                 onClick={() => handleEstadoChange(est.id, "presente")}
-                                className={`flex-1 flex items-center justify-center gap-1 py-1 rounded-md transition-all text-[10px] sm:text-sm font-bold ${
-                                  estado === "presente" 
-                                    ? (darkMode ? "bg-slate-700 text-green-400 shadow-sm ring-1 ring-green-700" : "bg-white text-green-700 shadow-sm ring-1 ring-green-200") 
-                                    : (darkMode ? "text-slate-500 hover:text-slate-300 hover:bg-slate-700" : "text-slate-400 hover:text-slate-600 hover:bg-slate-200/50")
-                                }`}
+                                className={`flex-1 flex items-center justify-center gap-1 py-1 rounded-md transition-all text-[10px] sm:text-sm font-bold ${estado === "presente"
+                                  ? (darkMode ? "bg-slate-700 text-green-400 shadow-sm ring-1 ring-green-700" : "bg-white text-green-700 shadow-sm ring-1 ring-green-200")
+                                  : (darkMode ? "text-slate-500 hover:text-slate-300 hover:bg-slate-700" : "text-slate-400 hover:text-slate-600 hover:bg-slate-200/50")
+                                  }`}
                               >
                                 <CheckCircle2 className={`h-4 w-4 sm:h-5 sm:w-5 ${estado === "presente" ? "text-green-500" : ""}`} />
                                 <span className="hidden sm:inline">Presente</span>
                                 <span className="sm:hidden">P</span>
                               </button>
-                              
+
                               <button
                                 onClick={() => handleEstadoChange(est.id, "ausente")}
-                                className={`flex-1 flex items-center justify-center gap-1 py-1 rounded-md transition-all text-[10px] sm:text-sm font-bold ${
-                                  estado === "ausente" 
-                                    ? (darkMode ? "bg-slate-700 text-red-400 shadow-sm ring-1 ring-red-700" : "bg-white text-red-700 shadow-sm ring-1 ring-red-200") 
-                                    : (darkMode ? "text-slate-500 hover:text-slate-300 hover:bg-slate-700" : "text-slate-400 hover:text-slate-600 hover:bg-slate-200/50")
-                                }`}
+                                className={`flex-1 flex items-center justify-center gap-1 py-1 rounded-md transition-all text-[10px] sm:text-sm font-bold ${estado === "ausente"
+                                  ? (darkMode ? "bg-slate-700 text-red-400 shadow-sm ring-1 ring-red-700" : "bg-white text-red-700 shadow-sm ring-1 ring-red-200")
+                                  : (darkMode ? "text-slate-500 hover:text-slate-300 hover:bg-slate-700" : "text-slate-400 hover:text-slate-600 hover:bg-slate-200/50")
+                                  }`}
                               >
                                 <XCircle className={`h-4 w-4 sm:h-5 sm:w-5 ${estado === "ausente" ? "text-red-500" : ""}`} />
                                 <span className="hidden sm:inline">Ausente</span>
                                 <span className="sm:hidden">A</span>
                               </button>
-                              
+
                               <button
                                 onClick={() => handleEstadoChange(est.id, "justificada")}
-                                className={`flex-1 flex items-center justify-center gap-1 py-1 rounded-md transition-all text-[10px] sm:text-sm font-bold ${
-                                  estado === "justificada" 
-                                    ? (darkMode ? "bg-slate-700 text-amber-400 shadow-sm ring-1 ring-amber-700" : "bg-white text-amber-700 shadow-sm ring-1 ring-amber-200") 
-                                    : (darkMode ? "text-slate-500 hover:text-slate-300 hover:bg-slate-700" : "text-slate-400 hover:text-slate-600 hover:bg-slate-200/50")
-                                }`}
+                                className={`flex-1 flex items-center justify-center gap-1 py-1 rounded-md transition-all text-[10px] sm:text-sm font-bold ${estado === "justificada"
+                                  ? (darkMode ? "bg-slate-700 text-amber-400 shadow-sm ring-1 ring-amber-700" : "bg-white text-amber-700 shadow-sm ring-1 ring-amber-200")
+                                  : (darkMode ? "text-slate-500 hover:text-slate-300 hover:bg-slate-700" : "text-slate-400 hover:text-slate-600 hover:bg-slate-200/50")
+                                  }`}
                               >
                                 <Clock className={`h-4 w-4 sm:h-5 sm:w-5 ${estado === "justificada" ? "text-amber-500" : ""}`} />
                                 <span className="hidden sm:inline">Permiso</span>
@@ -422,15 +431,15 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
               <div className="flex items-center gap-2">
                 <Label className={`text-xs sm:text-sm font-bold ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Rango:</Label>
                 <div className={`flex p-0.5 rounded-md ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
-                  <Button 
-                    size="sm" variant="ghost" 
+                  <Button
+                    size="sm" variant="ghost"
                     className={`h-7 px-3 text-xs ${summaryRange === "all" ? (darkMode ? "bg-slate-700 shadow-sm font-bold text-white" : "bg-white shadow-sm font-bold") : (darkMode ? "text-slate-400" : "")}`}
                     onClick={() => setSummaryRange("all")}
                   >
                     Año
                   </Button>
-                  <Button 
-                    size="sm" variant="ghost" 
+                  <Button
+                    size="sm" variant="ghost"
                     className={`h-7 px-3 text-xs ${summaryRange === "month" ? (darkMode ? "bg-slate-700 shadow-sm font-bold text-white" : "bg-white shadow-sm font-bold") : (darkMode ? "text-slate-400" : "")}`}
                     onClick={() => setSummaryRange("month")}
                   >
@@ -473,16 +482,87 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                         Sin registros
                       </TableCell>
                     </TableRow>
-                  ) : resumen.map((r, idx) => (
-                    <TableRow key={r.id} className={`h-10 ${idx % 2 === 0 ? '' : (darkMode ? 'bg-slate-800/30' : 'bg-slate-50/30')} ${darkMode ? 'hover:bg-slate-700/50' : ''}`}>
-                      <TableCell className={`text-center font-bold ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>{r.numero}</TableCell>
-                      <TableCell className={`font-semibold ${darkMode ? 'text-white' : 'text-slate-700'}`}>{r.nombre}</TableCell>
-                      <TableCell className="text-center text-teal-700 font-medium">{r.asistencias}</TableCell>
-                      <TableCell className="text-center text-amber-700 font-medium">{r.tardanzas}</TableCell>
-                      <TableCell className="text-center text-red-700 font-medium">{r.ausencias}</TableCell>
-                      <TableCell className="text-center font-bold">{r.total}</TableCell>
-                    </TableRow>
-                  ))}
+                  ) : (
+                    <>
+                      {resumen.map((r, idx) => {
+                        const isExpanded = expandedStudent === r.id;
+                        return (
+                          <React.Fragment key={r.id}>
+                            <TableRow
+                              className={`h-10 cursor-pointer transition-colors ${idx % 2 === 0 ? '' : (darkMode ? 'bg-slate-800/30' : 'bg-slate-50/30')} ${darkMode ? 'hover:bg-slate-700/50' : 'hover:bg-slate-100'}`}
+                              onClick={() => setExpandedStudent(isExpanded ? null : r.id)}
+                            >
+                              <TableCell className={`text-center font-bold ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>{r.numero}</TableCell>
+                              <TableCell className={`font-semibold ${darkMode ? 'text-white' : 'text-slate-700'}`}>
+                                <div className="flex items-center gap-2">
+                                  {r.nombre}
+                                  {(r.fechasPresente?.length || r.fechasAusente?.length || r.fechasTardanza?.length) && (
+                                    <span className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                                      {isExpanded ? '▲' : '▼'}
+                                    </span>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-center text-teal-700 font-medium">{r.asistencias}</TableCell>
+                              <TableCell className="text-center text-amber-700 font-medium">{r.tardanzas}</TableCell>
+                              <TableCell className="text-center text-red-700 font-medium">{r.ausencias}</TableCell>
+                              <TableCell className="text-center font-bold">{r.total}</TableCell>
+                            </TableRow>
+                            {isExpanded && (
+                              <TableRow className={darkMode ? 'bg-slate-800/50' : 'bg-slate-50'}>
+                                <TableCell colSpan={6} className="py-3 px-4">
+                                  <div className="space-y-2 text-xs">
+                                    {r.fechasPresente && r.fechasPresente.length > 0 && (
+                                      <div>
+                                        <span className={`font-semibold ${darkMode ? 'text-teal-400' : 'text-teal-700'}`}>✓ Asistencias ({r.fechasPresente.length}):</span>
+                                        <div className={`mt-1 flex flex-wrap gap-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                                          {r.fechasPresente.slice(0, 10).map((fecha, i) => (
+                                            <span key={i} className={`px-2 py-1 rounded ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`}>{fecha}</span>
+                                          ))}
+                                          {r.fechasPresente.length > 10 && (
+                                            <span className={`px-2 py-1 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>+{r.fechasPresente.length - 10} más</span>
+                                          )}
+                                        </div>
+                                      </div>
+                                    )}
+                                    {r.fechasTardanza && r.fechasTardanza.length > 0 && (
+                                      <div>
+                                        <span className={`font-semibold ${darkMode ? 'text-amber-400' : 'text-amber-700'}`}>⏰ Tardanzas ({r.fechasTardanza.length}):</span>
+                                        <div className={`mt-1 flex flex-wrap gap-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                                          {r.fechasTardanza.slice(0, 10).map((fecha, i) => (
+                                            <span key={i} className={`px-2 py-1 rounded ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`}>{fecha}</span>
+                                          ))}
+                                          {r.fechasTardanza.length > 10 && (
+                                            <span className={`px-2 py-1 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>+{r.fechasTardanza.length - 10} más</span>
+                                          )}
+                                        </div>
+                                      </div>
+                                    )}
+                                    {r.fechasAusente && r.fechasAusente.length > 0 && (
+                                      <div>
+                                        <span className={`font-semibold ${darkMode ? 'text-red-400' : 'text-red-700'}`}>✗ Ausencias ({r.fechasAusente.length}):</span>
+                                        <div className={`mt-1 flex flex-wrap gap-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+                                          {r.fechasAusente.slice(0, 10).map((fecha, i) => (
+                                            <span key={i} className={`px-2 py-1 rounded ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`}>{fecha}</span>
+                                          ))}
+                                          {r.fechasAusente.length > 10 && (
+                                            <span className={`px-2 py-1 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>+{r.fechasAusente.length - 10} más</span>
+                                          )}
+                                        </div>
+                                      </div>
+                                    )}
+                                    {(!r.fechasPresente?.length && !r.fechasTardanza?.length && !r.fechasAusente?.length) && (
+                                      <p className={`italic ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>No hay fechas registradas</p>
+                                    )}
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          </React.Fragment>
+                        );
+                      })}
+                    </>
+                  )}
                 </TableBody>
               </Table>
             </div>

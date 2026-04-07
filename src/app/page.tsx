@@ -43,7 +43,7 @@ interface ConfigActividad { id: string; materiaId: string; trimestre: number; nu
 type ConfigActividadPartial = Partial<ConfigActividad> & { numActividadesCotidianas: number; numActividadesIntegradoras: number; tieneExamen: boolean; porcentajeAC: number; porcentajeAI: number; porcentajeExamen: number; };
 interface Calificacion { id: string; estudianteId: string; materiaId: string; trimestre: number; actividadesCotidianas: string | null; calificacionAC: number | null; actividadesIntegradoras: string | null; calificacionAI: number | null; examenTrimestral: number | null; promedioFinal: number | null; recuperacion: number | null; estudiante?: Estudiante; asignatura?: Asignatura; config?: ConfigActividad; }
 interface Grado { id: string; numero: number; seccion: string; año: number; docenteId: string | null; docente?: { id: string; nombre: string; email: string; }; _count?: { estudiantes: number; materias: number; }; }
-interface ConfiguracionSistema { id: string; añoEscolar: number; escuela: string; }
+interface ConfiguracionSistema { id: string; añoEscolar: number; escuela: string; nombreDirectora?: string; }
 
 // Utilidades
 const calcularPromedio = (notas: (number | null)[]): number | null => {
@@ -2401,10 +2401,14 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
     const año = grado?.año || new Date().getFullYear();
     const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
 
+    // Obtener nombre del docente orientador
+    const docenteOrientador = grado?.docente?.nombre || '_______________________________';
+    const nombreDirectora = configuracion?.nombreDirectora || '_______________________________';
+
     // Crear tabla de asignaturas
     let tablaAsignaturas = materias.map(m => {
       const c = califs.find(x => x.materiaId === m.id);
-      const notaFinal = c?.promedioFinal?.toFixed(1) ?? '-';
+      const notaFinal = c?.promedioFinal !== null && c?.promedioFinal !== undefined ? Math.round(c.promedioFinal).toString() : '-';
       const recupVal = c?.recuperacion !== null && c?.recuperacion !== undefined ? c.recuperacion.toFixed(1) : '-';
       const estado = c?.promedioFinal !== null && c?.promedioFinal !== undefined
         ? (c.promedioFinal >= 5 ? 'A' : 'R')
@@ -2569,13 +2573,13 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
     <div class="firmas">
       <div class="firma">
         <div class="linea">
-          <p class="nombre">________________________________</p>
-          <p class="cargo">Firma del Docente</p>
+          <p class="nombre">${docenteOrientador}</p>
+          <p class="cargo">Firma del Docente Orientador</p>
         </div>
       </div>
       <div class="firma">
         <div class="linea">
-          <p class="nombre">________________________________</p>
+          <p class="nombre">${nombreDirectora}</p>
           <p class="cargo">Firma de la Directora</p>
           <p class="cargo">Centro Escolar Católico San José de la Montaña</p>
         </div>
@@ -2605,6 +2609,10 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
     const año = grado?.año || new Date().getFullYear();
     const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
 
+    // Obtener nombre del docente orientador
+    const docenteOrientador = grado?.docente?.nombre || '_______________________________';
+    const nombreDirectora = configuracion?.nombreDirectora || '_______________________________';
+
     for (const est of estudiantes) {
       const califs = getCalifs(est.id);
       const prom = calcProm(califs);
@@ -2613,7 +2621,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
 
       let tablaAsignaturas = materias.map(m => {
         const c = califs.find(x => x.materiaId === m.id);
-        const notaFinal = c?.promedioFinal?.toFixed(1) ?? '-';
+        const notaFinal = c?.promedioFinal !== null && c?.promedioFinal !== undefined ? Math.round(c.promedioFinal).toString() : '-';
         const recupVal = c?.recuperacion !== null && c?.recuperacion !== undefined ? c.recuperacion.toFixed(1) : '-';
         const estado = c?.promedioFinal !== null && c?.promedioFinal !== undefined
           ? (c.promedioFinal >= 5 ? 'A' : 'R')
@@ -2717,13 +2725,13 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
         <div class="firmas">
           <div class="firma">
             <div class="linea">
-              <p class="nombre">________________________________</p>
-              <p class="cargo">Firma del Docente</p>
+              <p class="nombre">${docenteOrientador}</p>
+              <p class="cargo">Firma del Docente Orientador</p>
             </div>
           </div>
           <div class="firma">
             <div class="linea">
-              <p class="nombre">________________________________</p>
+              <p class="nombre">${nombreDirectora}</p>
               <p class="cargo">Firma de la Directora</p>
               <p class="cargo">Centro Escolar Católico San José de la Montaña</p>
             </div>
@@ -2808,6 +2816,10 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
     const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
     const asistAnual = resumenAsistenciaAnual.find(r => r.id === id) || { asistencias: 0, ausencias: 0, tardanzas: 0, total: 0 };
 
+    // Obtener nombre del docente orientador
+    const docenteOrientador = grado?.docente?.nombre || '_______________________________';
+    const nombreDirectora = configuracion?.nombreDirectora || '_______________________________';
+
     // Filtrar calificaciones de este estudiante para todo el año
     const califsEst = todasCalificaciones.filter(c => c.estudianteId === id);
 
@@ -2822,6 +2834,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
 
       const notasValidas = [n1, n2, n3].filter((n): n is number => n !== null && n !== undefined);
       const promAnual = notasValidas.length ? notasValidas.reduce((a, b) => a + b, 0) / notasValidas.length : null;
+      const promAnualRedondeado = promAnual !== null ? Math.round(promAnual).toString() : '-';
       const estado = promAnual !== null ? (promAnual >= 5 ? 'APROBADO' : 'REPROBADO') : '-';
 
       return `<tr>
@@ -2829,7 +2842,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
         <td>${n1?.toFixed(1) ?? '-'}</td>
         <td>${n2?.toFixed(1) ?? '-'}</td>
         <td>${n3?.toFixed(1) ?? '-'}</td>
-        <td style="font-weight:bold">${promAnual?.toFixed(1) ?? '-'}</td>
+        <td style="font-weight:bold">${promAnualRedondeado}</td>
         <td style="font-weight:bold;color:${estado === 'APROBADO' ? '#059669' : estado === 'REPROBADO' ? '#dc2626' : '#666'}">${estado}</td>
       </tr>`;
     }).join('');
@@ -2925,7 +2938,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
     </div>
     <div class="resumen-anual">
       <div class="resumen-item">
-        <div class="valor" style="color:#1e293b">${pFinal?.toFixed(2) ?? 'N/A'}</div>
+        <div class="valor" style="color:#1e293b">${pFinal !== null ? Math.round(pFinal).toString() : 'N/A'}</div>
         <div class="etiqueta">PROMEDIO FINAL ANUAL</div>
       </div>
       <div class="resumen-item">
@@ -2934,8 +2947,14 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
       </div>
     </div>
     <div class="firmas">
-      <div class="firma"><p>Firma del Docente</p></div>
-      <div class="firma"><p>Firma de la Directora</p></div>
+      <div class="firma">
+        <p>${docenteOrientador}</p>
+        <p>Firma del Docente Orientador</p>
+      </div>
+      <div class="firma">
+        <p>${nombreDirectora}</p>
+        <p>Firma de la Directora</p>
+      </div>
     </div>
   </div>
 </body>
@@ -2952,6 +2971,10 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
     const año = grado?.año || new Date().getFullYear();
     const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
 
+    // Obtener nombre del docente orientador
+    const docenteOrientador = grado?.docente?.nombre || '_______________________________';
+    const nombreDirectora = configuracion?.nombreDirectora || '_______________________________';
+
     for (const est of estudiantes) {
       const asistAnual = resumenAsistenciaAnual.find(r => r.id === est.id) || { asistencias: 0, ausencias: 0, tardanzas: 0, total: 0 };
       const califsEst = todasCalificaciones.filter(c => c.estudianteId === est.id);
@@ -2963,8 +2986,9 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
         const n1 = c1?.promedioFinal, n2 = c2?.promedioFinal, n3 = c3?.promedioFinal;
         const notasValidas = [n1, n2, n3].filter((n): n is number => n !== null && n !== undefined);
         const promAnual = notasValidas.length ? notasValidas.reduce((a, b) => a + b, 0) / notasValidas.length : null;
+        const promAnualRedondeado = promAnual !== null ? Math.round(promAnual).toString() : '-';
         const estado = promAnual !== null ? (promAnual >= 5 ? 'APROBADO' : 'REPROBADO') : '-';
-        return `<tr><td style="text-align:left;padding:6px 8px">${m.nombre}</td><td>${n1?.toFixed(1) ?? '-'}</td><td>${n2?.toFixed(1) ?? '-'}</td><td>${n3?.toFixed(1) ?? '-'}</td><td style="font-weight:bold">${promAnual?.toFixed(1) ?? '-'}</td><td style="font-weight:bold;color:${estado === 'APROBADO' ? '#059669' : estado === 'REPROBADO' ? '#dc2626' : '#666'}">${estado}</td></tr>`;
+        return `<tr><td style="text-align:left;padding:6px 8px">${m.nombre}</td><td>${n1?.toFixed(1) ?? '-'}</td><td>${n2?.toFixed(1) ?? '-'}</td><td>${n3?.toFixed(1) ?? '-'}</td><td style="font-weight:bold">${promAnualRedondeado}</td><td style="font-weight:bold;color:${estado === 'APROBADO' ? '#059669' : estado === 'REPROBADO' ? '#dc2626' : '#666'}">${estado}</td></tr>`;
       }).join('');
 
       const notasFinales = materias.map(m => {
@@ -3000,10 +3024,13 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
           </div>
         </div>
         <div class="resumen-anual">
-          <div class="resumen-item"><div class="valor" style="color:#1e293b">${pFinal?.toFixed(2) ?? 'N/A'}</div><div class="etiqueta">PROMEDIO FINAL ANUAL</div></div>
+          <div class="resumen-item"><div class="valor" style="color:#1e293b">${pFinal !== null ? Math.round(pFinal).toString() : 'N/A'}</div><div class="etiqueta">PROMEDIO FINAL ANUAL</div></div>
           <div class="resumen-item"><div class="valor" style="color:${pFinal && pFinal >= 5 ? '#059669' : '#dc2626'}">${pFinal && pFinal >= 5 ? 'APROBADO' : 'REPROBADO'}</div><div class="etiqueta">ESTADO FINAL</div></div>
         </div>
-        <div class="firmas"><div class="firma"><p>Firma del Docente</p></div><div class="firma"><p>Firma de la Directora</p></div></div>
+        <div class="firmas">
+          <div class="firma"><p>${docenteOrientador}</p><p>Firma del Docente Orientador</p></div>
+          <div class="firma"><p>${nombreDirectora}</p><p>Firma de la Directora</p></div>
+        </div>
       </div>`;
     }
 
