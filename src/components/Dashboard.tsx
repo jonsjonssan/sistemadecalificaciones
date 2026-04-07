@@ -4,14 +4,14 @@ import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Users, BookOpen, ClipboardList, School, GraduationCap, CalendarDays, Trophy, AlertTriangle, TrendingUp } from "lucide-react";
+import { Users, BookOpen, ClipboardList, School, GraduationCap, CalendarDays, Trophy, AlertTriangle, TrendingUp, ChevronDown, ChevronRight, Book } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend, Cell } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 
 interface UsuarioSesion { id: string; email: string; nombre: string; rol: string; }
 interface Grado { id: string; numero: number; seccion: string; _count?: { estudiantes: number; materias: number; }; }
-interface MateriaConGrado { id: string; nombre: string; grado?: { numero: number; seccion: string; }; }
+interface MateriaConGrado { id: string; nombre: string; grado?: { id: string; numero: number; seccion: string; }; }
 
 interface DashboardProps {
   usuario: UsuarioSesion;
@@ -32,6 +32,112 @@ interface GradeStats {
   };
   topEstudiantes: { id: string, nombre: string, numero: number, promedio: number }[];
   alertas: { id: string, nombre: string, numero: number, promedio: number }[];
+}
+
+interface CicloAsignaturas {
+  nombre: string;
+  grados: number[];
+  color: string;
+  colorBg: string;
+  colorBorder: string;
+  iconColor: string;
+}
+
+const CICLOS: CicloAsignaturas[] = [
+  { nombre: "Primer Ciclo", grados: [2, 3], color: "text-teal-600", colorBg: "bg-teal-50", colorBorder: "border-teal-200", iconColor: "text-teal-500" },
+  { nombre: "Segundo Ciclo", grados: [4, 5, 6], color: "text-blue-600", colorBg: "bg-blue-50", colorBorder: "border-blue-200", iconColor: "text-blue-500" },
+  { nombre: "Tercer Ciclo", grados: [7, 8, 9], color: "text-violet-600", colorBg: "bg-violet-50", colorBorder: "border-violet-200", iconColor: "text-violet-500" },
+];
+
+function getCicloDark(ciclo: CicloAsignaturas) {
+  const map: Record<string, { bg: string; border: string; icon: string }> = {
+    "Primer Ciclo": { bg: "bg-teal-900/20", border: "border-teal-800", icon: "text-teal-400" },
+    "Segundo Ciclo": { bg: "bg-blue-900/20", border: "border-blue-800", icon: "text-blue-400" },
+    "Tercer Ciclo": { bg: "bg-violet-900/20", border: "border-violet-800", icon: "text-violet-400" },
+  };
+  return map[ciclo.nombre] || { bg: "bg-slate-800", border: "border-slate-700", icon: "text-slate-400" };
+}
+
+function CiclosSection({ asignaturas, darkMode }: { asignaturas: MateriaConGrado[]; darkMode: boolean }) {
+  const [expandedCiclo, setExpandedCiclo] = useState<string | null>(null);
+
+  const toggleCiclo = (nombre: string) => {
+    setExpandedCiclo(expandedCiclo === nombre ? null : nombre);
+  };
+
+  return (
+    <div className="space-y-3">
+      {CICLOS.map(ciclo => {
+        const d = getCicloDark(ciclo);
+        // Filtrar materias de este ciclo
+        const materiasDelCiclo = asignaturas.filter(m =>
+          m.grado && ciclo.grados.includes(m.grado.numero)
+        );
+
+        // Agrupar por grado
+        const porGrado = ciclo.grados.map(num => {
+          const gradoMaterias = materiasDelCiclo
+            .filter(m => m.grado?.numero === num)
+            .map(m => m.nombre);
+          // Obtener seccion del grado
+          const seccion = materiasDelCiclo.find(m => m.grado?.numero === num)?.grado?.seccion || "A";
+          return { grado: num, seccion, materias: gradoMaterias };
+        }).filter(g => g.materias.length > 0);
+
+        if (porGrado.length === 0) return null;
+
+        const totalMaterias = porGrado.reduce((a, g) => a + g.materias.length, 0);
+        const isOpen = expandedCiclo === ciclo.nombre;
+
+        return (
+          <Card key={ciclo.nombre} className={`shadow-sm overflow-hidden ${darkMode ? `bg-[#1e293b] border-slate-700` : 'border-slate-100'}`}>
+            <div className={`h-1 w-full ${darkMode ? d.bg.replace('/20', '') : ciclo.colorBg}`} />
+            <CardHeader
+              className={`flex flex-row items-center justify-between cursor-pointer py-3 px-4 ${darkMode ? 'hover:bg-slate-800/50' : 'hover:bg-slate-50'} transition-colors`}
+              onClick={() => toggleCiclo(ciclo.nombre)}
+            >
+              <div className="flex items-center gap-3">
+                <div className={`h-8 w-8 rounded-full flex items-center justify-center ${darkMode ? d.bg : ciclo.colorBg}`}>
+                  <Book className={`h-4 w-4 ${darkMode ? d.icon : ciclo.iconColor}`} />
+                </div>
+                <div>
+                  <CardTitle className={`text-sm font-semibold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{ciclo.nombre}</CardTitle>
+                  <CardDescription className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                    Grados {porGrado.map(g => `${g.numero}°${g.seccion}`).join(", ")} · {totalMaterias} asignaturas
+                  </CardDescription>
+                </div>
+              </div>
+              {isOpen
+                ? <ChevronDown className={`h-5 w-5 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`} />
+                : <ChevronRight className={`h-5 w-5 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`} />}
+            </CardHeader>
+
+            {isOpen && (
+              <CardContent className="px-4 pb-4 pt-0">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {porGrado.map(grupo => (
+                    <div key={grupo.grado} className={`rounded-lg border p-3 ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+                      <h4 className={`text-xs font-bold uppercase tracking-wider mb-2 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                        {grupo.grado}° "{grupo.seccion}"
+                      </h4>
+                      <ul className="space-y-1">
+                        {grupo.materias.sort().map((mat, i) => (
+                          <li key={i} className={`text-xs flex items-center gap-2 ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                            <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${darkMode ? 'bg-slate-600' : 'bg-slate-300'}`} />
+                            {mat}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            )}
+          </Card>
+        );
+      })}
+    </div>
+  );
 }
 
 export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsignaturas, asignaturasAsignadas, totalDocentes }: DashboardProps) {
@@ -70,6 +176,9 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
     { name: "Integradoras", valor: selectedStats.promedios.integradora, color: "#0891b2" },
     { name: "Exámenes", valor: selectedStats.promedios.examen, color: "#4f46e5" }
   ] : [];
+
+  // Materias por ciclo
+  const todasAsignaturasList = asignaturasAsignadas || [];
 
   return (
     <div className="space-y-4 pb-8">
@@ -156,6 +265,17 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
               </Card>
             </>
           )}
+        </div>
+      )}
+
+      {/* Asignaturas por Ciclo */}
+      {usuario.rol === "admin" && todasAsignaturasList.length > 0 && (
+        <div>
+          <h3 className={`text-base font-semibold mb-3 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
+            <BookOpen className="h-5 w-5 inline mr-2 text-teal-600" />
+            Asignaturas por Ciclo
+          </h3>
+          <CiclosSection asignaturas={todasAsignaturasList} darkMode={darkMode} />
         </div>
       )}
 
