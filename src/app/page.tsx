@@ -1461,11 +1461,17 @@ export default function Home() {
               totalDocentes={usuarios.filter(u => (u.rol === "docente" || u.rol === "docente-orientador") && u.activo).length}
               asignaturasAsignadas={(
                 isAdmin(usuario.rol)
-                  ? todasAsignaturas
+                  ? todasAsignaturas.map((m: any) => ({
+                    id: m.id,
+                    nombre: m.nombre,
+                    gradoId: m.gradoId,
+                    grado: m.grado
+                  }))
                   : (usuario.asignaturasAsignadas || []).map((m: any) => ({
                     id: m.id,
                     nombre: m.nombre,
-                    grado: m.gradoNumero ? { id: m.gradoId, numero: m.gradoNumero, seccion: m.gradoSeccion || "" } : undefined
+                    gradoId: m.gradoId,
+                    grado: { id: m.gradoId, numero: m.gradoNumero || 0, seccion: m.gradoSeccion || "" }
                   }))
               )}
             />

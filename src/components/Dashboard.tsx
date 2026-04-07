@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 
 interface UsuarioSesion { id: string; email: string; nombre: string; rol: string; }
 interface Grado { id: string; numero: number; seccion: string; _count?: { estudiantes: number; materias: number; }; }
-interface MateriaConGrado { id: string; nombre: string; grado?: { id: string; numero: number; seccion: string; gradoNumero?: number; gradoSeccion?: string; }; }
+interface MateriaConGrado { id: string; nombre: string; gradoId?: string; grado?: { id: string; numero: number; seccion: string; }; }
 
 interface DashboardProps {
   usuario: UsuarioSesion;
@@ -70,24 +70,17 @@ function CiclosSection({ asignaturas, darkMode }: { asignaturas: MateriaConGrado
       {CICLOS.map(ciclo => {
         const d = getCicloDark(ciclo);
         const materiasDelCiclo = asignaturas.filter(m => {
-          const num = m.grado?.numero ?? m.grado?.gradoNumero;
+          const num = m.grado?.numero;
           return num && ciclo.grados.includes(num);
         });
 
         // Agrupar por grado
         const porGrado = ciclo.grados.map(num => {
           const gradoMaterias = materiasDelCiclo
-            .filter(m => {
-              const mNum = m.grado?.numero ?? m.grado?.gradoNumero;
-              return mNum === num;
-            })
+            .filter(m => m.grado?.numero === num)
             .map(m => m.nombre);
-          // Obtener seccion del grado
-          const mat = materiasDelCiclo.find(m => {
-            const mNum = m.grado?.numero ?? m.grado?.gradoNumero;
-            return mNum === num;
-          });
-          const seccion = mat?.grado?.seccion ?? mat?.grado?.gradoSeccion ?? "A";
+          const mat = materiasDelCiclo.find(m => m.grado?.numero === num);
+          const seccion = mat?.grado?.seccion ?? "A";
           return { grado: num, seccion, materias: gradoMaterias };
         }).filter(g => g.materias.length > 0);
 
