@@ -1701,7 +1701,7 @@ export default function Home() {
                         </div>
                       </div>
                     )}
-                    <BoletaList estudiantes={estudiantes} calificaciones={calificaciones} materias={materiasEnBoleta.length > 0 ? asignaturasFiltradas.filter(m => materiasEnBoleta.includes(m.id)) : asignaturasFiltradas} grado={gradosFiltrados.find(g => g.id === gradoSeleccionado)} trimestre={parseInt(trimestreSeleccionado)} expandedBoleta={expandedBoleta} setExpandedBoleta={setExpandedBoleta} darkMode={darkMode} />
+                    <BoletaList estudiantes={estudiantes} calificaciones={calificaciones} materias={materiasEnBoleta.length > 0 ? asignaturasFiltradas.filter(m => materiasEnBoleta.includes(m.id)) : asignaturasFiltradas} grado={gradosFiltrados.find(g => g.id === gradoSeleccionado)} trimestre={parseInt(trimestreSeleccionado)} expandedBoleta={expandedBoleta} setExpandedBoleta={setExpandedBoleta} darkMode={darkMode} configuracion={configuracion ? { nombreDirectora: configuracion.nombreDirectora } : undefined} />
                   </>
                 )}
               </CardContent>
@@ -2331,7 +2331,7 @@ interface SortableEstudianteRowProps {
   onReorder: (nuevos: Estudiante[]) => void;
 }
 
-function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, expandedBoleta, setExpandedBoleta, darkMode }: { estudiantes: Estudiante[]; calificaciones: Calificacion[]; materias: Asignatura[]; grado?: Grado; trimestre: number; expandedBoleta: string | null; setExpandedBoleta: (id: string | null) => void; darkMode: boolean; }) {
+function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, expandedBoleta, setExpandedBoleta, darkMode, configuracion }: { estudiantes: Estudiante[]; calificaciones: Calificacion[]; materias: Asignatura[]; grado?: Grado; trimestre: number; expandedBoleta: string | null; setExpandedBoleta: (id: string | null) => void; darkMode: boolean; configuracion?: { nombreDirectora?: string }; }) {
   const [resumenAsistencia, setResumenAsistencia] = useState<any[]>([]);
   const [todasCalificaciones, setTodasCalificaciones] = useState<Calificacion[]>([]);
   const [resumenAsistenciaAnual, setResumenAsistenciaAnual] = useState<any[]>([]);
