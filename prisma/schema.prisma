@@ -29,6 +29,7 @@ model Usuario {
   materiasAsignadas DocenteMateria[] // Para todos los grados (2-9)
   auditLogs         AuditLog[]
   loginSessions     LoginSession[]
+  gradosOrientados  Grado[] @relation("GradoOrientador") // Grados donde es docente orientador
 
   @@index([email])
   @@index([rol, activo])
@@ -48,7 +49,7 @@ model Grado {
   estudiantes Estudiante[]
   materias    Materia[]
   asistencias Asistencia[]
-  docente     Usuario? @relation(fields: [docenteId], references: [id])
+  docente     Usuario? @relation("GradoOrientador", fields: [docenteId], references: [id])
 
   @@index([numero])
   @@index([docenteId])
