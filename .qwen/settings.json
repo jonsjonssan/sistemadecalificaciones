@@ -15,7 +15,8 @@
       "Bash(echo.)",
       "Bash(-h)",
       "Bash(\")\")",
-      "WebSearch"
+      "WebSearch",
+      "Bash(findstr *)"
     ]
   },
   "$version": 3

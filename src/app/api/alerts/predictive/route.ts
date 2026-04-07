@@ -239,9 +239,8 @@ function calcularPrediccionReprobacion(calificaciones: any[], configs: any[]) {
     if (promedioGeneral < 4.0) probabilidad = 90;
     else if (promedioGeneral < 4.5) probabilidad = 75;
     else if (promedioGeneral < 5.0) probabilidad = 60;
-    else if (promedioGeneral < 5.5) probabilidad = 40;
-    else if (promedioGeneral < 6.0) probabilidad = 20;
-    else probabilidad = 5;
+    else if (promedioGeneral < 5.5) probabilidad = 30;
+    else probabilidad = 10;
 
     // Ajustar por materias críticas
     probabilidad += materiasCriticas * 10;
@@ -269,7 +268,7 @@ function generarComparacion(calificaciones: any[]) {
   if (conNotas.length === 0) return null;
 
   const promedioActual = conNotas.reduce((sum, c) => sum + c.promedioFinal, 0) / conNotas.length;
-  const umbral = 6.0;
+  const umbral = 5.0;
   const distancia = promedioActual - umbral;
 
   return {

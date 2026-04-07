@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Usuario inactivo. Contacta al administrador." }, { status: 403 });
     }
 
-    // Vincular googleId si no lo tiene
+    // Vincular googleId si no lo tiene (Neon devuelve snake_case)
     if (!userRecord.google_id) {
       await sql`
         UPDATE "Usuario" SET "googleId" = ${googleId}, provider = 'google' WHERE id = ${userRecord.id}

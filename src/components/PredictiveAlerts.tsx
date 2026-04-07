@@ -288,7 +288,7 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode }: Predi
         {/* 5. Comparación Histórica */}
         <SectionCard
           title="Comparación vs Umbral"
-          subtitle="Distancia del promedio general respecto al umbral de aprobación (6.0)"
+          subtitle="Distancia del promedio general respecto al umbral de aprobación (5.0)"
           icon={BarChart3}
           expanded={expandedSection === "comparacion"}
           onToggle={() => toggleSection("comparacion")}
@@ -309,7 +309,7 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode }: Predi
                 </div>
                 <div className="text-right">
                   <p className={`text-xs ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Umbral</p>
-                  <p className={`text-2xl font-bold ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>6.00</p>
+                  <p className={`text-2xl font-bold ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>5.00</p>
                 </div>
                 <div className="text-right">
                   <p className={`text-xs ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Diferencia</p>
