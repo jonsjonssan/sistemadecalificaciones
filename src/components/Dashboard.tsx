@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 
 interface UsuarioSesion { id: string; email: string; nombre: string; rol: string; }
 interface Grado { id: string; numero: number; seccion: string; _count?: { estudiantes: number; materias: number; }; }
-interface MateriaConGrado { id: string; nombre: string; grado?: { id: string; numero: number; seccion: string; }; }
+interface MateriaConGrado { id: string; nombre: string; grado?: { id: string; numero: number; seccion: string; gradoNumero?: number; gradoSeccion?: string; }; }
 
 interface DashboardProps {
   usuario: UsuarioSesion;
@@ -69,18 +69,25 @@ function CiclosSection({ asignaturas, darkMode }: { asignaturas: MateriaConGrado
     <div className="space-y-3">
       {CICLOS.map(ciclo => {
         const d = getCicloDark(ciclo);
-        // Filtrar materias de este ciclo
-        const materiasDelCiclo = asignaturas.filter(m =>
-          m.grado && ciclo.grados.includes(m.grado.numero)
-        );
+        const materiasDelCiclo = asignaturas.filter(m => {
+          const num = m.grado?.numero ?? m.grado?.gradoNumero;
+          return num && ciclo.grados.includes(num);
+        });
 
         // Agrupar por grado
         const porGrado = ciclo.grados.map(num => {
           const gradoMaterias = materiasDelCiclo
-            .filter(m => m.grado?.numero === num)
+            .filter(m => {
+              const mNum = m.grado?.numero ?? m.grado?.gradoNumero;
+              return mNum === num;
+            })
             .map(m => m.nombre);
           // Obtener seccion del grado
-          const seccion = materiasDelCiclo.find(m => m.grado?.numero === num)?.grado?.seccion || "A";
+          const mat = materiasDelCiclo.find(m => {
+            const mNum = m.grado?.numero ?? m.grado?.gradoNumero;
+            return mNum === num;
+          });
+          const seccion = mat?.grado?.seccion ?? mat?.grado?.gradoSeccion ?? "A";
           return { grado: num, seccion, materias: gradoMaterias };
         }).filter(g => g.materias.length > 0);
 

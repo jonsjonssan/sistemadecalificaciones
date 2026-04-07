@@ -1459,11 +1459,15 @@ export default function Home() {
               totalEstudiantes={grados.reduce((sum, g) => sum + (g._count?.estudiantes || 0), 0)}
               totalAsignaturas={todasAsignaturas.length}
               totalDocentes={usuarios.filter(u => (u.rol === "docente" || u.rol === "docente-orientador") && u.activo).length}
-              asignaturasAsignadas={(usuario.asignaturasAsignadas || []).map((m: any) => ({
-                id: m.id,
-                nombre: m.nombre,
-                grado: m.gradoNumero ? { numero: m.gradoNumero, seccion: m.gradoSeccion || "" } : undefined
-              }))}
+              asignaturasAsignadas={(
+                isAdmin(usuario.rol)
+                  ? todasAsignaturas
+                  : (usuario.asignaturasAsignadas || []).map((m: any) => ({
+                    id: m.id,
+                    nombre: m.nombre,
+                    grado: m.gradoNumero ? { id: m.gradoId, numero: m.gradoNumero, seccion: m.gradoSeccion || "" } : undefined
+                  }))
+              )}
             />
             <div className="mt-4">
               <PredictiveAlerts
