@@ -18,6 +18,11 @@ model Usuario {
   nombre    String
   rol       String   // "admin", "admin-directora", "admin-codirectora", "docente", "docente-orientador"
   activo    Boolean  @default(true)
+
+  // Google OAuth (null si solo usa email/password)
+  googleId  String?  @unique
+  provider  String   @default("credentials") // "credentials" | "google"
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -27,6 +32,7 @@ model Usuario {
 
   @@index([email])
   @@index([rol, activo])
+  @@index([googleId])
 }
 
 // Grado escolar (2do a 9no)

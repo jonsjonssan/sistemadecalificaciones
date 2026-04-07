@@ -77,6 +77,8 @@ export default function Home() {
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
   const [loginError, setLoginError] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const googleButtonRef = useRef<HTMLDivElement>(null);
 
   // Datos
   const [grados, setGrados] = useState<Grado[]>([]);
@@ -462,6 +464,29 @@ export default function Home() {
       }
     } catch { setLoginError("Error de conexión"); }
     finally { setLoginLoading(false); }
+  };
+
+  const handleGoogleLogin = async (response: any) => {
+    setGoogleLoading(true);
+    setLoginError("");
+    try {
+      const res = await fetch("/api/auth/google", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ credential: response.credential }),
+      });
+      const data = await res.json();
+      if (res.ok && data.registrado) {
+        await checkAuth();
+      } else if (!data.registrado) {
+        // Usuario no registrado
+        setLoginError(data.mensaje || "Tu cuenta no está registrada. Solicita acceso al administrador.");
+      } else {
+        setLoginError(data.error || "Error al iniciar sesión con Google");
+      }
+    } catch { setLoginError("Error de conexión"); }
+    finally { setGoogleLoading(false); }
   };
 
   const handleLogout = async () => {
@@ -1090,6 +1115,38 @@ export default function Home() {
   // Auth
   useEffect(() => { checkAuth(); }, [checkAuth]);
 
+  // Cargar Google Identity Services
+  useEffect(() => {
+    if (typeof window === "undefined" || usuario) return;
+    // Cargar script de Google si no está cargado
+    if ((window as any).google) {
+      initGoogleButton();
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.onload = () => initGoogleButton();
+    document.head.appendChild(script);
+  }, [usuario, initialized]);
+
+  const initGoogleButton = () => {
+    if (!googleButtonRef.current || !(window as any).google) return;
+    (window as any).google.accounts.id.initialize({
+      client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "588360712961-5r5mloqlefuq7nghgetgcr18evctl3sp.apps.googleusercontent.com",
+      callback: handleGoogleLogin,
+      auto_select: false,
+    });
+    (window as any).google.accounts.id.renderButton(googleButtonRef.current, {
+      theme: "outline",
+      size: "large",
+      width: "100%",
+      text: "signin_with",
+      shape: "rectangular",
+    });
+  };
+
   // Carga inicial de datos estructurales
   useEffect(() => {
     if (usuario) {
@@ -1284,8 +1341,14 @@ export default function Home() {
             <form onSubmit={handleLogin} className="space-y-3">
               <div><Label className="text-sm">Email</Label><Input type="email" value={loginForm.email} onChange={e => setLoginForm({ ...loginForm, email: e.target.value })} placeholder="correo@ejemplo.edu" required className="mobile-input" /></div>
               <div><Label className="text-sm">Contraseña</Label><Input type="password" autoComplete="current-password" value={loginForm.password} onChange={e => setLoginForm({ ...loginForm, password: e.target.value })} required className="mobile-input" /></div>
-              {loginError && <p className="text-sm text-red-500 text-center">{loginError}</p>}
+              {loginError && <p className={`text-sm text-center ${loginError.includes("no está registrada") ? "text-amber-600" : "text-red-500"}`}>{loginError}</p>}
               <Button type="submit" className="w-full bg-teal-600 hover:bg-teal-700 mobile-button" disabled={loginLoading}>{loginLoading ? "Ingresando..." : "Ingresar"}</Button>
+              <div className="relative flex items-center justify-center">
+                <div className="border-t border-slate-300 w-full" />
+                <span className="bg-white px-2 text-xs text-slate-400 absolute">o</span>
+              </div>
+              <div ref={googleButtonRef} id="google-button-container" className="flex justify-center min-h-[40px]" />
+              {googleLoading && <p className="text-sm text-center text-muted-foreground">Iniciando sesión con Google...</p>}
               <p className="text-sm font-medium text-center text-muted-foreground">Ingrese sus credenciales para continuar</p>
             </form>
           )}
