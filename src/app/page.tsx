@@ -2557,7 +2557,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
 
     <div class="resumen">
       <div class="resumen-item">
-        <div class="valor">${prom?.toFixed(2) ?? 'N/A'}</div>
+        <div class="valor">${prom !== null && prom !== undefined ? Math.round(prom).toString() : 'N/A'}</div>
         <div class="etiqueta">Promedio General</div>
       </div>
       <div class="resumen-item ${estadoFinal === 'REPROBADO' ? 'reprobado' : ''}">
