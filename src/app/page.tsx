@@ -2839,9 +2839,9 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
 
       return `<tr>
         <td style="text-align:left;padding:6px 8px">${m.nombre}</td>
-        <td>${n1?.toFixed(1) ?? '-'}</td>
-        <td>${n2?.toFixed(1) ?? '-'}</td>
-        <td>${n3?.toFixed(1) ?? '-'}</td>
+        <td>${n1 != null ? Math.round(n1).toString() : '-'}</td>
+        <td>${n2 != null ? Math.round(n2).toString() : '-'}</td>
+        <td>${n3 != null ? Math.round(n3).toString() : '-'}</td>
         <td style="font-weight:bold">${promAnualRedondeado}</td>
         <td style="font-weight:bold;color:${estado === 'APROBADO' ? '#059669' : estado === 'REPROBADO' ? '#dc2626' : '#666'}">${estado}</td>
       </tr>`;
@@ -2988,7 +2988,7 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
         const promAnual = notasValidas.length ? notasValidas.reduce((a, b) => a + b, 0) / notasValidas.length : null;
         const promAnualRedondeado = promAnual !== null ? Math.round(promAnual).toString() : '-';
         const estado = promAnual !== null ? (promAnual >= 5 ? 'APROBADO' : 'REPROBADO') : '-';
-        return `<tr><td style="text-align:left;padding:6px 8px">${m.nombre}</td><td>${n1?.toFixed(1) ?? '-'}</td><td>${n2?.toFixed(1) ?? '-'}</td><td>${n3?.toFixed(1) ?? '-'}</td><td style="font-weight:bold">${promAnualRedondeado}</td><td style="font-weight:bold;color:${estado === 'APROBADO' ? '#059669' : estado === 'REPROBADO' ? '#dc2626' : '#666'}">${estado}</td></tr>`;
+        return `<tr><td style="text-align:left;padding:6px 8px">${m.nombre}</td><td>${n1 != null ? Math.round(n1).toString() : '-'}</td><td>${n2 != null ? Math.round(n2).toString() : '-'}</td><td>${n3 != null ? Math.round(n3).toString() : '-'}</td><td style="font-weight:bold">${promAnualRedondeado}</td><td style="font-weight:bold;color:${estado === 'APROBADO' ? '#059669' : estado === 'REPROBADO' ? '#dc2626' : '#666'}">${estado}</td></tr>`;
       }).join('');
 
       const notasFinales = materias.map(m => {
