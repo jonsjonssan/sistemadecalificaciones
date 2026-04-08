@@ -2292,9 +2292,9 @@ const CalificacionRow = React.memo(function CalificacionRow({ estudiante, materi
         <td className={`p-2 text-center font-semibold sticky-col shadow-right left-0 z-10 border-r ${stickyBg} ${cellBorder}`}>{estudiante.numero}</td>
         <td className={`p-2 font-medium sticky-col shadow-right left-10 z-10 whitespace-nowrap border-r ${stickyBg} ${cellBorder}`}>{estudiante.nombre}</td>
         {Array.from({ length: numAC }).map((_, i) => <td key={`ac-${i}`} className={`p-1 border-l ${cellBorder}`}><NotaInput value={acNotas[i] ?? ""} onChange={v => updateAC(i, v)} darkMode={darkMode} hasError={acErrors.has(i)} onBlur={() => blurAC(i, acNotas[i])} /></td>)}
-        <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promACBg} text-base`}>{promACPeso !== null ? Math.round(promACPeso).toString() : "-"}</td>
+        <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promACBg} text-base`}>{promACPeso !== null ? promACPeso.toFixed(1) : "-"}</td>
         {Array.from({ length: numAI }).map((_, i) => <td key={`ai-${i}`} className={`p-1 border-l ${cellBorder}`}><NotaInput value={aiNotas[i] ?? ""} onChange={v => updateAI(i, v)} darkMode={darkMode} hasError={aiErrors.has(i)} onBlur={() => blurAI(i, aiNotas[i])} /></td>)}
-        <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promAIBg} text-base`}>{promAIPeso !== null ? Math.round(promAIPeso).toString() : "-"}</td>
+        <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promAIBg} text-base`}>{promAIPeso !== null ? promAIPeso.toFixed(1) : "-"}</td>
         {tieneExamen && <td className={`p-1 border-l ${cellBorder}`}><NotaInput value={examen ?? ""} onChange={handleExamen} darkMode={darkMode} hasError={examenError} onBlur={() => blurExamen(examen)} /></td>}
         {tieneExamen && <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promExBg} text-base`}>{promExPeso !== null ? Math.round(promExPeso).toString() : "-"}</td>}
         <td className={`p-1 border-l ${cellBorder}`}><NotaInput value={recup ?? ""} onChange={handleRecup} darkMode={darkMode} hasError={recupError} onBlur={() => blurRecup(recup)} /></td>
@@ -2310,9 +2310,9 @@ const CalificacionRow = React.memo(function CalificacionRow({ estudiante, materi
       <td className={`p-2 text-center font-semibold sticky-col shadow-right left-0 z-10 border-r ${stickyBg} ${cellBorder}`}>{estudiante.numero}</td>
       <td className={`p-2 font-medium sticky-col shadow-right left-10 z-10 whitespace-nowrap border-r ${stickyBg} ${cellBorder}`}>{estudiante.nombre}</td>
       {acNotas.map((n, i) => <td key={`ac-${i}`} className={`p-1 border-l ${cellBorder}`}><NotaInput value={n ?? ""} onChange={v => updateAC(i, v)} darkMode={darkMode} hasError={acErrors.has(i)} onBlur={() => blurAC(i, n)} /></td>)}
-      <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promACBg} text-sm sm:text-base`}>{promACPeso !== null ? Math.round(promACPeso).toString() : "-"}</td>
+      <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promACBg} text-sm sm:text-base`}>{promACPeso !== null ? promACPeso.toFixed(1) : "-"}</td>
       {aiNotas.map((n, i) => <td key={`ai-${i}`} className={`p-1 border-l ${cellBorder}`}><NotaInput value={n ?? ""} onChange={v => updateAI(i, v)} darkMode={darkMode} hasError={aiErrors.has(i)} onBlur={() => blurAI(i, n)} /></td>)}
-      <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promAIBg} text-sm sm:text-base`}>{promAIPeso !== null ? Math.round(promAIPeso).toString() : "-"}</td>
+      <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promAIBg} text-sm sm:text-base`}>{promAIPeso !== null ? promAIPeso.toFixed(1) : "-"}</td>
       {config.tieneExamen && <td className={`p-1 border-l ${cellBorder}`}><NotaInput value={examen ?? ""} onChange={handleExamen} darkMode={darkMode} hasError={examenError} onBlur={() => blurExamen(examen)} /></td>}
       {config.tieneExamen && <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promExBg} text-sm sm:text-base`}>{promExPeso !== null ? Math.round(promExPeso).toString() : "-"}</td>}
       <td className={`p-1 border-l ${cellBorder}`}><NotaInput value={recup ?? ""} onChange={handleRecup} darkMode={darkMode} hasError={recupError} onBlur={() => blurRecup(recup)} /></td>
