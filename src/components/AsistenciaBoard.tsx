@@ -58,6 +58,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
   const [expandedStudent, setExpandedStudent] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().slice(0, 7));
   const [selectedYear] = useState<string>(new Date().getFullYear().toString());
+  const [asistenciaDetallada, setAsistenciaDetallada] = useState<Record<string, Record<string, string>>>({});
 
   const initializeAttendance = useCallback(() => {
     const initial: Record<string, string> = {};
@@ -105,6 +106,23 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
       if (res.ok) {
         setResumen(await res.json());
       }
+
+      // Cargar asistencia detallada por estudiante
+      let urlDetallada = `/api/asistencia/detallada?gradoId=${gradoId}`;
+      if (summaryRange === "month") {
+        urlDetallada += `&mes=${selectedMonth}`;
+      } else {
+        urlDetallada += `&anual=true`;
+      }
+      const resDetallada = await fetch(urlDetallada);
+      if (resDetallada.ok) {
+        const data = await resDetallada.json();
+        const detalladaMap: Record<string, Record<string, string>> = {};
+        data.forEach((est: any) => {
+          detalladaMap[est.id] = est.asistenciaPorDia;
+        });
+        setAsistenciaDetallada(detalladaMap);
+      }
     } catch (error) {
       console.error("Error loading summary:", error);
     } finally {
@@ -127,13 +145,17 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     link.click();
   };
 
-  const downloadPDFMensual = () => {
-    if (!gradoId || !resumen.length) return;
+  const downloadPDFMensual = (estudianteId?: string) => {
+    if (!gradoId) return;
     const grado = grados.find(g => g.id === gradoId);
     const [year, month] = selectedMonth.split('-');
     const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
     const monthName = monthNames[parseInt(month) - 1];
     const daysInMonth = new Date(parseInt(year), parseInt(month), 0).getDate();
+
+    // Si es para un estudiante específico
+    const estudiante = estudianteId ? estudiantes.find(e => e.id === estudianteId) : null;
+    const asistenciaEst = estudianteId ? (asistenciaDetallada[estudianteId] || {}) : {};
 
     // Generar días del mes
     let rowsHTML = '';
@@ -144,19 +166,37 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
       const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
       const dayName = dayNames[dayOfWeek];
       const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+      const dateKey = `${year}-${month}-${String(day).padStart(2, '0')}`;
+      const estado = asistenciaEst[dateKey];
+
+      let estadoStr = '-';
+      let estadoColor = '#999';
+      if (!isWeekend && estado) {
+        if (estado === 'presente') { estadoStr = 'P'; estadoColor = '#059669'; }
+        else if (estado === 'ausente') { estadoStr = 'A'; estadoColor = '#dc2626'; }
+        else if (estado === 'justificada' || estado === 'tarde') { estadoStr = 'Pe'; estadoColor = '#d97706'; }
+      }
 
       if (isWeekend) {
         rowsHTML += `<tr><td>${dateStr}</td><td>${dayName}</td><td style="text-align:center;color:#999;">-</td></tr>`;
       } else {
-        rowsHTML += `<tr><td>${dateStr}</td><td>${dayName}</td><td style="text-align:center;"></td></tr>`;
+        rowsHTML += `<tr><td>${dateStr}</td><td>${dayName}</td><td style="text-align:center;color:${estadoColor};font-weight:bold;">${estadoStr}</td></tr>`;
       }
     }
+
+    // Calcular resumen
+    let totalP = 0, totalA = 0, totalPe = 0;
+    Object.values(asistenciaEst).forEach(estado => {
+      if (estado === 'presente') totalP++;
+      else if (estado === 'ausente') totalA++;
+      else if (estado === 'justificada' || estado === 'tarde') totalPe++;
+    });
 
     const html = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Asistencia Mensual - ${grado?.numero}° ${grado?.seccion}</title>
+  <title>Asistencia Mensual - ${estudiante ? estudiante.nombre : grado?.numero + '° ' + grado?.seccion}</title>
   <style>
     @page { size: letter; margin: 15mm; }
     body { font-family: Arial, sans-serif; font-size: 10pt; color: #333; margin: 0; padding: 20px; }
@@ -165,11 +205,10 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     .header h2 { font-size: 12pt; margin: 0 0 10px 0; font-weight: normal; }
     .info-section { margin-bottom: 20px; }
     .info-section p { margin: 5px 0; }
-    .info-section strong { display: inline-block; width: 180px; }
+    .info-section strong { display: inline-block; width: 200px; }
     table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
     th, td { border: 1px solid #333; padding: 6px 8px; text-align: left; }
     th { background: #f0f0f0; font-weight: bold; }
-    td.weekend { color: #999; text-align: center; }
     .summary { margin: 20px 0; padding: 10px; background: #f9f9f9; border: 1px solid #ddd; }
     .summary p { margin: 5px 0; }
     .firmas { margin-top: 40px; display: flex; justify-content: space-between; }
@@ -186,6 +225,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
 
   <div class="info-section">
     <p><strong>Grado y Sección:</strong> ${grado?.numero}° "${grado?.seccion}"</p>
+    ${estudiante ? `<p><strong>Estudiante:</strong> ${estudiante.nombre}</p>` : ''}
     <p><strong>Director:</strong> Centro Escolar</p>
     <p><strong>Nombre del docente orientador:</strong> ___________________________</p>
     <p><strong>Mes y Año:</strong> ${monthName} ${year}</p>
@@ -194,9 +234,9 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
   <table>
     <thead>
       <tr>
-        <th style="width: 25%;">Fecha</th>
+        <th style="width: 20%;">Fecha</th>
         <th style="width: 25%;">Día</th>
-        <th style="width: 50%;">Estado</th>
+        <th style="width: 15%;">Estado</th>
       </tr>
     </thead>
     <tbody>
@@ -206,9 +246,9 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
 
   <div class="summary">
     <h3 style="margin-top: 0;">Resumen del Mes</h3>
-    <p><strong>Total de Días Presente:</strong> [ 00 ]</p>
-    <p><strong>Total de Días Ausente:</strong> [ 00 ]</p>
-    <p><strong>Total de Días de Permiso:</strong> [ 00 ]</p>
+    <p><strong>Total de Días Presente:</strong> ${totalP}</p>
+    <p><strong>Total de Días Ausente:</strong> ${totalA}</p>
+    <p><strong>Total de Días de Permiso:</strong> ${totalPe}</p>
   </div>
 
   <div class="firmas">
@@ -234,12 +274,31 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     }
   };
 
-  const downloadPDFAnual = () => {
+  const downloadPDFAnual = (estudianteId?: string) => {
     if (!gradoId) return;
     const grado = grados.find(g => g.id === gradoId);
     const year = selectedYear;
     const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
     const daysInMonths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+    // Si es para un estudiante específico
+    const estudiante = estudianteId ? estudiantes.find(e => e.id === estudianteId) : null;
+    const asistenciaEst = estudianteId ? (asistenciaDetallada[estudianteId] || {}) : {};
+
+    // Calcular resumen por mes
+    const resumenPorMes = monthNames.map((_, m) => {
+      let p = 0, a = 0, pe = 0;
+      for (let d = 1; d <= daysInMonths[m]; d++) {
+        const dateKey = `${year}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const estado = asistenciaEst[dateKey];
+        if (estado === 'presente') p++;
+        else if (estado === 'ausente') a++;
+        else if (estado === 'justificada' || estado === 'tarde') pe++;
+      }
+      return { p, a, pe };
+    });
+
+    const totalAnual = resumenPorMes.reduce((acc, r) => ({ p: acc.p + r.p, a: acc.a + r.a, pe: acc.pe + r.pe }), { p: 0, a: 0, pe: 0 });
 
     // Generar filas del calendario (1-31)
     let calendarRows = '';
@@ -249,7 +308,14 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
         if (day > daysInMonths[m]) {
           calendarRows += `<td style="text-align:center;color:#ccc;">N/A</td>`;
         } else {
-          calendarRows += `<td style="text-align:center;"></td>`;
+          const dateKey = `${year}-${String(m + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+          const estado = asistenciaEst[dateKey];
+          let cellContent = '';
+          let cellColor = '';
+          if (estado === 'presente') { cellContent = 'P'; cellColor = '#059669'; }
+          else if (estado === 'ausente') { cellContent = 'A'; cellColor = '#dc2626'; }
+          else if (estado === 'justificada' || estado === 'tarde') { cellContent = 'Pe'; cellColor = '#d97706'; }
+          calendarRows += `<td style="text-align:center;color:${cellColor};font-weight:bold;">${cellContent}</td>`;
         }
       }
       calendarRows += `</tr>`;
@@ -258,15 +324,15 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     // Filas de resumen por mes
     let summaryRows = '';
     monthNames.forEach((m, i) => {
-      summaryRows += `<tr><td>${m}</td><td style="text-align:center;">[ ]</td><td style="text-align:center;">[ ]</td><td style="text-align:center;">[ ]</td></tr>`;
+      summaryRows += `<tr><td>${m}</td><td style="text-align:center;">${resumenPorMes[i].p || '-'}</td><td style="text-align:center;">${resumenPorMes[i].a || '-'}</td><td style="text-align:center;">${resumenPorMes[i].pe || '-'}</td></tr>`;
     });
-    summaryRows += `<tr style="font-weight:bold;background:#f0f0f0;"><td>TOTAL ANUAL</td><td style="text-align:center;">[ ]</td><td style="text-align:center;">[ ]</td><td style="text-align:center;">[ ]</td></tr>`;
+    summaryRows += `<tr style="font-weight:bold;background:#f0f0f0;"><td>TOTAL ANUAL</td><td style="text-align:center;">${totalAnual.p}</td><td style="text-align:center;">${totalAnual.a}</td><td style="text-align:center;">${totalAnual.pe}</td></tr>`;
 
     const html = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Asistencia Anual - ${grado?.numero}° ${grado?.seccion}</title>
+  <title>Asistencia Anual - ${estudiante ? estudiante.nombre : grado?.numero + '° ' + grado?.seccion}</title>
   <style>
     @page { size: letter landscape; margin: 10mm; }
     body { font-family: Arial, sans-serif; font-size: 8pt; color: #333; margin: 0; padding: 15px; }
@@ -297,6 +363,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
 
   <div class="info-section">
     <p><strong>Grado y Sección:</strong> ${grado?.numero}° "${grado?.seccion}"</p>
+    ${estudiante ? `<p><strong>Estudiante:</strong> ${estudiante.nombre}</p>` : ''}
     <p><strong>Director:</strong> Centro Escolar</p>
     <p><strong>Nombre del docente orientador:</strong> ___________________________</p>
     <p><strong>Año Escolar:</strong> ${year}</p>
@@ -712,6 +779,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                     <TableHead className="text-center font-bold text-amber-600">Tard.</TableHead>
                     <TableHead className="text-center font-bold text-red-600">Aus.</TableHead>
                     <TableHead className="text-center">Total</TableHead>
+                    <TableHead className="text-center w-24">PDF</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -724,11 +792,12 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                         <TableCell className="text-center"><Skeleton className={`h-4 w-8 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
                         <TableCell className="text-center"><Skeleton className={`h-4 w-8 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
                         <TableCell className="text-center"><Skeleton className={`h-4 w-8 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
+                        <TableCell className="text-center"><Skeleton className={`h-4 w-16 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
                       </TableRow>
                     ))
                   ) : resumen.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className={`text-center py-8 italic text-xs sm:text-sm ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                      <TableCell colSpan={7} className={`text-center py-8 italic text-xs sm:text-sm ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
                         Sin registros
                       </TableCell>
                     </TableRow>
@@ -757,10 +826,20 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                               <TableCell className="text-center text-amber-700 font-medium">{r.tardanzas}</TableCell>
                               <TableCell className="text-center text-red-700 font-medium">{r.ausencias}</TableCell>
                               <TableCell className="text-center font-bold">{r.total}</TableCell>
+                              <TableCell className="text-center">
+                                <div className="flex gap-1 justify-center" onClick={(e) => e.stopPropagation()}>
+                                  <Button size="sm" variant="ghost" className={`h-6 px-1 text-[10px] ${darkMode ? 'text-blue-400 hover:bg-blue-900/30' : 'text-blue-600 hover:bg-blue-50'}`} onClick={() => downloadPDFMensual(r.id)} title="PDF Mensual">
+                                    <Download className="h-3 w-3" />
+                                  </Button>
+                                  <Button size="sm" variant="ghost" className={`h-6 px-1 text-[10px] ${darkMode ? 'text-purple-400 hover:bg-purple-900/30' : 'text-purple-600 hover:bg-purple-50'}`} onClick={() => downloadPDFAnual(r.id)} title="PDF Anual">
+                                    <Download className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              </TableCell>
                             </TableRow>
                             {isExpanded && (
                               <TableRow className={darkMode ? 'bg-slate-800/50' : 'bg-slate-50'}>
-                                <TableCell colSpan={6} className="py-3 px-4">
+                                <TableCell colSpan={7} className="py-3 px-4">
                                   <div className="space-y-2 text-xs">
                                     {r.fechasPresente && r.fechasPresente.length > 0 && (
                                       <div>
