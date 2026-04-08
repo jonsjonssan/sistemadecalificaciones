@@ -250,11 +250,28 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
   const [informeOpen, setInformeOpen] = useState(false);
 
   const esDirectiva = ["admin", "admin-directora", "admin-codirectora"].includes(usuario.rol);
+  const esDocente = ["docente", "docente-orientador"].includes(usuario.rol);
+
+  // Para docentes, obtener solo su grado asignado
+  const gradoAsignado = esDocente ? (usuario.asignaturasAsignadas?.[0]?.gradoId || null) : null;
+
+  // Filtrar grados según rol
+  const gradosVisibles = esDirectiva
+    ? grados
+    : grados.filter(g => gradoAsignado ? g.id === gradoAsignado : false);
+
+  // Calcular totales visibles
+  const totalEstudiantesVisibles = gradosVisibles.reduce((sum, g) => sum + (g._count?.estudiantes || 0), 0);
+  const totalAsignaturasVisibles = esDirectiva ? totalAsignaturas : asignaturasAsignadas.length;
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await fetch("/api/stats/dashboard");
+        // Si es docente, pasar el gradoId asignado para filtrar
+        const url = gradoAsignado
+          ? `/api/stats/dashboard?gradoId=${gradoAsignado}`
+          : "/api/stats/dashboard";
+        const res = await fetch(url);
         if (res.ok) {
           const data = await res.json();
           setStats(data);
@@ -266,11 +283,13 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
       }
     };
     fetchStats();
-  }, []);
+  }, [gradoAsignado]);
 
-  const selectedStats = selectedGradoId === "all" ? null : stats.find(s => s.gradoId === selectedGradoId);
+  // Si es docente, seleccionar automáticamente su grado
+  const selectedGradoIdEfectivo = esDocente && gradoAsignado ? gradoAsignado : selectedGradoId;
+  const selectedStats = selectedGradoIdEfectivo === "all" ? null : stats.find(s => s.gradoId === selectedGradoIdEfectivo);
 
-  const popChartData = grados.map(g => ({
+  const popChartData = gradosVisibles.map(g => ({
     name: `${g.numero}° ${g.seccion}`,
     estudiantes: g._count?.estudiantes || 0
   })).filter(g => g.estudiantes > 0);
@@ -337,7 +356,7 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className={`text-2xl md:text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{totalEstudiantes}</div>
+                  <div className={`text-2xl md:text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{totalEstudiantesVisibles}</div>
                   <p className={`text-xs sm:text-sm md:text-base font-medium mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Registrados</p>
                 </CardContent>
               </Card>
@@ -351,7 +370,7 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className={`text-2xl md:text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{grados.length}</div>
+                  <div className={`text-2xl md:text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{gradosVisibles.length}</div>
                   <p className={`text-xs sm:text-sm md:text-base font-medium mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Secciones</p>
                 </CardContent>
               </Card>
@@ -365,7 +384,7 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className={`text-2xl md:text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{totalAsignaturas}</div>
+                  <div className={`text-2xl md:text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{totalAsignaturasVisibles}</div>
                   <p className={`text-xs sm:text-sm md:text-base font-medium mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Impartidas</p>
                 </CardContent>
               </Card>
@@ -471,24 +490,29 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
                 <TrendingUp className="h-5 w-5 text-teal-600" />
                 Rendimiento Académico
               </CardTitle>
-              <CardDescription className={`text-xs sm:text-sm font-medium ${darkMode ? 'text-slate-400' : ''}`}>Promedios por categoría</CardDescription>
+              <CardDescription className={`text-xs sm:text-sm font-medium ${darkMode ? 'text-slate-400' : ''}`}>
+                {esDocente ? `Estadísticas de ${gradosVisibles[0]?.numero}° ${gradosVisibles[0]?.seccion}` : 'Promedios por categoría'}
+              </CardDescription>
             </div>
-            <Select value={selectedGradoId} onValueChange={setSelectedGradoId}>
-              <SelectTrigger className={`w-full sm:w-[180px] h-9 text-xs sm:text-sm font-medium ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white'}`}>
-                <SelectValue placeholder="Seleccionar grado" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all" className="text-xs sm:text-sm font-medium">Vista General</SelectItem>
-                {stats.map(s => (
-                  <SelectItem key={s.gradoId} value={s.gradoId} className="text-xs sm:text-sm font-medium">
-                    {s.nombre}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {/* Selector de grado solo para admins/directivos */}
+            {!esDocente && (
+              <Select value={selectedGradoId} onValueChange={setSelectedGradoId}>
+                <SelectTrigger className={`w-full sm:w-[180px] h-9 text-xs sm:text-sm font-medium ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white'}`}>
+                  <SelectValue placeholder="Seleccionar grado" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all" className="text-xs sm:text-sm font-medium">Vista General</SelectItem>
+                  {stats.map(s => (
+                    <SelectItem key={s.gradoId} value={s.gradoId} className="text-xs sm:text-sm font-medium">
+                      {s.nombre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </CardHeader>
           <CardContent className="p-3 sm:p-4 md:p-6 flex-1">
-            {selectedGradoId === "all" ? (
+            {selectedGradoIdEfectivo === "all" ? (
               <div className="h-[200px] sm:h-[250px] md:h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={popChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>

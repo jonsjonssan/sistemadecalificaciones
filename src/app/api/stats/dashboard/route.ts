@@ -1,20 +1,45 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/neon";
+import { cookies } from "next/headers";
 
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const trimestre = parseInt(searchParams.get("trimestre") || "1");
-    
-    const grados = await sql`
-      SELECT g.*, 
-        (SELECT COUNT(*) FROM "Estudiante" e WHERE e."gradoId" = g.id) as estudiantes_count,
-        (SELECT COUNT(*) FROM "Materia" m WHERE m."gradoId" = g.id) as materias_count
-      FROM "Grado" g
-      ORDER BY g.numero, g.seccion
-    `;
+    const gradoId = searchParams.get("gradoId"); // Nuevo parámetro para filtrar por grado
 
-    const statsPorGrado = await Promise.all(grados.map(async (grado: any) => {
+    // Verificar sesión y rol del usuario
+    const cookieStore = await cookies();
+    const session = cookieStore.get("session");
+
+    let gradosFiltrados;
+
+    if (!session) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    // Si se pasa un gradoId específico, filtrar solo ese grado
+    if (gradoId) {
+      gradosFiltrados = await sql`
+        SELECT g.*,
+          (SELECT COUNT(*) FROM "Estudiante" e WHERE e."gradoId" = g.id) as estudiantes_count,
+          (SELECT COUNT(*) FROM "Materia" m WHERE m."gradoId" = g.id) as materias_count
+        FROM "Grado" g
+        WHERE g.id = ${gradoId}
+        ORDER BY g.numero, g.seccion
+      `;
+    } else {
+      // Si no se pasa gradoId, obtener todos (para admins)
+      gradosFiltrados = await sql`
+        SELECT g.*,
+          (SELECT COUNT(*) FROM "Estudiante" e WHERE e."gradoId" = g.id) as estudiantes_count,
+          (SELECT COUNT(*) FROM "Materia" m WHERE m."gradoId" = g.id) as materias_count
+        FROM "Grado" g
+        ORDER BY g.numero, g.seccion
+      `;
+    }
+
+    const statsPorGrado = await Promise.all(gradosFiltrados.map(async (grado: any) => {
       const calificaciones = await sql`
         SELECT c.*, e.nombre as estudiante_nombre, e.numero as estudiante_numero
         FROM "Calificacion" c
@@ -34,15 +59,15 @@ export async function GET(req: Request) {
         if (c.examenTrimestral !== null) { sumEx += Number(c.examenTrimestral); countEx++; }
 
         if (!studentAverages[c.estudianteId]) {
-          studentAverages[c.estudianteId] = { 
-            id: c.estudianteId, 
-            nombre: c.estudiante_nombre, 
+          studentAverages[c.estudianteId] = {
+            id: c.estudianteId,
+            nombre: c.estudiante_nombre,
             numero: c.estudiante_numero,
-            suma: 0, 
-            cuenta: 0 
+            suma: 0,
+            cuenta: 0
           };
         }
-        
+
         if (c.promedioFinal !== null) {
           studentAverages[c.estudianteId].suma += Number(c.promedioFinal);
           studentAverages[c.estudianteId].cuenta++;
