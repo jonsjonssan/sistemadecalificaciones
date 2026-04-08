@@ -839,49 +839,49 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                             </TableRow>
                             {isExpanded && (
                               <TableRow className={darkMode ? 'bg-slate-800/50' : 'bg-slate-50'}>
-                                <TableCell colSpan={7} className="py-3 px-4">
-                                  <div className="space-y-2 text-xs">
+                                <TableCell colSpan={7} className="py-4 px-4">
+                                  <div className="space-y-4">
                                     {r.fechasPresente && r.fechasPresente.length > 0 && (
-                                      <div>
-                                        <span className={`font-semibold ${darkMode ? 'text-teal-400' : 'text-teal-700'}`}>✓ Asistencias ({r.fechasPresente.length}):</span>
-                                        <div className={`mt-1 flex flex-wrap gap-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                                          {r.fechasPresente.slice(0, 10).map((fecha, i) => (
-                                            <span key={i} className={`px-2 py-1 rounded ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`}>{fecha}</span>
+                                      <div className={`rounded-lg p-3 ${darkMode ? 'bg-teal-900/20 border border-teal-800/50' : 'bg-teal-50 border border-teal-200'}`}>
+                                        <div className="flex items-center justify-between mb-2">
+                                          <span className={`font-semibold text-sm ${darkMode ? 'text-teal-400' : 'text-teal-700'}`}>✓ Asistencias</span>
+                                          <span className={`text-xs px-2 py-0.5 rounded-full ${darkMode ? 'bg-teal-900/40 text-teal-300' : 'bg-teal-100 text-teal-700'}`}>{r.fechasPresente.length} días</span>
+                                        </div>
+                                        <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
+                                          {r.fechasPresente.map((fecha, i) => (
+                                            <span key={i} className={`px-2 py-1 rounded text-xs font-mono ${darkMode ? 'bg-teal-900/40 text-teal-300 border border-teal-700/30' : 'bg-white text-teal-700 border border-teal-200 shadow-sm'}`}>{fecha}</span>
                                           ))}
-                                          {r.fechasPresente.length > 10 && (
-                                            <span className={`px-2 py-1 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>+{r.fechasPresente.length - 10} más</span>
-                                          )}
                                         </div>
                                       </div>
                                     )}
                                     {r.fechasTardanza && r.fechasTardanza.length > 0 && (
-                                      <div>
-                                        <span className={`font-semibold ${darkMode ? 'text-amber-400' : 'text-amber-700'}`}>⏰ Tardanzas ({r.fechasTardanza.length}):</span>
-                                        <div className={`mt-1 flex flex-wrap gap-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                                          {r.fechasTardanza.slice(0, 10).map((fecha, i) => (
-                                            <span key={i} className={`px-2 py-1 rounded ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`}>{fecha}</span>
+                                      <div className={`rounded-lg p-3 ${darkMode ? 'bg-amber-900/20 border border-amber-800/50' : 'bg-amber-50 border border-amber-200'}`}>
+                                        <div className="flex items-center justify-between mb-2">
+                                          <span className={`font-semibold text-sm ${darkMode ? 'text-amber-400' : 'text-amber-700'}`}>⏰ Tardanzas</span>
+                                          <span className={`text-xs px-2 py-0.5 rounded-full ${darkMode ? 'bg-amber-900/40 text-amber-300' : 'bg-amber-100 text-amber-700'}`}>{r.fechasTardanza.length} días</span>
+                                        </div>
+                                        <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
+                                          {r.fechasTardanza.map((fecha, i) => (
+                                            <span key={i} className={`px-2 py-1 rounded text-xs font-mono ${darkMode ? 'bg-amber-900/40 text-amber-300 border border-amber-700/30' : 'bg-white text-amber-700 border border-amber-200 shadow-sm'}`}>{fecha}</span>
                                           ))}
-                                          {r.fechasTardanza.length > 10 && (
-                                            <span className={`px-2 py-1 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>+{r.fechasTardanza.length - 10} más</span>
-                                          )}
                                         </div>
                                       </div>
                                     )}
                                     {r.fechasAusente && r.fechasAusente.length > 0 && (
-                                      <div>
-                                        <span className={`font-semibold ${darkMode ? 'text-red-400' : 'text-red-700'}`}>✗ Ausencias ({r.fechasAusente.length}):</span>
-                                        <div className={`mt-1 flex flex-wrap gap-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                                          {r.fechasAusente.slice(0, 10).map((fecha, i) => (
-                                            <span key={i} className={`px-2 py-1 rounded ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`}>{fecha}</span>
+                                      <div className={`rounded-lg p-3 ${darkMode ? 'bg-red-900/20 border border-red-800/50' : 'bg-red-50 border border-red-200'}`}>
+                                        <div className="flex items-center justify-between mb-2">
+                                          <span className={`font-semibold text-sm ${darkMode ? 'text-red-400' : 'text-red-700'}`}>✗ Ausencias</span>
+                                          <span className={`text-xs px-2 py-0.5 rounded-full ${darkMode ? 'bg-red-900/40 text-red-300' : 'bg-red-100 text-red-700'}`}>{r.fechasAusente.length} días</span>
+                                        </div>
+                                        <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
+                                          {r.fechasAusente.map((fecha, i) => (
+                                            <span key={i} className={`px-2 py-1 rounded text-xs font-mono ${darkMode ? 'bg-red-900/40 text-red-300 border border-red-700/30' : 'bg-white text-red-700 border border-red-200 shadow-sm'}`}>{fecha}</span>
                                           ))}
-                                          {r.fechasAusente.length > 10 && (
-                                            <span className={`px-2 py-1 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>+{r.fechasAusente.length - 10} más</span>
-                                          )}
                                         </div>
                                       </div>
                                     )}
                                     {(!r.fechasPresente?.length && !r.fechasTardanza?.length && !r.fechasAusente?.length) && (
-                                      <p className={`italic ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>No hay fechas registradas</p>
+                                      <p className={`italic text-center py-4 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>No hay fechas registradas</p>
                                     )}
                                   </div>
                                 </TableCell>
