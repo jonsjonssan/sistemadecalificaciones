@@ -152,114 +152,123 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
     const monthName = monthNames[parseInt(month) - 1];
     const daysInMonth = new Date(parseInt(year), parseInt(month), 0).getDate();
+    const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
-    // Si es para un estudiante específico
-    const estudiante = estudianteId ? estudiantes.find(e => e.id === estudianteId) : null;
-    const asistenciaEst = estudianteId ? (asistenciaDetallada[estudianteId] || {}) : {};
+    // Obtener todos los estudiantes del grado
+    const estudiantesList = estudiantes.sort((a, b) => a.numero - b.numero);
 
-    // Generar días del mes
-    let rowsHTML = '';
+    // Obtener asistencia de todos los estudiantes
+    const asistenciaTodos: Record<string, Record<string, string>> = {};
+    estudiantesList.forEach(est => {
+      asistenciaTodos[est.id] = asistenciaDetallada[est.id] || {};
+    });
+
+    // Generar headers de columnas (fechas)
+    let headersHTML = '<th style="width: 35%; text-align: left; padding: 4px 6px; background: #1e293b; color: white; font-size: 8pt; border: 1px solid #475569;">Estudiante</th>';
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(parseInt(year), parseInt(month) - 1, day);
       const dayOfWeek = date.getDay();
-      const dateStr = `${String(day).padStart(2, '0')}/${month}/${year}`;
-      const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
       const dayName = dayNames[dayOfWeek];
       const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-      const dateKey = `${year}-${month}-${String(day).padStart(2, '0')}`;
-      const estado = asistenciaEst[dateKey];
-
-      let estadoStr = '-';
-      let estadoColor = '#999';
-      if (!isWeekend && estado) {
-        if (estado === 'presente') { estadoStr = 'P'; estadoColor = '#059669'; }
-        else if (estado === 'ausente') { estadoStr = 'A'; estadoColor = '#dc2626'; }
-        else if (estado === 'justificada' || estado === 'tarde') { estadoStr = 'Pe'; estadoColor = '#d97706'; }
-      }
-
-      if (isWeekend) {
-        rowsHTML += `<tr><td>${dateStr}</td><td>${dayName}</td><td style="text-align:center;color:#999;">-</td></tr>`;
-      } else {
-        rowsHTML += `<tr><td>${dateStr}</td><td>${dayName}</td><td style="text-align:center;color:${estadoColor};font-weight:bold;">${estadoStr}</td></tr>`;
-      }
+      headersHTML += `<th style="width: ${daysInMonth > 20 ? '28px' : '32px'}; text-align: center; padding: 4px 2px; background: ${isWeekend ? '#f1f5f9' : '#1e293b'}; color: ${isWeekend ? '#94a3b8' : 'white'}; font-size: 7pt; border: 1px solid #475569;">${day}<br>${dayName}</th>`;
     }
+    headersHTML += '<th style="width: 28px; text-align: center; padding: 4px 2px; background: #059669; color: white; font-size: 7pt; border: 1px solid #475569;">P</th>';
+    headersHTML += '<th style="width: 28px; text-align: center; padding: 4px 2px; background: #dc2626; color: white; font-size: 7pt; border: 1px solid #475569;">A</th>';
+    headersHTML += '<th style="width: 28px; text-align: center; padding: 4px 2px; background: #d97706; color: white; font-size: 7pt; border: 1px solid #475569;">Pe</th>';
 
-    // Calcular resumen
-    let totalP = 0, totalA = 0, totalPe = 0;
-    Object.values(asistenciaEst).forEach(estado => {
-      if (estado === 'presente') totalP++;
-      else if (estado === 'ausente') totalA++;
-      else if (estado === 'justificada' || estado === 'tarde') totalPe++;
+    // Generar filas de estudiantes
+    let rowsHTML = '';
+    estudiantesList.forEach((est, idx) => {
+      const asistenciaEst = asistenciaTodos[est.id] || {};
+      let totalP = 0, totalA = 0, totalPe = 0;
+
+      let cellsHTML = `<td style="padding: 4px 6px; border: 1px solid #cbd5e1; font-size: 8pt; background: ${idx % 2 === 0 ? '#f8fafc' : 'white'}; font-weight: 500;">${est.numero}. ${est.nombre}</td>`;
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(parseInt(year), parseInt(month) - 1, day);
+        const dayOfWeek = date.getDay();
+        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+        const dateKey = `${year}-${month}-${String(day).padStart(2, '0')}`;
+        const estado = asistenciaEst[dateKey];
+
+        if (isWeekend) {
+          cellsHTML += '<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #f1f5f9; font-size: 7pt; color: #94a3b8;">-</td>';
+        } else if (estado === 'presente') {
+          cellsHTML += '<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #dcfce7; color: #059669; font-weight: bold; font-size: 7pt;">PRE</td>';
+          totalP++;
+        } else if (estado === 'ausente') {
+          cellsHTML += '<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #fee2e2; color: #dc2626; font-weight: bold; font-size: 7pt;">AUS</td>';
+          totalA++;
+        } else if (estado === 'justificada' || estado === 'tarde') {
+          cellsHTML += '<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #fef3c7; color: #d97706; font-weight: bold; font-size: 7pt;">PER</td>';
+          totalPe++;
+        } else {
+          cellsHTML += '<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; font-size: 7pt; color: #94a3b8;">-</td>';
+        }
+      }
+
+      cellsHTML += `<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #dcfce7; color: #059669; font-weight: bold; font-size: 8pt;">${totalP}</td>`;
+      cellsHTML += `<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #fee2e2; color: #dc2626; font-weight: bold; font-size: 8pt;">${totalA}</td>`;
+      cellsHTML += `<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #fef3c7; color: #d97706; font-weight: bold; font-size: 8pt;">${totalPe}</td>`;
+
+      rowsHTML += `<tr>${cellsHTML}</tr>`;
     });
 
     const html = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Asistencia Mensual - ${estudiante ? estudiante.nombre : grado?.numero + '° ' + grado?.seccion}</title>
+  <title>Asistencia Mensual - ${grado?.numero}° ${grado?.seccion}</title>
   <style>
-    @page { size: letter; margin: 15mm; }
-    body { font-family: Arial, sans-serif; font-size: 10pt; color: #333; margin: 0; padding: 20px; }
-    .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
-    .header h1 { font-size: 14pt; margin: 0 0 5px 0; }
-    .header h2 { font-size: 12pt; margin: 0 0 10px 0; font-weight: normal; }
-    .info-section { margin-bottom: 20px; }
-    .info-section p { margin: 5px 0; }
-    .info-section strong { display: inline-block; width: 200px; }
-    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-    th, td { border: 1px solid #333; padding: 6px 8px; text-align: left; }
-    th { background: #f0f0f0; font-weight: bold; }
-    .summary { margin: 20px 0; padding: 10px; background: #f9f9f9; border: 1px solid #ddd; }
-    .summary p { margin: 5px 0; }
-    .firmas { margin-top: 40px; display: flex; justify-content: space-between; }
+    @page { size: letter landscape; margin: 10mm; }
+    body { font-family: Arial, sans-serif; font-size: 9pt; color: #333; margin: 0; padding: 15px; }
+    .header { text-align: center; margin-bottom: 15px; border-bottom: 2px solid #1e293b; padding-bottom: 10px; }
+    .header h1 { font-size: 14pt; margin: 0 0 3px 0; color: #1e293b; }
+    .header h2 { font-size: 11pt; margin: 0 0 5px 0; font-weight: normal; color: #475569; }
+    .info-section { margin-bottom: 15px; display: flex; justify-content: space-between; }
+    .info-section p { margin: 3px 0; font-size: 9pt; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+    .firmas { margin-top: 30px; display: flex; justify-content: space-between; }
     .firma { text-align: center; width: 45%; }
-    .firma .linea { border-top: 1px solid #333; margin-top: 50px; padding-top: 5px; }
+    .firma .linea { border-top: 1px solid #333; margin-top: 40px; padding-top: 5px; }
     @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
   </style>
 </head>
 <body>
   <div class="header">
     <h1>Centro Escolar Católico San José de la Montaña</h1>
-    <h2>Resumen de Asistencia Mensual</h2>
+    <h2>Control de Asistencia Mensual - ${monthName} ${year}</h2>
   </div>
 
   <div class="info-section">
-    <p><strong>Grado y Sección:</strong> ${grado?.numero}° "${grado?.seccion}"</p>
-    ${estudiante ? `<p><strong>Estudiante:</strong> ${estudiante.nombre}</p>` : ''}
-    <p><strong>Director:</strong> Centro Escolar</p>
-    <p><strong>Nombre del docente orientador:</strong> ___________________________</p>
-    <p><strong>Mes y Año:</strong> ${monthName} ${year}</p>
+    <div>
+      <p><strong>Grado y Sección:</strong> ${grado?.numero}° "${grado?.seccion}"</p>
+      <p><strong>Director:</strong> Centro Escolar</p>
+    </div>
+    <div style="text-align: right;">
+      <p><strong>Docente Orientador:</strong> ___________________________</p>
+      <p><strong>Total Estudiantes:</strong> ${estudiantesList.length}</p>
+    </div>
   </div>
 
   <table>
     <thead>
-      <tr>
-        <th style="width: 20%;">Fecha</th>
-        <th style="width: 25%;">Día</th>
-        <th style="width: 15%;">Estado</th>
-      </tr>
+      <tr>${headersHTML}</tr>
     </thead>
     <tbody>
       ${rowsHTML}
     </tbody>
   </table>
 
-  <div class="summary">
-    <h3 style="margin-top: 0;">Resumen del Mes</h3>
-    <p><strong>Total de Días Presente:</strong> ${totalP}</p>
-    <p><strong>Total de Días Ausente:</strong> ${totalA}</p>
-    <p><strong>Total de Días de Permiso:</strong> ${totalPe}</p>
-  </div>
-
   <div class="firmas">
     <div class="firma">
       <div class="linea">
-        <p>Firma del Docente Orientador</p>
+        <p style="font-size: 9pt; margin: 0;">Firma del Docente Orientador</p>
       </div>
     </div>
     <div class="firma">
       <div class="linea">
-        <p>Firma del Director</p>
+        <p style="font-size: 9pt; margin: 0;">Firma del Director</p>
       </div>
     </div>
   </div>
