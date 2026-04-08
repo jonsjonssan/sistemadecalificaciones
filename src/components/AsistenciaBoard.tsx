@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar as CalendarIcon, Save, RefreshCw, CheckCircle2, XCircle, Clock, CalendarDays, Download, Trash2 } from "lucide-react";
+import { Calendar as CalendarIcon, Save, RefreshCw, CheckCircle2, XCircle, Clock, CalendarDays, Download, Trash2, FileCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -529,6 +529,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
   const presentCount = Object.values(asistencias).filter(e => e === "presente").length;
   const absentCount = Object.values(asistencias).filter(e => e === "ausente").length;
   const justifiedCount = Object.values(asistencias).filter(e => e === "justificada").length;
+  const tardyCount = Object.values(asistencias).filter(e => e === "tarde").length;
 
   return (
     <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-teal-100'}`}>
@@ -637,8 +638,11 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
               <Badge variant="outline" className={`py-0.5 ${darkMode ? 'bg-red-900/40 text-red-400 border-red-800' : 'bg-red-50 text-red-700 border-red-200'}`}>
                 Ausentes: {absentCount}
               </Badge>
+              <Badge variant="outline" className={`py-0.5 ${darkMode ? 'bg-blue-900/40 text-blue-400 border-blue-800' : 'bg-blue-50 text-blue-700 border-blue-200'}`}>
+                Justificadas: {justifiedCount}
+              </Badge>
               <Badge variant="outline" className={`py-0.5 ${darkMode ? 'bg-amber-900/40 text-amber-400 border-amber-800' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
-                Justificados: {justifiedCount}
+                Tardanzas: {tardyCount}
               </Badge>
             </div>
 
@@ -721,13 +725,25 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                               <button
                                 onClick={() => handleEstadoChange(est.id, "justificada")}
                                 className={`flex-1 flex items-center justify-center gap-1 py-1 rounded-md transition-all text-[10px] sm:text-sm font-bold ${estado === "justificada"
+                                  ? (darkMode ? "bg-slate-700 text-blue-400 shadow-sm ring-1 ring-blue-700" : "bg-white text-blue-700 shadow-sm ring-1 ring-blue-200")
+                                  : (darkMode ? "text-slate-500 hover:text-slate-300 hover:bg-slate-700" : "text-slate-400 hover:text-slate-600 hover:bg-slate-200/50")
+                                  }`}
+                              >
+                                <FileCheck className={`h-4 w-4 sm:h-5 sm:w-5 ${estado === "justificada" ? "text-blue-500" : ""}`} />
+                                <span className="hidden sm:inline">Justificada</span>
+                                <span className="sm:hidden">J</span>
+                              </button>
+
+                              <button
+                                onClick={() => handleEstadoChange(est.id, "tarde")}
+                                className={`flex-1 flex items-center justify-center gap-1 py-1 rounded-md transition-all text-[10px] sm:text-sm font-bold ${estado === "tarde"
                                   ? (darkMode ? "bg-slate-700 text-amber-400 shadow-sm ring-1 ring-amber-700" : "bg-white text-amber-700 shadow-sm ring-1 ring-amber-200")
                                   : (darkMode ? "text-slate-500 hover:text-slate-300 hover:bg-slate-700" : "text-slate-400 hover:text-slate-600 hover:bg-slate-200/50")
                                   }`}
                               >
-                                <Clock className={`h-4 w-4 sm:h-5 sm:w-5 ${estado === "justificada" ? "text-amber-500" : ""}`} />
-                                <span className="hidden sm:inline">Justificada</span>
-                                <span className="sm:hidden">J</span>
+                                <Clock className={`h-4 w-4 sm:h-5 sm:w-5 ${estado === "tarde" ? "text-amber-500" : ""}`} />
+                                <span className="hidden sm:inline">Tardanza</span>
+                                <span className="sm:hidden">T</span>
                               </button>
                             </div>
                           </TableCell>
