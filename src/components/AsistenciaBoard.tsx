@@ -56,6 +56,8 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [expandedStudent, setExpandedStudent] = useState<string | null>(null);
+  const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().slice(0, 7));
+  const [selectedYear] = useState<string>(new Date().getFullYear().toString());
 
   const initializeAttendance = useCallback(() => {
     const initial: Record<string, string> = {};
@@ -97,7 +99,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     try {
       let url = `/api/asistencia/resumen?gradoId=${gradoId}&incluirFechas=true`;
       if (summaryRange === "month") {
-        url += `&mes=${new Date().toISOString().slice(0, 7)}`;
+        url += `&mes=${selectedMonth}`;
       }
       const res = await fetch(url);
       if (res.ok) {
@@ -125,9 +127,239 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     link.click();
   };
 
+  const downloadPDFMensual = () => {
+    if (!gradoId || !resumen.length) return;
+    const grado = grados.find(g => g.id === gradoId);
+    const [year, month] = selectedMonth.split('-');
+    const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    const monthName = monthNames[parseInt(month) - 1];
+    const daysInMonth = new Date(parseInt(year), parseInt(month), 0).getDate();
+
+    // Generar días del mes
+    let rowsHTML = '';
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(parseInt(year), parseInt(month) - 1, day);
+      const dayOfWeek = date.getDay();
+      const dateStr = `${String(day).padStart(2, '0')}/${month}/${year}`;
+      const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+      const dayName = dayNames[dayOfWeek];
+      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+      if (isWeekend) {
+        rowsHTML += `<tr><td>${dateStr}</td><td>${dayName}</td><td style="text-align:center;color:#999;">-</td></tr>`;
+      } else {
+        rowsHTML += `<tr><td>${dateStr}</td><td>${dayName}</td><td style="text-align:center;"></td></tr>`;
+      }
+    }
+
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Asistencia Mensual - ${grado?.numero}° ${grado?.seccion}</title>
+  <style>
+    @page { size: letter; margin: 15mm; }
+    body { font-family: Arial, sans-serif; font-size: 10pt; color: #333; margin: 0; padding: 20px; }
+    .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+    .header h1 { font-size: 14pt; margin: 0 0 5px 0; }
+    .header h2 { font-size: 12pt; margin: 0 0 10px 0; font-weight: normal; }
+    .info-section { margin-bottom: 20px; }
+    .info-section p { margin: 5px 0; }
+    .info-section strong { display: inline-block; width: 180px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    th, td { border: 1px solid #333; padding: 6px 8px; text-align: left; }
+    th { background: #f0f0f0; font-weight: bold; }
+    td.weekend { color: #999; text-align: center; }
+    .summary { margin: 20px 0; padding: 10px; background: #f9f9f9; border: 1px solid #ddd; }
+    .summary p { margin: 5px 0; }
+    .firmas { margin-top: 40px; display: flex; justify-content: space-between; }
+    .firma { text-align: center; width: 45%; }
+    .firma .linea { border-top: 1px solid #333; margin-top: 50px; padding-top: 5px; }
+    @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Centro Escolar Católico San José de la Montaña</h1>
+    <h2>Resumen de Asistencia Mensual</h2>
+  </div>
+
+  <div class="info-section">
+    <p><strong>Grado y Sección:</strong> ${grado?.numero}° "${grado?.seccion}"</p>
+    <p><strong>Director:</strong> Centro Escolar</p>
+    <p><strong>Nombre del docente orientador:</strong> ___________________________</p>
+    <p><strong>Mes y Año:</strong> ${monthName} ${year}</p>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 25%;">Fecha</th>
+        <th style="width: 25%;">Día</th>
+        <th style="width: 50%;">Estado</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${rowsHTML}
+    </tbody>
+  </table>
+
+  <div class="summary">
+    <h3 style="margin-top: 0;">Resumen del Mes</h3>
+    <p><strong>Total de Días Presente:</strong> [ 00 ]</p>
+    <p><strong>Total de Días Ausente:</strong> [ 00 ]</p>
+    <p><strong>Total de Días de Permiso:</strong> [ 00 ]</p>
+  </div>
+
+  <div class="firmas">
+    <div class="firma">
+      <div class="linea">
+        <p>Firma del Docente Orientador</p>
+      </div>
+    </div>
+    <div class="firma">
+      <div class="linea">
+        <p>Firma del Director</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
+
+    const w = window.open('', '_blank');
+    if (w) {
+      w.document.write(html);
+      w.document.close();
+      setTimeout(() => w.print(), 500);
+    }
+  };
+
+  const downloadPDFAnual = () => {
+    if (!gradoId) return;
+    const grado = grados.find(g => g.id === gradoId);
+    const year = selectedYear;
+    const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    const daysInMonths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+    // Generar filas del calendario (1-31)
+    let calendarRows = '';
+    for (let day = 1; day <= 31; day++) {
+      calendarRows += `<tr><td style="text-align:center;font-weight:bold;">${day}</td>`;
+      for (let m = 0; m < 12; m++) {
+        if (day > daysInMonths[m]) {
+          calendarRows += `<td style="text-align:center;color:#ccc;">N/A</td>`;
+        } else {
+          calendarRows += `<td style="text-align:center;"></td>`;
+        }
+      }
+      calendarRows += `</tr>`;
+    }
+
+    // Filas de resumen por mes
+    let summaryRows = '';
+    monthNames.forEach((m, i) => {
+      summaryRows += `<tr><td>${m}</td><td style="text-align:center;">[ ]</td><td style="text-align:center;">[ ]</td><td style="text-align:center;">[ ]</td></tr>`;
+    });
+    summaryRows += `<tr style="font-weight:bold;background:#f0f0f0;"><td>TOTAL ANUAL</td><td style="text-align:center;">[ ]</td><td style="text-align:center;">[ ]</td><td style="text-align:center;">[ ]</td></tr>`;
+
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Asistencia Anual - ${grado?.numero}° ${grado?.seccion}</title>
+  <style>
+    @page { size: letter landscape; margin: 10mm; }
+    body { font-family: Arial, sans-serif; font-size: 8pt; color: #333; margin: 0; padding: 15px; }
+    .header { text-align: center; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 8px; }
+    .header h1 { font-size: 12pt; margin: 0 0 3px 0; }
+    .header h2 { font-size: 10pt; margin: 0; font-weight: normal; }
+    .info-section { margin-bottom: 15px; }
+    .info-section p { margin: 3px 0; display: inline-block; margin-right: 30px; }
+    .info-section strong { display: inline-block; width: 150px; }
+    .calendar-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 7pt; }
+    .calendar-table th, .calendar-table td { border: 1px solid #333; padding: 2px; text-align: center; }
+    .calendar-table th { background: #f0f0f0; font-weight: bold; }
+    .calendar-table th.month { writing-mode: vertical-rl; text-orientation: mixed; height: 60px; }
+    .summary-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+    .summary-table th, .summary-table td { border: 1px solid #333; padding: 4px 8px; }
+    .summary-table th { background: #f0f0f0; }
+    .firmas { margin-top: 30px; display: flex; justify-content: space-between; }
+    .firma { text-align: center; width: 45%; }
+    .firma .linea { border-top: 1px solid #333; margin-top: 40px; padding-top: 5px; }
+    @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Centro Escolar Católico San José de la Montaña</h1>
+    <h2>Registro de Asistencia Anual</h2>
+  </div>
+
+  <div class="info-section">
+    <p><strong>Grado y Sección:</strong> ${grado?.numero}° "${grado?.seccion}"</p>
+    <p><strong>Director:</strong> Centro Escolar</p>
+    <p><strong>Nombre del docente orientador:</strong> ___________________________</p>
+    <p><strong>Año Escolar:</strong> ${year}</p>
+  </div>
+
+  <p style="margin: 10px 0;"><strong>Opciones de Estado:</strong> P = Presente | A = Ausente | Pe = Permiso | - = Fin de semana / Asueto</p>
+
+  <table class="calendar-table">
+    <thead>
+      <tr>
+        <th style="width: 30px;">Día</th>
+        ${monthNames.map(m => `<th class="month">${m}</th>`).join('')}
+      </tr>
+    </thead>
+    <tbody>
+      ${calendarRows}
+    </tbody>
+  </table>
+
+  <p style="font-size: 7pt; color: #666; margin: 5px 0;">(Nota: Tacha o sombrea las casillas de los días 31 en los meses que tienen 30 días, y los días 29, 30 y 31 de febrero)</p>
+
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th>Mes</th>
+        <th>Total Presente (P)</th>
+        <th>Total Ausente (A)</th>
+        <th>Total Permiso (Pe)</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${summaryRows}
+    </tbody>
+  </table>
+
+  <div class="firmas">
+    <div class="firma">
+      <div class="linea">
+        <p>Firma del Docente Orientador</p>
+        <p>Fecha: __/__/${year}</p>
+      </div>
+    </div>
+    <div class="firma">
+      <div class="linea">
+        <p>Firma del Director</p>
+        <p>Fecha: __/__/${year}</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
+
+    const w = window.open('', '_blank');
+    if (w) {
+      w.document.write(html);
+      w.document.close();
+      setTimeout(() => w.print(), 500);
+    }
+  };
+
   useEffect(() => {
     if (view === "summary") loadResumen();
-  }, [view, gradoId, summaryRange]);
+  }, [view, gradoId, summaryRange, selectedMonth]);
 
   useEffect(() => {
     setGradoId(gradoInicial);
@@ -428,28 +660,46 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
         ) : (
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-              <div className="flex items-center gap-2">
-                <Label className={`text-xs sm:text-sm font-bold ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Rango:</Label>
-                <div className={`flex p-0.5 rounded-md ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
-                  <Button
-                    size="sm" variant="ghost"
-                    className={`h-7 px-3 text-xs ${summaryRange === "all" ? (darkMode ? "bg-slate-700 shadow-sm font-bold text-white" : "bg-white shadow-sm font-bold") : (darkMode ? "text-slate-400" : "")}`}
-                    onClick={() => setSummaryRange("all")}
-                  >
-                    Año
-                  </Button>
-                  <Button
-                    size="sm" variant="ghost"
-                    className={`h-7 px-3 text-xs ${summaryRange === "month" ? (darkMode ? "bg-slate-700 shadow-sm font-bold text-white" : "bg-white shadow-sm font-bold") : (darkMode ? "text-slate-400" : "")}`}
-                    onClick={() => setSummaryRange("month")}
-                  >
-                    Mes
-                  </Button>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                <div className="flex items-center gap-2">
+                  <Label className={`text-xs sm:text-sm font-bold ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Rango:</Label>
+                  <div className={`flex p-0.5 rounded-md ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
+                    <Button
+                      size="sm" variant="ghost"
+                      className={`h-7 px-3 text-xs ${summaryRange === "all" ? (darkMode ? "bg-slate-700 shadow-sm font-bold text-white" : "bg-white shadow-sm font-bold") : (darkMode ? "text-slate-400" : "")}`}
+                      onClick={() => setSummaryRange("all")}
+                    >
+                      Año
+                    </Button>
+                    <Button
+                      size="sm" variant="ghost"
+                      className={`h-7 px-3 text-xs ${summaryRange === "month" ? (darkMode ? "bg-slate-700 shadow-sm font-bold text-white" : "bg-white shadow-sm font-bold") : (darkMode ? "text-slate-400" : "")}`}
+                      onClick={() => setSummaryRange("month")}
+                    >
+                      Mes
+                    </Button>
+                  </div>
                 </div>
+                {summaryRange === "month" && (
+                  <input
+                    type="month"
+                    value={selectedMonth}
+                    onChange={(e) => setSelectedMonth(e.target.value)}
+                    className={`flex h-7 rounded-md border px-2 text-xs font-medium ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-slate-200'}`}
+                  />
+                )}
               </div>
-              <Button size="sm" variant="outline" className={`h-9 text-xs font-bold w-full sm:w-auto ${darkMode ? 'border-teal-700 text-teal-400 hover:bg-teal-900/30' : 'border-teal-200 text-teal-700 hover:bg-teal-50'}`} onClick={exportCSV}>
-                <Download className="h-4 w-4 mr-2" /> Reporte CSV
-              </Button>
+              <div className="flex gap-2 w-full sm:w-auto">
+                <Button size="sm" variant="outline" className={`h-9 text-xs font-bold flex-1 sm:flex-initial ${darkMode ? 'border-blue-700 text-blue-400 hover:bg-blue-900/30' : 'border-blue-200 text-blue-700 hover:bg-blue-50'}`} onClick={downloadPDFMensual} disabled={!gradoId}>
+                  <Download className="h-4 w-4 mr-2" /> PDF Mes
+                </Button>
+                <Button size="sm" variant="outline" className={`h-9 text-xs font-bold flex-1 sm:flex-initial ${darkMode ? 'border-purple-700 text-purple-400 hover:bg-purple-900/30' : 'border-purple-200 text-purple-700 hover:bg-purple-50'}`} onClick={downloadPDFAnual} disabled={!gradoId}>
+                  <Download className="h-4 w-4 mr-2" /> PDF Año
+                </Button>
+                <Button size="sm" variant="outline" className={`h-9 text-xs font-bold flex-1 sm:flex-initial ${darkMode ? 'border-teal-700 text-teal-400 hover:bg-teal-900/30' : 'border-teal-200 text-teal-700 hover:bg-teal-50'}`} onClick={exportCSV} disabled={!gradoId}>
+                  <Download className="h-4 w-4 mr-2" /> CSV
+                </Button>
+              </div>
             </div>
 
             <div className={`rounded-xl border overflow-hidden table-scroll-container ${darkMode ? 'border-slate-700' : ''}`}>
