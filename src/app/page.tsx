@@ -2549,6 +2549,10 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
           <div class="l">Tardanzas</div>
         </div>
         <div class="asistencia-item">
+          <div class="n">${asist.justificadas || 0}</div>
+          <div class="l">Justificadas</div>
+        </div>
+        <div class="asistencia-item">
           <div class="n">${asist.total}</div>
           <div class="l">Total Días</div>
         </div>
@@ -2699,6 +2703,10 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
             <div class="asistencia-item">
               <div class="n asistencia-tard">${asist.tardanzas}</div>
               <div class="l">Tardanzas</div>
+            </div>
+            <div class="asistencia-item">
+              <div class="n">${asist.justificadas || 0}</div>
+              <div class="l">Justificadas</div>
             </div>
             <div class="asistencia-item">
               <div class="n">${asist.total}</div>

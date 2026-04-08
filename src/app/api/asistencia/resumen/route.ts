@@ -56,11 +56,13 @@ export async function GET(req: Request) {
       numero: number,
       ausencias: number,
       tardanzas: number,
+      justificadas: number,
       asistencias: number,
       total: number,
       fechasPresente: string[],
       fechasAusente: string[],
-      fechasTardanza: string[]
+      fechasTardanza: string[],
+      fechasJustificada: string[]
     }> = {};
 
     asistencia.forEach((a: any) => {
@@ -72,11 +74,13 @@ export async function GET(req: Request) {
           numero: a.estudiante_numero,
           ausencias: 0,
           tardanzas: 0,
+          justificadas: 0,
           asistencias: 0,
           total: 0,
           fechasPresente: [],
           fechasAusente: [],
-          fechasTardanza: []
+          fechasTardanza: [],
+          fechasJustificada: []
         };
       }
 
@@ -95,6 +99,10 @@ export async function GET(req: Request) {
       else if (a.estado === "tarde") {
         resumen[eid].tardanzas++;
         if (incluirFechas) resumen[eid].fechasTardanza.push(fechaStr);
+      }
+      else if (a.estado === "justificada") {
+        resumen[eid].justificadas++;
+        if (incluirFechas) resumen[eid].fechasJustificada.push(fechaStr);
       }
       else if (a.estado === "presente") {
         resumen[eid].asistencias++;

@@ -174,13 +174,14 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     }
     headersHTML += '<th style="width: 28px; text-align: center; padding: 4px 2px; background: #059669; color: white; font-size: 7pt; border: 1px solid #475569;">P</th>';
     headersHTML += '<th style="width: 28px; text-align: center; padding: 4px 2px; background: #dc2626; color: white; font-size: 7pt; border: 1px solid #475569;">A</th>';
-    headersHTML += '<th style="width: 28px; text-align: center; padding: 4px 2px; background: #d97706; color: white; font-size: 7pt; border: 1px solid #475569;">Pe</th>';
+    headersHTML += '<th style="width: 28px; text-align: center; padding: 4px 2px; background: #3b82f6; color: white; font-size: 7pt; border: 1px solid #475569;">J</th>';
+    headersHTML += '<th style="width: 28px; text-align: center; padding: 4px 2px; background: #d97706; color: white; font-size: 7pt; border: 1px solid #475569;">T</th>';
 
     // Generar filas de estudiantes
     let rowsHTML = '';
     estudiantesList.forEach((est, idx) => {
       const asistenciaEst = asistenciaTodos[est.id] || {};
-      let totalP = 0, totalA = 0, totalPe = 0;
+      let totalP = 0, totalA = 0, totalJ = 0, totalT = 0;
 
       let cellsHTML = `<td style="padding: 4px 6px; border: 1px solid #cbd5e1; font-size: 8pt; background: ${idx % 2 === 0 ? '#f8fafc' : 'white'}; font-weight: 500;">${est.numero}. ${est.nombre}</td>`;
 
@@ -199,9 +200,12 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
         } else if (estado === 'ausente') {
           cellsHTML += '<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #fee2e2; color: #dc2626; font-weight: bold; font-size: 7pt;">AUS</td>';
           totalA++;
-        } else if (estado === 'justificada' || estado === 'tarde') {
-          cellsHTML += '<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #fef3c7; color: #d97706; font-weight: bold; font-size: 7pt;">PER</td>';
-          totalPe++;
+        } else if (estado === 'justificada') {
+          cellsHTML += '<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #dbeafe; color: #3b82f6; font-weight: bold; font-size: 7pt;">JUS</td>';
+          totalJ++;
+        } else if (estado === 'tarde') {
+          cellsHTML += '<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #fef3c7; color: #d97706; font-weight: bold; font-size: 7pt;">TAR</td>';
+          totalT++;
         } else {
           cellsHTML += '<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; font-size: 7pt; color: #94a3b8;">-</td>';
         }
@@ -209,7 +213,8 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
 
       cellsHTML += `<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #dcfce7; color: #059669; font-weight: bold; font-size: 8pt;">${totalP}</td>`;
       cellsHTML += `<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #fee2e2; color: #dc2626; font-weight: bold; font-size: 8pt;">${totalA}</td>`;
-      cellsHTML += `<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #fef3c7; color: #d97706; font-weight: bold; font-size: 8pt;">${totalPe}</td>`;
+      cellsHTML += `<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #dbeafe; color: #3b82f6; font-weight: bold; font-size: 8pt;">${totalJ}</td>`;
+      cellsHTML += `<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #fef3c7; color: #d97706; font-weight: bold; font-size: 8pt;">${totalT}</td>`;
 
       rowsHTML += `<tr>${cellsHTML}</tr>`;
     });
@@ -378,7 +383,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     <p><strong>Año Escolar:</strong> ${year}</p>
   </div>
 
-  <p style="margin: 10px 0;"><strong>Opciones de Estado:</strong> P = Presente | A = Ausente | Pe = Permiso | - = Fin de semana / Asueto</p>
+  <p style="margin: 10px 0;"><strong>Opciones de Estado:</strong> P = Presente | A = Ausente | J = Justificada | T = Tarde | - = Fin de semana / Asueto</p>
 
   <table class="calendar-table">
     <thead>
@@ -400,7 +405,8 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
         <th>Mes</th>
         <th>Total Presente (P)</th>
         <th>Total Ausente (A)</th>
-        <th>Total Permiso (Pe)</th>
+        <th>Total Justificada (J)</th>
+        <th>Total Tardanza (T)</th>
       </tr>
     </thead>
     <tbody>
@@ -720,7 +726,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                                   }`}
                               >
                                 <Clock className={`h-4 w-4 sm:h-5 sm:w-5 ${estado === "justificada" ? "text-amber-500" : ""}`} />
-                                <span className="hidden sm:inline">Permiso</span>
+                                <span className="hidden sm:inline">Justificada</span>
                                 <span className="sm:hidden">J</span>
                               </button>
                             </div>
@@ -872,6 +878,19 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                                         <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
                                           {r.fechasTardanza.map((fecha, i) => (
                                             <span key={i} className={`px-2 py-1 rounded text-xs font-mono ${darkMode ? 'bg-amber-900/40 text-amber-300 border border-amber-700/30' : 'bg-white text-amber-700 border border-amber-200 shadow-sm'}`}>{fecha}</span>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    )}
+                                    {r.fechasJustificada && r.fechasJustificada.length > 0 && (
+                                      <div className={`rounded-lg p-3 ${darkMode ? 'bg-blue-900/20 border border-blue-800/50' : 'bg-blue-50 border border-blue-200'}`}>
+                                        <div className="flex items-center justify-between mb-2">
+                                          <span className={`font-semibold text-sm ${darkMode ? 'text-blue-400' : 'text-blue-700'}`}>📋 Justificadas</span>
+                                          <span className={`text-xs px-2 py-0.5 rounded-full ${darkMode ? 'bg-blue-900/40 text-blue-300' : 'bg-blue-100 text-blue-700'}`}>{r.fechasJustificada.length} días</span>
+                                        </div>
+                                        <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
+                                          {r.fechasJustificada.map((fecha, i) => (
+                                            <span key={i} className={`px-2 py-1 rounded text-xs font-mono ${darkMode ? 'bg-blue-900/40 text-blue-300 border border-blue-700/30' : 'bg-white text-blue-700 border border-blue-200 shadow-sm'}`}>{fecha}</span>
                                           ))}
                                         </div>
                                       </div>
