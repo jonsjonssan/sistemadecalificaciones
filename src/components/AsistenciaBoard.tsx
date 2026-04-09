@@ -443,8 +443,23 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
   }, [view, gradoId, summaryRange, selectedMonth]);
 
   useEffect(() => {
-    setGradoId(gradoInicial);
-  }, [gradoInicial]);
+    if (estudiantes.length > 0) {
+      loadAsistencia();
+    } else {
+      setAsistencias({});
+    }
+  }, [estudiantes, gradoId, loadAsistencia]);
+
+  // Recargar asistencia cuando cambia el grado inicial (para sincronizar con el estado del padre)
+  useEffect(() => {
+    if (gradoInicial) {
+      setGradoId(gradoInicial);
+      if (estudiantes.length > 0) {
+        setAsistencias(initializeAttendance());
+        loadAsistencia();
+      }
+    }
+  }, [gradoInicial, estudiantes]);
 
   useEffect(() => {
     if (asignaturas.some(m => m.id === asignaturaInicial)) {
@@ -453,14 +468,6 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
       setAsignaturaId(asignaturas[0].id);
     }
   }, [asignaturaInicial, asignaturas]);
-
-  useEffect(() => {
-    if (estudiantes.length > 0) {
-      loadAsistencia();
-    } else {
-      setAsistencias({});
-    }
-  }, [estudiantes, loadAsistencia]);
 
   const handleEstadoChange = (estudianteId: string, estado: string) => {
     setAsistencias(prev => ({ ...prev, [estudianteId]: estado }));
