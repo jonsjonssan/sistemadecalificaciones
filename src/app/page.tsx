@@ -2435,50 +2435,52 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Times New Roman', serif; font-size: 11pt; line-height: 1.4; color: #333; }
     .boleta { max-width: 190mm; margin: 0 auto; padding: 5mm; }
-    
-    .header { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 15px; }
-    .logo { width: 70px; height: 70px; object-fit: contain; }
-    .header-text { text-align: center; flex: 1; }
-    .header-text h1 { font-size: 13pt; font-weight: bold; margin-bottom: 3px; text-transform: uppercase; }
-    .header-text h2 { font-size: 10pt; font-weight: normal; margin-bottom: 2px; }
-    .header-text .codigo { font-size: 8pt; color: #555; }
-    
-    .titulo-boleta { text-align: center; background: #f3f4f6; padding: 8px; margin: 15px 0; border: 1px solid #333; }
-    .titulo-boleta h3 { font-size: 12pt; text-transform: uppercase; letter-spacing: 1px; }
-    
-    .info-estudiante { display: flex; justify-content: space-between; margin-bottom: 15px; padding: 10px; background: #fafafa; border: 1px solid #ddd; border-radius: 4px; }
-    .info-estudiante p { margin: 3px 0; }
-    .info-estudiante .label { font-weight: bold; }
-    
+
+    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; border-bottom: 3px solid #1e3a8a; padding-bottom: 15px; }
+    .logo-container { flex: 0 0 auto; }
+    .logo { width: 90px; height: 90px; object-fit: contain; }
+    .header-text { text-align: center; flex: 1; padding: 0 20px; }
+    .header-text h1 { font-size: 14pt; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; color: #1e3a8a; }
+    .header-text h2 { font-size: 11pt; font-weight: normal; margin-bottom: 5px; color: #333; }
+    .header-text .codigo { font-size: 8pt; color: #666; margin-top: 3px; }
+
+    .titulo-boleta { text-align: center; background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 100%); padding: 10px; margin: 15px 0; border: 2px solid #1e3a8a; border-radius: 5px; }
+    .titulo-boleta h3 { font-size: 13pt; text-transform: uppercase; letter-spacing: 1px; color: #1e3a8a; font-weight: bold; }
+
+    .info-estudiante { display: flex; justify-content: space-between; margin-bottom: 15px; padding: 12px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 5px; }
+    .info-estudiante p { margin: 4px 0; }
+    .info-estudiante .label { font-weight: bold; color: #1e3a8a; }
+
     table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-    th, td { border: 1px solid #333; padding: 5px 8px; text-align: center; }
-    th { background: #e5e7eb; font-weight: bold; font-size: 9pt; }
+    th, td { border: 1px solid #333; padding: 6px 8px; text-align: center; }
+    th { background: linear-gradient(180deg, #e2e8f0 0%, #cbd5e1 100%); font-weight: bold; font-size: 9pt; color: #1e3a8a; }
     td { font-size: 10pt; }
-    
-    .resumen { display: flex; justify-content: space-between; margin: 20px 0; padding: 10px; background: #f0fdf4; border: 2px solid #059669; border-radius: 4px; }
+
+    .resumen { display: flex; justify-content: space-between; margin: 20px 0; padding: 12px; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 2px solid #059669; border-radius: 5px; }
     .resumen-item { text-align: center; }
     .resumen-item .valor { font-size: 16pt; font-weight: bold; color: #059669; }
     .resumen-item.reprobado .valor { color: #dc2626; }
-    .resumen-item .etiqueta { font-size: 9pt; color: #666; }
-    
-    .seccion-asistencia { margin: 15px 0; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; }
-    .seccion-asistencia-header { background: #f8fafc; padding: 6px 10px; border-bottom: 1px solid #ddd; font-weight: bold; font-size: 9pt; display: flex; justify-content: space-between; }
-    .asistencia-grid { display: grid; grid-template-columns: repeat(4, 1fr); padding: 10px; text-align: center; }
-    .asistencia-item .n { font-size: 12pt; font-weight: bold; }
-    .asistencia-item .l { font-size: 8pt; color: #666; text-transform: uppercase; }
+    .resumen-item .etiqueta { font-size: 9pt; color: #666; margin-top: 3px; }
+
+    .seccion-asistencia { margin: 15px 0; border: 1px solid #cbd5e1; border-radius: 5px; overflow: hidden; }
+    .seccion-asistencia-header { background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%); padding: 8px 12px; border-bottom: 1px solid #cbd5e1; font-weight: bold; font-size: 9pt; display: flex; justify-content: space-between; color: #1e3a8a; }
+    .asistencia-grid { display: grid; grid-template-columns: repeat(5, 1fr); padding: 12px; text-align: center; gap: 8px; }
+    .asistencia-item { padding: 8px; }
+    .asistencia-item .n { font-size: 14pt; font-weight: bold; }
+    .asistencia-item .l { font-size: 8pt; color: #666; text-transform: uppercase; margin-top: 2px; }
     .asistencia-asist { color: #059669; }
     .asistencia-aus { color: #dc2626; }
     .asistencia-tard { color: #d97706; }
-    
+
     .firmas { display: flex; justify-content: space-between; margin-top: 40px; padding-top: 20px; }
     .firma { text-align: center; width: 45%; }
     .firma .linea { border-top: 1px solid #333; margin-top: 50px; padding-top: 5px; }
     .firma .nombre { font-weight: bold; font-size: 10pt; }
-    .firma .cargo { font-size: 8pt; color: #555; }
-    
+    .firma .cargo { font-size: 8pt; color: #666; }
+
     .pie { margin-top: 30px; text-align: center; font-size: 8pt; color: #666; border-top: 1px solid #ccc; padding-top: 10px; }
     .pie p { margin: 2px 0; }
-    
+
     @media print {
       body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .no-print { display: none; }
@@ -2488,13 +2490,17 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
 <body>
   <div class="boleta">
     <div class="header">
-      <img src="${window.location.origin}/api/logo" alt="Logo" class="logo" onerror="this.style.display='none'">
+      <div class="logo-container">
+        <img src="${window.location.origin}/api/logo" alt="Logo" class="logo" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTAiIGhlaWdodD0iOTAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMWUzYThhIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjM2I4MmY2Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjkwIiBoZWlnaHQ9IjkwIiBmaWxsPSJ1cmwoI2dyYWQpIiByeD0iNSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjE0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iIGZvbnQtZmFtaWx5PSJBcmlhbCI+TFVQPC90ZXh0Pjwvc3ZnPg=='; this.onerror=null;">
+      </div>
       <div class="header-text">
         <h1>Centro Escolar Católico San José de la Montaña</h1>
         <h2>Centro Educativo Católico</h2>
         <p class="codigo">Código: 88125 | Departamento: 06-San Salvador | Municipio: 0614 San Salvador</p>
       </div>
-      <img src="${window.location.origin}/api/logo" alt="Logo" class="logo" onerror="this.style.display='none'">
+      <div class="logo-container">
+        <img src="${window.location.origin}/api/logo" alt="Logo" class="logo" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTAiIGhlaWdodD0iOTAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMWUzYThhIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjM2I4MmY2Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjkwIiBoZWlnaHQ9IjkwIiBmaWxsPSJ1cmwoI2dyYWQpIiByeD0iNSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjE0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iIGZvbnQtZmFtaWx5PSJBcmlhbCI+TFVQPC90ZXh0Pjwvc3ZnPg=='; this.onerror=null;">
+      </div>
     </div>
 
     <div class="titulo-boleta">
@@ -2644,13 +2650,17 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
       allBoletasHtml += `
       <div class="boleta" style="page-break-after: always;">
         <div class="header">
-          <img src="${window.location.origin}/api/logo" alt="Logo" class="logo" onerror="this.style.display='none'">
+          <div class="logo-container">
+            <img src="${window.location.origin}/api/logo" alt="Logo" class="logo" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTAiIGhlaWdodD0iOTAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMWUzYThhIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjM2I4MmY2Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjkwIiBoZWlnaHQ9IjkwIiBmaWxsPSJ1cmwoI2dyYWQpIiByeD0iNSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjE0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iIGZvbnQtZmFtaWx5PSJBcmlhbCI+TFVQPC90ZXh0Pjwvc3ZnPg=='; this.onerror=null;">
+          </div>
           <div class="header-text">
             <h1>Centro Escolar Católico San José de la Montaña</h1>
             <h2>Centro Educativo Católico</h2>
             <p class="codigo">Código: 88125 | Departamento: 06-San Salvador | Municipio: 0614 San Salvador</p>
           </div>
-          <img src="${window.location.origin}/api/logo" alt="Logo" class="logo" onerror="this.style.display='none'">
+          <div class="logo-container">
+            <img src="${window.location.origin}/api/logo" alt="Logo" class="logo" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTAiIGhlaWdodD0iOTAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMWUzYThhIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjM2I4MmY2Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjkwIiBoZWlnaHQ9IjkwIiBmaWxsPSJ1cmwoI2dyYWQpIiByeD0iNSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjE0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iIGZvbnQtZmFtaWx5PSJBcmlhbCI+TFVQPC90ZXh0Pjwvc3ZnPg=='; this.onerror=null;">
+          </div>
         </div>
 
         <div class="titulo-boleta">
@@ -2875,36 +2885,71 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Times New Roman', serif; font-size: 11pt; line-height: 1.4; color: #333; }
     .boleta { max-width: 190mm; margin: 0 auto; padding: 5mm; }
-    .header { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 15px; }
-    .logo { width: 70px; height: 70px; object-fit: contain; }
-    .header-text { text-align: center; flex: 1; }
-    .header-text h1 { font-size: 13pt; font-weight: bold; margin-bottom: 3px; text-transform: uppercase; }
-    .titulo-boleta { text-align: center; background: #1e293b; color: white; padding: 8px; margin: 15px 0; border: 1px solid #333; }
-    .info-estudiante { display: flex; justify-content: space-between; margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; }
-    .info-estudiante .label { font-weight: bold; }
+
+    .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; border-bottom: 3px solid #1e3a8a; padding-bottom: 15px; }
+    .logo-container { flex: 0 0 auto; }
+    .logo { width: 90px; height: 90px; object-fit: contain; }
+    .header-text { text-align: center; flex: 1; padding: 0 20px; }
+    .header-text h1 { font-size: 14pt; font-weight: bold; margin-bottom: 5px; text-transform: uppercase; color: #1e3a8a; }
+    .header-text h2 { font-size: 11pt; font-weight: normal; margin-bottom: 5px; color: #333; }
+    .header-text .codigo { font-size: 8pt; color: #666; margin-top: 3px; }
+
+    .titulo-boleta { text-align: center; background: linear-gradient(135deg, #f0f4ff 0%, #e0e7ff 100%); padding: 10px; margin: 15px 0; border: 2px solid #1e3a8a; border-radius: 5px; }
+    .titulo-boleta h3 { font-size: 13pt; text-transform: uppercase; letter-spacing: 1px; color: #1e3a8a; font-weight: bold; }
+
+    .info-estudiante { display: flex; justify-content: space-between; margin-bottom: 15px; padding: 12px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 5px; }
+    .info-estudiante p { margin: 4px 0; }
+    .info-estudiante .label { font-weight: bold; color: #1e3a8a; }
+
     table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
     th, td { border: 1px solid #333; padding: 6px; text-align: center; }
-    th { background: #e5e7eb; font-weight: bold; font-size: 9pt; }
-    .resumen-anual { display: flex; justify-content: space-between; margin: 20px 0; padding: 15px; background: #f8fafc; border: 2px solid #1e293b; }
-    .resumen-item .valor { font-size: 18pt; font-weight: bold; }
-    .seccion-asistencia { margin: 15px 0; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; }
-    .seccion-asistencia-header { background: #f8fafc; padding: 6px 10px; border-bottom: 1px solid #ddd; font-weight: bold; font-size: 9pt; }
-    .asistencia-grid { display: grid; grid-template-columns: repeat(4, 1fr); padding: 10px; text-align: center; }
-    .asistencia-item .n { font-size: 12pt; font-weight: bold; }
-    .asistencia-item .l { font-size: 8pt; color: #666; }
-    .firmas { display: flex; justify-content: space-between; margin-top: 50px; }
-    .firma { text-align: center; width: 45%; border-top: 1px solid #333; padding-top: 5px; }
+    th { background: linear-gradient(180deg, #e2e8f0 0%, #cbd5e1 100%); font-weight: bold; font-size: 9pt; color: #1e3a8a; }
+    td { font-size: 10pt; }
+
+    .resumen-anual { display: flex; justify-content: space-between; margin: 20px 0; padding: 15px; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 2px solid #059669; border-radius: 5px; }
+    .resumen-item { text-align: center; }
+    .resumen-item .valor { font-size: 18pt; font-weight: bold; color: #059669; }
+    .resumen-item.reprobado .valor { color: #dc2626; }
+    .resumen-item .etiqueta { font-size: 9pt; color: #666; margin-top: 3px; }
+
+    .seccion-asistencia { margin: 15px 0; border: 1px solid #cbd5e1; border-radius: 5px; overflow: hidden; }
+    .seccion-asistencia-header { background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%); padding: 8px 12px; border-bottom: 1px solid #cbd5e1; font-weight: bold; font-size: 9pt; display: flex; justify-content: space-between; color: #1e3a8a; }
+    .asistencia-grid { display: grid; grid-template-columns: repeat(5, 1fr); padding: 12px; text-align: center; gap: 8px; }
+    .asistencia-item { padding: 8px; }
+    .asistencia-item .n { font-size: 14pt; font-weight: bold; }
+    .asistencia-item .l { font-size: 8pt; color: #666; text-transform: uppercase; margin-top: 2px; }
+    .asistencia-asist { color: #059669; }
+    .asistencia-aus { color: #dc2626; }
+    .asistencia-tard { color: #d97706; }
+
+    .firmas { display: flex; justify-content: space-between; margin-top: 50px; padding-top: 20px; }
+    .firma { text-align: center; width: 45%; }
+    .firma .linea { border-top: 1px solid #333; margin-top: 50px; padding-top: 5px; }
+    .firma .nombre { font-weight: bold; font-size: 10pt; }
+    .firma .cargo { font-size: 8pt; color: #666; }
+
+    .pie { margin-top: 30px; text-align: center; font-size: 8pt; color: #666; border-top: 1px solid #ccc; padding-top: 10px; }
+    .pie p { margin: 2px 0; }
+
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
   </style>
 </head>
 <body>
   <div class="boleta">
     <div class="header">
-      <img src="${window.location.origin}/api/logo" alt="Logo" class="logo">
+      <div class="logo-container">
+        <img src="${window.location.origin}/api/logo" alt="Logo" class="logo" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTAiIGhlaWdodD0iOTAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMWUzYThhIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjM2I4MmY2Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjkwIiBoZWlnaHQ9IjkwIiBmaWxsPSJ1cmwoI2dyYWQpIiByeD0iNSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjE0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iIGZvbnQtZmFtaWx5PSJBcmlhbCI+TFVQPC90ZXh0Pjwvc3ZnPg=='; this.onerror=null;">
+      </div>
       <div class="header-text">
         <h1>Centro Escolar Católico San José de la Montaña</h1>
-        <p>Código: 88125 | San Salvador</p>
+        <h2>Centro Educativo Católico</h2>
+        <p class="codigo">Código: 88125 | Departamento: 06-San Salvador | Municipio: 0614 San Salvador</p>
       </div>
-      <img src="${window.location.origin}/api/logo" alt="Logo" class="logo">
+      <div class="logo-container">
+        <img src="${window.location.origin}/api/logo" alt="Logo" class="logo" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTAiIGhlaWdodD0iOTAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMWUzYThhIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjM2I4MmY2Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjkwIiBoZWlnaHQ9IjkwIiBmaWxsPSJ1cmwoI2dyYWQpIiByeD0iNSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjE0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iIGZvbnQtZmFtaWx5PSJBcmlhbCI+TFVQPC90ZXh0Pjwvc3ZnPg=='; this.onerror=null;">
+      </div>
     </div>
     <div class="titulo-boleta">
       <h3>BOLETA DE CALIFICACIONES CONSOLIDADA - ANUAL</h3>
@@ -3009,9 +3054,17 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
       allBoletasHtml += `
       <div class="boleta" style="page-break-after: always;">
         <div class="header">
-          <img src="${window.location.origin}/api/logo" alt="Logo" class="logo">
-          <div class="header-text"><h1>Centro Escolar Católico San José de la Montaña</h1><p>Código: 88125 | San Salvador</p></div>
-          <img src="${window.location.origin}/api/logo" alt="Logo" class="logo">
+          <div class="logo-container">
+            <img src="${window.location.origin}/api/logo" alt="Logo" class="logo" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTAiIGhlaWdodD0iOTAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMWUzYThhIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjM2I4MmY2Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjkwIiBoZWlnaHQ9IjkwIiBmaWxsPSJ1cmwoI2dyYWQpIiByeD0iNSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjE0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iIGZvbnQtZmFtaWx5PSJBcmlhbCI+TFVQPC90ZXh0Pjwvc3ZnPg=='; this.onerror=null;">
+          </div>
+          <div class="header-text">
+            <h1>Centro Escolar Católico San José de la Montaña</h1>
+            <h2>Centro Educativo Católico</h2>
+            <p class="codigo">Código: 88125 | Departamento: 06-San Salvador | Municipio: 0614 San Salvador</p>
+          </div>
+          <div class="logo-container">
+            <img src="${window.location.origin}/api/logo" alt="Logo" class="logo" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTAiIGhlaWdodD0iOTAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJncmFkIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMWUzYThhIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjM2I4MmY2Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjkwIiBoZWlnaHQ9IjkwIiBmaWxsPSJ1cmwoI2dyYWQpIiByeD0iNSIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjE0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iIGZvbnQtZmFtaWx5PSJBcmlhbCI+TFVQPC90ZXh0Pjwvc3ZnPg=='; this.onerror=null;">
+          </div>
         </div>
         <div class="titulo-boleta"><h3>BOLETA DE CALIFICACIONES CONSOLIDADA - ANUAL</h3></div>
         <div class="info-estudiante">
