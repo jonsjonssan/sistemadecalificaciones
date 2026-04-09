@@ -91,35 +91,29 @@ export async function POST(req: Request) {
     const prisma = new PrismaClient();
 
     const resultados: any[] = [];
+    let actualizados = 0;
+    let creados = 0;
+
     for (const record of asistencias) {
       const { estudianteId, estado } = record;
-
       const matId = materiaId || null;
 
-      const existente = await prisma.asistencia.findFirst({
-        where: {
-          estudianteId,
-          fecha: {
-            gte: startOfDay,
-            lte: endOfDay,
+      try {
+        // Usar upsert para garantizar que no se creen duplicados
+        // Si existe, actualiza; si no, crea nuevo
+        const resultado = await prisma.asistencia.upsert({
+          where: {
+            unica_asistencia_dia: {
+              estudianteId,
+              fecha: startOfDay,
+              gradoId,
+              materiaId: matId,
+            }
           },
-          gradoId,
-          materiaId: matId,
-        },
-      });
-
-      if (existente) {
-        const updated = await prisma.asistencia.update({
-          where: { id: existente.id },
-          data: { estado },
-          include: {
-            estudiante: { select: { id: true, nombre: true, numero: true } },
+          update: {
+            estado,
           },
-        });
-        resultados.push(updated);
-      } else {
-        const nuevo = await prisma.asistencia.create({
-          data: {
+          create: {
             estudianteId,
             fecha: startOfDay,
             estado,
@@ -130,16 +124,71 @@ export async function POST(req: Request) {
             estudiante: { select: { id: true, nombre: true, numero: true } },
           },
         });
-        resultados.push(nuevo);
+
+        // Determinar si fue actualización o creación
+        const existente = await prisma.asistencia.findFirst({
+          where: {
+            estudianteId,
+            fecha: { gte: startOfDay, lte: endOfDay },
+            gradoId,
+            materiaId: matId,
+          },
+          select: { createdAt: true }
+        });
+
+        // Si el registro fue creado recientemente (en esta transacción), cuenta como creado
+        if (existente && (Date.now() - existente.createdAt.getTime()) < 1000) {
+          creados++;
+        } else {
+          actualizados++;
+        }
+
+        resultados.push(resultado);
+      } catch (error: any) {
+        // Si hay un error de restricción única, significa que ya existe
+        // En ese caso, hacer un update directo
+        if (error.code === 'P2002' || error.code === 'P2025') {
+          const existente = await prisma.asistencia.findFirst({
+            where: {
+              estudianteId,
+              fecha: { gte: startOfDay, lte: endOfDay },
+              gradoId,
+              materiaId: matId,
+            },
+          });
+
+          if (existente) {
+            const updated = await prisma.asistencia.update({
+              where: { id: existente.id },
+              data: { estado },
+              include: {
+                estudiante: { select: { id: true, nombre: true, numero: true } },
+              },
+            });
+            actualizados++;
+            resultados.push(updated);
+          }
+        } else {
+          throw error;
+        }
       }
     }
 
     await prisma.$disconnect();
 
-    return NextResponse.json({ success: true, guardados: resultados.length });
+    return NextResponse.json({
+      success: true,
+      guardados: resultados.length,
+      creados,
+      actualizados,
+      mensaje: `${creados} registros creados, ${actualizados} actualizados`
+    });
   } catch (error) {
     console.error("Error guardando asistencia:", error);
-    return NextResponse.json({ error: "Error del servidor al guardar asistencia", details: error instanceof Error ? error.message : String(error) }, { status: 500 });
+    return NextResponse.json({
+      error: "Error del servidor al guardar asistencia",
+      details: error instanceof Error ? error.message : String(error)
+    }, { status: 500 });
   }
 }
 

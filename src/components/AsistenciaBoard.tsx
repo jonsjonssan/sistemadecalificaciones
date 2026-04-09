@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar as CalendarIcon, Save, RefreshCw, CheckCircle2, XCircle, Clock, CalendarDays, Download, Trash2, FileCheck } from "lucide-react";
+import { Calendar as CalendarIcon, Save, RefreshCw, CheckCircle2, XCircle, Clock, CalendarDays, Download, Trash2, FileCheck, Database } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -55,6 +55,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
   const [summaryRange, setSummaryRange] = useState<"month" | "all">("all");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [cleaningDuplicates, setCleaningDuplicates] = useState(false);
   const [expandedStudent, setExpandedStudent] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().slice(0, 7));
   const [selectedYear] = useState<string>(new Date().getFullYear().toString());
@@ -525,6 +526,27 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     }
   };
 
+  const handleCleanDuplicates = async () => {
+    if (!confirm("¿Estás seguro de que deseas eliminar registros duplicados de asistencia? Esta acción revisará toda la base de datos y eliminará duplicados manteniendo solo el registro más reciente de cada estudiante por fecha.")) return;
+    setCleaningDuplicates(true);
+    try {
+      const res = await fetch("/api/asistencia/limpiar-duplicados", { method: "POST" });
+      if (res.ok) {
+        const data = await res.json();
+        toast({ title: data.mensaje || "Duplicados eliminados correctamente" });
+        loadAsistencia();
+        if (view === "summary") loadResumen();
+      } else {
+        const data = await res.json();
+        toast({ title: data.error || "Error al limpiar duplicados", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Error de red al limpiar duplicados", variant: "destructive" });
+    } finally {
+      setCleaningDuplicates(false);
+    }
+  };
+
   const activeStudents = estudiantes.filter(e => e.activo);
   const presentCount = Object.values(asistencias).filter(e => e === "presente").length;
   const absentCount = Object.values(asistencias).filter(e => e === "ausente").length;
@@ -619,16 +641,23 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                 {saving ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
                 {saving ? "Guardando..." : "Guardar Lista"}
               </Button>
-              {isAdmin && (
-                <Button
-                  className={`h-10 text-white w-full sm:w-auto px-4 font-bold text-xs sm:text-sm ${darkMode ? 'bg-red-700 hover:bg-red-600' : 'bg-red-600 hover:bg-red-700'}`}
-                  onClick={handleDelete}
-                  disabled={deleting || activeStudents.length === 0}
-                >
-                  {deleting ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : <Trash2 className="h-4 w-4 mr-2" />}
-                  {deleting ? "Eliminando..." : "Borrar"}
-                </Button>
-              )}
+              <Button
+                className={`h-10 text-white w-full sm:w-auto px-4 font-bold text-xs sm:text-sm ${darkMode ? 'bg-red-700 hover:bg-red-600' : 'bg-red-600 hover:bg-red-700'}`}
+                onClick={handleDelete}
+                disabled={deleting || activeStudents.length === 0}
+              >
+                {deleting ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : <Trash2 className="h-4 w-4 mr-2" />}
+                {deleting ? "Eliminando..." : "Borrar"}
+              </Button>
+              <Button
+                variant="outline"
+                className={`h-10 w-full sm:w-auto px-4 font-bold text-xs sm:text-sm ${darkMode ? 'border-purple-700 text-purple-400 hover:bg-purple-900/30' : 'border-purple-200 text-purple-700 hover:bg-purple-50'}`}
+                onClick={handleCleanDuplicates}
+                disabled={cleaningDuplicates}
+              >
+                {cleaningDuplicates ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : <Database className="h-4 w-4 mr-2" />}
+                {cleaningDuplicates ? "Limpiando..." : "Limpiar Duplicados"}
+              </Button>
             </div>
 
             <div className="flex gap-2 text-xs sm:text-sm font-medium flex-wrap">
@@ -782,8 +811,8 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
 
                               {/* Mobile: Vertical stacked buttons for better touch targets */}
                               <div className={`sm:hidden flex flex-col gap-1.5 p-2 rounded-xl border transition-all duration-200 ${darkMode
-                                  ? 'bg-slate-800/80 border-slate-700/50'
-                                  : 'bg-white/80 border-slate-200/60 shadow-sm'
+                                ? 'bg-slate-800/80 border-slate-700/50'
+                                : 'bg-white/80 border-slate-200/60 shadow-sm'
                                 }`}>
                                 <button
                                   onClick={() => handleEstadoChange(est.id, "presente")}

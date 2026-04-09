@@ -16,7 +16,8 @@
       "Bash(-h)",
       "Bash(\")\")",
       "WebSearch",
-      "Bash(findstr *)"
+      "Bash(findstr *)",
+      "Bash(dir *)"
     ]
   },
   "$version": 3
