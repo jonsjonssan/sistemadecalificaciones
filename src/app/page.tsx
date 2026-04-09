@@ -1488,12 +1488,12 @@ export default function Home() {
           {/* Asistencia */}
           <TabsContent value="asistencia" className="mt-3">
             <AsistenciaBoard
+              key={`asistencia-${gradoSeleccionado}`}
               grados={gradosFiltrados}
               asignaturas={asignaturasFiltradas}
               estudiantes={estudiantes}
               gradoInicial={gradoSeleccionado}
               asignaturaInicial={asignaturaSeleccionada}
-              isAdmin={isAdmin(usuario.rol)}
             />
           </TabsContent>
 

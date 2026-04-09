@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar as CalendarIcon, Save, RefreshCw, CheckCircle2, XCircle, Clock, CalendarDays, Download, Trash2, FileCheck, Database } from "lucide-react";
+import { Calendar as CalendarIcon, Save, RefreshCw, CheckCircle2, XCircle, Clock, CalendarDays, Download, Trash2, FileCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -37,10 +37,9 @@ interface AsistenciaBoardProps {
   estudiantes: Estudiante[];
   gradoInicial?: string;
   asignaturaInicial?: string;
-  isAdmin?: boolean;
 }
 
-export default function AsistenciaBoard({ grados, asignaturas, estudiantes, gradoInicial = "", asignaturaInicial = "", isAdmin = false }: AsistenciaBoardProps) {
+export default function AsistenciaBoard({ grados, asignaturas, estudiantes, gradoInicial = "", asignaturaInicial = "" }: AsistenciaBoardProps) {
   const { resolvedTheme } = useTheme();
   const darkMode = resolvedTheme === "dark";
   const { toast } = useToast();
@@ -55,7 +54,6 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
   const [summaryRange, setSummaryRange] = useState<"month" | "all">("all");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [cleaningDuplicates, setCleaningDuplicates] = useState(false);
   const [expandedStudent, setExpandedStudent] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().slice(0, 7));
   const [selectedYear] = useState<string>(new Date().getFullYear().toString());
@@ -555,29 +553,6 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     }
   };
 
-  const handleCleanDuplicates = async () => {
-    if (!confirm("¿Estás seguro de eliminar todos los registros duplicados de asistencia?\n\nSe mantendrá solo el registro más reciente de cada estudiante por fecha.")) return;
-
-    setCleaningDuplicates(true);
-    try {
-      const res = await fetch("/api/asistencia/limpiar-duplicados", { method: "POST" });
-      if (res.ok) {
-        const data = await res.json();
-        toast({ title: data.mensaje || "Duplicados eliminados correctamente" });
-        loadAsistencia();
-        if (view === "summary") loadResumen();
-      } else {
-        const data = await res.json();
-        toast({ title: data.error || "Error al limpiar duplicados", variant: "destructive" });
-      }
-    } catch (error) {
-      console.error("Error limpiando duplicados:", error);
-      toast({ title: "Error de red al limpiar duplicados", variant: "destructive" });
-    } finally {
-      setCleaningDuplicates(false);
-    }
-  };
-
   const handleDelete = async () => {
     if (!gradoId || !fecha) return;
     if (!confirm(`¿Eliminar la asistencia del ${fecha} para este grado? Esta acción no se puede deshacer.`)) return;
@@ -703,15 +678,6 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
               >
                 {deleting ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : <Trash2 className="h-4 w-4 mr-2" />}
                 {deleting ? "Eliminando..." : "Borrar"}
-              </Button>
-              <Button
-                variant="outline"
-                className={`h-10 w-full sm:w-auto px-4 font-bold text-xs sm:text-sm ${darkMode ? 'border-amber-700 text-amber-400 hover:bg-amber-900/30' : 'border-amber-200 text-amber-700 hover:bg-amber-50'}`}
-                onClick={handleCleanDuplicates}
-                disabled={cleaningDuplicates}
-              >
-                {cleaningDuplicates ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : <Database className="h-4 w-4 mr-2" />}
-                {cleaningDuplicates ? "Limpiando..." : "Limpiar Duplicados"}
               </Button>
             </div>
 
