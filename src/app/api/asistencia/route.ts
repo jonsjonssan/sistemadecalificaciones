@@ -149,6 +149,7 @@ export async function DELETE(request: NextRequest) {
     const fechaParam = searchParams.get("fecha");
     const gradoId = searchParams.get("gradoId");
     const materiaId = searchParams.get("materiaId");
+    const estudianteId = searchParams.get("estudianteId");
 
     if (!fechaParam || !gradoId) {
       return NextResponse.json({ error: "Faltan parámetros requeridos" }, { status: 400 });
@@ -174,9 +175,14 @@ export async function DELETE(request: NextRequest) {
       gradoId,
     };
 
+    if (estudianteId) {
+      where.estudianteId = estudianteId;
+    }
+
     if (materiaId) {
       where.materiaId = materiaId;
-    } else {
+    } else if (!estudianteId) {
+      // Solo filtrar por materia null si no es borrado individual
       where.materiaId = null;
     }
 

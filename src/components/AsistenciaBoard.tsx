@@ -471,6 +471,24 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     if (!gradoId || !fecha) return;
     setSaving(true);
 
+    // Verificar si ya existe asistencia para esta fecha
+    try {
+      const checkUrl = `/api/asistencia?fecha=${fecha}T00:00:00.000Z&gradoId=${gradoId}${asignaturaId ? `&materiaId=${asignaturaId}` : ''}`;
+      const checkRes = await fetch(checkUrl);
+      if (checkRes.ok) {
+        const existingRecords = await checkRes.json();
+        if (existingRecords && existingRecords.length > 0) {
+          const confirmOverwrite = confirm(`Ya existe asistencia guardada para el ${fecha}.\n\n¿Deseas sobrescribir los registros existentes?`);
+          if (!confirmOverwrite) {
+            setSaving(false);
+            return;
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error verificando asistencia existente:", error);
+    }
+
     const records = Object.entries(asistencias).map(([estudianteId, estado]) => ({
       estudianteId,
       estado
@@ -489,7 +507,13 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
       });
 
       if (res.ok) {
-        toast({ title: "Asistencia guardada correctamente" });
+        const data = await res.json();
+        if (data.actualizados && data.actualizados > 0) {
+          toast({ title: `Asistencia actualizada correctamente (${data.actualizados} registros)` });
+        } else {
+          toast({ title: "Asistencia guardada correctamente" });
+        }
+        loadAsistencia();
       } else {
         const data = await res.json();
         toast({ title: data.error || "Error al guardar", variant: "destructive" });
@@ -498,6 +522,33 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
       toast({ title: "Error de red al guardar asistencia", variant: "destructive" });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDeleteStudentAttendance = async (estudianteId: string) => {
+    const estudiante = estudiantes.find(e => e.id === estudianteId);
+    if (!estudiante || !gradoId || !fecha) return;
+
+    if (!confirm(`¿Eliminar la asistencia de "${estudiante.nombre}" del ${fecha}?`)) return;
+
+    try {
+      const params = new URLSearchParams({
+        fecha: `${fecha}T00:00:00.000Z`,
+        gradoId,
+        estudianteId
+      });
+      if (asignaturaId) params.set("materiaId", asignaturaId);
+
+      const res = await fetch(`/api/asistencia?${params.toString()}`, { method: "DELETE" });
+      if (res.ok) {
+        toast({ title: `Asistencia de ${estudiante.nombre} eliminada` });
+        loadAsistencia();
+      } else {
+        const data = await res.json();
+        toast({ title: data.error || "Error al eliminar", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Error de red al eliminar asistencia", variant: "destructive" });
     }
   };
 
@@ -679,6 +730,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                       <TableHead className="w-10 text-center sticky-col left-0 z-20 shadow-right">N°</TableHead>
                       <TableHead className="sticky-col left-10 z-20 shadow-right min-w-[120px] sm:min-w-[150px]">Estudiante</TableHead>
                       <TableHead className="w-[160px] sm:w-[300px] text-center">Estado</TableHead>
+                      <TableHead className="w-12 text-center">✕</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -782,8 +834,8 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
 
                               {/* Mobile: Vertical stacked buttons for better touch targets */}
                               <div className={`sm:hidden flex flex-col gap-1.5 p-2 rounded-xl border transition-all duration-200 ${darkMode
-                                  ? 'bg-slate-800/80 border-slate-700/50'
-                                  : 'bg-white/80 border-slate-200/60 shadow-sm'
+                                ? 'bg-slate-800/80 border-slate-700/50'
+                                : 'bg-white/80 border-slate-200/60 shadow-sm'
                                 }`}>
                                 <button
                                   onClick={() => handleEstadoChange(est.id, "presente")}
@@ -874,6 +926,30 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                                 </button>
                               </div>
                             </div>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <button
+                              onClick={() => handleDeleteStudentAttendance(est.id)}
+                              className={`inline-flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200 group ${darkMode
+                                  ? 'text-slate-500 hover:text-red-400 hover:bg-red-900/30'
+                                  : 'text-slate-400 hover:text-red-600 hover:bg-red-50'
+                                }`}
+                              title="Eliminar asistencia de este estudiante"
+                            >
+                              <svg
+                                className="w-5 h-5 transition-transform duration-200 group-hover:scale-110"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M6 18L18 6M6 6l12 12"
+                                />
+                              </svg>
+                            </button>
                           </TableCell>
                         </TableRow>
                       );
