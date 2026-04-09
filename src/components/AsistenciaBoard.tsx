@@ -43,7 +43,10 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
   const { resolvedTheme } = useTheme();
   const darkMode = resolvedTheme === "dark";
   const { toast } = useToast();
-  const [gradoId, setGradoId] = useState<string>(gradoInicial);
+
+  // Usar gradoInicial directamente como estado controlado por el padre
+  const gradoId = gradoInicial;
+
   const [asignaturaId, setAsignaturaId] = useState<string>(asignaturaInicial);
   const [fecha, setFecha] = useState<string>(new Date().toISOString().split('T')[0]);
 
@@ -443,24 +446,14 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
   }, [view, gradoId, summaryRange, selectedMonth]);
 
   useEffect(() => {
-    if (estudiantes.length > 0) {
+    if (estudiantes.length > 0 && gradoId) {
       loadAsistencia();
     } else {
       setAsistencias({});
     }
   }, [estudiantes, gradoId, loadAsistencia]);
 
-  // Recargar asistencia cuando cambia el grado inicial (para sincronizar con el estado del padre)
-  useEffect(() => {
-    if (gradoInicial) {
-      setGradoId(gradoInicial);
-      if (estudiantes.length > 0) {
-        setAsistencias(initializeAttendance());
-        loadAsistencia();
-      }
-    }
-  }, [gradoInicial, estudiantes]);
-
+  // Sincronizar asignatura cuando cambian los props del padre
   useEffect(() => {
     if (asignaturas.some(m => m.id === asignaturaInicial)) {
       setAsignaturaId(asignaturaInicial);
@@ -628,18 +621,12 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
             <div className={`flex flex-wrap items-end gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl border ${darkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50'}`}>
               <div className="flex-1 min-w-[150px] sm:min-w-[200px]">
                 <Label className={`text-xs sm:text-sm font-bold mb-1 block ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Grado</Label>
-                <Select value={gradoId} onValueChange={setGradoId}>
-                  <SelectTrigger className={`h-10 text-xs sm:text-sm font-medium ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white'}`}>
-                    <SelectValue placeholder="Seleccione Grado" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {grados.map(g => (
-                      <SelectItem key={g.id} value={g.id} className="text-xs sm:text-sm font-medium">
-                        {g.numero}° "{g.seccion}"
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className={`flex h-10 w-full items-center rounded-md border px-3 text-xs sm:text-sm font-medium ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-slate-200'}`}>
+                  {gradoId ? (() => {
+                    const grado = grados.find(g => g.id === gradoId);
+                    return grado ? `${grado.numero}° "${grado.seccion}"` : 'Seleccione Grado';
+                  })() : 'Seleccione Grado'}
+                </div>
               </div>
 
               <div className="flex-1 min-w-[150px] sm:min-w-[200px]">
