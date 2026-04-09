@@ -1494,6 +1494,10 @@ export default function Home() {
               estudiantes={estudiantes}
               gradoInicial={gradoSeleccionado}
               asignaturaInicial={asignaturaSeleccionada}
+              onGradoChange={(nuevoGradoId) => {
+                setGradoSeleccionado(nuevoGradoId);
+                saveUserState({ gradoSeleccionado: nuevoGradoId });
+              }}
             />
           </TabsContent>
 
