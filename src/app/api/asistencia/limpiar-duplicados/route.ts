@@ -5,56 +5,62 @@ export async function POST() {
   try {
     const prisma = new PrismaClient();
 
-    // Primero, verificar cuántos registros hay en total
-    const totalAntes = await prisma.asistencia.count();
-    console.log("Total de registros antes de limpiar:", totalAntes);
+    // Obtener todos los registros de asistencia
+    const allRecords = await prisma.asistencia.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
 
-    // Encontrar duplicados usando una estrategia diferente
-    // Agrupar por estudiante, fecha (troncada a día), grado y materia
-    const duplicados = await prisma.$queryRaw`
-      SELECT 
-        "estudianteId",
-        DATE("fecha") as fecha_dia,
-        "gradoId",
-        COALESCE("materiaId", '') as materia,
-        COUNT(*) as total_registros,
-        ARRAY_AGG("id" ORDER BY "createdAt" DESC) as ids
-      FROM "Asistencia"
-      GROUP BY "estudianteId", DATE("fecha"), "gradoId", COALESCE("materiaId", '')
-      HAVING COUNT(*) > 1
-    `;
+    console.log("Total de registros encontrados:", allRecords.length);
 
-    console.log("Grupos duplicados encontrados:", duplicados);
+    // Agrupar por estudiante, fecha (solo día), grado y materia
+    const grupos: Map<string, Array<any>> = new Map();
 
-    // Para cada grupo duplicado, eliminar todos excepto el más reciente
-    let eliminados = 0;
+    allRecords.forEach(record => {
+      // Crear clave única por día (ignorando hora)
+      const fechaDia = new Date(record.fecha);
+      fechaDia.setHours(0, 0, 0, 0);
+      const fechaKey = fechaDia.toISOString().split('T')[0]; // YYYY-MM-DD
 
-    for (const grupo of duplicados as Array<{
-      estudianteId: string;
-      fecha_dia: Date;
-      gradoId: string;
-      materia: string;
-      total_registros: number;
-      ids: string[];
-    }>) {
-      // Mantener el primero (más reciente por createdAt DESC)
-      const idsAEliminar = grupo.ids.slice(1);
+      const materiaKey = record.materiaId || 'null';
+      const grupoKey = `${record.estudianteId}|${fechaKey}|${record.gradoId}|${materiaKey}`;
 
-      if (idsAEliminar.length > 0) {
-        const resultado = await prisma.asistencia.deleteMany({
-          where: {
-            id: {
-              in: idsAEliminar
-            }
-          }
-        });
-        eliminados += resultado.count;
+      if (!grupos.has(grupoKey)) {
+        grupos.set(grupoKey, []);
       }
+      grupos.get(grupoKey)!.push(record);
+    });
+
+    console.log("Total de grupos únicos:", grupos.size);
+
+    // Encontrar duplicados y eliminarlos
+    let eliminados = 0;
+    const idsAEliminar: string[] = [];
+
+    grupos.forEach((records, key) => {
+      if (records.length > 1) {
+        console.log(`Grupo duplicado encontrado: ${key} (${records.length} registros)`);
+        // Mantener el primero (más reciente por createdAt DESC), eliminar el resto
+        const paraEliminar = records.slice(1);
+        paraEliminar.forEach(r => idsAEliminar.push(r.id));
+        eliminados += paraEliminar.length;
+      }
+    });
+
+    console.log("Total de duplicados a eliminar:", eliminados);
+
+    if (idsAEliminar.length > 0) {
+      // Eliminar en lotes para evitar errores
+      const resultado = await prisma.asistencia.deleteMany({
+        where: {
+          id: {
+            in: idsAEliminar
+          }
+        }
+      });
+      eliminados = resultado.count;
     }
 
-    const totalDespues = await prisma.asistencia.count();
-    console.log("Total de registros después de limpiar:", totalDespues);
-    console.log("Registros eliminados:", eliminados);
+    const totalFinal = await prisma.asistencia.count();
 
     await prisma.$disconnect();
 
@@ -62,7 +68,7 @@ export async function POST() {
       success: true,
       eliminados,
       mensaje: eliminados > 0
-        ? `Se eliminaron ${eliminados} registros duplicados (de ${totalAntes} a ${totalDespues})`
+        ? `Se eliminaron ${eliminados} registros duplicados. Total ahora: ${totalFinal}`
         : "No se encontraron registros duplicados"
     });
   } catch (error) {
