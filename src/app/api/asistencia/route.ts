@@ -175,16 +175,28 @@ export async function DELETE(request: NextRequest) {
       gradoId,
     };
 
+    // Si se proporciona estudianteId, filtrar por ese estudiante
     if (estudianteId) {
       where.estudianteId = estudianteId;
     }
 
-    if (materiaId) {
-      where.materiaId = materiaId;
-    } else if (!estudianteId) {
-      // Solo filtrar por materia null si no es borrado individual
-      where.materiaId = null;
+    // Manejar materiaId correctamente
+    if (estudianteId) {
+      // Si es borrado individual y se especifica materiaId, usarlo
+      if (materiaId) {
+        where.materiaId = materiaId;
+      }
+      // Si no se especifica materiaId en borrado individual, buscar todos
+    } else {
+      // Borrado masivo: filtrar por materiaId o null
+      if (materiaId) {
+        where.materiaId = materiaId;
+      } else {
+        where.materiaId = null;
+      }
     }
+
+    console.log("DELETE where clause:", JSON.stringify(where, null, 2));
 
     const deleted = await prisma.asistencia.deleteMany({ where });
 
