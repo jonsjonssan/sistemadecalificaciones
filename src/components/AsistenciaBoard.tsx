@@ -29,6 +29,7 @@ interface ResumenAsistencia {
   fechasPresente?: string[];
   fechasAusente?: string[];
   fechasTardanza?: string[];
+  fechasJustificada?: string[];
 }
 
 interface AsistenciaBoardProps {
@@ -67,6 +68,8 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
   const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().slice(0, 7));
   const [selectedYear] = useState<string>(new Date().getFullYear().toString());
   const [asistenciaDetallada, setAsistenciaDetallada] = useState<Record<string, Record<string, string>>>({});
+  const [dateToDelete, setDateToDelete] = useState<string>("");
+  const [deletingDate, setDeletingDate] = useState<string | null>(null);
 
   const initializeAttendance = useCallback(() => {
     const initial: Record<string, string> = {};
@@ -564,6 +567,38 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     }
   };
 
+  const handleDeleteAttendanceByDate = async (estudianteId: string, fechaAEliminar: string) => {
+    const estudiante = estudiantes.find(e => e.id === estudianteId);
+    if (!estudiante || !gradoId || !fechaAEliminar) return;
+
+    if (!confirm(`¿Eliminar la asistencia de "${estudiante.nombre}" del día ${fechaAEliminar}?`)) return;
+
+    setDeletingDate(fechaAEliminar);
+    try {
+      const params = new URLSearchParams({
+        fecha: `${fechaAEliminar}T00:00:00.000Z`,
+        gradoId,
+        estudianteId
+      });
+      if (asignaturaId) params.set("materiaId", asignaturaId);
+
+      const res = await fetch(`/api/asistencia?${params.toString()}`, { method: "DELETE" });
+      if (res.ok) {
+        const data = await res.json();
+        toast({ title: data.eliminados > 0 ? `Asistencia del ${fechaAEliminar} eliminada` : "No se encontró asistencia para eliminar" });
+        loadResumen();
+      } else {
+        const data = await res.json();
+        toast({ title: data.error || "Error al eliminar", variant: "destructive" });
+      }
+    } catch (error) {
+      console.error("Error eliminando asistencia por fecha:", error);
+      toast({ title: "Error de red al eliminar asistencia", variant: "destructive" });
+    } finally {
+      setDeletingDate(null);
+    }
+  };
+
   const handleDelete = async () => {
     if (!gradoId || !fecha) return;
     if (!confirm(`¿Eliminar la asistencia del ${fecha} para este grado? Esta acción no se puede deshacer.`)) return;
@@ -740,7 +775,6 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                       <TableHead className="w-10 text-center sticky-col left-0 z-20 shadow-right">N°</TableHead>
                       <TableHead className="sticky-col left-10 z-20 shadow-right min-w-[120px] sm:min-w-[150px]">Estudiante</TableHead>
                       <TableHead className="w-[160px] sm:w-[300px] text-center">Estado</TableHead>
-                      <TableHead className="w-12 text-center">✕</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -937,30 +971,6 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell className="text-center">
-                            <button
-                              onClick={() => handleDeleteStudentAttendance(est.id)}
-                              className={`inline-flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200 group ${darkMode
-                                ? 'text-slate-500 hover:text-red-400 hover:bg-red-900/30'
-                                : 'text-slate-400 hover:text-red-600 hover:bg-red-50'
-                                }`}
-                              title="Eliminar asistencia de este estudiante"
-                            >
-                              <svg
-                                className="w-5 h-5 transition-transform duration-200 group-hover:scale-110"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M6 18L18 6M6 6l12 12"
-                                />
-                              </svg>
-                            </button>
-                          </TableCell>
                         </TableRow>
                       );
                     })}
@@ -1002,10 +1012,10 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                 )}
               </div>
               <div className="flex gap-2 w-full sm:w-auto">
-                <Button size="sm" variant="outline" className={`h-9 text-xs font-bold flex-1 sm:flex-initial ${darkMode ? 'border-blue-700 text-blue-400 hover:bg-blue-900/30' : 'border-blue-200 text-blue-700 hover:bg-blue-50'}`} onClick={downloadPDFMensual} disabled={!gradoId}>
+                <Button size="sm" variant="outline" className={`h-9 text-xs font-bold flex-1 sm:flex-initial ${darkMode ? 'border-blue-700 text-blue-400 hover:bg-blue-900/30' : 'border-blue-200 text-blue-700 hover:bg-blue-50'}`} onClick={() => downloadPDFMensual()} disabled={!gradoId}>
                   <Download className="h-4 w-4 mr-2" /> PDF Mes
                 </Button>
-                <Button size="sm" variant="outline" className={`h-9 text-xs font-bold flex-1 sm:flex-initial ${darkMode ? 'border-purple-700 text-purple-400 hover:bg-purple-900/30' : 'border-purple-200 text-purple-700 hover:bg-purple-50'}`} onClick={downloadPDFAnual} disabled={!gradoId}>
+                <Button size="sm" variant="outline" className={`h-9 text-xs font-bold flex-1 sm:flex-initial ${darkMode ? 'border-purple-700 text-purple-400 hover:bg-purple-900/30' : 'border-purple-200 text-purple-700 hover:bg-purple-50'}`} onClick={() => downloadPDFAnual()} disabled={!gradoId}>
                   <Download className="h-4 w-4 mr-2" /> PDF Año
                 </Button>
                 <Button size="sm" variant="outline" className={`h-9 text-xs font-bold flex-1 sm:flex-initial ${darkMode ? 'border-teal-700 text-teal-400 hover:bg-teal-900/30' : 'border-teal-200 text-teal-700 hover:bg-teal-50'}`} onClick={exportCSV} disabled={!gradoId}>
@@ -1094,7 +1104,25 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                                         </div>
                                         <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
                                           {r.fechasPresente.map((fecha, i) => (
-                                            <span key={i} className={`px-2 py-1 rounded text-xs font-mono ${darkMode ? 'bg-teal-900/40 text-teal-300 border border-teal-700/30' : 'bg-white text-teal-700 border border-teal-200 shadow-sm'}`}>{fecha}</span>
+                                            <span key={i} className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-mono ${darkMode ? 'bg-teal-900/40 text-teal-300 border border-teal-700/30' : 'bg-white text-teal-700 border border-teal-200 shadow-sm'}`}>
+                                              {fecha}
+                                              <button
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleDeleteAttendanceByDate(r.id, fecha);
+                                                }}
+                                                disabled={deletingDate === fecha}
+                                                className={`ml-1 p-0.5 rounded transition-colors ${darkMode
+                                                  ? 'text-teal-400 hover:text-red-400 hover:bg-red-900/30'
+                                                  : 'text-teal-600 hover:text-red-600 hover:bg-red-50'
+                                                  } ${deletingDate === fecha ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                title={`Eliminar asistencia del ${fecha}`}
+                                              >
+                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                              </button>
+                                            </span>
                                           ))}
                                         </div>
                                       </div>
@@ -1107,7 +1135,25 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                                         </div>
                                         <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
                                           {r.fechasTardanza.map((fecha, i) => (
-                                            <span key={i} className={`px-2 py-1 rounded text-xs font-mono ${darkMode ? 'bg-amber-900/40 text-amber-300 border border-amber-700/30' : 'bg-white text-amber-700 border border-amber-200 shadow-sm'}`}>{fecha}</span>
+                                            <span key={i} className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-mono ${darkMode ? 'bg-amber-900/40 text-amber-300 border border-amber-700/30' : 'bg-white text-amber-700 border border-amber-200 shadow-sm'}`}>
+                                              {fecha}
+                                              <button
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleDeleteAttendanceByDate(r.id, fecha);
+                                                }}
+                                                disabled={deletingDate === fecha}
+                                                className={`ml-1 p-0.5 rounded transition-colors ${darkMode
+                                                  ? 'text-amber-400 hover:text-red-400 hover:bg-red-900/30'
+                                                  : 'text-amber-600 hover:text-red-600 hover:bg-red-50'
+                                                  } ${deletingDate === fecha ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                title={`Eliminar asistencia del ${fecha}`}
+                                              >
+                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                              </button>
+                                            </span>
                                           ))}
                                         </div>
                                       </div>
@@ -1120,7 +1166,25 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                                         </div>
                                         <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
                                           {r.fechasJustificada.map((fecha, i) => (
-                                            <span key={i} className={`px-2 py-1 rounded text-xs font-mono ${darkMode ? 'bg-blue-900/40 text-blue-300 border border-blue-700/30' : 'bg-white text-blue-700 border border-blue-200 shadow-sm'}`}>{fecha}</span>
+                                            <span key={i} className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-mono ${darkMode ? 'bg-blue-900/40 text-blue-300 border border-blue-700/30' : 'bg-white text-blue-700 border border-blue-200 shadow-sm'}`}>
+                                              {fecha}
+                                              <button
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleDeleteAttendanceByDate(r.id, fecha);
+                                                }}
+                                                disabled={deletingDate === fecha}
+                                                className={`ml-1 p-0.5 rounded transition-colors ${darkMode
+                                                  ? 'text-blue-400 hover:text-red-400 hover:bg-red-900/30'
+                                                  : 'text-blue-600 hover:text-red-600 hover:bg-red-50'
+                                                  } ${deletingDate === fecha ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                title={`Eliminar asistencia del ${fecha}`}
+                                              >
+                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                              </button>
+                                            </span>
                                           ))}
                                         </div>
                                       </div>
@@ -1133,7 +1197,25 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                                         </div>
                                         <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
                                           {r.fechasAusente.map((fecha, i) => (
-                                            <span key={i} className={`px-2 py-1 rounded text-xs font-mono ${darkMode ? 'bg-red-900/40 text-red-300 border border-red-700/30' : 'bg-white text-red-700 border border-red-200 shadow-sm'}`}>{fecha}</span>
+                                            <span key={i} className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-mono ${darkMode ? 'bg-red-900/40 text-red-300 border border-red-700/30' : 'bg-white text-red-700 border border-red-200 shadow-sm'}`}>
+                                              {fecha}
+                                              <button
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleDeleteAttendanceByDate(r.id, fecha);
+                                                }}
+                                                disabled={deletingDate === fecha}
+                                                className={`ml-1 p-0.5 rounded transition-colors ${darkMode
+                                                  ? 'text-red-400 hover:text-red-500 hover:bg-red-900/50'
+                                                  : 'text-red-600 hover:text-red-700 hover:bg-red-100'
+                                                  } ${deletingDate === fecha ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                title={`Eliminar asistencia del ${fecha}`}
+                                              >
+                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                              </button>
+                                            </span>
                                           ))}
                                         </div>
                                       </div>

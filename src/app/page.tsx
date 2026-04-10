@@ -178,16 +178,22 @@ export default function Home() {
   const [auditTotalPages, setAuditTotalPages] = useState(1);
   const [auditTotal, setAuditTotal] = useState(0);
 
-  // Persistence: Cargar de localStorage
+  // Persistence: Cargar de localStorage/sessionStorage
   useEffect(() => {
     if (typeof window !== "undefined") {
       const tb = localStorage.getItem("ss_tab"); if (tb) setActiveTab(tb);
       const gr = localStorage.getItem("ss_grado"); if (gr) setGradoSeleccionado(gr);
       const mt = localStorage.getItem("ss_materia"); if (mt) setAsignaturaSeleccionada(mt);
       const tr = localStorage.getItem("ss_trimestre"); if (tr) setTrimestreSeleccionado(tr);
-      const wizardDone = localStorage.getItem("ss_wizard_completed");
-      if (!wizardDone && usuario) {
+
+      // "No mostrar de nuevo" se guarda en localStorage (permanente)
+      // La visualización del wizard se controla por sesión usando sessionStorage
+      const wizardDismissed = localStorage.getItem("ss_wizard_dismissed");
+      const wizardShownThisSession = sessionStorage.getItem("ss_wizard_shown_session");
+
+      if (!wizardDismissed && !wizardShownThisSession && usuario) {
         setShowWizard(true);
+        sessionStorage.setItem("ss_wizard_shown_session", "true");
       }
     }
   }, [usuario]);

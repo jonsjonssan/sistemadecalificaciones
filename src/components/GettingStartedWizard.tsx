@@ -6,13 +6,13 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { 
-  ChevronRight, 
-  ChevronLeft, 
-  ClipboardList, 
-  CalendarDays, 
-  Users, 
-  Settings, 
+import {
+  ChevronRight,
+  ChevronLeft,
+  ClipboardList,
+  CalendarDays,
+  Users,
+  Settings,
   FileText,
   CheckCircle2,
   Lightbulb,
@@ -227,7 +227,7 @@ const steps = [
     content: (role: string) => (
       <div className="space-y-4">
         <p className="text-sm">
-          {role === "admin" 
+          {role === "admin"
             ? "Como administrador, te recomendamos empezar por la pestaña Admin para configurar usuarios y grados."
             : "Como docente, puedes comenzar ingresando calificaciones o tomando asistencia."
           }
@@ -270,7 +270,8 @@ export default function GettingStartedWizard({ open, onClose, darkMode, userRole
 
   const handleComplete = () => {
     if (dontShowAgain && typeof window !== "undefined") {
-      localStorage.setItem("ss_wizard_completed", "true");
+      // Guardar permanentemente en localStorage para que no vuelva a aparecer nunca
+      localStorage.setItem("ss_wizard_dismissed", "true");
     }
     onClose();
   };
@@ -314,8 +315,8 @@ export default function GettingStartedWizard({ open, onClose, darkMode, userRole
           </div>
 
           {currentStep === 1 && (
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="w-full text-sm"
               onClick={() => handleNavigate("dashboard")}
             >
@@ -323,8 +324,8 @@ export default function GettingStartedWizard({ open, onClose, darkMode, userRole
             </Button>
           )}
           {currentStep === 2 && (
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="w-full text-sm"
               onClick={() => handleNavigate("calificaciones")}
             >
@@ -332,8 +333,8 @@ export default function GettingStartedWizard({ open, onClose, darkMode, userRole
             </Button>
           )}
           {currentStep === 3 && (
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="w-full text-sm"
               onClick={() => handleNavigate("asistencia")}
             >
