@@ -1,0 +1,254 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Usuario del sistema (Administrador o Docente)
+model Usuario {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  nombre    String
+  rol       String   // "admin", "admin-directora", "admin-codirectora", "docente", "docente-orientador"
+  activo    Boolean  @default(true)
+
+  // Google OAuth (null si solo usa email/password)
+  googleId  String?  @unique
+  provider  String   @default("credentials") // "credentials" | "google"
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  materiasAsignadas DocenteMateria[] // Para todos los grados (2-9)
+  auditLogs         AuditLog[]
+  loginSessions     LoginSession[]
+  gradosOrientados  Grado[] @relation("GradoOrientador") // Grados donde es docente orientador
+
+  @@index([email])
+  @@index([rol, activo])
+  @@index([googleId])
+}
+
+// Grado escolar (2do a 9no)
+model Grado {
+  id        String   @id @default(cuid())
+  numero    Int      // 2, 3, 4, 5, 6, 7, 8, 9
+  seccion   String   @default("A")
+  año       Int      @default(2026)
+  docenteId String?  // Docente orientador del grado
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  estudiantes Estudiante[]
+  materias    Materia[]
+  asistencias Asistencia[]
+  docente     Usuario? @relation("GradoOrientador", fields: [docenteId], references: [id])
+
+  @@index([numero])
+  @@index([docenteId])
+}
+
+// Estudiante
+model Estudiante {
+  id        String   @id @default(cuid())
+  numero    Int
+  nombre    String
+  email     String?
+  gradoId   String
+  orden     Int      @default(0)
+  activo    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  grado          Grado          @relation(fields: [gradoId], references: [id])
+  calificaciones Calificacion[]
+  asistencia    Asistencia[]
+
+  @@index([gradoId, activo])
+  @@index([nombre])
+  @@index([numero, gradoId])
+}
+
+// Materia
+model Materia {
+  id        String   @id @default(cuid())
+  nombre    String   // Comunicación, Números y Formas, etc.
+  gradoId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  grado              Grado              @relation(fields: [gradoId], references: [id])
+  calificaciones     Calificacion[]
+  configActividades  ConfigActividad[]
+  docentesAsignados  DocenteMateria[] // Para grados 6-9
+  asistencia        Asistencia[]
+
+  @@index([gradoId])
+  @@index([nombre])
+}
+
+// Asignación de docentes a materias (para todos los grados 2-9)
+model DocenteMateria {
+  id        String   @id @default(cuid())
+  docenteId String
+  materiaId String
+  createdAt DateTime @default(now())
+
+  docente Usuario @relation(fields: [docenteId], references: [id], onDelete: Cascade)
+  materia Materia @relation(fields: [materiaId], references: [id], onDelete: Cascade)
+
+  @@unique([docenteId, materiaId])
+  @@index([docenteId])
+  @@index([materiaId])
+}
+
+// Configuración de actividades por materia y trimestre
+model ConfigActividad {
+  id                         String   @id @default(cuid())
+  materiaId                  String
+  trimestre                  Int      @default(1) // 1, 2, 3
+  
+  // Cantidad de cada tipo de actividad
+  numActividadesCotidianas   Int      @default(4)
+  numActividadesIntegradoras Int      @default(1)
+  tieneExamen                Boolean  @default(true)
+  
+  // Porcentajes (deben sumar 100%)
+  porcentajeAC       Float @default(35.0)
+  porcentajeAI       Float @default(35.0)
+  porcentajeExamen   Float @default(30.0)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  materia Materia @relation(fields: [materiaId], references: [id])
+  
+  @@unique([materiaId, trimestre])
+  @@index([materiaId])
+}
+
+// Configuración del sistema (año escolar actual, etc.)
+model ConfiguracionSistema {
+  id           String   @id @default(cuid())
+  añoEscolar   Int      @default(2026)
+  escuela      String   @default("Centro Escolar")
+  nombreDirectora String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// Calificaciones por estudiante, materia y trimestre
+model Calificacion {
+  id           String   @id @default(cuid())
+  estudianteId String
+  materiaId    String
+  trimestre    Int      @default(1)
+
+  // Promedios calculados
+  calificacionAC          Float?   // Promedio actividades cotidianas
+  calificacionAI          Float?   // Promedio actividades integradoras
+  examenTrimestral        Float?   // Nota del examen
+  promedioFinal           Float?   // Promedio final calculado
+  recuperacion            Float?   // Nota de recuperación
+
+  // Relación con notas individuales (nueva estructura normalizada)
+  notasActividad   NotaActividad[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  estudiante Estudiante @relation(fields: [estudianteId], references: [id])
+  materia    Materia    @relation(fields: [materiaId], references: [id])
+
+  @@unique([estudianteId, materiaId, trimestre])
+  @@index([estudianteId])
+  @@index([materiaId])
+  @@index([trimestre])
+}
+
+// Notas individuales de actividades (estructura normalizada)
+model NotaActividad {
+  id              String   @id @default(cuid())
+  calificacionId  String
+  tipo            String   // "cotidiana" | "integradora"
+  numeroActividad Int      // 1, 2, 3, 4...
+  nota            Float    // Nota individual (0-10)
+  createdAt       DateTime @default(now())
+
+  calificacion Calificacion @relation(fields: [calificacionId], references: [id], onDelete: Cascade)
+
+  @@index([calificacionId, tipo, numeroActividad])
+  @@index([calificacionId])
+  @@index([tipo])
+}
+
+// Registro de Asistencia Diaria
+model Asistencia {
+  id           String   @id @default(cuid())
+  estudianteId String
+  fecha        DateTime
+  estado       String   // "presente", "ausente", "justificada", "tarde"
+  
+  // La asistencia puede ser general por grado (tutor 2-5) o específica por materia (6-9)
+  gradoId      String?
+  materiaId    String?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  estudiante   Estudiante @relation(fields: [estudianteId], references: [id], onDelete: Cascade)
+  grado        Grado?     @relation(fields: [gradoId], references: [id], onDelete: Cascade)
+  materia      Materia?   @relation(fields: [materiaId], references: [id], onDelete: Cascade)
+  
+  // Un estudiante solo puede tener un registro de asistencia por día por materia/grado
+  // El índice cuidará que no haya duplicados el mismo día exacto. En la API limpiaremos la hora.
+  @@unique([estudianteId, fecha, gradoId, materiaId], name: "unica_asistencia_dia")
+  @@index([estudianteId])
+  @@index([fecha])
+  @@index([estado])
+  @@index([estudianteId, fecha])
+}
+
+// Registro de Auditoría - rastrea cambios en el sistema
+model AuditLog {
+  id          String   @id @default(cuid())
+  usuarioId   String
+  accion      String   // "UPDATE" = Digitó, "DELETE" = Borró
+  entidad     String   // "Calificacion"
+  entidadId   String?
+  detalles    String?  // JSON: { estudiante, materia, trimestre, grado, promedioFinal }
+  ip          String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  usuario     Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@index([entidad])
+  @@index([accion])
+  @@index([createdAt])
+}
+
+// Registro de Sesiones - rastrea logins
+model LoginSession {
+  id          String   @id @default(cuid())
+  usuarioId   String
+  ip          String?
+  userAgent   String?
+  loginAt     DateTime @default(now())
+  logoutAt    DateTime?
+  isActive    Boolean  @default(true)
+
+  usuario     Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@index([loginAt])
+  @@index([isActive])
+}
