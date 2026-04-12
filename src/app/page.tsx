@@ -1780,7 +1780,7 @@ export default function Home() {
                 <CardContent className="pt-0">
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
                     {grados.map(g => {
-                      const docentesDelGrado = getDocentesDelGrado(g.id);
+                      const docentesDelGrado = getDocentesDelGrado(usuarios, g.id);
                       const docentesTexto = docentesDelGrado.length > 0
                         ? (docentesDelGrado.length === 1 ? docentesDelGrado[0] : `${docentesDelGrado.length} docentes`)
                         : "Sin docente";
