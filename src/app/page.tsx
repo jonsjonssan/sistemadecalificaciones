@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1371,13 +1372,15 @@ export default function Home() {
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-3 py-2 sm:py-3 pb-24 md:pb-3">
         <Tabs value={activeTab} onValueChange={(val) => { setActiveTab(val); saveUserState({ activeTab: val }); }}>
-          <TabsList className={`shadow-md h-10 overflow-x-auto rounded-md hidden md:inline-flex w-auto shrink-0 hide-scrollbar justify-start space-x-1 ${darkMode ? 'bg-[#1e293b] border border-slate-700' : 'bg-white'}`} role="tablist" aria-label="Secciones del sistema">
-            <TabsTrigger id="tab-dashboard" value="dashboard" className={`text-sm font-medium px-3 gap-1 shrink-0 ${darkMode ? 'data-[state=active]:bg-slate-700 data-[state=active]:text-teal-400' : ''}`}><LayoutDashboard className="h-4 w-4" />Inicio</TabsTrigger>
-            <TabsTrigger id="tab-calificaciones" value="calificaciones" className={`text-sm font-medium px-3 gap-1 shrink-0 ${darkMode ? 'data-[state=active]:bg-slate-700 data-[state=active]:text-teal-400' : ''}`}><ClipboardList className="h-4 w-4" />Calificaciones</TabsTrigger>
-            <TabsTrigger id="tab-asistencia" value="asistencia" className={`text-sm font-medium px-3 gap-1 shrink-0 ${darkMode ? 'data-[state=active]:bg-slate-700 data-[state=active]:text-teal-400' : ''}`}><CalendarDays className="h-4 w-4" />Asistencia</TabsTrigger>
-            <TabsTrigger value="estudiantes" aria-label="Ver estudiantes" className={`text-sm font-medium px-3 gap-1 shrink-0 ${darkMode ? 'data-[state=active]:bg-slate-700 data-[state=active]:text-teal-400' : ''}`}><Users className="h-4 w-4" />Estudiantes</TabsTrigger>
-            <TabsTrigger value="boletas" aria-label="Ver boletas" className={`text-sm font-medium px-3 gap-1 shrink-0 ${darkMode ? 'data-[state=active]:bg-slate-700 data-[state=active]:text-teal-400' : ''}`}><FileText className="h-4 w-4" />Boletas</TabsTrigger>
-            {isAdmin(usuario.rol) && <TabsTrigger value="admin" aria-label="Administración" className={`text-sm font-medium px-3 gap-1 shrink-0 ${darkMode ? 'data-[state=active]:bg-slate-700 data-[state=active]:text-teal-400' : ''}`}><Settings className="h-4 w-4" />Admin</TabsTrigger>}
+          <TabsList className={`shadow-lg h-11 overflow-x-auto rounded-xl hidden md:inline-flex w-auto shrink-0 hide-scrollbar justify-start space-x-1.5 ${darkMode ? 'bg-[#1e293b]/80 backdrop-blur-sm border border-slate-700/50 p-1' : 'bg-white/80 backdrop-blur-sm border border-slate-200 p-1'}`} role="tablist" aria-label="Secciones del sistema">
+            <motion.div className="flex space-x-1.5">
+              <TabsTrigger id="tab-dashboard" value="dashboard" className={`text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 ${darkMode ? 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:data-[state=inactive]:text-slate-200 hover:bg-slate-800/50' : 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-600 hover:data-[state=inactive]:text-slate-800 hover:bg-slate-100'}`}><LayoutDashboard className="h-4 w-4" />Inicio</TabsTrigger>
+              <TabsTrigger id="tab-calificaciones" value="calificaciones" className={`text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 ${darkMode ? 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:data-[state=inactive]:text-slate-200 hover:bg-slate-800/50' : 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-600 hover:data-[state=inactive]:text-slate-800 hover:bg-slate-100'}`}><ClipboardList className="h-4 w-4" />Calificaciones</TabsTrigger>
+              <TabsTrigger id="tab-asistencia" value="asistencia" className={`text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 ${darkMode ? 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:data-[state=inactive]:text-slate-200 hover:bg-slate-800/50' : 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-600 hover:data-[state=inactive]:text-slate-800 hover:bg-slate-100'}`}><CalendarDays className="h-4 w-4" />Asistencia</TabsTrigger>
+              <TabsTrigger value="estudiantes" aria-label="Ver estudiantes" className={`text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 ${darkMode ? 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:data-[state=inactive]:text-slate-200 hover:bg-slate-800/50' : 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-600 hover:data-[state=inactive]:text-slate-800 hover:bg-slate-100'}`}><Users className="h-4 w-4" />Estudiantes</TabsTrigger>
+              <TabsTrigger value="boletas" aria-label="Ver boletas" className={`text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 ${darkMode ? 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:data-[state=inactive]:text-slate-200 hover:bg-slate-800/50' : 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-600 hover:data-[state=inactive]:text-slate-800 hover:bg-slate-100'}`}><FileText className="h-4 w-4" />Boletas</TabsTrigger>
+              {isAdmin(usuario.rol) && <TabsTrigger value="admin" aria-label="Administración" className={`text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 ${darkMode ? 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:data-[state=inactive]:text-slate-200 hover:bg-slate-800/50' : 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-600 hover:data-[state=inactive]:text-slate-800 hover:bg-slate-100'}`}><Settings className="h-4 w-4" />Admin</TabsTrigger>}
+            </motion.div>
           </TabsList>
           <div className="hidden md:flex items-center gap-2 ml-auto">
             <ContextualHelp section={activeTab} darkMode={darkMode} />
@@ -1394,8 +1397,13 @@ export default function Home() {
           </div>
 
           {/* Mobile bottom nav */}
-          <nav className={`md:hidden fixed bottom-0 left-0 right-0 z-50 border-t ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'bg-white border-slate-200'} safe-area-bottom`}>
-            <div className="flex justify-around items-center h-14">
+          <motion.nav
+            initial={{ y: 100 }}
+            animate={{ y: 0 }}
+            transition={{ type: "spring", damping: 20 }}
+            className={`md:hidden fixed bottom-0 left-0 right-0 z-50 border-t backdrop-blur-sm ${darkMode ? 'bg-[#1e293b]/90 border-slate-700/50' : 'bg-white/90 border-slate-200'} safe-area-bottom`}
+          >
+            <div className="flex justify-around items-center h-16">
               {[
                 { value: "dashboard", icon: LayoutDashboard, label: "Inicio" },
                 { value: "calificaciones", icon: ClipboardList, label: "Notas" },
@@ -1403,21 +1411,32 @@ export default function Home() {
                 { value: "estudiantes", icon: Users, label: "Estud." },
                 { value: "boletas", icon: FileText, label: "Boletas" },
                 ...(isAdmin(usuario.rol) ? [{ value: "admin", icon: Settings, label: "Admin" }] : []),
-              ].map((item) => (
-                <button
+              ].map((item, idx) => (
+                <motion.button
                   key={item.value}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                  whileTap={{ scale: 0.9 }}
                   onClick={() => { setActiveTab(item.value); saveUserState({ activeTab: item.value }); }}
-                  className={`flex flex-col items-center justify-center flex-1 h-full text-xs transition-colors ${activeTab === item.value
+                  className={`relative flex flex-col items-center justify-center flex-1 h-full text-xs transition-all ${activeTab === item.value
                     ? (darkMode ? 'text-teal-400' : 'text-teal-600')
                     : (darkMode ? 'text-slate-500' : 'text-slate-400')
                     }`}
                 >
-                  <item.icon className="h-5 w-5" />
-                  <span className="text-[10px] mt-0.5">{item.label}</span>
-                </button>
+                  {activeTab === item.value && (
+                    <motion.div
+                      layoutId="activeTab"
+                      className="absolute inset-0 bg-teal-500/10 rounded-lg"
+                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    />
+                  )}
+                  <item.icon className={`h-5 w-5 transition-transform ${activeTab === item.value ? 'scale-110' : ''}`} />
+                  <span className={`text-[10px] mt-0.5 font-medium ${activeTab === item.value ? 'font-semibold' : ''}`}>{item.label}</span>
+                </motion.button>
               ))}
             </div>
-          </nav>
+          </motion.nav>
 
           {/* Dashboard */}
           <TabsContent value="dashboard" className="mt-3">

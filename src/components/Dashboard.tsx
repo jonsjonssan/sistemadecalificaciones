@@ -2,16 +2,19 @@
 
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
+import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Users, BookOpen, ClipboardList, School, GraduationCap, CalendarDays, Trophy, AlertTriangle, TrendingUp, ChevronDown, ChevronRight, Book, FileText, Target, BarChart3 } from "lucide-react";
+import { Users, BookOpen, School, GraduationCap, Book, FileText, Target, TrendingUp, ChevronDown, ChevronRight, Trophy, AlertTriangle, ClipboardList, CalendarDays } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend, Cell } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { StatCard } from "@/components/ui/stat-card";
+import { GradeChart } from "@/components/ui/grade-chart";
 import InformeTecnicoDialog from "./InformeTecnicoDialog";
 
-interface UsuarioSesion { id: string; email: string; nombre: string; rol: string; }
+interface UsuarioSesion { id: string; email: string; nombre: string; rol: string; asignaturasAsignadas?: Array<{ gradoId: string }>; }
 interface Grado { id: string; numero: number; seccion: string; _count?: { estudiantes: number; materias: number; }; }
 interface MateriaConGrado { id: string; nombre: string; gradoId?: string; grado?: { id: string; numero: number; seccion: string; }; }
 
@@ -262,7 +265,7 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
 
   // Calcular totales visibles
   const totalEstudiantesVisibles = gradosVisibles.reduce((sum, g) => sum + (g._count?.estudiantes || 0), 0);
-  const totalAsignaturasVisibles = esDirectiva ? totalAsignaturas : asignaturasAsignadas.length;
+  const totalAsignaturasVisibles = esDirectiva ? totalAsignaturas : asignaturasAsignadas?.length || 0;
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -319,6 +322,13 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
 
   const todasAsignaturasList = asignaturasAsignadas || [];
 
+  // Datos para gráfico de evolución por trimestre
+  const trimesterChartData = stats.length > 0 ? [
+    { name: "T1", value: Math.round(stats.reduce((a, s) => a + (s.promedios?.cotidiana ?? 0), 0) / stats.length * 100) / 100, target: 6.0 },
+    { name: "T2", value: Math.round(stats.reduce((a, s) => a + (s.promedios?.integradora ?? 0), 0) / stats.length * 100) / 100, target: 7.0 },
+    { name: "T3", value: Math.round(stats.reduce((a, s) => a + (s.promedios?.examen ?? 0), 0) / stats.length * 100) / 100, target: 7.0 },
+  ] : [];
+
   return (
     <div className="space-y-4 pb-8">
       <h2 className={`text-xl sm:text-2xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-slate-800'}`}>
@@ -331,80 +341,71 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
       </p>
 
       {usuario.rol === "admin" && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"
+        >
           {loading ? (
-            Array.from({ length: 4 }).map((_, i) => (
-              <Card key={i} className={`shadow-sm overflow-hidden ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-slate-100'}`}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <Skeleton className={`h-5 w-28 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
-                  <Skeleton className={`h-10 w-10 md:h-12 md:w-12 rounded-full ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className={`h-8 w-16 mb-2 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
-                  <Skeleton className={`h-4 w-20 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
-                </CardContent>
-              </Card>
-            ))
+            <>
+              <StatCard loading title="Total Estudiantes" value={0} subtitle="" icon={Users} iconColor="" iconBg="" accentColor="" darkMode />
+              <StatCard loading title="Grados Activos" value={0} subtitle="" icon={School} iconColor="" iconBg="" accentColor="" darkMode />
+              <StatCard loading title="Asignaturas" value={0} subtitle="" icon={BookOpen} iconColor="" iconBg="" accentColor="" darkMode />
+              <StatCard loading title="Docentes" value={0} subtitle="" icon={GraduationCap} iconColor="" iconBg="" accentColor="" darkMode />
+            </>
           ) : (
             <>
-              <Card className={`shadow-sm overflow-hidden ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-teal-100'}`}>
-                <div className="h-1 bg-teal-500 w-full" />
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className={`text-sm sm:text-lg font-medium ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>Total Estudiantes</CardTitle>
-                  <div className={`h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center ${darkMode ? 'bg-teal-900/50' : 'bg-teal-50'}`}>
-                    <Users className={`h-6 w-6 md:h-8 md:w-8 ${darkMode ? 'text-teal-400' : 'text-teal-600'}`} />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className={`text-2xl md:text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{totalEstudiantesVisibles}</div>
-                  <p className={`text-xs sm:text-sm md:text-base font-medium mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Registrados</p>
-                </CardContent>
-              </Card>
+              <StatCard
+                title="Total Estudiantes"
+                value={totalEstudiantesVisibles}
+                subtitle="Registrados"
+                icon={Users}
+                iconColor={darkMode ? "text-teal-400" : "text-teal-600"}
+                iconBg={darkMode ? "bg-teal-900/50" : "bg-teal-50"}
+                accentColor="bg-teal-500"
+                darkMode={darkMode}
+                delay={0}
+              />
 
-              <Card className={`shadow-sm overflow-hidden ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-emerald-100'}`}>
-                <div className="h-1 bg-emerald-500 w-full" />
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className={`text-sm sm:text-lg font-medium ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>Grados Activos</CardTitle>
-                  <div className={`h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center ${darkMode ? 'bg-emerald-900/50' : 'bg-emerald-50'}`}>
-                    <School className={`h-6 w-6 md:h-8 md:w-8 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className={`text-2xl md:text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{gradosVisibles.length}</div>
-                  <p className={`text-xs sm:text-sm md:text-base font-medium mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Secciones</p>
-                </CardContent>
-              </Card>
+              <StatCard
+                title="Grados Activos"
+                value={gradosVisibles.length}
+                subtitle="Secciones"
+                icon={School}
+                iconColor={darkMode ? "text-emerald-400" : "text-emerald-600"}
+                iconBg={darkMode ? "bg-emerald-900/50" : "bg-emerald-50"}
+                accentColor="bg-emerald-500"
+                darkMode={darkMode}
+                delay={0.1}
+              />
 
-              <Card className={`shadow-sm overflow-hidden ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-blue-100'}`}>
-                <div className="h-1 bg-blue-500 w-full" />
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className={`text-sm sm:text-lg font-medium ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>Asignaturas</CardTitle>
-                  <div className={`h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center ${darkMode ? 'bg-blue-900/50' : 'bg-blue-50'}`}>
-                    <BookOpen className={`h-6 w-6 md:h-8 md:w-8 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className={`text-2xl md:text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{totalAsignaturasVisibles}</div>
-                  <p className={`text-xs sm:text-sm md:text-base font-medium mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Impartidas</p>
-                </CardContent>
-              </Card>
+              <StatCard
+                title="Asignaturas"
+                value={totalAsignaturasVisibles}
+                subtitle="Impartidas"
+                icon={BookOpen}
+                iconColor={darkMode ? "text-blue-400" : "text-blue-600"}
+                iconBg={darkMode ? "bg-blue-900/50" : "bg-blue-50"}
+                accentColor="bg-blue-500"
+                darkMode={darkMode}
+                delay={0.2}
+              />
 
-              <Card className={`shadow-sm overflow-hidden ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-amber-100'}`}>
-                <div className="h-1 bg-amber-500 w-full" />
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className={`text-sm sm:text-lg font-medium ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>Docentes</CardTitle>
-                  <div className={`h-10 w-10 md:h-12 md:w-12 rounded-full flex items-center justify-center ${darkMode ? 'bg-amber-900/50' : 'bg-amber-50'}`}>
-                    <GraduationCap className={`h-6 w-6 md:h-8 md:w-8 ${darkMode ? 'text-amber-400' : 'text-amber-600'}`} />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className={`text-2xl md:text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{totalDocentes}</div>
-                  <p className={`text-xs sm:text-sm md:text-base font-medium mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Activos</p>
-                </CardContent>
-              </Card>
+              <StatCard
+                title="Docentes"
+                value={totalDocentes}
+                subtitle="Activos"
+                icon={GraduationCap}
+                iconColor={darkMode ? "text-amber-400" : "text-amber-600"}
+                iconBg={darkMode ? "bg-amber-900/50" : "bg-amber-50"}
+                accentColor="bg-amber-500"
+                darkMode={darkMode}
+                delay={0.3}
+              />
             </>
           )}
-        </div>
+        </motion.div>
       )}
 
       {/* Promedio Institucional */}
@@ -444,6 +445,20 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Evolución por Trimestre */}
+      {esDirectiva && trimesterChartData.length > 0 && (
+        <GradeChart
+          data={trimesterChartData}
+          title="Evolución por Trimestres"
+          description="Promedio institucional en cada período"
+          icon={TrendingUp}
+          showArea
+          showTarget
+          darkMode={darkMode}
+          height={280}
+        />
       )}
 
       {/* Asignaturas por Ciclo */}
