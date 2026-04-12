@@ -59,7 +59,7 @@ export default function Home() {
   const [trimestreSeleccionado, setTrimestreSeleccionado] = useState<string>("1");
   const [asignaturaSeleccionada, setAsignaturaSeleccionada] = useState<string>("");
 
-// UI
+  // UI
   const [activeTab, setActiveTab] = useState("dashboard");
 
   // ==================== Helpers de Roles ====================
@@ -67,11 +67,11 @@ export default function Home() {
   const checkIsAdmin = (rol: string) => isAdmin(rol);
   const checkCanDeleteUsers = (user: typeof usuario) => canDeleteUsers(user);
   const getDocentesByGrado = (gradoId: string) => getDocentesDelGrado(usuarios, gradoId);
-  
+
   // Legacy aliases for backward compatibility with existing code
   const getDocentesDelGrado = getDocentesByGrado;
   const canDelete = checkCanDeleteUsers;
-  
+
   const [dialogOpen, setDialogOpen] = useState(false);
   const [configDialogOpen, setConfigDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
@@ -1074,8 +1074,8 @@ export default function Home() {
   const gradosSuperiores = grados.filter(g => g.numero >= 6);
 
   // Effects
-  // Auth
-  useEffect(() => { checkAuth(); }, [checkAuth]);
+  // Auth - run only once on mount
+  useEffect(() => { checkAuth(); }, []);
 
   // Cargar Google Identity Services
   useEffect(() => {
@@ -1115,14 +1115,14 @@ export default function Home() {
       setDataLoading(true);
       Promise.all([loadGrados(), loadUsuarios(), loadTodasAsignaturas(), loadConfiguracion()]).finally(() => setDataLoading(false));
     }
-  }, [usuario, loadGrados, loadUsuarios, loadTodasAsignaturas, loadConfiguracion]);
+  }, [usuario]);
   // Carga de datos base (estudiantes y materias del grado)
   useEffect(() => {
     if (gradoSeleccionado) {
       setSectionLoading(true);
       Promise.all([loadEstudiantes(), loadAsignaturas()]).finally(() => setSectionLoading(false));
     }
-  }, [gradoSeleccionado, loadEstudiantes, loadAsignaturas]);
+  }, [gradoSeleccionado]);
 
   // Carga de configuración y calificaciones sincronizada
   useEffect(() => {
@@ -1138,7 +1138,7 @@ export default function Home() {
     if (gradoSeleccionado && trimestreSeleccionado) {
       loadPromedioGrado();
     }
-  }, [gradoSeleccionado, trimestreSeleccionado, loadPromedioGrado]);
+  }, [gradoSeleccionado, trimestreSeleccionado]);
   // Auto-selección inicial de grado - restaurar estado guardado o usar primero disponible
   useEffect(() => {
     if (gradosFiltrados && gradosFiltrados.length > 0 && !gradoSeleccionado) {
@@ -1154,7 +1154,7 @@ export default function Home() {
         saveUserState({ gradoSeleccionado: gradosFiltrados[0].id });
       }
     }
-  }, [gradosFiltrados, gradoSeleccionado, loadUserState, saveUserState]);
+  }, [gradosFiltrados, gradoSeleccionado]);
 
   // Auto-selección de asignatura restaurada o primera disponible
   useEffect(() => {
@@ -1168,7 +1168,7 @@ export default function Home() {
         saveUserState({ asignaturaSeleccionada: asignaturasFiltradas[0].id });
       }
     }
-  }, [asignaturasFiltradas, asignaturaSeleccionada, loadUserState, saveUserState]);
+  }, [asignaturasFiltradas, asignaturaSeleccionada]);
 
   // Guardar estado automáticamente cuando cambie la selección
   useEffect(() => {
