@@ -24,48 +24,9 @@ import { EstudiantesTable } from "@/components/EstudiantesTable";
 import GettingStartedWizard from "@/components/GettingStartedWizard";
 import PredictiveAlerts from "@/components/PredictiveAlerts";
 import { ContextualHelp } from "@/components/ContextualHelp";
-
-// Interfaces
-interface UsuarioSesion { id: string; email: string; nombre: string; rol: string; gradosAsignados?: { id: string; numero: number; seccion: string; }[]; asignaturasAsignadas?: { id: string; nombre: string; gradoId: string; gradoNumero?: number; gradoSeccion?: string; }[]; }
-interface AsignaturaConGrado { id: string; nombre: string; gradoId: string; grado?: { id: string; numero: number; seccion: string; }; gradoNumero?: number; }
-interface Usuario {
-  id: string;
-  email: string;
-  nombre: string;
-  rol: string;
-  activo: boolean;
-  gradosComoTutor?: { id: string; numero: number; seccion: string; año: number; }[];
-  materias?: AsignaturaConGrado[];
-}
-interface Estudiante { id: string; numero: number; nombre: string; email?: string; gradoId: string; activo: boolean; orden?: number; }
-interface Asignatura { id: string; nombre: string; gradoId: string; }
-interface ConfigActividad { id: string; materiaId: string; trimestre: number; numActividadesCotidianas: number; numActividadesIntegradoras: number; tieneExamen: boolean; porcentajeAC: number; porcentajeAI: number; porcentajeExamen: number; asignaturaNombre?: string; }
-type ConfigActividadPartial = Partial<ConfigActividad> & { numActividadesCotidianas: number; numActividadesIntegradoras: number; tieneExamen: boolean; porcentajeAC: number; porcentajeAI: number; porcentajeExamen: number; };
-interface Calificacion { id: string; estudianteId: string; materiaId: string; trimestre: number; actividadesCotidianas: string | null; calificacionAC: number | null; actividadesIntegradoras: string | null; calificacionAI: number | null; examenTrimestral: number | null; promedioFinal: number | null; recuperacion: number | null; estudiante?: Estudiante; asignatura?: Asignatura; config?: ConfigActividad; }
-interface Grado { id: string; numero: number; seccion: string; año: number; docenteId: string | null; docente?: { id: string; nombre: string; email: string; }; _count?: { estudiantes: number; materias: number; }; }
-interface ConfiguracionSistema { id: string; añoEscolar: number; escuela: string; nombreDirectora?: string; }
-
-// Utilidades
-const calcularPromedio = (notas: (number | null)[]): number | null => {
-  const validas = notas.filter(n => n !== null && !isNaN(n!)) as number[];
-  return validas.length ? validas.reduce((a, b) => a + b, 0) / validas.length : null;
-};
-const calcularPromedioFinal = (ac: number | null, ai: number | null, et: number | null, cfg: ConfigActividadPartial, recup: number | null = null): number | null => {
-  if (ac === null && ai === null && et === null) return null;
-  const pctAC = cfg.porcentajeAC ?? 35;
-  const pctAI = cfg.porcentajeAI ?? 35;
-  const pctEx = cfg.porcentajeExamen ?? 30;
-  let base = (ac ?? 0) * pctAC / 100 + (ai ?? 0) * pctAI / 100 + (et ?? 0) * pctEx / 100;
-  if (recup !== null) base = Math.min(10, base + recup);
-  return base;
-};
-const parseNotas = (json: string | null, count: number): (number | null)[] => {
-  if (!json) return Array(count).fill(null);
-  try {
-    const arr = JSON.parse(json);
-    return Array.isArray(arr) ? [...arr.map((n: number) => !isNaN(n) ? n : null), ...Array(Math.max(0, count - arr.length)).fill(null)].slice(0, count) : Array(count).fill(null);
-  } catch { return Array(count).fill(null); }
-};
+import { Usuario, UsuarioSesion, Estudiante, Asignatura, AsignaturaConGrado, Calificacion, Grado, ConfigActividad, ConfigActividadPartial, ConfiguracionSistema } from "@/types";
+import { calcularPromedio, calcularPromedioFinal, parseNotas } from "@/utils/gradeCalculations";
+import { isAdmin, canDeleteUsers, getDocentesDelGrado } from "@/utils/roleHelpers";
 
 export default function Home() {
   const { toast } = useToast();
@@ -97,25 +58,19 @@ export default function Home() {
   const [trimestreSeleccionado, setTrimestreSeleccionado] = useState<string>("1");
   const [asignaturaSeleccionada, setAsignaturaSeleccionada] = useState<string>("");
 
-  // UI
+// UI
   const [activeTab, setActiveTab] = useState("dashboard");
 
   // ==================== Helpers de Roles ====================
-  const isAdmin = (rol: string) => ["admin", "admin-directora", "admin-codirectora"].includes(rol);
-  const canDeleteUsers = (user: typeof usuario) => user?.email === "jonathan.araujo.mendoza@clases.edu.sv";
-
-  // Obtener docentes asignados a un grado (basado en DocenteMateria)
-  const getDocentesDelGrado = (gradoId: string) => {
-    const docentes = new Set<string>();
-    usuarios.forEach(u => {
-      u.materias?.forEach(m => {
-        if (m.gradoId === gradoId) {
-          docentes.add(u.nombre);
-        }
-      });
-    });
-    return Array.from(docentes);
-  };
+  // Wrappers using imported functions from @/utils/roleHelpers
+  const checkIsAdmin = (rol: string) => isAdmin(rol);
+  const checkCanDeleteUsers = (user: typeof usuario) => canDeleteUsers(user);
+  const getDocentesByGrado = (gradoId: string) => getDocentesDelGrado(usuarios, gradoId);
+  
+  // Legacy aliases for backward compatibility with existing code
+  const getDocentesDelGrado = getDocentesByGrado;
+  const canDelete = checkCanDeleteUsers;
+  
   const [dialogOpen, setDialogOpen] = useState(false);
   const [configDialogOpen, setConfigDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
