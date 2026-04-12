@@ -1228,7 +1228,7 @@ export default function Home() {
       window.removeEventListener("beforeunload", handleBeforeUnload);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [usuario, gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado, saveUserState, saving, activeTab]);
+  }, [usuario, gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado, saving, activeTab]);
 
   // Filtrar grados según el usuario
   useEffect(() => {
