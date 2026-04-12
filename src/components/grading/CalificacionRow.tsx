@@ -396,7 +396,7 @@ export const CalificacionRow = React.memo(function CalificacionRow({
         </td>
         <td className={`p-2 text-center border-l ${cellBorder} ${finalBg}`}>
           <span className={`inline-block px-2 py-0.5 rounded-md text-xs sm:text-sm font-bold shadow ${finalBadgeClass}`}>
-            {promFinal !== null ? formatNumber(promFinal, promedioDecimal) : "-"}
+            {promFinal !== null ? (promedioDecimal ? formatNumber(promFinal, true) : Math.round(promFinal).toString()) : "-"}
           </span>
         </td>
         <td className={`p-2 border-l ${cellBorder} text-center`}>{statusIcon}</td>
@@ -478,7 +478,7 @@ export const CalificacionRow = React.memo(function CalificacionRow({
       </td>
       <td className={`p-2 text-center border-l ${cellBorder} ${finalBg}`}>
         <span className={`inline-block px-2 py-0.5 rounded-md text-xs sm:text-sm font-bold shadow ${finalBadgeClass}`}>
-          {promFinal !== null ? formatNumber(promFinal, promedioDecimal) : "-"}
+          {promFinal !== null ? (promedioDecimal ? formatNumber(promFinal, true) : Math.round(promFinal).toString()) : "-"}
         </span>
       </td>
       <td className={`p-2 border-l ${cellBorder} text-center`}>{statusIcon}</td>
