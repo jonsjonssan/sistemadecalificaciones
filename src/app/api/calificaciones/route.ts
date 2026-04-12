@@ -67,6 +67,36 @@ export async function GET(request: NextRequest) {
     const trimestre = searchParams.get("trimestre");
     const estudianteId = searchParams.get("estudianteId");
 
+    // Para Boletas: si solo se pasa gradoId, retornar todas las calificaciones del grado
+    if (gradoId && !materiaId && !trimestre && !estudianteId) {
+      // Authorization check
+      if (session.rol === "docente" || session.rol === "docente-orientador") {
+        const gradosByMaterias = session.asignaturasAsignadas?.map((m: any) => m.gradoId) || [];
+        const todosGradosIds = [...new Set([...gradosByMaterias])];
+        if (todosGradosIds.length > 0 && !todosGradosIds.includes(gradoId)) {
+          return NextResponse.json({
+            error: "Grado no asignado",
+            code: "GRADO_FORBIDDEN",
+            message: "No tienes permiso para ver las calificaciones de este grado."
+          }, { status: 403 });
+        }
+      }
+
+      const calificaciones = await db.calificacion.findMany({
+        where: {
+          estudiante: { gradoId },
+        },
+        include: {
+          estudiante: { select: { id: true, numero: true, nombre: true, gradoId: true } },
+          materia: { select: { id: true, nombre: true } },
+          notasActividad: true,
+        },
+        orderBy: { estudiante: { numero: "asc" } },
+      });
+
+      return NextResponse.json(calificaciones.map(transformCalificacion));
+    }
+
     if (!materiaId || !trimestre) {
       return NextResponse.json({
         error: "Parámetros incompletos",
