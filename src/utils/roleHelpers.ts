@@ -9,6 +9,7 @@ export const canDeleteUsers = (user: UsuarioSesion | null): boolean => {
 };
 
 export const getDocentesDelGrado = (usuarios: Usuario[], gradoId: string): string[] => {
+  if (!Array.isArray(usuarios)) return [];
   const docentes = new Set<string>();
   usuarios.forEach((u) => {
     u.materias?.forEach((m) => {
