@@ -90,18 +90,18 @@ function generateAdvancedAlerts(calificaciones: any[], asistencias: any[], confi
 function calcularTendencias(calificaciones: any[]) {
   // Agrupar por estudiante
   const porEstudiante = new Map<string, any[]>();
-  calificaciones.forEach(cal => {
+  calificaciones.forEach((cal: any) => {
     if (!porEstudiante.has(cal.estudianteId)) {
       porEstudiante.set(cal.estudianteId, []);
     }
     porEstudiante.get(cal.estudianteId)!.push(cal);
   });
 
-  const tendencias = [];
+  const tendencias: any[] = [];
 
   for (const [estId, califs] of porEstudiante) {
-    const estudiante = califs[0].estudiante;
-    const promedios = califs
+    const estudiante = (califs as any[])[0].estudiante;
+    const promedios = (califs as any[])
       .filter(c => c.promedioFinal)
       .sort((a, b) => a.trimestre - b.trimestre)
       .map(c => ({ trimestre: c.trimestre, promedio: c.promedioFinal }));
