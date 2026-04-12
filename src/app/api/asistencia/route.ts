@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { db } from "@/lib/db";
 
 export async function GET(req: Request) {
   try {
@@ -16,8 +16,6 @@ export async function GET(req: Request) {
     if (isNaN(fecha.getTime())) {
       return NextResponse.json({ error: "Fecha inválida" }, { status: 400 });
     }
-
-    const prisma = new PrismaClient();
 
     const startOfDay = new Date(fecha);
     startOfDay.setUTCHours(0, 0, 0, 0);
@@ -38,15 +36,13 @@ export async function GET(req: Request) {
       where.materiaId = null;
     }
 
-    const asistencias = await prisma.asistencia.findMany({
+    const asistencias = await db.asistencia.findMany({
       where,
       include: {
         estudiante: { select: { id: true, nombre: true, numero: true } },
       },
       orderBy: { estudiante: { numero: "asc" } },
     });
-
-    await prisma.$disconnect();
 
     const formatted = asistencias.map((a: any) => ({
       id: a.id,
@@ -88,8 +84,6 @@ export async function POST(req: Request) {
     const endOfDay = new Date(startOfDay);
     endOfDay.setUTCHours(23, 59, 59, 999);
 
-    const prisma = new PrismaClient();
-
     const resultados: any[] = [];
     let actualizados = 0;
     let creados = 0;
@@ -99,7 +93,7 @@ export async function POST(req: Request) {
       const matId = materiaId || null;
 
       // Buscar todos los registros existentes para este estudiante en esta fecha
-      const existentes = await prisma.asistencia.findMany({
+      const existentes = await db.asistencia.findMany({
         where: {
           estudianteId,
           fecha: {
@@ -116,13 +110,13 @@ export async function POST(req: Request) {
         // Si hay múltiples duplicados, eliminar todos excepto el más reciente
         if (existentes.length > 1) {
           const idsAEliminar = existentes.slice(1).map(e => e.id);
-          await prisma.asistencia.deleteMany({
+          await db.asistencia.deleteMany({
             where: { id: { in: idsAEliminar } }
           });
         }
 
         // Actualizar el más reciente
-        const updated = await prisma.asistencia.update({
+        const updated = await db.asistencia.update({
           where: { id: existentes[0].id },
           data: { estado },
           include: {
@@ -133,7 +127,7 @@ export async function POST(req: Request) {
         resultados.push(updated);
       } else {
         // Crear nuevo registro
-        const nuevo = await prisma.asistencia.create({
+        const nuevo = await db.asistencia.create({
           data: {
             estudianteId,
             fecha: startOfDay,
@@ -149,8 +143,6 @@ export async function POST(req: Request) {
         resultados.push(nuevo);
       }
     }
-
-    await prisma.$disconnect();
 
     return NextResponse.json({
       success: true,
@@ -190,8 +182,6 @@ export async function DELETE(request: NextRequest) {
     const endOfDay = new Date(fecha);
     endOfDay.setUTCHours(23, 59, 59, 999);
 
-    const prisma = new PrismaClient();
-
     const where: any = {
       fecha: {
         gte: startOfDay,
@@ -223,9 +213,7 @@ export async function DELETE(request: NextRequest) {
 
     console.log("DELETE where clause:", JSON.stringify(where, null, 2));
 
-    const deleted = await prisma.asistencia.deleteMany({ where });
-
-    await prisma.$disconnect();
+    const deleted = await db.asistencia.deleteMany({ where });
 
     return NextResponse.json({ success: true, eliminados: deleted.count });
   } catch (error) {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { db } from "@/lib/db";
 import { cookies } from "next/headers";
 
 async function getUsuarioSession() {
@@ -96,11 +96,9 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const prisma = new PrismaClient();
-
     let calificaciones: any[] = [];
     if (materiaId && trimestre && gradoId) {
-      calificaciones = await prisma.calificacion.findMany({
+      calificaciones = await db.calificacion.findMany({
         where: {
           estudiante: { gradoId },
           materiaId,
@@ -114,7 +112,7 @@ export async function GET(request: NextRequest) {
         orderBy: { estudiante: { numero: "asc" } },
       });
     } else if (estudianteId) {
-      calificaciones = await prisma.calificacion.findMany({
+      calificaciones = await db.calificacion.findMany({
         where: { estudianteId },
         include: {
           estudiante: { select: { id: true, numero: true, nombre: true, gradoId: true } },
@@ -124,7 +122,7 @@ export async function GET(request: NextRequest) {
         orderBy: { estudiante: { numero: "asc" } },
       });
     } else if (gradoId) {
-      calificaciones = await prisma.calificacion.findMany({
+      calificaciones = await db.calificacion.findMany({
         where: {
           estudiante: { gradoId },
         },
@@ -136,8 +134,6 @@ export async function GET(request: NextRequest) {
         orderBy: { estudiante: { numero: "asc" } },
       });
     }
-
-    await prisma.$disconnect();
     // Transformar para compatibilidad con frontend
     return NextResponse.json(calificaciones.map(transformCalificacion));
   } catch (error) {
@@ -201,9 +197,7 @@ export async function POST(request: NextRequest) {
     const notasValidasAI = aiNotas.filter((n): n is number => n !== null && n !== undefined);
     const calificacionAI = notasValidasAI.length > 0 ? notasValidasAI.reduce((a, b) => a + b, 0) / notasValidasAI.length : null;
 
-    const prisma = new PrismaClient();
-
-    const config = await prisma.configActividad.findFirst({
+    const config = await db.configActividad.findFirst({
       where: { materiaId, trimestre: parseInt(String(trimestre)) },
     });
 
@@ -239,7 +233,7 @@ export async function POST(request: NextRequest) {
     const promFinal = (promedioFinal !== null && !isNaN(promedioFinal)) ? promedioFinal : null;
 
     // Upsert calificación
-    const result = await prisma.calificacion.upsert({
+    const result = await db.calificacion.upsert({
       where: {
         estudianteId_materiaId_trimestre: {
           estudianteId,
@@ -272,13 +266,13 @@ export async function POST(request: NextRequest) {
     });
 
     // Actualizar notas de actividades cotidianas (borrar y recrear)
-    await prisma.notaActividad.deleteMany({
+    await db.notaActividad.deleteMany({
       where: { calificacionId: result.id, tipo: "cotidiana" },
     });
 
     for (let i = 0; i < acNotas.length; i++) {
       if (acNotas[i] !== null && acNotas[i] !== undefined) {
-        await prisma.notaActividad.create({
+        await db.notaActividad.create({
           data: {
             calificacionId: result.id,
             tipo: "cotidiana",
@@ -290,13 +284,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Actualizar notas de actividades integradoras
-    await prisma.notaActividad.deleteMany({
+    await db.notaActividad.deleteMany({
       where: { calificacionId: result.id, tipo: "integradora" },
     });
 
     for (let i = 0; i < aiNotas.length; i++) {
       if (aiNotas[i] !== null && aiNotas[i] !== undefined) {
-        await prisma.notaActividad.create({
+        await db.notaActividad.create({
           data: {
             calificacionId: result.id,
             tipo: "integradora",
@@ -308,7 +302,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Obtener resultado final con notas
-    const finalResult = await prisma.calificacion.findUnique({
+    const finalResult = await db.calificacion.findUnique({
       where: { id: result.id },
       include: {
         estudiante: { select: { id: true, numero: true, nombre: true, gradoId: true } },
@@ -321,9 +315,9 @@ export async function POST(request: NextRequest) {
     try {
       if (session && session.id) {
         const gradoInfo = finalResult?.estudiante?.gradoId
-          ? await prisma.grado.findUnique({ where: { id: finalResult.estudiante.gradoId }, select: { numero: true, seccion: true } })
+          ? await db.grado.findUnique({ where: { id: finalResult.estudiante.gradoId }, select: { numero: true, seccion: true } })
           : null;
-        await prisma.auditLog.create({
+        await db.auditLog.create({
           data: {
             usuarioId: session.id,
             accion: "UPDATE",
@@ -342,8 +336,6 @@ export async function POST(request: NextRequest) {
     } catch (auditError) {
       console.error("[calificaciones] Audit error:", auditError);
     }
-
-    await prisma.$disconnect();
     return NextResponse.json(transformCalificacion(finalResult));
   } catch (error) {
     console.error("Error al guardar calificación:", error);
@@ -367,22 +359,20 @@ export async function DELETE(request: NextRequest) {
     const trimestre = searchParams.get("trimestre");
     const gradoId = searchParams.get("gradoId");
 
-    const prisma = new PrismaClient();
-
     if (estudianteId && materiaId && trimestre) {
-      const cal = await prisma.calificacion.findFirst({
+      const cal = await db.calificacion.findFirst({
         where: { estudianteId, materiaId, trimestre: parseInt(trimestre) },
         include: {
           estudiante: { include: { grado: true } },
           materia: true,
         },
       });
-      const deleted = await prisma.calificacion.deleteMany({
+      const deleted = await db.calificacion.deleteMany({
         where: { estudianteId, materiaId, trimestre: parseInt(trimestre) }
       });
 
       try {
-        await prisma.auditLog.create({
+        await db.auditLog.create({
           data: {
             usuarioId: session.id,
             accion: "DELETE",
@@ -399,14 +389,13 @@ export async function DELETE(request: NextRequest) {
         console.error("[calificaciones] Audit error:", auditError);
       }
 
-      await prisma.$disconnect();
       return NextResponse.json({ deleted: deleted.count });
     }
 
     if (gradoId && materiaId && trimestre) {
-      const grado = await prisma.grado.findUnique({ where: { id: gradoId }, select: { numero: true, seccion: true } });
-      const materia = await prisma.materia.findUnique({ where: { id: materiaId }, select: { nombre: true } });
-      const deleted = await prisma.calificacion.deleteMany({
+      const grado = await db.grado.findUnique({ where: { id: gradoId }, select: { numero: true, seccion: true } });
+      const materia = await db.materia.findUnique({ where: { id: materiaId }, select: { nombre: true } });
+      const deleted = await db.calificacion.deleteMany({
         where: {
           estudiante: { gradoId },
           materiaId,
@@ -415,7 +404,7 @@ export async function DELETE(request: NextRequest) {
       });
 
       try {
-        await prisma.auditLog.create({
+        await db.auditLog.create({
           data: {
             usuarioId: session.id,
             accion: "DELETE",
@@ -432,11 +421,8 @@ export async function DELETE(request: NextRequest) {
         console.error("[calificaciones] Audit error:", auditError);
       }
 
-      await prisma.$disconnect();
       return NextResponse.json({ borradas: deleted.count });
     }
-
-    await prisma.$disconnect();
     return NextResponse.json({ error: "Parámetros insuficientes" }, { status: 400 });
   } catch (error) {
     console.error("Error al borrar calificaciones:", error);

@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { db } from "@/lib/db";
 
 export async function POST() {
   try {
-    const prisma = new PrismaClient();
-
     // Obtener todos los registros de asistencia
-    const allRecords = await prisma.asistencia.findMany({
+    const allRecords = await db.asistencia.findMany({
       orderBy: { createdAt: 'desc' }
     });
 
@@ -50,7 +48,7 @@ export async function POST() {
 
     if (idsAEliminar.length > 0) {
       // Eliminar en lotes para evitar errores
-      const resultado = await prisma.asistencia.deleteMany({
+      const resultado = await db.asistencia.deleteMany({
         where: {
           id: {
             in: idsAEliminar
@@ -60,9 +58,7 @@ export async function POST() {
       eliminados = resultado.count;
     }
 
-    const totalFinal = await prisma.asistencia.count();
-
-    await prisma.$disconnect();
+    const totalFinal = await db.asistencia.count();
 
     return NextResponse.json({
       success: true,

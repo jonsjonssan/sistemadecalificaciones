@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { db } from "@/lib/db";
 import { cookies } from "next/headers";
 
 async function getUsuarioSession() {
@@ -30,8 +30,6 @@ export async function GET(request: NextRequest) {
     const fechaDesde = searchParams.get("fechaDesde");
     const fechaHasta = searchParams.get("fechaHasta");
 
-    const prisma = new PrismaClient();
-
     const where: any = {};
     if (accion) where.accion = accion;
     if (fechaDesde || fechaHasta) {
@@ -41,17 +39,15 @@ export async function GET(request: NextRequest) {
     }
 
     const [logs, total] = await Promise.all([
-      prisma.auditLog.findMany({
+      db.auditLog.findMany({
         where,
         include: { usuario: { select: { id: true, nombre: true } } },
         orderBy: { createdAt: "desc" },
         skip: (page - 1) * limit,
         take: limit,
       }),
-      prisma.auditLog.count({ where }),
+      db.auditLog.count({ where }),
     ]);
-
-    await prisma.$disconnect();
 
     const formattedLogs = logs.map((l: any) => {
       let detalles = {};
@@ -95,9 +91,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "accion y entidad son requeridos" }, { status: 400 });
     }
 
-    const prisma = new PrismaClient();
-
-    const log = await prisma.auditLog.create({
+    const log = await db.auditLog.create({
       data: {
         usuarioId: session.id,
         accion,
@@ -107,8 +101,6 @@ export async function POST(request: NextRequest) {
       },
       include: { usuario: { select: { id: true, nombre: true } } },
     });
-
-    await prisma.$disconnect();
 
     return NextResponse.json(log);
   } catch (error) {
@@ -128,16 +120,12 @@ export async function DELETE(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const olderThan = searchParams.get("olderThan");
 
-    const prisma = new PrismaClient();
-
     const where: any = {};
     if (olderThan) {
       where.createdAt = { lt: new Date(olderThan) };
     }
 
-    const deleted = await prisma.auditLog.deleteMany({ where });
-
-    await prisma.$disconnect();
+    const deleted = await db.auditLog.deleteMany({ where });
 
     return NextResponse.json({ deleted: deleted.count });
   } catch (error) {

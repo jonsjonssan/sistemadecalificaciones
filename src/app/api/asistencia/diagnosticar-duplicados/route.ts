@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { db } from "@/lib/db";
 
 export async function GET() {
   try {
-    const prisma = new PrismaClient();
-
     // Obtener todos los registros de asistencia
-    const allRecords = await prisma.asistencia.findMany({
+    const allRecords = await db.asistencia.findMany({
       orderBy: [
         { estudianteId: 'asc' },
         { fecha: 'asc' }
@@ -22,7 +20,7 @@ export async function GET() {
       const fechaDia = new Date(record.fecha);
       fechaDia.setHours(0, 0, 0, 0);
       const fechaKey = fechaDia.toISOString().split('T')[0];
-      
+
       const materiaKey = record.materiaId || 'null';
       const grupoKey = `${record.estudianteId}|${fechaKey}|${record.gradoId}|${materiaKey}`;
 
@@ -59,14 +57,12 @@ export async function GET() {
       }
     });
 
-    await prisma.$disconnect();
-
     return NextResponse.json({
       totalRegistros: allRecords.length,
       totalGruposUnicos: grupos.size,
       gruposConDuplicados: duplicados.length,
       duplicados: duplicados.slice(0, 20), // Mostrar solo los primeros 20 para no saturar
-      mensaje: duplicados.length > 0 
+      mensaje: duplicados.length > 0
         ? `Se encontraron ${duplicados.length} grupos con duplicados`
         : "No se encontraron duplicados en la base de datos"
     });

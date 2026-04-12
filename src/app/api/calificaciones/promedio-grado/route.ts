@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { db } from "@/lib/db";
 import { cookies } from "next/headers";
 
 async function getUsuarioSession() {
@@ -24,8 +24,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Parámetros requeridos" }, { status: 400 });
     }
 
-    const prisma = new PrismaClient();
-    const calificaciones = await prisma.calificacion.findMany({
+    const calificaciones = await db.calificacion.findMany({
       where: {
         estudiante: { gradoId },
         trimestre: parseInt(trimestre),
@@ -34,11 +33,10 @@ export async function GET(request: NextRequest) {
     });
 
     const promsValidos = calificaciones.filter(c => c.promedioFinal !== null);
-    const promedio = promsValidos.length > 0 
+    const promedio = promsValidos.length > 0
       ? Math.round((promsValidos.reduce((a, c) => a + (c.promedioFinal || 0), 0) / promsValidos.length) * 100) / 100
       : null;
 
-    await prisma.$disconnect();
     return NextResponse.json({ promedio, totalEstudiantes: promsValidos.length });
   } catch (error) {
     console.error("[calificaciones/promedio-grado] Error:", error);

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { db } from "@/lib/db";
 import { cookies } from "next/headers";
 
 async function getUsuarioSession() {
@@ -23,10 +23,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Grado requerido" }, { status: 400 });
     }
 
-    const prisma = new PrismaClient();
-
     // Obtener todas las calificaciones del grado
-    const calificaciones = await prisma.calificacion.findMany({
+    const calificaciones = await db.calificacion.findMany({
       where: { estudiante: { gradoId } },
       include: {
         estudiante: { include: { grado: true } },
@@ -36,16 +34,13 @@ export async function GET(request: NextRequest) {
     });
 
     // Obtener asistencias del grado
-    const asistencias = await prisma.asistencia.findMany({
+    const asistencias = await db.asistencia.findMany({
       where: { estudiante: { gradoId } },
       include: { estudiante: true },
     });
 
     // Obtener configs para promedios ponderados
-    const configs = await prisma.configActividad.findMany();
-
-    const prismaClient = prisma;
-    await prisma.$disconnect();
+    const configs = await db.configActividad.findMany();
 
     const result = generateAdvancedAlerts(calificaciones, asistencias, configs);
     return NextResponse.json(result);

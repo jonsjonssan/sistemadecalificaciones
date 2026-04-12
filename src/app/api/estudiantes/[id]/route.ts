@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 import { cookies } from "next/headers";
-
-const prisma = new PrismaClient();
+import { db } from "@/lib/db";
 
 async function getUsuarioSession() {
   const cookieStore = await cookies();
@@ -42,7 +40,7 @@ export async function PATCH(
       return NextResponse.json({ error: "No hay datos para actualizar" }, { status: 400 });
     }
 
-    const estudiante = await prisma.estudiante.update({
+    const estudiante = await db.estudiante.update({
       where: { id },
       data: updateData,
     });
@@ -51,7 +49,5 @@ export async function PATCH(
   } catch (error) {
     console.error("Error al actualizar estudiante:", error);
     return NextResponse.json({ error: "Error al actualizar estudiante" }, { status: 500 });
-  } finally {
-    await prisma.$disconnect();
   }
 }

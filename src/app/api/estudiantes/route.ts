@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { cookies } from "next/headers";
 
-const prisma = new PrismaClient();
+
 
 async function getUsuarioSession() {
   const cookieStore = await cookies();
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
     if (activos === "true") where.activo = true;
     if (activos === "false") where.activo = false;
 
-    const estudiantes = await prisma.estudiante.findMany({
+    const estudiantes = await db.estudiante.findMany({
       where,
       orderBy: [{ orden: "asc" }, { numero: "asc" }],
     });
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
       message: "Hubo un problema al obtener la lista de estudiantes. Intenta de nuevo."
     }, { status: 500 });
   } finally {
-    await prisma.$disconnect();
+    await db.$disconnect();
   }
 }
 
@@ -75,18 +75,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Nombre y grado son requeridos" }, { status: 400 });
     }
 
-    const grado = await prisma.grado.findUnique({ where: { id: gradoId } });
+    const grado = await db.grado.findUnique({ where: { id: gradoId } });
     if (!grado) {
       return NextResponse.json({ error: "El grado seleccionado no existe" }, { status: 400 });
     }
 
-    const ultimo = await prisma.estudiante.findFirst({
+    const ultimo = await db.estudiante.findFirst({
       where: { gradoId },
       orderBy: { numero: "desc" },
     });
     const nuevoNumero = ultimo ? ultimo.numero + 1 : 1;
 
-    const estudiante = await prisma.estudiante.create({
+    const estudiante = await db.estudiante.create({
       data: {
         numero: nuevoNumero,
         nombre,
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
     console.error("Error al crear estudiante:", error);
     return NextResponse.json({ error: "Error al crear estudiante" }, { status: 500 });
   } finally {
-    await prisma.$disconnect();
+    await db.$disconnect();
   }
 }
 
@@ -126,12 +126,12 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Grado es requerido" }, { status: 400 });
     }
 
-    const grado = await prisma.grado.findUnique({ where: { id: gradoId } });
+    const grado = await db.grado.findUnique({ where: { id: gradoId } });
     if (!grado) {
       return NextResponse.json({ error: "El grado seleccionado no existe" }, { status: 400 });
     }
 
-    const ultimo = await prisma.estudiante.findFirst({
+    const ultimo = await db.estudiante.findFirst({
       where: { gradoId },
       orderBy: { numero: "desc" },
     });
@@ -139,7 +139,7 @@ export async function PUT(request: NextRequest) {
 
     const creados = await Promise.all(
       estudiantes.map((item: { nombre: string; email?: string }, i: number) =>
-        prisma.estudiante.create({
+        db.estudiante.create({
           data: {
             numero: numeroInicial + i + 1,
             nombre: item.nombre,
@@ -156,7 +156,7 @@ export async function PUT(request: NextRequest) {
     console.error("Error al crear estudiantes:", error);
     return NextResponse.json({ error: "Error al crear estudiantes" }, { status: 500 });
   } finally {
-    await prisma.$disconnect();
+    await db.$disconnect();
   }
 }
 
@@ -178,16 +178,16 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "ID requerido" }, { status: 400 });
     }
 
-    await prisma.calificacion.deleteMany({ where: { estudianteId: id } });
-    await prisma.asistencia.deleteMany({ where: { estudianteId: id } });
-    await prisma.estudiante.delete({ where: { id } });
+    await db.calificacion.deleteMany({ where: { estudianteId: id } });
+    await db.asistencia.deleteMany({ where: { estudianteId: id } });
+    await db.estudiante.delete({ where: { id } });
 
     return NextResponse.json({ message: "Estudiante eliminado" });
   } catch (error) {
     console.error("Error al eliminar estudiante:", error);
     return NextResponse.json({ error: "Error al eliminar estudiante" }, { status: 500 });
   } finally {
-    await prisma.$disconnect();
+    await db.$disconnect();
   }
 }
 
@@ -210,7 +210,7 @@ export async function PATCH(request: NextRequest) {
 
     await Promise.all(
       ordenes.map((item: { id: string; orden: number }) =>
-        prisma.estudiante.update({
+        db.estudiante.update({
           where: { id: item.id },
           data: { orden: item.orden },
         })
@@ -222,6 +222,6 @@ export async function PATCH(request: NextRequest) {
     console.error("Error al reordenar estudiantes:", error);
     return NextResponse.json({ error: "Error al reordenar estudiantes" }, { status: 500 });
   } finally {
-    await prisma.$disconnect();
+    await db.$disconnect();
   }
 }
