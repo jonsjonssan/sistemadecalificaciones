@@ -66,10 +66,8 @@ export default function Home() {
   // Wrappers using imported functions from @/utils/roleHelpers
   const checkIsAdmin = (rol: string) => isAdmin(rol);
   const checkCanDeleteUsers = (user: typeof usuario) => canDeleteUsers(user);
-  const getDocentesByGrado = (gradoId: string) => getDocentesDelGrado(usuarios, gradoId);
 
   // Legacy aliases for backward compatibility with existing code
-  const getDocentesDelGrado = getDocentesByGrado;
   const canDelete = checkCanDeleteUsers;
 
   const [dialogOpen, setDialogOpen] = useState(false);
