@@ -23,6 +23,7 @@ interface CalificacionRowProps {
   evenRow: boolean;
   isAdmin?: boolean;
   onBorrar?: (estudianteId: string) => void;
+  promedioDecimal?: boolean;
 }
 
 function NotaInput({ value, onChange, darkMode, hasError, onBlur }: {
@@ -43,11 +44,10 @@ function NotaInput({ value, onChange, darkMode, hasError, onBlur }: {
       value={displayValue}
       onChange={e => onChange(e.target.value)}
       onBlur={onBlur}
-      className={`w-full h-7 sm:h-8 text-center text-xs sm:text-sm border rounded px-0.5 transition-colors ${
-        darkMode
-          ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400"
-          : "bg-white border-slate-300 text-slate-900"
-      } ${hasError ? "border-red-500 bg-red-50 dark:bg-red-900/20" : ""} focus:ring-1 focus:ring-teal-500 focus:border-teal-500`}
+      className={`w-full h-7 sm:h-8 text-center text-xs sm:text-sm border rounded px-0.5 transition-colors ${darkMode
+        ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400"
+        : "bg-white border-slate-300 text-slate-900"
+        } ${hasError ? "border-red-500 bg-red-50 dark:bg-red-900/20" : ""} focus:ring-1 focus:ring-teal-500 focus:border-teal-500`}
       placeholder="-"
       maxLength={4}
     />
@@ -66,6 +66,7 @@ export const CalificacionRow = React.memo(function CalificacionRow({
   evenRow,
   isAdmin,
   onBorrar,
+  promedioDecimal = false,
 }: CalificacionRowProps) {
   const numAC = config?.numActividadesCotidianas ?? 4;
   const numAI = config?.numActividadesIntegradoras ?? 1;
@@ -102,7 +103,7 @@ export const CalificacionRow = React.memo(function CalificacionRow({
     return () => clearTimeout(timer);
   }, [key, numAC, numAI, calificacion?.actividadesCotidianas, calificacion?.actividadesIntegradoras, calificacion?.examenTrimestral, calificacion?.recuperacion]);
 
-const stateRef = useRef({ dirty, acNotas, aiNotas, examen, recup });
+  const stateRef = useRef({ dirty, acNotas, aiNotas, examen, recup });
   useEffect(() => {
     stateRef.current = { dirty, acNotas, aiNotas, examen, recup };
   }, [dirty, acNotas, aiNotas, examen, recup]);
@@ -115,8 +116,8 @@ const stateRef = useRef({ dirty, acNotas, aiNotas, examen, recup });
   const promFinal = config
     ? calcularPromedioFinal(promAC, promAI, examen, config, recup)
     : promAC !== null || promAI !== null || examen !== null
-    ? ((promAC ?? 0) * 0.35 + (promAI ?? 0) * 0.30 + (examen ?? 0) * 0.35)
-    : null;
+      ? ((promAC ?? 0) * 0.35 + (promAI ?? 0) * 0.30 + (examen ?? 0) * 0.35)
+      : null;
   const parseVal = useCallback((v: string): number | null => {
     const n = parseFloat(v);
     return isNaN(n) ? null : Math.min(10, Math.max(0, n));
@@ -227,16 +228,16 @@ const stateRef = useRef({ dirty, acNotas, aiNotas, examen, recup });
       ? "bg-[#1e293b] hover:bg-slate-700/80"
       : "bg-white hover:bg-slate-50"
     : darkMode
-    ? "bg-slate-800/60 hover:bg-slate-700/80"
-    : "bg-slate-50/50 hover:bg-slate-100";
+      ? "bg-slate-800/60 hover:bg-slate-700/80"
+      : "bg-slate-50/50 hover:bg-slate-100";
   const cellBorder = darkMode ? "border-slate-600/60" : "border-slate-200";
   const stickyBg = evenRow
     ? darkMode
       ? "bg-[#1e293b]"
       : "bg-white"
     : darkMode
-    ? "bg-slate-800/60"
-    : "bg-slate-50/50";
+      ? "bg-slate-800/60"
+      : "bg-slate-50/50";
   const promACBg = darkMode ? "bg-blue-900/50" : "bg-blue-50/70";
   const promAIBg = darkMode ? "bg-purple-900/50" : "bg-purple-50/70";
   const promExBg = darkMode ? "bg-amber-900/50" : "bg-amber-50/70";
@@ -256,12 +257,12 @@ const stateRef = useRef({ dirty, acNotas, aiNotas, examen, recup });
         ? "bg-emerald-700/80 text-emerald-100 ring-1 ring-emerald-500"
         : "bg-emerald-100 text-emerald-800 ring-1 ring-emerald-200"
       : promFinal !== null
-      ? darkMode
-        ? "bg-rose-700/80 text-rose-100 ring-1 ring-rose-500"
-        : "bg-rose-100 text-rose-800 ring-1 ring-rose-200"
-      : darkMode
-      ? "bg-slate-700 text-slate-400"
-      : "bg-slate-100 text-slate-400";
+        ? darkMode
+          ? "bg-rose-700/80 text-rose-100 ring-1 ring-rose-500"
+          : "bg-rose-100 text-rose-800 ring-1 ring-rose-200"
+        : darkMode
+          ? "bg-slate-700 text-slate-400"
+          : "bg-slate-100 text-slate-400";
 
   if (!config) {
     return (
@@ -327,7 +328,7 @@ const stateRef = useRef({ dirty, acNotas, aiNotas, examen, recup });
         </td>
         <td className={`p-2 text-center border-l ${cellBorder} ${finalBg}`}>
           <span className={`inline-block px-2 py-0.5 rounded-md text-xs sm:text-sm font-bold shadow ${finalBadgeClass}`}>
-            {promFinal !== null ? Math.round(promFinal).toString() : "-"}
+            {promFinal !== null ? (promedioDecimal ? promFinal.toFixed(1) : Math.round(promFinal).toString()) : "-"}
           </span>
         </td>
         <td className={`p-2 border-l ${cellBorder} text-center`}>{statusIcon}</td>
@@ -409,7 +410,7 @@ const stateRef = useRef({ dirty, acNotas, aiNotas, examen, recup });
       </td>
       <td className={`p-2 text-center border-l ${cellBorder} ${finalBg}`}>
         <span className={`inline-block px-2 py-0.5 rounded-md text-xs sm:text-sm font-bold shadow ${finalBadgeClass}`}>
-          {promFinal !== null ? Math.round(promFinal).toString() : "-"}
+          {promFinal !== null ? (promedioDecimal ? promFinal.toFixed(1) : Math.round(promFinal).toString()) : "-"}
         </span>
       </td>
       <td className={`p-2 border-l ${cellBorder} text-center`}>{statusIcon}</td>

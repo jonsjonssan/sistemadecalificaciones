@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   LogOut, Users, User, ClipboardList, FileText, Plus, RefreshCw,
   School, Save, Printer, ChevronDown, ChevronUp, Settings, Upload,
-  Download, Trash2, ListPlus, UserPlus, Key, Calendar, LayoutDashboard, CalendarDays, Lightbulb
+  Download, Trash2, ListPlus, UserPlus, Key, Calendar, LayoutDashboard, CalendarDays, Lightbulb, Hash
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import Dashboard from "@/components/Dashboard";
@@ -118,6 +118,13 @@ export default function Home() {
   const [showWizard, setShowWizard] = useState(false);
   const [autoSaveStatus, setAutoSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [quickActionsOpen, setQuickActionsOpen] = useState(false);
+  const [promedioDecimal, setPromedioDecimal] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("ss_promedio_decimal");
+      return saved ? JSON.parse(saved) : false;
+    }
+    return false;
+  });
 
   // Promedios
   const [promedioAsignatura, setPromedioAsignatura] = useState<number | null>(null);
@@ -157,6 +164,7 @@ export default function Home() {
   useEffect(() => { if (typeof window !== "undefined" && gradoSeleccionado) localStorage.setItem("ss_grado", gradoSeleccionado); }, [gradoSeleccionado]);
   useEffect(() => { if (typeof window !== "undefined" && asignaturaSeleccionada) localStorage.setItem("ss_materia", asignaturaSeleccionada); }, [asignaturaSeleccionada]);
   useEffect(() => { if (typeof window !== "undefined" && trimestreSeleccionado) localStorage.setItem("ss_trimestre", trimestreSeleccionado); }, [trimestreSeleccionado]);
+  useEffect(() => { if (typeof window !== "undefined") localStorage.setItem("ss_promedio_decimal", JSON.stringify(promedioDecimal)); }, [promedioDecimal]);
 
   // Auth
   const checkAuth = useCallback(async () => {
@@ -1487,6 +1495,7 @@ export default function Home() {
                     <Button size="sm" aria-label={saving ? "Guardando calificaciones" : "Guardar todas las calificaciones"} className={`h-11 sm:h-12 font-semibold text-sm ${darkMode ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white'} mobile-button`} onClick={handleGuardarTodo} disabled={saving}><Save className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">{saving ? 'Guardando...' : 'Guardar Todo'}</span><span className="sm:hidden">{saving ? '...' : 'Guardar'}</span></Button>
                     <Button size="sm" variant="outline" className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''} mobile-button`} onClick={() => { setEditConfig(configActual); setConfigDialogOpen(true); }}><Settings className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Config</span></Button>
                     <Button size="sm" variant="outline" className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''} mobile-button`} onClick={() => setImportDialogOpen(true)}><Upload className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Importar</span></Button>
+                    <Button size="sm" variant={promedioDecimal ? "default" : "outline"} className={`h-11 sm:h-12 text-sm ${promedioDecimal ? (darkMode ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white') : (darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : '')} mobile-button`} onClick={() => setPromedioDecimal(!promedioDecimal)} title={promedioDecimal ? "Mostrar como entero" : "Mostrar con decimales"}><Hash className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">{promedioDecimal ? "0.0" : "#"}</span></Button>
                     {isAdmin(usuario.rol) && (
                       <Button size="sm" variant="destructive" className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-red-700 hover:bg-red-600 border-red-600' : ''} mobile-button`} onClick={() => { setBorrarCalifTipo("grado"); setBorrarCalifDialogOpen(true); }}><Trash2 className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Borrar Todo</span></Button>
                     )}
@@ -1549,7 +1558,7 @@ export default function Home() {
                           ))
                         ) : (estudiantes || []).map((est, idx) => {
                           const calif = getCalificacion(est.id);
-                          return <CalificacionRow key={`${est.id}-${asignaturaSeleccionada}-${trimestreSeleccionado}-${configActual?.numActividadesCotidianas ?? 4}-${configActual?.numActividadesIntegradoras ?? 1}`} estudiante={est} materiaId={asignaturaSeleccionada} trimestre={trimestreSeleccionado} calificacion={calif} config={configActual} onSave={handleSaveCalificacion} saving={saving} darkMode={darkMode} evenRow={idx % 2 === 0} isAdmin={isAdmin(usuario.rol)} onBorrar={(estId) => { setBorrarCalifEstudianteId(estId); setBorrarCalifTipo("alumno"); setBorrarCalifDialogOpen(true); }} />
+                          return <CalificacionRow key={`${est.id}-${asignaturaSeleccionada}-${trimestreSeleccionado}-${configActual?.numActividadesCotidianas ?? 4}-${configActual?.numActividadesIntegradoras ?? 1}`} estudiante={est} materiaId={asignaturaSeleccionada} trimestre={trimestreSeleccionado} calificacion={calif} config={configActual} onSave={handleSaveCalificacion} saving={saving} darkMode={darkMode} evenRow={idx % 2 === 0} isAdmin={isAdmin(usuario.rol)} onBorrar={(estId) => { setBorrarCalifEstudianteId(estId); setBorrarCalifTipo("alumno"); setBorrarCalifDialogOpen(true); }} promedioDecimal={promedioDecimal} />
                         })}
                       </tbody>
                     </table>
