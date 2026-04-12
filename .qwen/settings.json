@@ -17,7 +17,8 @@
       "Bash(\")\")",
       "WebSearch",
       "Bash(findstr *)",
-      "Bash(dir *)"
+      "Bash(dir *)",
+      "Bash(powershell *)"
     ]
   },
   "$version": 3
