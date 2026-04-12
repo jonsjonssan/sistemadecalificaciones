@@ -209,25 +209,25 @@ function calcularAsignaturasCriticas(calificaciones: any[]) {
 
 function calcularPrediccionReprobacion(calificaciones: any[], configs: any[]) {
   const porEstudiante = new Map<string, any[]>();
-  calificaciones.forEach(cal => {
+  calificaciones.forEach((cal: any) => {
     if (!porEstudiante.has(cal.estudianteId)) {
       porEstudiante.set(cal.estudianteId, []);
     }
     porEstudiante.get(cal.estudianteId)!.push(cal);
   });
 
-  const predicciones = [];
+  const predicciones: any[] = [];
 
   for (const [estId, califs] of porEstudiante) {
-    const estudiante = califs[0].estudiante;
+    const estudiante = (califs as any[])[0].estudiante;
     const grado = estudiante.grado;
 
-    const conNotas = califs.filter(c => c.promedioFinal !== null);
+    const conNotas = (califs as any[]).filter((c: any) => c.promedioFinal !== null);
     if (conNotas.length === 0) continue;
 
-    const promedioGeneral = conNotas.reduce((sum, c) => sum + c.promedioFinal, 0) / conNotas.length;
-    const materiasEnRiesgo = conNotas.filter(c => c.promedioFinal < 5.0).length;
-    const materiasCriticas = conNotas.filter(c => c.promedioFinal < 4.0).length;
+    const promedioGeneral = conNotas.reduce((sum: number, c: any) => sum + c.promedioFinal, 0) / conNotas.length;
+    const materiasEnRiesgo = conNotas.filter((c: any) => c.promedioFinal < 5.0).length;
+    const materiasCriticas = conNotas.filter((c: any) => c.promedioFinal < 4.0).length;
 
     // Fórmula simple de predicción
     let probabilidad = 0;
@@ -243,8 +243,8 @@ function calcularPrediccionReprobacion(calificaciones: any[], configs: any[]) {
 
     predicciones.push({
       estudianteId: estId,
-      nombre: estudiante.nombre,
-      grado: `${grado.numero}° ${grado.seccion}`,
+      nombre: estudiante?.nombre || "Desconocido",
+      grado: grado ? `${grado.numero}° ${grado.seccion}` : "N/A",
       promedioGeneral: Math.round(promedioGeneral * 100) / 100,
       totalMaterias: conNotas.length,
       materiasEnRiesgo,
@@ -254,7 +254,7 @@ function calcularPrediccionReprobacion(calificaciones: any[], configs: any[]) {
     });
   }
 
-  return predicciones.sort((a, b) => b.probabilidadReprobacion - a.probabilidadReprobacion);
+  return predicciones.sort((a: any, b: any) => b.probabilidadReprobacion - a.probabilidadReprobacion);
 }
 
 function generarComparacion(calificaciones: any[]) {
