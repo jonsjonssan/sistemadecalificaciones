@@ -34,13 +34,13 @@ export async function GET(req: Request) {
     `;
 
     // Si se solicita un estudiante específico, filtrar
-    const estudiantesFiltrados = estudianteId 
+    const estudiantesFiltrados = estudianteId
       ? estudiantes.filter((e: any) => e.id === estudianteId)
       : estudiantes;
 
     // Para cada estudiante, obtener su asistencia
-    const resultado = [];
-    
+    const resultado: any[] = [];
+
     for (const est of estudiantesFiltrados) {
       let asistenciaQuery;
       if (startDate && endDate) {
