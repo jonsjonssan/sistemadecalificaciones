@@ -34,22 +34,75 @@ function NotaInput({ value, onChange, darkMode, hasError, onBlur }: {
   onBlur: () => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const displayValue = value === null || value === undefined ? "" : String(value);
+  // Inicializar con el valor raw como string para permitir escritura libre de decimales
+  const [rawValue, setRawValue] = useState(() =>
+    value === null || value === undefined ? "" : String(value)
+  );
+
+  // Sincronizar rawValue cuando el valor externo cambie (e.g., carga de datos)
+  useEffect(() => {
+    const newVal = value === null || value === undefined ? "" : String(value);
+    // Solo actualizar si el input no está enfocado (evita sobrescribir mientras el usuario escribe)
+    if (document.activeElement !== inputRef.current) {
+      setRawValue(newVal);
+    }
+  }, [value]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let v = e.target.value;
+    // Permitir solo caracteres válidos: dígitos, punto decimal, signo negativo
+    v = v.replace(/[^0-9.\-]/g, "");
+    // Asegurar que solo haya un punto decimal
+    const parts = v.split(".");
+    if (parts.length > 2) {
+      v = parts[0] + "." + parts.slice(1).join("");
+    }
+    // Asegurar que solo haya un signo negativo al inicio
+    if (v.indexOf("-") > 0) {
+      v = v.replace(/-/g, "");
+    }
+    setRawValue(v);
+    // Enviar el valor raw al padre también, para que se pueda parsear correctamente
+    onChange(v);
+  };
+
+  const handleBlur = () => {
+    // Al perder el foco, normalizar el valor: si es vacío o inválido, enviar ""
+    let v = rawValue.trim();
+    if (v === "" || v === "." || v === "-") {
+      setRawValue("");
+      onChange("");
+    } else {
+      // Parsear y validar el rango
+      const n = parseFloat(v);
+      if (isNaN(n)) {
+        setRawValue("");
+        onChange("");
+      } else {
+        const clamped = Math.min(10, Math.max(0, n));
+        // Mantener decimales si los tiene, sino mostrar entero
+        const display = Number.isInteger(clamped) ? clamped.toString() : parseFloat(clamped.toFixed(2)).toString();
+        setRawValue(display);
+        onChange(display);
+      }
+    }
+    onBlur();
+  };
 
   return (
     <input
       ref={inputRef}
       type="text"
       inputMode="decimal"
-      value={displayValue}
-      onChange={e => onChange(e.target.value)}
-      onBlur={onBlur}
+      value={rawValue}
+      onChange={handleChange}
+      onBlur={handleBlur}
       className={`w-full h-7 sm:h-8 text-center text-xs sm:text-sm border rounded px-0.5 transition-colors ${darkMode
         ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400"
         : "bg-white border-slate-300 text-slate-900"
         } ${hasError ? "border-red-500 bg-red-50 dark:bg-red-900/20" : ""} focus:ring-1 focus:ring-teal-500 focus:border-teal-500`}
       placeholder="-"
-      maxLength={4}
+      maxLength={6}
     />
   );
 }
@@ -131,8 +184,11 @@ export const CalificacionRow = React.memo(function CalificacionRow({
   }, []);
 
   const parseVal = useCallback((v: string): number | null => {
+    if (v === "" || v === "." || v === "-" || v === ".0" || v === "-.") return null;
     const n = parseFloat(v);
-    return isNaN(n) ? null : Math.min(10, Math.max(0, n));
+    if (isNaN(n)) return null;
+    // Clampear al rango 0-10
+    return Math.min(10, Math.max(0, n));
   }, []);
 
   const updateAC = useCallback(
