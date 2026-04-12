@@ -171,6 +171,8 @@ model Calificacion {
   @@index([estudianteId])
   @@index([materiaId])
   @@index([trimestre])
+  @@index([materiaId, trimestre])
+  @@index([estudianteId, materiaId, trimestre])
 }
 
 // Notas individuales de actividades (estructura normalizada)
@@ -214,6 +216,7 @@ model Asistencia {
   @@index([fecha])
   @@index([estado])
   @@index([estudianteId, fecha])
+  @@index([gradoId, fecha])
 }
 
 // Registro de Auditoría - rastrea cambios en el sistema
