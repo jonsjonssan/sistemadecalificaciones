@@ -167,7 +167,7 @@ function calcularCorrelacionAusencias(calificaciones: any[], asistencias: any[])
 
 function calcularAsignaturasCriticas(calificaciones: any[]) {
   const porMateria = new Map<string, any[]>();
-  calificaciones.forEach(cal => {
+  calificaciones.forEach((cal: any) => {
     const key = `${cal.materiaId}-${cal.trimestre}`;
     if (!porMateria.has(key)) {
       porMateria.set(key, []);
@@ -175,25 +175,25 @@ function calcularAsignaturasCriticas(calificaciones: any[]) {
     porMateria.get(key)!.push(cal);
   });
 
-  const criticas = [];
+  const criticas: any[] = [];
 
   for (const [key, califs] of porMateria) {
-    const materia = califs[0].materia;
-    const trimestre = califs[0].trimestre;
-    const grado = califs[0].estudiante.grado;
+    const materia = (califs as any[])[0].materia;
+    const trimestre = (califs as any[])[0].trimestre;
+    const grado = (califs as any[])[0].estudiante.grado;
 
-    const conNotas = califs.filter(c => c.promedioFinal !== null);
+    const conNotas = (califs as any[]).filter((c: any) => c.promedioFinal !== null);
     if (conNotas.length === 0) continue;
 
-    const promedioMateria = conNotas.reduce((sum, c) => sum + c.promedioFinal, 0) / conNotas.length;
-    const estudiantesEnRiesgo = conNotas.filter(c => c.promedioFinal < 5.0).length;
+    const promedioMateria = conNotas.reduce((sum: number, c: any) => sum + c.promedioFinal, 0) / conNotas.length;
+    const estudiantesEnRiesgo = conNotas.filter((c: any) => c.promedioFinal < 5.0).length;
     const porcentajeEnRiesgo = (estudiantesEnRiesgo / conNotas.length) * 100;
 
     if (promedioMateria < 7.0) {
       criticas.push({
-        materiaId: califs[0].materiaId,
-        materiaNombre: materia.nombre,
-        grado: `${grado.numero}° ${grado.seccion}`,
+        materiaId: (califs as any[])[0].materiaId,
+        materiaNombre: materia?.nombre || "Desconocida",
+        grado: grado ? `${grado.numero}° ${grado.seccion}` : "N/A",
         trimestre,
         promedioMateria: Math.round(promedioMateria * 100) / 100,
         totalEstudiantes: conNotas.length,
@@ -204,7 +204,7 @@ function calcularAsignaturasCriticas(calificaciones: any[]) {
     }
   }
 
-  return criticas.sort((a, b) => a.promedioMateria - b.promedioMateria);
+  return criticas.sort((a: any, b: any) => a.promedioMateria - b.promedioMateria);
 }
 
 function calcularPrediccionReprobacion(calificaciones: any[], configs: any[]) {
