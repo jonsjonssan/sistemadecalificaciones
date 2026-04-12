@@ -118,6 +118,18 @@ export const CalificacionRow = React.memo(function CalificacionRow({
     : promAC !== null || promAI !== null || examen !== null
       ? ((promAC ?? 0) * 0.35 + (promAI ?? 0) * 0.30 + (examen ?? 0) * 0.35)
       : null;
+
+  // Helper para formatear números: muestra entero si es entero, decimal si tiene decimales
+  const formatNumber = useCallback((value: number | null, decimal?: boolean): string => {
+    if (value === null) return "-";
+    if (decimal) {
+      // Modo decimal: mostrar hasta 2 decimales, eliminando ceros innecesarios
+      return parseFloat(value.toFixed(2)).toString();
+    }
+    // Modo normal: mostrar entero si es entero, decimal si tiene decimales
+    return Number.isInteger(value) ? value.toString() : parseFloat(value.toFixed(2)).toString();
+  }, []);
+
   const parseVal = useCallback((v: string): number | null => {
     const n = parseFloat(v);
     return isNaN(n) ? null : Math.min(10, Math.max(0, n));
@@ -284,8 +296,8 @@ export const CalificacionRow = React.memo(function CalificacionRow({
             />
           </td>
         ))}
-        <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promACBg} text-base`}>
-          {promACPeso !== null ? promACPeso.toFixed(1) : "-"}
+        <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promACBg} text-sm sm:text-base`}>
+          {promACPeso !== null ? formatNumber(promACPeso) : "-"}
         </td>
         {Array.from({ length: numAI }).map((_, i) => (
           <td key={`ai-${i}`} className={`p-1 border-l ${cellBorder}`}>
@@ -298,8 +310,8 @@ export const CalificacionRow = React.memo(function CalificacionRow({
             />
           </td>
         ))}
-        <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promAIBg} text-base`}>
-          {promAIPeso !== null ? promAIPeso.toFixed(1) : "-"}
+        <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promAIBg} text-sm sm:text-base`}>
+          {promAIPeso !== null ? formatNumber(promAIPeso) : "-"}
         </td>
         {tieneExamen && (
           <td className={`p-1 border-l ${cellBorder}`}>
@@ -313,8 +325,8 @@ export const CalificacionRow = React.memo(function CalificacionRow({
           </td>
         )}
         {tieneExamen && (
-          <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promExBg} text-base`}>
-            {promExPeso !== null ? Math.round(promExPeso).toString() : "-"}
+          <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promExBg} text-sm sm:text-base`}>
+            {promExPeso !== null ? formatNumber(promExPeso) : "-"}
           </td>
         )}
         <td className={`p-1 border-l ${cellBorder}`}>
@@ -328,7 +340,7 @@ export const CalificacionRow = React.memo(function CalificacionRow({
         </td>
         <td className={`p-2 text-center border-l ${cellBorder} ${finalBg}`}>
           <span className={`inline-block px-2 py-0.5 rounded-md text-xs sm:text-sm font-bold shadow ${finalBadgeClass}`}>
-            {promFinal !== null ? (promedioDecimal ? promFinal.toFixed(1) : Math.round(promFinal).toString()) : "-"}
+            {promFinal !== null ? formatNumber(promFinal, promedioDecimal) : "-"}
           </span>
         </td>
         <td className={`p-2 border-l ${cellBorder} text-center`}>{statusIcon}</td>
@@ -367,7 +379,7 @@ export const CalificacionRow = React.memo(function CalificacionRow({
         </td>
       ))}
       <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promACBg} text-sm sm:text-base`}>
-        {promACPeso !== null ? promACPeso.toFixed(1) : "-"}
+        {promACPeso !== null ? formatNumber(promACPeso) : "-"}
       </td>
       {aiNotas.map((n, i) => (
         <td key={`ai-${i}`} className={`p-1 border-l ${cellBorder}`}>
@@ -381,7 +393,7 @@ export const CalificacionRow = React.memo(function CalificacionRow({
         </td>
       ))}
       <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promAIBg} text-sm sm:text-base`}>
-        {promAIPeso !== null ? promAIPeso.toFixed(1) : "-"}
+        {promAIPeso !== null ? formatNumber(promAIPeso) : "-"}
       </td>
       {config.tieneExamen && (
         <td className={`p-1 border-l ${cellBorder}`}>
@@ -396,7 +408,7 @@ export const CalificacionRow = React.memo(function CalificacionRow({
       )}
       {config.tieneExamen && (
         <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promExBg} text-sm sm:text-base`}>
-          {promExPeso !== null ? Math.round(promExPeso).toString() : "-"}
+          {promExPeso !== null ? formatNumber(promExPeso) : "-"}
         </td>
       )}
       <td className={`p-1 border-l ${cellBorder}`}>
@@ -410,7 +422,7 @@ export const CalificacionRow = React.memo(function CalificacionRow({
       </td>
       <td className={`p-2 text-center border-l ${cellBorder} ${finalBg}`}>
         <span className={`inline-block px-2 py-0.5 rounded-md text-xs sm:text-sm font-bold shadow ${finalBadgeClass}`}>
-          {promFinal !== null ? (promedioDecimal ? promFinal.toFixed(1) : Math.round(promFinal).toString()) : "-"}
+          {promFinal !== null ? formatNumber(promFinal, promedioDecimal) : "-"}
         </span>
       </td>
       <td className={`p-2 border-l ${cellBorder} text-center`}>{statusIcon}</td>
