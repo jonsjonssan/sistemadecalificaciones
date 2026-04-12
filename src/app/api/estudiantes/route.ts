@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
 
     const query = {
       where,
-      orderBy: [{ orden: "asc" }, { numero: "asc" }],
+      orderBy: [{ orden: "asc" as const }, { numero: "asc" as const }],
     };
 
     // Pagination support (optional, backward compatible)
