@@ -5,8 +5,69 @@ import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import { createAuditLog } from "@/lib/audit";
 
+// Simple in-memory rate limiter for login attempts
+// Limits: 5 attempts per minute per IP
+const loginAttempts = new Map<string, { count: number; resetTime: number }>();
+
+function checkRateLimit(ip: string): { allowed: boolean; remaining: number; resetIn: number } {
+  const now = Date.now();
+  const windowMs = 60 * 1000; // 1 minute window
+  const maxAttempts = 5;
+
+  const attempt = loginAttempts.get(ip);
+
+  if (!attempt || now > attempt.resetTime) {
+    // Reset or create new window
+    loginAttempts.set(ip, { count: 1, resetTime: now + windowMs });
+    return { allowed: true, remaining: maxAttempts - 1, resetIn: windowMs };
+  }
+
+  if (attempt.count >= maxAttempts) {
+    const resetIn = attempt.resetTime - now;
+    return { allowed: false, remaining: 0, resetIn };
+  }
+
+  attempt.count++;
+  return { allowed: true, remaining: maxAttempts - attempt.count, resetIn: attempt.resetTime - now };
+}
+
+// Cleanup old entries every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, attempt] of loginAttempts.entries()) {
+    if (now > attempt.resetTime) {
+      loginAttempts.delete(ip);
+    }
+  }
+}, 5 * 60 * 1000);
+
 export async function POST(request: NextRequest) {
   try {
+    // Get IP for rate limiting
+    const headers = Object.fromEntries(request.headers.entries());
+    const ip = headers["x-forwarded-for"]?.split(",")[0] || headers["x-real-ip"] || "unknown";
+
+    // Check rate limit
+    const rateLimit = checkRateLimit(ip);
+    if (!rateLimit.allowed) {
+      const resetInSec = Math.ceil(rateLimit.resetIn / 1000);
+      return NextResponse.json(
+        {
+          error: `Demasiados intentos de login. Intenta de nuevo en ${resetInSec} segundos.`,
+          resetIn: resetInSec
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": Math.ceil(rateLimit.resetIn / 1000).toString(),
+            "X-RateLimit-Limit": "5",
+            "X-RateLimit-Remaining": "0",
+            "X-RateLimit-Reset": Math.ceil(rateLimit.resetIn / 1000).toString(),
+          }
+        }
+      );
+    }
+
     const { email, password } = await request.json();
 
     if (!email || !password) {

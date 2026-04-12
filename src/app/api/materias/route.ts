@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/neon";
 import { cookies } from "next/headers";
 
+export const revalidate = 300;
+
 async function getUsuarioSession() {
   const cookieStore = await cookies();
   const session = cookieStore.get("session");
@@ -30,7 +32,7 @@ export async function GET(request: NextRequest) {
         WHERE g.año = ${año}
         ORDER BY g.numero, m.nombre
       `;
-      
+
       const formatted = materias.map((m: any) => ({
         id: m.id,
         nombre: m.nombre,
@@ -46,7 +48,7 @@ export async function GET(request: NextRequest) {
 
     if (gradoId) {
       materias = await sql`
-        SELECT * FROM "Materia" 
+        SELECT * FROM "Materia"
         WHERE "gradoId" = ${gradoId}
         ORDER BY nombre
       `;
@@ -60,7 +62,7 @@ export async function GET(request: NextRequest) {
       WHERE g.año = ${año}
       ORDER BY g.numero, m.nombre
     `;
-    
+
     const formatted = materias.map((m: any) => ({
       id: m.id,
       nombre: m.nombre,

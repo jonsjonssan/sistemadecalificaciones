@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/neon";
 import { cookies } from "next/headers";
 
+export const revalidate = 300;
+
 async function getUsuarioSession() {
   const cookieStore = await cookies();
   const session = cookieStore.get("session");
@@ -108,8 +110,8 @@ export async function POST(request: NextRequest) {
       for (let trimestre = 1; trimestre <= 3; trimestre++) {
         await sql`
           INSERT INTO "ConfigActividad" (
-            "materiaId", trimestre, 
-            "numActividadesCotidianas", "numActividadesIntegradoras", 
+            "materiaId", trimestre,
+            "numActividadesCotidianas", "numActividadesIntegradoras",
             "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen"
           ) VALUES (
             ${materia.id}, ${trimestre},

@@ -15,8 +15,8 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getUsuarioSession();
     if (!session) {
-      return NextResponse.json({ 
-        error: "Sesión no encontrada", 
+      return NextResponse.json({
+        error: "Sesión no encontrada",
         code: "UNAUTHORIZED",
         message: "Debes iniciar sesión para acceder a esta información"
       }, { status: 401 });
@@ -25,10 +25,12 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const gradoId = searchParams.get("gradoId");
     const activos = searchParams.get("activos");
+    const page = searchParams.get("page");
+    const limit = searchParams.get("limit");
 
     if (!gradoId) {
-      return NextResponse.json({ 
-        error: "Grado no especificado", 
+      return NextResponse.json({
+        error: "Grado no especificado",
         code: "MISSING_GRADO",
         message: "Selecciona un grado para ver los estudiantes"
       }, { status: 400 });
@@ -39,15 +41,43 @@ export async function GET(request: NextRequest) {
     if (activos === "true") where.activo = true;
     if (activos === "false") where.activo = false;
 
-    const estudiantes = await db.estudiante.findMany({
+    const query = {
       where,
       orderBy: [{ orden: "asc" }, { numero: "asc" }],
-    });
+    };
 
+    // Pagination support (optional, backward compatible)
+    if (page && limit) {
+      const pageNum = Math.max(1, parseInt(page));
+      const limitNum = Math.min(200, Math.max(1, parseInt(limit)));
+      const skip = (pageNum - 1) * limitNum;
+
+      const [estudiantes, total] = await Promise.all([
+        db.estudiante.findMany({
+          ...query,
+          skip,
+          take: limitNum,
+        }),
+        db.estudiante.count({ where }),
+      ]);
+
+      return NextResponse.json({
+        estudiantes,
+        pagination: {
+          page: pageNum,
+          limit: limitNum,
+          total,
+          totalPages: Math.ceil(total / limitNum),
+        },
+      });
+    }
+
+    // Backward compatibility: return all records
+    const estudiantes = await db.estudiante.findMany(query);
     return NextResponse.json(estudiantes);
   } catch (error) {
     console.error("[estudiantes/GET] Error:", error);
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: "Error al cargar estudiantes",
       code: "ESTUDIANTES_LOAD_ERROR",
       message: "Hubo un problema al obtener la lista de estudiantes. Intenta de nuevo."

@@ -3,6 +3,8 @@ import { sql } from '@/lib/neon';
 import { cookies } from 'next/headers';
 import { randomUUID } from 'crypto';
 
+export const revalidate = 300;
+
 // Obtener configuración del sistema
 export async function GET() {
   try {

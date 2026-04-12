@@ -4,6 +4,8 @@ import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import { randomUUID } from "crypto";
 
+export const revalidate = 300;
+
 // ==================== Helpers ====================
 
 async function getUsuarioSession() {
