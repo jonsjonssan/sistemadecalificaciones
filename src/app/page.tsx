@@ -1178,7 +1178,7 @@ export default function Home() {
       }, 500);
       return () => clearTimeout(timeoutId);
     }
-  }, [gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado, activeTab, usuario, saveUserState]);
+  }, [gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado, activeTab, usuario]);
 
   // Cargar tab activo al iniciar sesión
   useEffect(() => {
@@ -1188,7 +1188,7 @@ export default function Home() {
         setActiveTab(savedState.activeTab);
       }
     }
-  }, [usuario, loadUserState]);
+  }, [usuario]);
 
   // Guardar estado antes de cerrar la pestaña - intentar guardar datos primero
   useEffect(() => {
