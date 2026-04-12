@@ -7,7 +7,7 @@ export async function POST(request: NextRequest) {
   try {
     const cookieStore = await cookies();
     const session = cookieStore.get("session");
-    
+
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
 
     // Crear mapa de grados por número
     const gradoMap = new Map(grados.map(g => [g.numero, g]));
-    
+
     // Crear mapa de materias por grado y nombre
     const getMateria = (gradoNum: number, nombreMateria: string) => {
       const grado = gradoMap.get(gradoNum);
@@ -36,8 +36,8 @@ export async function POST(request: NextRequest) {
 
     // Función para crear usuario
     const crearUsuario = async (
-      nombre: string, 
-      email: string, 
+      nombre: string,
+      email: string,
       password: string,
       gradosTutor: number[] = [],
       materiasAsignadas: { grado: number; materia: string }[] = []
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
       return { nombre, email, status: "creado", gradosTutor, materiasAsignadas: materiasAsignadas.length };
     };
 
-    const resultados = [];
+    const resultados: any[] = [];
 
     // ============================================
     // CREAR TODOS LOS USUARIOS
@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
     ));
 
     // 5. Helen Alicia Cabezas de Golcher - Educación en la Fe (todos los grados 2-9)
-    const materiasFe = [];
+    const materiasFe: any[] = [];
     for (let i = 2; i <= 9; i++) {
       materiasFe.push({ grado: i, materia: "Educación en la Fe" });
     }
@@ -221,7 +221,7 @@ export async function POST(request: NextRequest) {
     ));
 
     // 12. Mónica Gissel Montesino Najarro - Desarrollo Corporal 2°-6°, Educación Física 7°-9°
-    const materiasDesarrollo = [];
+    const materiasDesarrollo: any[] = [];
     for (let i = 2; i <= 6; i++) {
       materiasDesarrollo.push({ grado: i, materia: "Desarrollo Corporal" });
     }
