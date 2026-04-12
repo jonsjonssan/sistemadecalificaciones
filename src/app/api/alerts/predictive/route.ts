@@ -276,7 +276,7 @@ function generarComparacion(calificaciones: any[]) {
 }
 
 function generarRecomendaciones(tendencias: any[], correlaciones: any[], asignaturasCriticas: any[], predicciones: any[]) {
-  const recomendaciones = [];
+  const recomendaciones: any[] = [];
 
   // Recomendación por estudiantes en riesgo crítico
   const riesgoCritico = predicciones.filter(p => p.probabilidadReprobacion > 70);
