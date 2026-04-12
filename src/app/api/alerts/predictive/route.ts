@@ -115,8 +115,8 @@ function calcularTendencias(calificaciones: any[]) {
 
     tendencias.push({
       estudianteId: estId,
-      nombre: estudiante.nombre,
-      grado: `${estudiante.grado.numero}° ${estudiante.grado.seccion}`,
+      nombre: estudiante?.nombre || "Desconocido",
+      grado: estudiante?.grado ? `${estudiante.grado.numero}° ${estudiante.grado.seccion}` : "N/A",
       promedios,
       tendencia,
       cambio: Math.round(cambio * 100) / 100,
@@ -125,23 +125,23 @@ function calcularTendencias(calificaciones: any[]) {
     });
   }
 
-  return tendencias.sort((a, b) => a.cambio - b.cambio);
+  return tendencias.sort((a: any, b: any) => a.cambio - b.cambio);
 }
 
 function calcularCorrelacionAusencias(calificaciones: any[], asistencias: any[]) {
   const porEstudiante = new Map<string, any[]>();
-  calificaciones.forEach(cal => {
+  calificaciones.forEach((cal: any) => {
     if (!porEstudiante.has(cal.estudianteId)) {
       porEstudiante.set(cal.estudianteId, []);
     }
     porEstudiante.get(cal.estudianteId)!.push(cal);
   });
 
-  const correlaciones = [];
+  const correlaciones: any[] = [];
 
   for (const [estId, califs] of porEstudiante) {
-    const estudiante = califs[0].estudiante;
-    const ausencias = asistencias.filter(a => a.estudianteId === estId && a.estado === "ausente");
+    const estudiante = (califs as any[])[0].estudiante;
+    const ausencias = asistencias.filter((a: any) => a.estudianteId === estId && a.estado === "ausente");
     const totalAusencias = ausencias.length;
 
     if (totalAusencias === 0) continue;
