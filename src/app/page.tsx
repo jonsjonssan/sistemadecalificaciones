@@ -1536,7 +1536,7 @@ export default function Home() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-600 to-emerald-700 p-4 safe-area-bottom">
       <Card className="w-full max-w-sm sm:max-w-md shadow-2xl mx-4">
         <CardHeader className="text-center pb-2">
-          <div className="mx-auto w-14 h-14 bg-white rounded-xl flex items-center justify-center mb-3 shadow-lg"><School className="h-10 w-7 text-teal-600" /></div>
+          <div className="mx-auto w-14 h-14 bg-white rounded-xl flex items-center justify-center mb-3 shadow-lg overflow-hidden"><img src="/api/logo" alt="Logo CEC San José de la Montaña" className="h-10 w-10 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} /></div>
           <CardTitle className="text-base sm:text-xl">Sistema de Calificaciones</CardTitle>
           <CardDescription className="text-xs sm:text-sm">Centro Escolar Católico San José de la Montaña</CardDescription>
         </CardHeader>
@@ -1571,7 +1571,10 @@ export default function Home() {
     <div className={`min-h-screen flex flex-col transition-colors duration-300 ${darkMode ? 'bg-[#0f172a] text-white' : 'bg-slate-100 text-slate-900'} safe-area-bottom`}>
       <header className={`shadow-lg ${darkMode ? 'bg-[#1e293b] text-white border-b border-slate-700' : 'bg-teal-600 text-white'} mobile-header`}>
         <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0"><School className="h-5 w-5 sm:h-6 sm:w-6 shrink-0" /><div className="min-w-0"><h1 className="text-xs sm:text-sm font-bold truncate">Sistema de Calificaciones</h1><p className={`text-xs font-medium truncate ${darkMode ? 'text-slate-400' : 'text-teal-100'}`}>CEC San José de la Montaña</p></div></div>
+          <div className="flex items-center gap-2 min-w-0">
+            <img src="/api/logo" alt="Logo CEC San José de la Montaña" className="h-8 w-8 sm:h-10 sm:w-10 shrink-0 object-contain rounded-full bg-white" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+            <div className="min-w-0"><h1 className="text-xs sm:text-sm font-bold truncate">Sistema de Calificaciones</h1><p className={`text-xs font-medium truncate ${darkMode ? 'text-slate-400' : 'text-teal-100'}`}>CEC San José de la Montaña</p></div>
+          </div>
           <div className="flex items-center gap-1 sm:gap-3">
             {configuracion && (
               <Badge className={`text-xs font-medium px-1.5 sm:px-2 py-0.5 ${darkMode ? 'bg-slate-700 text-slate-200' : 'bg-teal-700 text-white'}`}>
