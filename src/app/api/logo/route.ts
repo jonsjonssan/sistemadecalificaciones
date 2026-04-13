@@ -4,9 +4,9 @@ import path from "path";
 
 export async function GET() {
   try {
-    const logoPath = path.join(process.cwd(), "upload", "Gemini_Generated_Image_97pusq97pusq97pu.png");
+    const logoPath = path.join(process.cwd(), "upload", "0.png");
     const imageBuffer = fs.readFileSync(logoPath);
-    
+
     return new NextResponse(imageBuffer, {
       headers: {
         "Content-Type": "image/png",
