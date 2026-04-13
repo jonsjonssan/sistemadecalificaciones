@@ -16,7 +16,8 @@ import { useToast } from "@/hooks/use-toast";
 import {
   LogOut, Users, User, ClipboardList, FileText, Plus, RefreshCw,
   School, Save, Printer, ChevronDown, ChevronUp, Settings, Upload,
-  Download, Trash2, ListPlus, UserPlus, Key, Calendar, LayoutDashboard, CalendarDays, Lightbulb, Hash
+  Download, Trash2, ListPlus, UserPlus, Key, Calendar, LayoutDashboard, CalendarDays, Lightbulb, Hash,
+  Search, ArrowUpDown
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import Dashboard from "@/components/Dashboard";
@@ -130,6 +131,12 @@ export default function Home() {
   // Promedios
   const [promedioAsignatura, setPromedioAsignatura] = useState<number | null>(null);
   const [promedioGrado, setPromedioGrado] = useState<number | null>(null);
+
+  // Búsqueda, filtro y ordenamiento
+  const [busquedaEstudiante, setBusquedaEstudiante] = useState("");
+  const [filtroEstado, setFiltroEstado] = useState<string>("todos");
+  const [sortColumn, setSortColumn] = useState<string>("");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   // Audit & Sessions
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
@@ -894,6 +901,239 @@ export default function Home() {
     a.click();
   };
 
+  // Ordenamiento
+  const handleSort = (column: string) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+  };
+
+  const getPromedioFinalForStudent = (estudianteId: string) => {
+    const calif = calificaciones.find(c => c.estudianteId === estudianteId);
+    return calif?.promedioFinal ?? null;
+  };
+
+  const getPromedioACForStudent = (estudianteId: string) => {
+    const calif = calificaciones.find(c => c.estudianteId === estudianteId);
+    if (!calif?.calificacionAC) return null;
+    const config = configActual;
+    if (!config) return calif.calificacionAC;
+    return calif.calificacionAC * (config.porcentajeAC / 100);
+  };
+
+  const getPromedioAIForStudent = (estudianteId: string) => {
+    const calif = calificaciones.find(c => c.estudianteId === estudianteId);
+    if (!calif?.calificacionAI) return null;
+    const config = configActual;
+    if (!config) return calif.calificacionAI;
+    return calif.calificacionAI * (config.porcentajeAI / 100);
+  };
+
+  const getExamenForStudent = (estudianteId: string) => {
+    const calif = calificaciones.find(c => c.estudianteId === estudianteId);
+    return calif?.examenTrimestral ?? null;
+  };
+
+  // Filtrar y ordenar estudiantes
+  const getFilteredAndSortedStudents = () => {
+    let filtered = [...estudiantes];
+
+    // Búsqueda por nombre
+    if (busquedaEstudiante.trim()) {
+      const query = busquedaEstudiante.toLowerCase();
+      filtered = filtered.filter(e => e.nombre.toLowerCase().includes(query));
+    }
+
+    // Filtro por estado
+    if (filtroEstado !== "todos") {
+      filtered = filtered.filter(e => {
+        const promFinal = getPromedioFinalForStudent(e.id);
+        if (promFinal === null) return false;
+        if (filtroEstado === "aprobados") return promFinal >= 5;
+        if (filtroEstado === "riesgo") return promFinal < 5;
+        if (filtroEstado === "honor") return promFinal >= 8;
+        return true;
+      });
+    }
+
+    // Ordenamiento
+    if (sortColumn) {
+      filtered.sort((a, b) => {
+        let valA: number, valB: number;
+        switch (sortColumn) {
+          case "nombre":
+            valA = a.nombre.localeCompare(b.nombre);
+            valB = 0;
+            return sortDirection === "asc" ? (valA as unknown as number) : -(valA as unknown as number);
+          case "promAC":
+            valA = getPromedioACForStudent(a.id) ?? -1;
+            valB = getPromedioACForStudent(b.id) ?? -1;
+            break;
+          case "promAI":
+            valA = getPromedioAIForStudent(a.id) ?? -1;
+            valB = getPromedioAIForStudent(b.id) ?? -1;
+            break;
+          case "examen":
+            valA = getExamenForStudent(a.id) ?? -1;
+            valB = getExamenForStudent(b.id) ?? -1;
+            break;
+          case "promFinal":
+          default:
+            valA = getPromedioFinalForStudent(a.id) ?? -1;
+            valB = getPromedioFinalForStudent(b.id) ?? -1;
+            break;
+        }
+        return sortDirection === "asc" ? valA - valB : valB - valA;
+      });
+    }
+
+    return filtered;
+  };
+
+  // Exportar PDF
+  const handleExportarPDF = () => {
+    const filtered = getFilteredAndSortedStudents();
+    if (!filtered.length || !configActual) return;
+
+    const materia = asignaturas.find(m => m.id === asignaturaSeleccionada);
+    const grado = grados.find(g => g.id === gradoSeleccionado);
+
+    const headers = ["N°", "Nombre", ...Array.from({ length: configActual.numActividadesCotidianas }, (_, i) => `AC${i + 1}`), "Prom AC",
+      ...Array.from({ length: configActual.numActividadesIntegradoras }, (_, i) => `AI${i + 1}`), "Prom AI",
+      ...(configActual.tieneExamen ? ["Examen", "Prom Ex"] : []), "Rec.", "Prom. Final"];
+
+    const rows = filtered.map((est, idx) => {
+      const calif = calificaciones.find(c => c.estudianteId === est.id);
+      const notasAC = calif?.actividadesCotidianas ? JSON.parse(calif.actividadesCotidianas) : [];
+      const notasAI = calif?.actividadesIntegradoras ? JSON.parse(calif.actividadesIntegradoras) : [];
+      const promAC = calif?.calificacionAC ? calif.calificacionAC * (configActual.porcentajeAC / 100) : null;
+      const promAI = calif?.calificacionAI ? calif.calificacionAI * (configActual.porcentajeAI / 100) : null;
+      const promEx = calif?.examenTrimestral ? calif.examenTrimestral * (configActual.porcentajeExamen / 100) : null;
+
+      return [
+        est.numero.toString(),
+        est.nombre,
+        ...notasAC.map((n: number | null) => n !== null ? n.toString() : ""),
+        promAC !== null ? promAC.toFixed(2) : "",
+        ...notasAI.map((n: number | null) => n !== null ? n.toString() : ""),
+        promAI !== null ? promAI.toFixed(2) : "",
+        ...(configActual.tieneExamen ? [
+          calif?.examenTrimestral !== null && calif?.examenTrimestral !== undefined ? calif.examenTrimestral.toString() : "",
+          promEx !== null ? promEx.toFixed(2) : ""
+        ] : []),
+        calif?.recuperacion !== null && calif?.recuperacion !== undefined ? calif.recuperacion.toString() : "",
+        calif?.promedioFinal !== null && calif?.promedioFinal !== undefined ? calif.promedioFinal.toFixed(2) : ""
+      ];
+    });
+
+    // Generar HTML para imprimir
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Calificaciones - ${grado?.numero}° ${grado?.seccion} - ${materia?.nombre}</title>
+        <style>
+          @page { size: letter landscape; margin: 1cm; }
+          body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+          h1 { text-align: center; font-size: 16px; margin-bottom: 5px; }
+          h2 { text-align: center; font-size: 12px; margin-bottom: 15px; color: #666; }
+          table { width: 100%; border-collapse: collapse; font-size: 9px; }
+          th, td { border: 1px solid #ddd; padding: 4px; text-align: center; }
+          th { background-color: #2d3748; color: white; font-weight: bold; }
+          tr:nth-child(even) { background-color: #f7fafc; }
+          .nombre { text-align: left; min-width: 120px; }
+        </style>
+      </head>
+      <body>
+        <h1>Centro Escolar - Sistema de Calificaciones</h1>
+        <h2>${grado?.numero}° "${grado?.seccion}" | ${materia?.nombre} | Trimestre ${trimestreSeleccionado} | ${new Date().toLocaleDateString('es-SV')}</h2>
+        <table>
+          <thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>
+          <tbody>
+            ${rows.map(row => `<tr>${row.map((cell, i) => `<td class="${i === 1 ? 'nombre' : ''}">${cell}</td>`).join('')}</tr>`).join('')}
+          </tbody>
+        </table>
+        <script>window.onload = () => { window.print(); }</script>
+      </body>
+      </html>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+    }
+    toast({ title: "PDF generado", description: "Use Ctrl+P para guardar como PDF" });
+  };
+
+  // Exportar Excel
+  const handleExportarExcel = () => {
+    const filtered = getFilteredAndSortedStudents();
+    if (!filtered.length || !configActual) return;
+
+    const materia = asignaturas.find(m => m.id === asignaturaSeleccionada);
+    const grado = grados.find(g => g.id === gradoSeleccionado);
+
+    // Construir datos para Excel
+    const data: string[][] = [
+      ["Centro Escolar - Sistema de Calificaciones"],
+      [`${grado?.numero}° "${grado?.seccion}" | ${materia?.nombre} | Trimestre ${trimestreSeleccionado}`],
+      [`Fecha: ${new Date().toLocaleDateString('es-SV')}`],
+      [], // Fila vacía
+    ];
+
+    // Headers
+    const headers = ["N°", "Nombre",
+      ...Array.from({ length: configActual.numActividadesCotidianas }, (_, i) => `AC${i + 1}`),
+      "Prom AC",
+      ...Array.from({ length: configActual.numActividadesIntegradoras }, (_, i) => `AI${i + 1}`),
+      "Prom AI"];
+    if (configActual.tieneExamen) headers.push("Examen", "Prom Ex");
+    headers.push("Rec.", "Prom. Final");
+    data.push(headers);
+
+    // Filas de datos
+    filtered.forEach(est => {
+      const calif = calificaciones.find(c => c.estudianteId === est.id);
+      const notasAC = calif?.actividadesCotidianas ? JSON.parse(calif.actividadesCotidianas) : [];
+      const notasAI = calif?.actividadesIntegradoras ? JSON.parse(calif.actividadesIntegradoras) : [];
+      const promAC = calif?.calificacionAC ? calif.calificacionAC * (configActual.porcentajeAC / 100) : null;
+      const promAI = calif?.calificacionAI ? calif.calificacionAI * (configActual.porcentajeAI / 100) : null;
+      const promEx = calif?.examenTrimestral ? calif.examenTrimestral * (configActual.porcentajeExamen / 100) : null;
+
+      const row: string[] = [
+        est.numero.toString(),
+        est.nombre,
+        ...notasAC.map((n: number | null) => n !== null ? n.toString() : ""),
+        promAC !== null ? promAC.toFixed(2) : "",
+        ...notasAI.map((n: number | null) => n !== null ? n.toString() : ""),
+        promAI !== null ? promAI.toFixed(2) : "",
+      ];
+      if (configActual.tieneExamen) {
+        row.push(calif?.examenTrimestral !== null && calif?.examenTrimestral !== undefined ? calif.examenTrimestral.toString() : "");
+        row.push(promEx !== null ? promEx.toFixed(2) : "");
+      }
+      row.push(calif?.recuperacion !== null && calif?.recuperacion !== undefined ? calif.recuperacion.toString() : "");
+      row.push(calif?.promedioFinal !== null && calif?.promedioFinal !== undefined ? calif.promedioFinal.toFixed(2) : "");
+      data.push(row);
+    });
+
+    // Convertir a CSV
+    const csvContent = data.map(row => row.map(cell => `"${cell}"`).join(",")).join("\n");
+    const blob = new Blob(["\ufeff" + csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `calificaciones_${grado?.numero}${grado?.seccion}_${materia?.nombre.replace(/\s+/g, '_')}_T${trimestreSeleccionado}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    toast({ title: "Excel exportado", description: "Archivo CSV descargado" });
+  };
+
   const handleAddUsuario = async () => {
     // Si estamos editando y no hay password, está bien. Si es nuevo, exige password.
     if (!nuevoUsuario.email || (!editUsuarioId && !nuevoUsuario.password) || !nuevoUsuario.nombre) {
@@ -1524,81 +1764,205 @@ export default function Home() {
 
             )}
             {gradoSeleccionado && asignaturaSeleccionada && (
-              <Card className={`shadow-xl border overflow-hidden ${darkMode ? 'bg-[#1e293b] border-slate-700 text-white' : 'bg-white border-slate-200'}`}>
-                <CardContent className="p-0">
-                  <div className="table-scroll-container">
-                    <table className="w-full text-sm sm:text-base font-medium border-collapse">
-                      <thead><tr className={darkMode ? 'bg-gradient-to-r from-slate-700 to-slate-600 text-white' : 'bg-gradient-to-r from-slate-700 to-slate-600 text-white'}>
-                        <th className={`w-10 p-2 text-center font-semibold sticky-col shadow-right left-0 z-20 border-r border-b ${darkMode ? 'bg-slate-700 border-slate-600' : 'bg-slate-700 border-slate-500'}`}>N°</th>
-                        <th className={`min-w-[140px] sm:min-w-[180px] p-2 text-left font-semibold sticky-col shadow-right left-10 z-20 border-r border-b ${darkMode ? 'bg-slate-700 border-slate-600' : 'bg-slate-700 border-slate-500'}`}>Estudiante</th>
-                        {configActual ? (
-                          <>
-                            <th colSpan={configActual.numActividadesCotidianas} className={`p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-slate-600' : 'border-slate-500'}`}>Act. Cotidianas</th>
-                            <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-blue-900/60 border-slate-600 text-blue-300' : 'bg-blue-50 border-slate-500 text-blue-700'}`}>Prom AC</th>
-                            <th colSpan={configActual.numActividadesIntegradoras} className={`p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-slate-600' : 'border-slate-500'}`}>Act. Integradoras</th>
-                            <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-purple-900/60 border-slate-600 text-purple-300' : 'bg-purple-50 border-slate-500 text-purple-700'}`}>Prom AI</th>
-                            {configActual.tieneExamen && <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-slate-600' : 'border-slate-500'}`}>Examen</th>}
-                            {configActual.tieneExamen && <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-amber-900/60 border-slate-600 text-amber-300' : 'bg-amber-50 border-slate-500 text-amber-700'}`}>Prom Ex</th>}
-                            <th className={`w-14 p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-slate-600' : 'border-slate-500'}`}>Rec.</th>
-                            <th className={`w-18 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-emerald-800/80 border-emerald-700 text-emerald-100' : 'bg-emerald-600 border-emerald-500'}`}>Prom. Final</th>
-                            <th className={`w-12 p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-slate-600' : 'border-slate-500'}`} title="Estado de guardado">💾</th>
-                          </>
-                        ) : (
-                          <>
-                            <th colSpan={4} className={`p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-slate-600' : 'border-slate-500'}`}>Act. Cotidianas</th>
-                            <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-blue-900/60 border-slate-600 text-blue-300' : 'bg-blue-50 border-slate-500 text-blue-700'}`}>Prom AC</th>
-                            <th colSpan={1} className={`p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-slate-600' : 'border-slate-500'}`}>Act. Integradoras</th>
-                            <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-purple-900/60 border-slate-600 text-purple-300' : 'bg-purple-50 border-slate-500 text-purple-700'}`}>Prom AI</th>
-                            <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-slate-600' : 'border-slate-500'}`}>Examen</th>
-                            <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-amber-900/60 border-slate-600 text-amber-300' : 'bg-amber-50 border-slate-500 text-amber-700'}`}>Prom Ex</th>
-                            <th className={`w-14 p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-slate-600' : 'border-slate-500'}`}>Rec.</th>
-                            <th className={`w-18 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-emerald-800/80 border-emerald-700 text-emerald-100' : 'bg-emerald-600 border-emerald-500'}`}>Prom. Final</th>
-                            <th className={`w-12 p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-slate-600' : 'border-slate-500'}`} title="Estado de guardado">💾</th>
-                          </>
-                        )}
-                      </tr></thead>
-                      <tbody>
-                        {sectionLoading ? (
-                          Array.from({ length: 5 }).map((_, idx) => (
-                            <tr key={`skel-${idx}`} className={idx % 2 === 0 ? (darkMode ? 'bg-[#1e293b]' : '') : (darkMode ? 'bg-slate-800/50' : 'bg-slate-50/50')}>
-                              <td className="p-2 text-center"><Skeleton className={`h-4 w-6 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
-                              <td className="p-2"><Skeleton className={`h-4 w-40 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
-                              <td className="p-2"><Skeleton className={`h-8 w-16 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
-                              <td className="p-2"><Skeleton className={`h-8 w-16 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
-                              <td className="p-2"><Skeleton className={`h-8 w-16 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
-                              <td className="p-2"><Skeleton className={`h-8 w-16 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
-                              <td className="p-2"><Skeleton className={`h-8 w-16 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
-                              <td className="p-2"><Skeleton className={`h-8 w-16 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
-                              <td className="p-2"><Skeleton className={`h-8 w-16 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
-                              <td className="p-2"><Skeleton className={`h-8 w-16 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
-                              <td className="p-2"><Skeleton className={`h-8 w-16 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
-                              <td className="p-2"><Skeleton className={`h-4 w-4 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
-                            </tr>
-                          ))
-                        ) : (estudiantes || []).map((est, idx) => {
-                          const calif = getCalificacion(est.id);
-                          return <CalificacionRow key={`${est.id}-${asignaturaSeleccionada}-${trimestreSeleccionado}-${configActual?.numActividadesCotidianas ?? 4}-${configActual?.numActividadesIntegradoras ?? 1}`} estudiante={est} materiaId={asignaturaSeleccionada} trimestre={trimestreSeleccionado} calificacion={calif} config={configActual} onSave={handleSaveCalificacion} saving={saving} darkMode={darkMode} evenRow={idx % 2 === 0} isAdmin={isAdmin(usuario.rol)} onBorrar={(estId) => { setBorrarCalifEstudianteId(estId); setBorrarCalifTipo("alumno"); setBorrarCalifDialogOpen(true); }} promedioDecimal={promedioDecimal} />
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                  {/* Resumen de promedios */}
-                  <div className={`flex flex-wrap gap-4 p-3 mt-2 border-t ${darkMode ? 'border-slate-700 bg-slate-800/50' : 'border-slate-200 bg-slate-50'}`}>
-                    <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${darkMode ? 'bg-blue-900/30 border border-blue-700' : 'bg-blue-50 border border-blue-200'}`}>
-                      <div className={`text-xs font-medium ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>Promedio por Asignatura</div>
-                      <div className={`text-lg font-bold ${darkMode ? 'text-blue-400' : 'text-blue-800'}`}>
-                        {sectionLoading ? <Skeleton className={`h-5 w-12 ${darkMode ? 'bg-blue-800' : 'bg-blue-200'}`} /> : (promedioAsignatura !== null ? promedioAsignatura.toFixed(2) : "—")}
+              <>
+                {/* Barra de herramientas: Búsqueda, Filtro, Exportar */}
+                <Card className={`shadow-sm border ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'bg-white border-slate-200'}`}>
+                  <CardContent className="p-3">
+                    <div className="flex flex-wrap items-center gap-3">
+                      {/* Búsqueda */}
+                      <div className="flex-1 min-w-[200px]">
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                          <Input
+                            placeholder="Buscar estudiante..."
+                            value={busquedaEstudiante}
+                            onChange={(e) => setBusquedaEstudiante(e.target.value)}
+                            className={`pl-9 h-9 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Filtro por estado */}
+                      <Select value={filtroEstado} onValueChange={setFiltroEstado}>
+                        <SelectTrigger className={`w-[150px] h-9 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="todos">Todos</SelectItem>
+                          <SelectItem value="aprobados">Aprobados (≥5)</SelectItem>
+                          <SelectItem value="riesgo">En riesgo (&lt;5)</SelectItem>
+                          <SelectItem value="honor">Cuadro honor (≥8)</SelectItem>
+                        </SelectContent>
+                      </Select>
+
+                      {/* Exportar PDF */}
+                      <Button size="sm" variant="outline" onClick={handleExportarPDF} className={`h-9 text-sm ${darkMode ? 'bg-slate-800 border-slate-600' : ''}`}>
+                        <FileText className="h-4 w-4 mr-1" /> PDF
+                      </Button>
+
+                      {/* Exportar Excel */}
+                      <Button size="sm" variant="outline" onClick={handleExportarExcel} className={`h-9 text-sm ${darkMode ? 'bg-slate-800 border-slate-600' : ''}`}>
+                        <Download className="h-4 w-4 mr-1" /> Excel
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Tabla de calificaciones */}
+                <Card className={`shadow-xl border overflow-hidden ${darkMode ? 'bg-[#1e293b] border-slate-700 text-white' : 'bg-white border-slate-200'}`}>
+                  <CardContent className="p-0">
+                    <div className="table-scroll-container">
+                      <table className="w-full text-sm sm:text-base font-medium border-collapse">
+                        <thead><tr className={darkMode ? 'bg-gradient-to-r from-slate-700 to-slate-600 text-white' : 'bg-gradient-to-r from-slate-700 to-slate-600 text-white'}>
+                          <th className={`w-10 p-2 text-center font-semibold sticky-col shadow-right left-0 z-20 border-r border-b ${darkMode ? 'bg-slate-700 border-slate-600' : 'bg-slate-700 border-slate-500'}`}>N°</th>
+                          <th
+                            className={`min-w-[140px] sm:min-w-[180px] p-2 text-left font-semibold sticky-col shadow-right left-10 z-20 border-r border-b cursor-pointer hover:bg-slate-600 transition-colors ${darkMode ? 'bg-slate-700 border-slate-600' : 'bg-slate-700 border-slate-500'}`}
+                            onClick={() => handleSort('nombre')}
+                          >
+                            <div className="flex items-center gap-1">
+                              Estudiante
+                              {sortColumn === 'nombre' && <ArrowUpDown className="h-3 w-3" />}
+                            </div>
+                          </th>
+                          {configActual ? (
+                            <>
+                              <th colSpan={configActual.numActividadesCotidianas} className={`p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-slate-600' : 'border-slate-500'}`}>Act. Cotidianas</th>
+                              <th
+                                className={`w-16 p-2 text-center font-semibold border-l border-b cursor-pointer hover:bg-blue-800 transition-colors ${darkMode ? 'bg-blue-900/60 border-slate-600 text-blue-300' : 'bg-blue-50 border-slate-500 text-blue-700'}`}
+                                onClick={() => handleSort('promAC')}
+                              >
+                                <div className="flex items-center justify-center gap-1">
+                                  Prom AC
+                                  {sortColumn === 'promAC' && <ArrowUpDown className="h-3 w-3" />}
+                                </div>
+                              </th>
+                              <th colSpan={configActual.numActividadesIntegradoras} className={`p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-slate-600' : 'border-slate-500'}`}>Act. Integradoras</th>
+                              <th
+                                className={`w-16 p-2 text-center font-semibold border-l border-b cursor-pointer hover:bg-purple-800 transition-colors ${darkMode ? 'bg-purple-900/60 border-slate-600 text-purple-300' : 'bg-purple-50 border-slate-500 text-purple-700'}`}
+                                onClick={() => handleSort('promAI')}
+                              >
+                                <div className="flex items-center justify-center gap-1">
+                                  Prom AI
+                                  {sortColumn === 'promAI' && <ArrowUpDown className="h-3 w-3" />}
+                                </div>
+                              </th>
+                              {configActual.tieneExamen && (
+                                <th
+                                  className={`w-16 p-2 text-center font-semibold border-l border-b cursor-pointer hover:bg-slate-600 transition-colors ${darkMode ? 'border-slate-600' : 'border-slate-500'}`}
+                                  onClick={() => handleSort('examen')}
+                                >
+                                  <div className="flex items-center justify-center gap-1">
+                                    Examen
+                                    {sortColumn === 'examen' && <ArrowUpDown className="h-3 w-3" />}
+                                  </div>
+                                </th>
+                              )}
+                              {configActual.tieneExamen && (
+                                <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-amber-900/60 border-slate-600 text-amber-300' : 'bg-amber-50 border-slate-500 text-amber-700'}`}>Prom Ex</th>
+                              )}
+                              <th className={`w-14 p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-slate-600' : 'border-slate-500'}`}>Rec.</th>
+                              <th
+                                className={`w-18 p-2 text-center font-semibold border-l border-b cursor-pointer hover:bg-emerald-700 transition-colors ${darkMode ? 'bg-emerald-800/80 border-emerald-700 text-emerald-100' : 'bg-emerald-600 border-emerald-500'}`}
+                                onClick={() => handleSort('promFinal')}
+                              >
+                                <div className="flex items-center justify-center gap-1">
+                                  Prom. Final
+                                  {sortColumn === 'promFinal' && <ArrowUpDown className="h-3 w-3" />}
+                                </div>
+                              </th>
+                              <th className={`w-12 p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-slate-600' : 'border-slate-500'}`} title="Estado de guardado">💾</th>
+                            </>
+                          ) : (
+                            <>
+                              <th colSpan={4} className={`p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-slate-600' : 'border-slate-500'}`}>Act. Cotidianas</th>
+                              <th
+                                className={`w-16 p-2 text-center font-semibold border-l border-b cursor-pointer hover:bg-blue-800 transition-colors ${darkMode ? 'bg-blue-900/60 border-slate-600 text-blue-300' : 'bg-blue-50 border-slate-500 text-blue-700'}`}
+                                onClick={() => handleSort('promAC')}
+                              >
+                                <div className="flex items-center justify-center gap-1">
+                                  Prom AC
+                                  {sortColumn === 'promAC' && <ArrowUpDown className="h-3 w-3" />}
+                                </div>
+                              </th>
+                              <th colSpan={1} className={`p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-slate-600' : 'border-slate-500'}`}>Act. Integradoras</th>
+                              <th
+                                className={`w-16 p-2 text-center font-semibold border-l border-b cursor-pointer hover:bg-purple-800 transition-colors ${darkMode ? 'bg-purple-900/60 border-slate-600 text-purple-300' : 'bg-purple-50 border-slate-500 text-purple-700'}`}
+                                onClick={() => handleSort('promAI')}
+                              >
+                                <div className="flex items-center justify-center gap-1">
+                                  Prom AI
+                                  {sortColumn === 'promAI' && <ArrowUpDown className="h-3 w-3" />}
+                                </div>
+                              </th>
+                              <th
+                                className={`w-16 p-2 text-center font-semibold border-l border-b cursor-pointer hover:bg-slate-600 transition-colors ${darkMode ? 'border-slate-600' : 'border-slate-500'}`}
+                                onClick={() => handleSort('examen')}
+                              >
+                                <div className="flex items-center justify-center gap-1">
+                                  Examen
+                                  {sortColumn === 'examen' && <ArrowUpDown className="h-3 w-3" />}
+                                </div>
+                              </th>
+                              <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-amber-900/60 border-slate-600 text-amber-300' : 'bg-amber-50 border-slate-500 text-amber-700'}`}>Prom Ex</th>
+                              <th className={`w-14 p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-slate-600' : 'border-slate-500'}`}>Rec.</th>
+                              <th
+                                className={`w-18 p-2 text-center font-semibold border-l border-b cursor-pointer hover:bg-emerald-700 transition-colors ${darkMode ? 'bg-emerald-800/80 border-emerald-700 text-emerald-100' : 'bg-emerald-600 border-emerald-500'}`}
+                                onClick={() => handleSort('promFinal')}
+                              >
+                                <div className="flex items-center justify-center gap-1">
+                                  Prom. Final
+                                  {sortColumn === 'promFinal' && <ArrowUpDown className="h-3 w-3" />}
+                                </div>
+                              </th>
+                              <th className={`w-12 p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-slate-600' : 'border-slate-500'}`} title="Estado de guardado">💾</th>
+                            </>
+                          )}
+                        </tr></thead>
+                        <tbody>
+                          {sectionLoading ? (
+                            Array.from({ length: 5 }).map((_, idx) => (
+                              <tr key={`skel-${idx}`} className={idx % 2 === 0 ? (darkMode ? 'bg-[#1e293b]' : '') : (darkMode ? 'bg-slate-800/50' : 'bg-slate-50/50')}>
+                                <td className="p-2 text-center"><Skeleton className={`h-4 w-6 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
+                                <td className="p-2"><Skeleton className={`h-4 w-40 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
+                                <td className="p-2"><Skeleton className={`h-8 w-16 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
+                                <td className="p-2"><Skeleton className={`h-8 w-16 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
+                                <td className="p-2"><Skeleton className={`h-8 w-16 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
+                                <td className="p-2"><Skeleton className={`h-8 w-16 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
+                                <td className="p-2"><Skeleton className={`h-8 w-16 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
+                                <td className="p-2"><Skeleton className={`h-8 w-16 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
+                                <td className="p-2"><Skeleton className={`h-8 w-16 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
+                                <td className="p-2"><Skeleton className={`h-8 w-16 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
+                                <td className="p-2"><Skeleton className={`h-8 w-16 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
+                                <td className="p-2"><Skeleton className={`h-4 w-4 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
+                              </tr>
+                            ))
+                          ) : (
+                            getFilteredAndSortedStudents().map((est, idx) => {
+                              const calif = calificaciones.find(c => c.estudianteId === est.id);
+                              return <CalificacionRow key={`${est.id}-${asignaturaSeleccionada}-${trimestreSeleccionado}-${configActual?.numActividadesCotidianas ?? 4}-${configActual?.numActividadesIntegradoras ?? 1}`} estudiante={est} materiaId={asignaturaSeleccionada} trimestre={trimestreSeleccionado} calificacion={calif} config={configActual} onSave={handleSaveCalificacion} saving={saving} darkMode={darkMode} evenRow={idx % 2 === 0} isAdmin={isAdmin(usuario.rol)} onBorrar={(estId) => { setBorrarCalifEstudianteId(estId); setBorrarCalifTipo("alumno"); setBorrarCalifDialogOpen(true); }} promedioDecimal={promedioDecimal} />
+                            })
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                    {/* Resumen de promedios */}
+                    <div className={`flex flex-wrap gap-4 p-3 mt-2 border-t ${darkMode ? 'border-slate-700 bg-slate-800/50' : 'border-slate-200 bg-slate-50'}`}>
+                      <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${darkMode ? 'bg-blue-900/30 border border-blue-700' : 'bg-blue-50 border border-blue-200'}`}>
+                        <div className={`text-xs font-medium ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>Promedio por Asignatura</div>
+                        <div className={`text-lg font-bold ${darkMode ? 'text-blue-400' : 'text-blue-800'}`}>
+                          {sectionLoading ? <Skeleton className={`h-5 w-12 ${darkMode ? 'bg-blue-800' : 'bg-blue-200'}`} /> : (promedioAsignatura !== null ? promedioAsignatura.toFixed(2) : "—")}
+                        </div>
+                      </div>
+                      <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${darkMode ? 'bg-emerald-900/30 border border-emerald-700' : 'bg-emerald-50 border border-emerald-200'}`}>
+                        <div className={`text-xs font-medium ${darkMode ? 'text-emerald-300' : 'text-emerald-700'}`}>Promedio del Grado</div>
+                        <div className={`text-lg font-bold ${darkMode ? 'text-emerald-400' : 'text-emerald-800'}`}>
+                          {sectionLoading ? <Skeleton className={`h-5 w-12 ${darkMode ? 'bg-emerald-800' : 'bg-emerald-200'}`} /> : (promedioGrado !== null ? promedioGrado.toFixed(2) : "—")}
+                        </div>
                       </div>
                     </div>
-                    <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${darkMode ? 'bg-emerald-900/30 border border-emerald-700' : 'bg-emerald-50 border border-emerald-200'}`}>
-                      <div className={`text-xs font-medium ${darkMode ? 'text-emerald-300' : 'text-emerald-700'}`}>Promedio del Grado</div>
-                      <div className={`text-lg font-bold ${darkMode ? 'text-emerald-400' : 'text-emerald-800'}`}>
-                        {sectionLoading ? <Skeleton className={`h-5 w-12 ${darkMode ? 'bg-emerald-800' : 'bg-emerald-200'}`} /> : (promedioGrado !== null ? promedioGrado.toFixed(2) : "—")}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </>
             )}
           </TabsContent>
 
@@ -1643,10 +2007,10 @@ export default function Home() {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
+          </TabsContent >
 
           {/* Boletas */}
-          <TabsContent value="boletas" className="mt-3">
+          < TabsContent value="boletas" className="mt-3" >
             <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
               <CardHeader className={`py-3 px-4 ${darkMode ? 'border-slate-700' : ''}`}><CardTitle className="text-base">Generación de Boletas</CardTitle></CardHeader>
               <CardContent className="pt-0 space-y-3">
@@ -1698,308 +2062,310 @@ export default function Home() {
                 )}
               </CardContent>
             </Card>
-          </TabsContent>
+          </TabsContent >
 
           {/* Admin */}
-          {isAdmin(usuario.rol) && (
-            <TabsContent value="admin" className="mt-3 space-y-3 sm:space-y-4">
-              {/* Gestión de Usuarios */}
-              <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
-                <CardHeader className={`py-3 px-4 flex-row items-center justify-between space-y-0 ${darkMode ? 'border-slate-700' : ''}`}>
-                  <div><CardTitle className="text-sm sm:text-base">Gestión de Usuarios</CardTitle><CardDescription className={`text-xs ${darkMode ? 'text-slate-400' : ''}`}>Crea y administra usuarios del sistema</CardDescription></div>
-                  <Dialog open={userDialogOpen} onOpenChange={setUserDialogOpen}>
-                    <DialogTrigger asChild><Button size="sm" className={`h-7 text-xs ${darkMode ? 'bg-teal-600 hover:bg-teal-500' : 'bg-teal-600'}`} onClick={() => { setEditUsuarioId(null); setNuevoUsuario({ email: "", password: "", nombre: "", rol: "docente", materiasAsignadas: [] }); }}><UserPlus className="h-3.5 w-3.5 mr-1" />Nuevo Usuario</Button></DialogTrigger>
-                    <DialogContent className={`max-w-lg max-h-[90vh] overflow-y-auto ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
-                      <DialogHeader><DialogTitle>{editUsuarioId ? "Editar Usuario" : "Crear Usuario"}</DialogTitle><DialogDescription>Completa la información del usuario del sistema.</DialogDescription></DialogHeader>
-                      <div className="space-y-3">
-                        <div><Label className="text-xs">Nombre</Label><Input value={nuevoUsuario.nombre} onChange={e => setNuevoUsuario({ ...nuevoUsuario, nombre: e.target.value })} placeholder="Nombre completo" /></div>
-                        <div><Label className="text-xs">Email</Label><Input type="email" value={nuevoUsuario.email} onChange={e => setNuevoUsuario({ ...nuevoUsuario, email: e.target.value })} placeholder="correo@escuela.edu" /></div>
-                        <div><Label className="text-xs">Contraseña</Label><Input type="password" value={nuevoUsuario.password} onChange={e => setNuevoUsuario({ ...nuevoUsuario, password: e.target.value })} placeholder="••••••••" /></div>
-                        <div><Label className="text-xs">Rol</Label>
-                          <Select value={nuevoUsuario.rol} onValueChange={v => setNuevoUsuario({ ...nuevoUsuario, rol: v })}>
-                            <SelectTrigger className={`h-8 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="admin">Administrador</SelectItem>
-                              <SelectItem value="admin-directora">Administradora - Directora</SelectItem>
-                              <SelectItem value="admin-codirectora">Administradora - Codirectora</SelectItem>
-                              <SelectItem value="docente">Docente</SelectItem>
-                              <SelectItem value="docente-orientador">Docente-Orientador</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
+          {
+            isAdmin(usuario.rol) && (
+              <TabsContent value="admin" className="mt-3 space-y-3 sm:space-y-4">
+                {/* Gestión de Usuarios */}
+                <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
+                  <CardHeader className={`py-3 px-4 flex-row items-center justify-between space-y-0 ${darkMode ? 'border-slate-700' : ''}`}>
+                    <div><CardTitle className="text-sm sm:text-base">Gestión de Usuarios</CardTitle><CardDescription className={`text-xs ${darkMode ? 'text-slate-400' : ''}`}>Crea y administra usuarios del sistema</CardDescription></div>
+                    <Dialog open={userDialogOpen} onOpenChange={setUserDialogOpen}>
+                      <DialogTrigger asChild><Button size="sm" className={`h-7 text-xs ${darkMode ? 'bg-teal-600 hover:bg-teal-500' : 'bg-teal-600'}`} onClick={() => { setEditUsuarioId(null); setNuevoUsuario({ email: "", password: "", nombre: "", rol: "docente", materiasAsignadas: [] }); }}><UserPlus className="h-3.5 w-3.5 mr-1" />Nuevo Usuario</Button></DialogTrigger>
+                      <DialogContent className={`max-w-lg max-h-[90vh] overflow-y-auto ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
+                        <DialogHeader><DialogTitle>{editUsuarioId ? "Editar Usuario" : "Crear Usuario"}</DialogTitle><DialogDescription>Completa la información del usuario del sistema.</DialogDescription></DialogHeader>
+                        <div className="space-y-3">
+                          <div><Label className="text-xs">Nombre</Label><Input value={nuevoUsuario.nombre} onChange={e => setNuevoUsuario({ ...nuevoUsuario, nombre: e.target.value })} placeholder="Nombre completo" /></div>
+                          <div><Label className="text-xs">Email</Label><Input type="email" value={nuevoUsuario.email} onChange={e => setNuevoUsuario({ ...nuevoUsuario, email: e.target.value })} placeholder="correo@escuela.edu" /></div>
+                          <div><Label className="text-xs">Contraseña</Label><Input type="password" value={nuevoUsuario.password} onChange={e => setNuevoUsuario({ ...nuevoUsuario, password: e.target.value })} placeholder="••••••••" /></div>
+                          <div><Label className="text-xs">Rol</Label>
+                            <Select value={nuevoUsuario.rol} onValueChange={v => setNuevoUsuario({ ...nuevoUsuario, rol: v })}>
+                              <SelectTrigger className={`h-8 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="admin">Administrador</SelectItem>
+                                <SelectItem value="admin-directora">Administradora - Directora</SelectItem>
+                                <SelectItem value="admin-codirectora">Administradora - Codirectora</SelectItem>
+                                <SelectItem value="docente">Docente</SelectItem>
+                                <SelectItem value="docente-orientador">Docente-Orientador</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
 
-                        {/* Asignaturas para todos los grados */}
-                        <div>
-                          <Label className="text-xs">Asignaturas Asignadas</Label>
-                          <p className={`text-[10px] mb-1 ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Seleccione las asignaturas que calificará</p>
-                          <div className={`border rounded max-h-64 overflow-y-auto ${darkMode ? 'border-slate-700' : ''}`}>
-                            {grados.map(grado => (
-                              <div key={grado.id} className={`border-b last:border-b-0 ${darkMode ? 'border-slate-700' : ''}`}>
-                                <div className={`px-2 py-1 text-xs font-medium ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>{grado.numero}° "{grado.seccion}"</div>
-                                <div className="p-2 grid grid-cols-2 gap-1">
-                                  {todasAsignaturas.filter(m => m.gradoId === grado.id).map(m => (
-                                    <label key={m.id} className={`flex items-center gap-1 text-xs p-1 rounded cursor-pointer ${darkMode ? 'hover:bg-slate-800' : 'hover:bg-slate-50'}`}>
-                                      <input
-                                        type="checkbox"
-                                        checked={nuevoUsuario.materiasAsignadas.includes(m.id)}
-                                        onChange={e => setNuevoUsuario({
-                                          ...nuevoUsuario,
-                                          materiasAsignadas: e.target.checked
-                                            ? [...nuevoUsuario.materiasAsignadas, m.id]
-                                            : nuevoUsuario.materiasAsignadas.filter(id => id !== m.id)
-                                        })}
-                                        className="h-3 w-3"
-                                      />
-                                      {m.nombre}
-                                    </label>
-                                  ))}
+                          {/* Asignaturas para todos los grados */}
+                          <div>
+                            <Label className="text-xs">Asignaturas Asignadas</Label>
+                            <p className={`text-[10px] mb-1 ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Seleccione las asignaturas que calificará</p>
+                            <div className={`border rounded max-h-64 overflow-y-auto ${darkMode ? 'border-slate-700' : ''}`}>
+                              {grados.map(grado => (
+                                <div key={grado.id} className={`border-b last:border-b-0 ${darkMode ? 'border-slate-700' : ''}`}>
+                                  <div className={`px-2 py-1 text-xs font-medium ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>{grado.numero}° "{grado.seccion}"</div>
+                                  <div className="p-2 grid grid-cols-2 gap-1">
+                                    {todasAsignaturas.filter(m => m.gradoId === grado.id).map(m => (
+                                      <label key={m.id} className={`flex items-center gap-1 text-xs p-1 rounded cursor-pointer ${darkMode ? 'hover:bg-slate-800' : 'hover:bg-slate-50'}`}>
+                                        <input
+                                          type="checkbox"
+                                          checked={nuevoUsuario.materiasAsignadas.includes(m.id)}
+                                          onChange={e => setNuevoUsuario({
+                                            ...nuevoUsuario,
+                                            materiasAsignadas: e.target.checked
+                                              ? [...nuevoUsuario.materiasAsignadas, m.id]
+                                              : nuevoUsuario.materiasAsignadas.filter(id => id !== m.id)
+                                          })}
+                                          className="h-3 w-3"
+                                        />
+                                        {m.nombre}
+                                      </label>
+                                    ))}
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              ))}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <DialogFooter><Button variant="outline" size="sm" onClick={() => setUserDialogOpen(false)}>Cancelar</Button><Button size="sm" onClick={handleAddUsuario} className="bg-teal-600">{editUsuarioId ? "Guardar" : "Crear"}</Button></DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className={`rounded border overflow-x-auto ${darkMode ? 'border-slate-700' : ''}`}>
-                    <Table className="text-xs">
-                      <TableHeader><TableRow className={darkMode ? 'bg-slate-800' : 'bg-slate-100'}><TableHead className="h-8">Nombre</TableHead><TableHead>Email</TableHead><TableHead className="w-20">Rol</TableHead><TableHead className="w-20">Estado</TableHead><TableHead className="min-w-[200px]">Asignaciones</TableHead><TableHead className="w-20 text-center">Acciones</TableHead></TableRow></TableHeader>
-                      <TableBody>
-                        {usuarios.map(u => (
-                          <TableRow key={u.id} className={darkMode ? 'border-slate-700' : ''}>
-                            <TableCell className={`font-medium ${darkMode ? 'text-white' : ''}`}>{u.nombre}</TableCell>
-                            <TableCell className={darkMode ? 'text-slate-400' : ''}>{u.email}</TableCell>
-                            <TableCell>
-                              <Badge variant={isAdmin(u.rol) ? "default" : u.rol === "docente-orientador" ? "outline" : "secondary"} className={`text-[10px] ${isAdmin(u.rol) ? '' : (u.rol === "docente-orientador" ? (darkMode ? 'border-slate-600 text-slate-300' : '') : (darkMode ? 'bg-slate-700 text-slate-300' : ''))}`}>
-                                {u.rol === "admin" ? "Admin" : u.rol === "admin-directora" ? "Directora" : u.rol === "admin-codirectora" ? "Codirectora" : u.rol === "docente-orientador" ? "Docente-Orient." : "Docente"}
-                              </Badge>
-                            </TableCell>
-                            <TableCell><Badge variant={u.activo ? "default" : "destructive"} className={`text-[10px] ${u.activo ? (darkMode ? 'bg-teal-600' : 'bg-teal-600') : ''}`}>{u.activo ? "Activo" : "Inactivo"}</Badge></TableCell>
-                            <TableCell>
-                              <div className="space-y-0.5">
-                                {u.materias && u.materias.length > 0 && (
-                                  <div><span className={`text-[10px] ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Asignaturas: </span>{u.materias.map(m => `${m.nombre} (${m.gradoNumero}°)`).slice(0, 3).join(", ")}{u.materias.length > 3 ? ` +${u.materias.length - 3}` : ""}</div>
+                        <DialogFooter><Button variant="outline" size="sm" onClick={() => setUserDialogOpen(false)}>Cancelar</Button><Button size="sm" onClick={handleAddUsuario} className="bg-teal-600">{editUsuarioId ? "Guardar" : "Crear"}</Button></DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className={`rounded border overflow-x-auto ${darkMode ? 'border-slate-700' : ''}`}>
+                      <Table className="text-xs">
+                        <TableHeader><TableRow className={darkMode ? 'bg-slate-800' : 'bg-slate-100'}><TableHead className="h-8">Nombre</TableHead><TableHead>Email</TableHead><TableHead className="w-20">Rol</TableHead><TableHead className="w-20">Estado</TableHead><TableHead className="min-w-[200px]">Asignaciones</TableHead><TableHead className="w-20 text-center">Acciones</TableHead></TableRow></TableHeader>
+                        <TableBody>
+                          {usuarios.map(u => (
+                            <TableRow key={u.id} className={darkMode ? 'border-slate-700' : ''}>
+                              <TableCell className={`font-medium ${darkMode ? 'text-white' : ''}`}>{u.nombre}</TableCell>
+                              <TableCell className={darkMode ? 'text-slate-400' : ''}>{u.email}</TableCell>
+                              <TableCell>
+                                <Badge variant={isAdmin(u.rol) ? "default" : u.rol === "docente-orientador" ? "outline" : "secondary"} className={`text-[10px] ${isAdmin(u.rol) ? '' : (u.rol === "docente-orientador" ? (darkMode ? 'border-slate-600 text-slate-300' : '') : (darkMode ? 'bg-slate-700 text-slate-300' : ''))}`}>
+                                  {u.rol === "admin" ? "Admin" : u.rol === "admin-directora" ? "Directora" : u.rol === "admin-codirectora" ? "Codirectora" : u.rol === "docente-orientador" ? "Docente-Orient." : "Docente"}
+                                </Badge>
+                              </TableCell>
+                              <TableCell><Badge variant={u.activo ? "default" : "destructive"} className={`text-[10px] ${u.activo ? (darkMode ? 'bg-teal-600' : 'bg-teal-600') : ''}`}>{u.activo ? "Activo" : "Inactivo"}</Badge></TableCell>
+                              <TableCell>
+                                <div className="space-y-0.5">
+                                  {u.materias && u.materias.length > 0 && (
+                                    <div><span className={`text-[10px] ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Asignaturas: </span>{u.materias.map(m => `${m.nombre} (${m.gradoNumero}°)`).slice(0, 3).join(", ")}{u.materias.length > 3 ? ` +${u.materias.length - 3}` : ""}</div>
+                                  )}
+                                  {(!u.materias || u.materias.length === 0) && (isAdmin(u.rol) ? "Acceso total" : "-")}
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-center">
+                                <Button size="sm" variant="ghost" className={`h-6 w-6 p-0 mr-1 ${darkMode ? 'text-amber-400' : 'text-amber-500'}`} title="Editar" onClick={() => abrirEditarUsuario(u as Usuario)}><Settings className="h-3.5 w-3.5" /></Button>
+                                <Button size="sm" variant="ghost" className="h-6 w-6 p-0 mr-1" title={u.activo ? "Bloquear" : "Desbloquear"} onClick={() => handleToggleUsuario(u.id, u.activo)}>{u.activo ? "🔒" : "🔓"}</Button>
+                                <Button size="sm" variant="ghost" className={`h-6 w-6 p-0 mr-1 ${darkMode ? 'text-blue-400' : 'text-blue-500'}`} title="Restablecer contraseña" onClick={() => openResetPassword({ id: u.id, nombre: u.nombre })}>🔑</Button>
+                                {canDeleteUsers(usuario) && (
+                                  <Button size="sm" variant="ghost" className={`h-6 w-6 p-0 ${darkMode ? 'text-red-400' : 'text-red-500'}`} title="Eliminar" onClick={() => handleDeleteUsuario(u.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
                                 )}
-                                {(!u.materias || u.materias.length === 0) && (isAdmin(u.rol) ? "Acceso total" : "-")}
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-center">
-                              <Button size="sm" variant="ghost" className={`h-6 w-6 p-0 mr-1 ${darkMode ? 'text-amber-400' : 'text-amber-500'}`} title="Editar" onClick={() => abrirEditarUsuario(u as Usuario)}><Settings className="h-3.5 w-3.5" /></Button>
-                              <Button size="sm" variant="ghost" className="h-6 w-6 p-0 mr-1" title={u.activo ? "Bloquear" : "Desbloquear"} onClick={() => handleToggleUsuario(u.id, u.activo)}>{u.activo ? "🔒" : "🔓"}</Button>
-                              <Button size="sm" variant="ghost" className={`h-6 w-6 p-0 mr-1 ${darkMode ? 'text-blue-400' : 'text-blue-500'}`} title="Restablecer contraseña" onClick={() => openResetPassword({ id: u.id, nombre: u.nombre })}>🔑</Button>
-                              {canDeleteUsers(usuario) && (
-                                <Button size="sm" variant="ghost" className={`h-6 w-6 p-0 ${darkMode ? 'text-red-400' : 'text-red-500'}`} title="Eliminar" onClick={() => handleDeleteUsuario(u.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
-                              )}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </CardContent>
-              </Card>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </CardContent>
+                </Card>
 
-              {/* Info de Grados */}
-              <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
-                <CardHeader className={`py-3 px-4 ${darkMode ? 'border-slate-700' : ''}`}><CardTitle className="text-sm sm:text-base">Grados Registrados</CardTitle></CardHeader>
-                <CardContent className="pt-0">
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
-                    {grados.map(g => {
-                      const docentesDelGrado = getDocentesDelGrado(usuarios, g.id);
-                      const docentesTexto = docentesDelGrado.length > 0
-                        ? (docentesDelGrado.length === 1 ? docentesDelGrado[0] : `${docentesDelGrado.length} docentes`)
-                        : "Sin docente";
-                      return (
-                        <div key={g.id} className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50'}`}>
-                          <p className={`font-medium text-xs sm:text-sm ${darkMode ? 'text-white' : ''}`}>{g.numero}° "{g.seccion}"</p>
-                          <p className={`text-[10px] ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>{g._count?.estudiantes || 0} estudiantes • {docentesTexto}</p>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
+                {/* Info de Grados */}
+                <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
+                  <CardHeader className={`py-3 px-4 ${darkMode ? 'border-slate-700' : ''}`}><CardTitle className="text-sm sm:text-base">Grados Registrados</CardTitle></CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
+                      {grados.map(g => {
+                        const docentesDelGrado = getDocentesDelGrado(usuarios, g.id);
+                        const docentesTexto = docentesDelGrado.length > 0
+                          ? (docentesDelGrado.length === 1 ? docentesDelGrado[0] : `${docentesDelGrado.length} docentes`)
+                          : "Sin docente";
+                        return (
+                          <div key={g.id} className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50'}`}>
+                            <p className={`font-medium text-xs sm:text-sm ${darkMode ? 'text-white' : ''}`}>{g.numero}° "{g.seccion}"</p>
+                            <p className={`text-[10px] ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>{g._count?.estudiantes || 0} estudiantes • {docentesTexto}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
 
-              {/* Configuración del Sistema - Año Escolar */}
-              <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
-                <CardHeader className={`py-3 px-4 flex-row items-center justify-between space-y-0 ${darkMode ? 'border-slate-700' : ''}`}>
-                  <div><CardTitle className="text-sm sm:text-base">Año Escolar</CardTitle><CardDescription className={`text-xs ${darkMode ? 'text-slate-400' : ''}`}>Configure el año lectivo actual del sistema</CardDescription></div>
-                  <Dialog open={añoDialogOpen} onOpenChange={setAñoDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button size="sm" variant="outline" className={`h-7 text-xs ${darkMode ? 'border-slate-600 text-slate-300 hover:bg-slate-700' : ''}`}>
-                        <Calendar className="h-3.5 w-3.5 mr-1" />
-                        Cambiar Año
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className={`max-w-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
-                      <DialogHeader><DialogTitle>Cambiar Año Escolar</DialogTitle><DialogDescription>El nuevo año solo mostrará datos correspondientes a ese período.</DialogDescription></DialogHeader>
-                      <div className="space-y-3">
-                        <div>
-                          <Label className="text-xs">Año Escolar</Label>
-                          <Input
-                            type="number"
-                            value={nuevoAño}
-                            onChange={e => setNuevoAño(parseInt(e.target.value) || 2026)}
-                            min={2020}
-                            max={2100}
-                            className={`h-8 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}
-                          />
-                        </div>
-                        <p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>
-                          Al cambiar el año escolar, el sistema mostrará únicamente los datos correspondientes a ese año.
-                        </p>
-                      </div>
-                      <DialogFooter>
-                        <Button variant="outline" size="sm" onClick={() => setAñoDialogOpen(false)}>Cancelar</Button>
-                        <Button size="sm" onClick={handleCambiarAño} disabled={añoLoading} className="bg-teal-600">
-                          {añoLoading ? "Guardando..." : "Cambiar"}
+                {/* Configuración del Sistema - Año Escolar */}
+                <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
+                  <CardHeader className={`py-3 px-4 flex-row items-center justify-between space-y-0 ${darkMode ? 'border-slate-700' : ''}`}>
+                    <div><CardTitle className="text-sm sm:text-base">Año Escolar</CardTitle><CardDescription className={`text-xs ${darkMode ? 'text-slate-400' : ''}`}>Configure el año lectivo actual del sistema</CardDescription></div>
+                    <Dialog open={añoDialogOpen} onOpenChange={setAñoDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button size="sm" variant="outline" className={`h-7 text-xs ${darkMode ? 'border-slate-600 text-slate-300 hover:bg-slate-700' : ''}`}>
+                          <Calendar className="h-3.5 w-3.5 mr-1" />
+                          Cambiar Año
                         </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
-                    <div className={`flex-1 p-4 rounded-lg border ${darkMode ? 'bg-teal-900/30 border-teal-800' : 'bg-teal-50 border-teal-200'}`}>
-                      <p className={`text-2xl font-bold ${darkMode ? 'text-teal-300' : 'text-teal-700'}`}>{configuracion?.añoEscolar || 2026}</p>
-                      <p className={`text-xs ${darkMode ? 'text-teal-400' : 'text-teal-600'}`}>Año lectivo actual</p>
+                      </DialogTrigger>
+                      <DialogContent className={`max-w-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
+                        <DialogHeader><DialogTitle>Cambiar Año Escolar</DialogTitle><DialogDescription>El nuevo año solo mostrará datos correspondientes a ese período.</DialogDescription></DialogHeader>
+                        <div className="space-y-3">
+                          <div>
+                            <Label className="text-xs">Año Escolar</Label>
+                            <Input
+                              type="number"
+                              value={nuevoAño}
+                              onChange={e => setNuevoAño(parseInt(e.target.value) || 2026)}
+                              min={2020}
+                              max={2100}
+                              className={`h-8 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}
+                            />
+                          </div>
+                          <p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>
+                            Al cambiar el año escolar, el sistema mostrará únicamente los datos correspondientes a ese año.
+                          </p>
+                        </div>
+                        <DialogFooter>
+                          <Button variant="outline" size="sm" onClick={() => setAñoDialogOpen(false)}>Cancelar</Button>
+                          <Button size="sm" onClick={handleCambiarAño} disabled={añoLoading} className="bg-teal-600">
+                            {añoLoading ? "Guardando..." : "Cambiar"}
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+                      <div className={`flex-1 p-4 rounded-lg border ${darkMode ? 'bg-teal-900/30 border-teal-800' : 'bg-teal-50 border-teal-200'}`}>
+                        <p className={`text-2xl font-bold ${darkMode ? 'text-teal-300' : 'text-teal-700'}`}>{configuracion?.añoEscolar || 2026}</p>
+                        <p className={`text-xs ${darkMode ? 'text-teal-400' : 'text-teal-600'}`}>Año lectivo actual</p>
+                      </div>
+                      <div className={`flex-1 p-4 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50'}`}>
+                        <p className={`text-lg font-medium ${darkMode ? 'text-white' : ''}`}>{grados.length}</p>
+                        <p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Grados activos</p>
+                      </div>
+                      <div className={`flex-1 p-4 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50'}`}>
+                        <p className={`text-lg font-medium ${darkMode ? 'text-white' : ''}`}>{todasAsignaturas.length}</p>
+                        <p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Asignaturas</p>
+                      </div>
                     </div>
-                    <div className={`flex-1 p-4 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50'}`}>
-                      <p className={`text-lg font-medium ${darkMode ? 'text-white' : ''}`}>{grados.length}</p>
-                      <p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Grados activos</p>
-                    </div>
-                    <div className={`flex-1 p-4 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50'}`}>
-                      <p className={`text-lg font-medium ${darkMode ? 'text-white' : ''}`}>{todasAsignaturas.length}</p>
-                      <p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Asignaturas</p>
-                    </div>
-                  </div>
-                </CardContent>
-                <CardFooter className={`border-t justify-between py-3 px-4 flex-col sm:flex-row gap-2 ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50'}`}>
-                  <div className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Versión 1.2.0 | © 2026 CEC San José de la Montaña</div>
-                  <Button variant="outline" size="sm" onClick={handleRepararAsignaciones} disabled={añoLoading} className="h-8 text-xs sm:text-sm w-full sm:w-auto">
-                    <Settings className="h-4 w-4 mr-1" /> Reparar Asignaciones
-                  </Button>
-                  <Button variant="destructive" size="sm" onClick={handleResetSistema} className="h-8 text-xs sm:text-sm w-full sm:w-auto">
-                    <Trash2 className="h-4 w-4 mr-1" /> Finalizar Año
-                  </Button>
-                </CardFooter>
-              </Card>
-
-              {/* Panel de Auditoría */}
-              <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
-                <CardHeader className={`py-3 px-4 ${darkMode ? 'border-slate-700' : ''}`}>
-                  <CardTitle className="text-sm sm:text-base">Historial de Auditoría</CardTitle>
-                  <CardDescription className={`text-xs ${darkMode ? 'text-slate-400' : ''}`}>Registro de quién digitó o borró calificaciones</CardDescription>
-                </CardHeader>
-                <CardContent className="pt-0 space-y-3">
-                  <div className="flex flex-wrap gap-2 items-center">
-                    <Button size="sm" variant="outline" className={`h-8 text-xs ${darkMode ? 'border-slate-600' : ''}`} onClick={loadAuditLogs} disabled={auditLoading}>
-                      <RefreshCw className={`h-3.5 w-3.5 mr-1 ${auditLoading ? 'animate-spin' : ''}`} /> Actualizar
+                  </CardContent>
+                  <CardFooter className={`border-t justify-between py-3 px-4 flex-col sm:flex-row gap-2 ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50'}`}>
+                    <div className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Versión 1.2.0 | © 2026 CEC San José de la Montaña</div>
+                    <Button variant="outline" size="sm" onClick={handleRepararAsignaciones} disabled={añoLoading} className="h-8 text-xs sm:text-sm w-full sm:w-auto">
+                      <Settings className="h-4 w-4 mr-1" /> Reparar Asignaciones
                     </Button>
-                    {isAdmin(usuario.rol) && (
-                      <Button size="sm" variant="destructive" className="h-8 text-xs" onClick={handleDeleteAuditLogs} disabled={auditLoading || auditTotal === 0}>
-                        <Trash2 className="h-3.5 w-3.5 mr-1" /> Borrar todo
+                    <Button variant="destructive" size="sm" onClick={handleResetSistema} className="h-8 text-xs sm:text-sm w-full sm:w-auto">
+                      <Trash2 className="h-4 w-4 mr-1" /> Finalizar Año
+                    </Button>
+                  </CardFooter>
+                </Card>
+
+                {/* Panel de Auditoría */}
+                <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
+                  <CardHeader className={`py-3 px-4 ${darkMode ? 'border-slate-700' : ''}`}>
+                    <CardTitle className="text-sm sm:text-base">Historial de Auditoría</CardTitle>
+                    <CardDescription className={`text-xs ${darkMode ? 'text-slate-400' : ''}`}>Registro de quién digitó o borró calificaciones</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-0 space-y-3">
+                    <div className="flex flex-wrap gap-2 items-center">
+                      <Button size="sm" variant="outline" className={`h-8 text-xs ${darkMode ? 'border-slate-600' : ''}`} onClick={loadAuditLogs} disabled={auditLoading}>
+                        <RefreshCw className={`h-3.5 w-3.5 mr-1 ${auditLoading ? 'animate-spin' : ''}`} /> Actualizar
                       </Button>
-                    )}
-                    <select
-                      value={auditFilter.accion}
-                      onChange={e => { setAuditFilter(f => ({ ...f, accion: e.target.value })); setAuditPage(1); }}
-                      className={`h-8 text-xs rounded border px-2 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-slate-300'}`}
-                    >
-                      <option value="">Todas las acciones</option>
-                      <option value="UPDATE">Digitó</option>
-                      <option value="DELETE">Borró</option>
-                    </select>
-                    <input
-                      type="date"
-                      value={auditFilter.fechaDesde}
-                      onChange={e => { setAuditFilter(f => ({ ...f, fechaDesde: e.target.value })); setAuditPage(1); }}
-                      className={`h-8 text-xs rounded border px-2 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-slate-300'}`}
-                      placeholder="Desde"
-                    />
-                    <input
-                      type="date"
-                      value={auditFilter.fechaHasta}
-                      onChange={e => { setAuditFilter(f => ({ ...f, fechaHasta: e.target.value })); setAuditPage(1); }}
-                      className={`h-8 text-xs rounded border px-2 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-slate-300'}`}
-                      placeholder="Hasta"
-                    />
-                    {(auditFilter.accion || auditFilter.fechaDesde || auditFilter.fechaHasta) && (
-                      <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => { setAuditFilter({ accion: "", usuarioId: "", entidad: "", fechaDesde: "", fechaHasta: "" }); setAuditPage(1); }}>
-                        Limpiar
-                      </Button>
-                    )}
-                    <span className={`text-xs ml-auto ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                      {auditTotal} registro(s)
-                    </span>
-                  </div>
-                  <div className={`rounded border overflow-x-auto ${darkMode ? 'border-slate-700' : ''}`}>
-                    <table className="w-full text-xs">
-                      <thead><tr className={darkMode ? 'bg-slate-800' : 'bg-slate-100'}>
-                        <th className="p-2 text-left">Fecha</th>
-                        <th className="p-2 text-left">Usuario</th>
-                        <th className="p-2 text-left">Acción</th>
-                        <th className="p-2 text-left">Grado</th>
-                      </tr></thead>
-                      <tbody>
-                        {auditLoading ? <tr><td colSpan={4} className="p-4 text-center text-slate-500">Cargando...</td></tr> :
-                          auditLogs.length === 0 ? <tr><td colSpan={4} className="p-4 text-center text-slate-500">No hay registros</td></tr> :
-                            auditLogs.map((log) => (
-                              <tr key={log.id} className={`border-t ${darkMode ? 'border-slate-700' : ''}`}>
-                                <td className="p-2 whitespace-nowrap">{new Date(log.createdAt).toLocaleString('es-DO')}</td>
-                                <td className="p-2 font-medium">{log.usuario?.nombre || 'Desconocido'}</td>
-                                <td className="p-2">
-                                  <Badge variant={log.accion === 'DELETE' ? 'destructive' : 'default'} className={`text-[10px] ${log.accion === 'DELETE' ? '' : (darkMode ? 'bg-teal-600' : 'bg-teal-600')}`}>
-                                    {log.accion === 'DELETE' ? 'Borró' : 'Digitó'}
-                                  </Badge>
-                                </td>
-                                <td className={`p-2 ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>{log.grado || '—'}</td>
-                              </tr>
-                            ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  {auditTotalPages > 1 && (
-                    <div className="flex items-center justify-between">
-                      <span className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                        Página {auditPage} de {auditTotalPages}
+                      {isAdmin(usuario.rol) && (
+                        <Button size="sm" variant="destructive" className="h-8 text-xs" onClick={handleDeleteAuditLogs} disabled={auditLoading || auditTotal === 0}>
+                          <Trash2 className="h-3.5 w-3.5 mr-1" /> Borrar todo
+                        </Button>
+                      )}
+                      <select
+                        value={auditFilter.accion}
+                        onChange={e => { setAuditFilter(f => ({ ...f, accion: e.target.value })); setAuditPage(1); }}
+                        className={`h-8 text-xs rounded border px-2 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-slate-300'}`}
+                      >
+                        <option value="">Todas las acciones</option>
+                        <option value="UPDATE">Digitó</option>
+                        <option value="DELETE">Borró</option>
+                      </select>
+                      <input
+                        type="date"
+                        value={auditFilter.fechaDesde}
+                        onChange={e => { setAuditFilter(f => ({ ...f, fechaDesde: e.target.value })); setAuditPage(1); }}
+                        className={`h-8 text-xs rounded border px-2 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-slate-300'}`}
+                        placeholder="Desde"
+                      />
+                      <input
+                        type="date"
+                        value={auditFilter.fechaHasta}
+                        onChange={e => { setAuditFilter(f => ({ ...f, fechaHasta: e.target.value })); setAuditPage(1); }}
+                        className={`h-8 text-xs rounded border px-2 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-slate-300'}`}
+                        placeholder="Hasta"
+                      />
+                      {(auditFilter.accion || auditFilter.fechaDesde || auditFilter.fechaHasta) && (
+                        <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => { setAuditFilter({ accion: "", usuarioId: "", entidad: "", fechaDesde: "", fechaHasta: "" }); setAuditPage(1); }}>
+                          Limpiar
+                        </Button>
+                      )}
+                      <span className={`text-xs ml-auto ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                        {auditTotal} registro(s)
                       </span>
-                      <div className="flex gap-1">
-                        <Button size="sm" variant="outline" className="h-7 text-xs" disabled={auditPage <= 1} onClick={() => setAuditPage(p => Math.max(1, p - 1))}>
-                          Anterior
-                        </Button>
-                        {Array.from({ length: Math.min(5, auditTotalPages) }, (_, i) => {
-                          let pageNum: number;
-                          if (auditTotalPages <= 5) {
-                            pageNum = i + 1;
-                          } else if (auditPage <= 3) {
-                            pageNum = i + 1;
-                          } else if (auditPage >= auditTotalPages - 2) {
-                            pageNum = auditTotalPages - 4 + i;
-                          } else {
-                            pageNum = auditPage - 2 + i;
-                          }
-                          return (
-                            <Button key={pageNum} size="sm" variant={auditPage === pageNum ? "default" : "outline"} className={`h-7 w-7 text-xs p-0 ${auditPage === pageNum ? '' : (darkMode ? 'border-slate-600' : '')}`} onClick={() => setAuditPage(pageNum)}>
-                              {pageNum}
-                            </Button>
-                          );
-                        })}
-                        <Button size="sm" variant="outline" className="h-7 text-xs" disabled={auditPage >= auditTotalPages} onClick={() => setAuditPage(p => Math.min(auditTotalPages, p + 1))}>
-                          Siguiente
-                        </Button>
-                      </div>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          )}
-        </Tabs>
-      </main>
+                    <div className={`rounded border overflow-x-auto ${darkMode ? 'border-slate-700' : ''}`}>
+                      <table className="w-full text-xs">
+                        <thead><tr className={darkMode ? 'bg-slate-800' : 'bg-slate-100'}>
+                          <th className="p-2 text-left">Fecha</th>
+                          <th className="p-2 text-left">Usuario</th>
+                          <th className="p-2 text-left">Acción</th>
+                          <th className="p-2 text-left">Grado</th>
+                        </tr></thead>
+                        <tbody>
+                          {auditLoading ? <tr><td colSpan={4} className="p-4 text-center text-slate-500">Cargando...</td></tr> :
+                            auditLogs.length === 0 ? <tr><td colSpan={4} className="p-4 text-center text-slate-500">No hay registros</td></tr> :
+                              auditLogs.map((log) => (
+                                <tr key={log.id} className={`border-t ${darkMode ? 'border-slate-700' : ''}`}>
+                                  <td className="p-2 whitespace-nowrap">{new Date(log.createdAt).toLocaleString('es-DO')}</td>
+                                  <td className="p-2 font-medium">{log.usuario?.nombre || 'Desconocido'}</td>
+                                  <td className="p-2">
+                                    <Badge variant={log.accion === 'DELETE' ? 'destructive' : 'default'} className={`text-[10px] ${log.accion === 'DELETE' ? '' : (darkMode ? 'bg-teal-600' : 'bg-teal-600')}`}>
+                                      {log.accion === 'DELETE' ? 'Borró' : 'Digitó'}
+                                    </Badge>
+                                  </td>
+                                  <td className={`p-2 ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>{log.grado || '—'}</td>
+                                </tr>
+                              ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    {auditTotalPages > 1 && (
+                      <div className="flex items-center justify-between">
+                        <span className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                          Página {auditPage} de {auditTotalPages}
+                        </span>
+                        <div className="flex gap-1">
+                          <Button size="sm" variant="outline" className="h-7 text-xs" disabled={auditPage <= 1} onClick={() => setAuditPage(p => Math.max(1, p - 1))}>
+                            Anterior
+                          </Button>
+                          {Array.from({ length: Math.min(5, auditTotalPages) }, (_, i) => {
+                            let pageNum: number;
+                            if (auditTotalPages <= 5) {
+                              pageNum = i + 1;
+                            } else if (auditPage <= 3) {
+                              pageNum = i + 1;
+                            } else if (auditPage >= auditTotalPages - 2) {
+                              pageNum = auditTotalPages - 4 + i;
+                            } else {
+                              pageNum = auditPage - 2 + i;
+                            }
+                            return (
+                              <Button key={pageNum} size="sm" variant={auditPage === pageNum ? "default" : "outline"} className={`h-7 w-7 text-xs p-0 ${auditPage === pageNum ? '' : (darkMode ? 'border-slate-600' : '')}`} onClick={() => setAuditPage(pageNum)}>
+                                {pageNum}
+                              </Button>
+                            );
+                          })}
+                          <Button size="sm" variant="outline" className="h-7 text-xs" disabled={auditPage >= auditTotalPages} onClick={() => setAuditPage(p => Math.min(auditTotalPages, p + 1))}>
+                            Siguiente
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            )
+          }
+        </Tabs >
+      </main >
 
       <GettingStartedWizard
         open={showWizard}
@@ -2157,7 +2523,7 @@ export default function Home() {
           <button onClick={() => { setActiveTab("admin"); saveUserState({ activeTab: "admin" }); }} aria-label="Ir a Administración" className={`flex flex-col items-center p-1.5 px-2 rounded-xl transition-colors ${activeTab === "admin" ? (darkMode ? "text-teal-400 bg-slate-800" : "text-teal-700 bg-teal-50") : (darkMode ? "text-slate-500" : "text-slate-500")}`}><Settings className="h-5 w-5 mb-0.5" /><span className="text-[9px] sm:text-[10px] font-medium">Admin</span></button>
         )}
       </nav>
-    </div>
+    </div >
   );
 }
 
