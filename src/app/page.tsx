@@ -1536,7 +1536,7 @@ export default function Home() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-600 to-emerald-700 p-4 safe-area-bottom">
       <Card className="w-full max-w-sm sm:max-w-md shadow-2xl mx-4">
         <CardHeader className="text-center pb-2">
-          <div className="mx-auto w-14 h-14 bg-white rounded-xl flex items-center justify-center mb-3 shadow-lg overflow-hidden"><img src="/api/logo" alt="Logo CEC San José de la Montaña" className="h-10 w-10 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} /></div>
+          <div className="mx-auto w-14 h-14 bg-white rounded-xl flex items-center justify-center mb-3 shadow-lg overflow-hidden"><img src="/0.png" alt="Logo CEC San José de la Montaña" className="h-10 w-10 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} /></div>
           <CardTitle className="text-base sm:text-xl">Sistema de Calificaciones</CardTitle>
           <CardDescription className="text-xs sm:text-sm">Centro Escolar Católico San José de la Montaña</CardDescription>
         </CardHeader>
@@ -1572,7 +1572,7 @@ export default function Home() {
       <header className={`shadow-lg ${darkMode ? 'bg-[#1e293b] text-white border-b border-slate-700' : 'bg-teal-600 text-white'} mobile-header`}>
         <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
-            <img src="/api/logo" alt="Logo CEC San José de la Montaña" className="h-8 w-8 sm:h-10 sm:w-10 shrink-0 object-contain rounded-full bg-white" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+            <img src="/0.png" alt="Logo CEC San José de la Montaña" className="h-8 w-8 sm:h-10 sm:w-10 shrink-0 object-contain rounded-full bg-white" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
             <div className="min-w-0"><h1 className="text-xs sm:text-sm font-bold truncate">Sistema de Calificaciones</h1><p className={`text-xs font-medium truncate ${darkMode ? 'text-slate-400' : 'text-teal-100'}`}>CEC San José de la Montaña</p></div>
           </div>
           <div className="flex items-center gap-1 sm:gap-3">
@@ -2730,13 +2730,13 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
 <body>
   <div class="boleta">
     <div class="header">
-      <img src="${window.location.origin}/api/logo" alt="Logo" class="logo" onerror="this.style.display='none'">
+      <img src="${window.location.origin}/0.png" alt="Logo" class="logo" onerror="this.style.display='none'">
       <div class="header-text">
         <h1>Centro Escolar Católico San José de la Montaña</h1>
         <h2>Centro Educativo Católico</h2>
         <p class="codigo">Código: 88125 | Departamento: 06-San Salvador | Municipio: 0614 San Salvador</p>
       </div>
-      <img src="${window.location.origin}/api/logo" alt="Logo" class="logo" onerror="this.style.display='none'">
+      <img src="${window.location.origin}/0.png" alt="Logo" class="logo" onerror="this.style.display='none'">
     </div>
 
     <div class="titulo-boleta">
@@ -2886,13 +2886,13 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
       allBoletasHtml += `
       <div class="boleta" style="page-break-after: always;">
         <div class="header">
-          <img src="${window.location.origin}/api/logo" alt="Logo" class="logo" onerror="this.style.display='none'">
+          <img src="${window.location.origin}/0.png" alt="Logo" class="logo" onerror="this.style.display='none'">
           <div class="header-text">
             <h1>Centro Escolar Católico San José de la Montaña</h1>
             <h2>Centro Educativo Católico</h2>
             <p class="codigo">Código: 88125 | Departamento: 06-San Salvador | Municipio: 0614 San Salvador</p>
           </div>
-          <img src="${window.location.origin}/api/logo" alt="Logo" class="logo" onerror="this.style.display='none'">
+          <img src="${window.location.origin}/0.png" alt="Logo" class="logo" onerror="this.style.display='none'">
         </div>
 
         <div class="titulo-boleta">
@@ -3141,12 +3141,12 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
 <body>
   <div class="boleta">
     <div class="header">
-      <img src="${window.location.origin}/api/logo" alt="Logo" class="logo">
+      <img src="${window.location.origin}/0.png" alt="Logo" class="logo">
       <div class="header-text">
         <h1>Centro Escolar Católico San José de la Montaña</h1>
         <p>Código: 88125 | San Salvador</p>
       </div>
-      <img src="${window.location.origin}/api/logo" alt="Logo" class="logo">
+      <img src="${window.location.origin}/0.png" alt="Logo" class="logo">
     </div>
     <div class="titulo-boleta">
       <h3>BOLETA DE CALIFICACIONES CONSOLIDADA - ANUAL</h3>
@@ -3251,9 +3251,9 @@ function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, e
       allBoletasHtml += `
       <div class="boleta" style="page-break-after: always;">
         <div class="header">
-          <img src="${window.location.origin}/api/logo" alt="Logo" class="logo">
+          <img src="${window.location.origin}/0.png" alt="Logo" class="logo">
           <div class="header-text"><h1>Centro Escolar Católico San José de la Montaña</h1><p>Código: 88125 | San Salvador</p></div>
-          <img src="${window.location.origin}/api/logo" alt="Logo" class="logo">
+          <img src="${window.location.origin}/0.png" alt="Logo" class="logo">
         </div>
         <div class="titulo-boleta"><h3>BOLETA DE CALIFICACIONES CONSOLIDADA - ANUAL</h3></div>
         <div class="info-estudiante">
