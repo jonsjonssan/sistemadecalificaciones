@@ -18,7 +18,10 @@
       "WebSearch",
       "Bash(findstr *)",
       "Bash(dir *)",
-      "Bash(powershell *)"
+      "Bash(powershell *)",
+      "WebFetch(github.com)",
+      "Bash(start *)",
+      "Bash(copy *)"
     ]
   },
   "$version": 3
