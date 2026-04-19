@@ -1498,6 +1498,13 @@ export default function Home() {
     }
   }, [usuario, grados, gradoSeleccionado]);
 
+  // Cargar audit logs cuando cambie la página o los filtros
+  useEffect(() => {
+    if (usuario && isAdmin(usuario.rol)) {
+      loadAuditLogs();
+    }
+  }, [auditPage, auditFilter, usuario, loadAuditLogs]);
+
   // Filtrar materias según el usuario
   useEffect(() => {
     if (!usuario || !gradoSeleccionado) {
