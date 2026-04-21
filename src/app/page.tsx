@@ -736,50 +736,6 @@ export default function Home() {
     } finally { setSaving(false); }
   }, [gradoSeleccionado, asignaturaSeleccionada, estudiantes, calificaciones, trimestreSeleccionado, toast, loadCalificaciones]);
 
-  // Navegación por teclado en tabla de calificaciones
-  const handleNavigate = useCallback((fromRow: number, fromCol: number, direction: 'up' | 'down' | 'left' | 'right') => {
-    const students = getFilteredAndSortedStudents();
-    const config = configActual;
-    const numAC = config?.numActividadesCotidianas ?? 4;
-    const numAI = config?.numActividadesIntegradoras ?? 1;
-    const tieneExamen = config?.tieneExamen ?? true;
-    const totalCols = numAC + numAI + (tieneExamen ? 1 : 0) + 1; // AC + AI + Examen (opcional) + Recup
-
-    let newRow = fromRow;
-    let newCol = fromCol;
-
-    switch (direction) {
-      case 'up':
-        newRow = Math.max(0, fromRow - 1);
-        break;
-      case 'down':
-        newRow = Math.min(students.length - 1, fromRow + 1);
-        break;
-      case 'left':
-        newCol = fromCol - 1;
-        if (newCol < 0) {
-          newCol = totalCols - 1;
-          newRow = Math.max(0, fromRow - 1);
-        }
-        break;
-      case 'right':
-        newCol = fromCol + 1;
-        if (newCol >= totalCols) {
-          newCol = 0;
-          newRow = Math.min(students.length - 1, fromRow + 1);
-        }
-        break;
-    }
-
-    // Crear key y buscar el input
-    const key = `${students[newRow]?.id}-${newCol}`;
-    const input = inputRefs.current.get(key);
-    if (input) {
-      input.focus();
-      input.select();
-    }
-  }, [configActual, getFilteredAndSortedStudents]);
-
   const handleSaveConfig = async () => {
     if (!editConfig) { console.error("[handleSaveConfig] editConfig es null"); return; }
     console.log("[handleSaveConfig] Guardando config:", { editConfig, configAplicarATodas, gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado });
@@ -1037,6 +993,50 @@ export default function Home() {
 
     return filtered;
   };
+
+  // Navegación por teclado en tabla de calificaciones
+  const handleNavigate = useCallback((fromRow: number, fromCol: number, direction: 'up' | 'down' | 'left' | 'right') => {
+    const students = getFilteredAndSortedStudents();
+    const config = configActual;
+    const numAC = config?.numActividadesCotidianas ?? 4;
+    const numAI = config?.numActividadesIntegradoras ?? 1;
+    const tieneExamen = config?.tieneExamen ?? true;
+    const totalCols = numAC + numAI + (tieneExamen ? 1 : 0) + 1; // AC + AI + Examen (opcional) + Recup
+
+    let newRow = fromRow;
+    let newCol = fromCol;
+
+    switch (direction) {
+      case 'up':
+        newRow = Math.max(0, fromRow - 1);
+        break;
+      case 'down':
+        newRow = Math.min(students.length - 1, fromRow + 1);
+        break;
+      case 'left':
+        newCol = fromCol - 1;
+        if (newCol < 0) {
+          newCol = totalCols - 1;
+          newRow = Math.max(0, fromRow - 1);
+        }
+        break;
+      case 'right':
+        newCol = fromCol + 1;
+        if (newCol >= totalCols) {
+          newCol = 0;
+          newRow = Math.min(students.length - 1, fromRow + 1);
+        }
+        break;
+    }
+
+    // Crear key y buscar el input
+    const key = `${students[newRow]?.id}-${newCol}`;
+    const input = inputRefs.current.get(key);
+    if (input) {
+      input.focus();
+      input.select();
+    }
+  }, [configActual, getFilteredAndSortedStudents]);
 
   // Exportar PDF
   const handleExportarPDF = () => {
