@@ -86,22 +86,22 @@ function NotaInput({ value, onChange, darkMode, hasError, onBlur, onNavigate, in
   const handleBlur = () => {
     // Al perder el foco, normalizar el valor: si es vacío o inválido, enviar ""
     let v = rawValue.trim();
-    if (v === "" || v === "." || v === "-") {
-      setRawValue("");
-      onChange("");
-    } else {
-      // Parsear y validar el rango
+    let normalizedValue = "";
+    if (v !== "" && v !== "." && v !== "-") {
       const n = parseFloat(v);
-      if (isNaN(n)) {
-        setRawValue("");
-        onChange("");
-      } else {
+      if (!isNaN(n)) {
         const clamped = Math.min(10, Math.max(0, n));
-        // Mantener decimales si los tiene, sino mostrar entero
-        const display = Number.isInteger(clamped) ? clamped.toString() : parseFloat(clamped.toFixed(2)).toString();
-        setRawValue(display);
-        onChange(display);
+        normalizedValue = Number.isInteger(clamped) ? clamped.toString() : parseFloat(clamped.toFixed(2)).toString();
       }
+    }
+    // Solo actualizar si el valor cambió realmente
+    const currentValue = value === null || value === undefined ? "" : String(value);
+    if (normalizedValue !== currentValue) {
+      setRawValue(normalizedValue);
+      onChange(normalizedValue);
+    } else if (normalizedValue !== rawValue) {
+      // Aunque no cambie el valor numérico, actualizar display si fue modificado
+      setRawValue(normalizedValue);
     }
     onBlur();
   };
@@ -254,12 +254,19 @@ export const CalificacionRow = React.memo(function CalificacionRow({
 
   const updateAC = useCallback(
     (i: number, v: string) => {
+      const newVal = parseVal(v);
+      let changed = false;
       setAcNotas(n => {
         const arr = [...n];
-        arr[i] = parseVal(v);
+        if (arr[i] !== newVal) {
+          arr[i] = newVal;
+          changed = true;
+        }
         return arr;
       });
-      setDirty(true);
+      if (changed) {
+        setDirty(true);
+      }
       if (v !== "")
         setAcErrors(prev => {
           const next = new Set(prev);
@@ -271,12 +278,19 @@ export const CalificacionRow = React.memo(function CalificacionRow({
   );
   const updateAI = useCallback(
     (i: number, v: string) => {
+      const newVal = parseVal(v);
+      let changed = false;
       setAiNotas(n => {
         const arr = [...n];
-        arr[i] = parseVal(v);
+        if (arr[i] !== newVal) {
+          arr[i] = newVal;
+          changed = true;
+        }
         return arr;
       });
-      setDirty(true);
+      if (changed) {
+        setDirty(true);
+      }
       if (v !== "")
         setAiErrors(prev => {
           const next = new Set(prev);
@@ -288,19 +302,25 @@ export const CalificacionRow = React.memo(function CalificacionRow({
   );
   const handleExamen = useCallback(
     (v: string) => {
-      setExamen(parseVal(v));
-      setDirty(true);
+      const newVal = parseVal(v);
+      if (examen !== newVal) {
+        setExamen(newVal);
+        setDirty(true);
+      }
       if (v !== "") setExamenError(false);
     },
-    [parseVal]
+    [parseVal, examen]
   );
   const handleRecup = useCallback(
     (v: string) => {
-      setRecup(parseVal(v));
-      setDirty(true);
+      const newVal = parseVal(v);
+      if (recup !== newVal) {
+        setRecup(newVal);
+        setDirty(true);
+      }
       if (v !== "") setRecupError(false);
     },
-    [parseVal]
+    [parseVal, recup]
   );
   const blurAC = useCallback((i: number, v: string | number | null) => {
     setAcErrors(prev => {
