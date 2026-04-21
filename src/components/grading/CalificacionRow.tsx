@@ -24,16 +24,33 @@ interface CalificacionRowProps {
   isAdmin?: boolean;
   onBorrar?: (estudianteId: string) => void;
   promedioDecimal?: boolean;
+  rowIndex?: number;
+  totalRows?: number;
+  onNavigate?: (fromRow: number, fromCol: number, direction: 'up' | 'down' | 'left' | 'right') => void;
+  inputRefs?: React.MutableRefObject<Map<string, HTMLInputElement>>;
 }
 
-function NotaInput({ value, onChange, darkMode, hasError, onBlur }: {
+function NotaInput({ value, onChange, darkMode, hasError, onBlur, onNavigate, inputKey, inputRefs }: {
   value: string | number | null;
   onChange: (v: string) => void;
   darkMode: boolean;
   hasError: boolean;
   onBlur: () => void;
+  onNavigate?: (direction: 'up' | 'down' | 'left' | 'right') => void;
+  inputKey?: string;
+  inputRefs?: React.MutableRefObject<Map<string, HTMLInputElement>>;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Registrar input en el Map de referencias
+  useEffect(() => {
+    if (inputKey && inputRefs && inputRef.current) {
+      inputRefs.current.set(inputKey, inputRef.current);
+      return () => {
+        inputRefs.current.delete(inputKey);
+      };
+    }
+  }, [inputKey, inputRefs]);
   // Inicializar con el valor raw como string para permitir escritura libre de decimales
   const [rawValue, setRawValue] = useState(() =>
     value === null || value === undefined ? "" : String(value)
@@ -89,6 +106,45 @@ function NotaInput({ value, onChange, darkMode, hasError, onBlur }: {
     onBlur();
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    switch (e.key) {
+      case 'ArrowUp':
+        e.preventDefault();
+        onNavigate?.('up');
+        break;
+      case 'ArrowDown':
+        e.preventDefault();
+        onNavigate?.('down');
+        break;
+      case 'ArrowLeft':
+        // Solo mover si el cursor está al inicio del texto
+        if (e.currentTarget.selectionStart === 0 && e.currentTarget.selectionEnd === 0) {
+          e.preventDefault();
+          onNavigate?.('left');
+        }
+        break;
+      case 'ArrowRight':
+        // Solo mover si el cursor está al final del texto
+        if (e.currentTarget.selectionStart === e.currentTarget.value.length && e.currentTarget.selectionEnd === e.currentTarget.value.length) {
+          e.preventDefault();
+          onNavigate?.('right');
+        }
+        break;
+      case 'Enter':
+        e.preventDefault();
+        onNavigate?.('down');
+        break;
+      case 'Tab':
+        e.preventDefault();
+        if (e.shiftKey) {
+          onNavigate?.('left');
+        } else {
+          onNavigate?.('right');
+        }
+        break;
+    }
+  };
+
   return (
     <input
       ref={inputRef}
@@ -97,6 +153,7 @@ function NotaInput({ value, onChange, darkMode, hasError, onBlur }: {
       value={rawValue}
       onChange={handleChange}
       onBlur={handleBlur}
+      onKeyDown={handleKeyDown}
       className={`w-full h-7 sm:h-8 text-center text-xs sm:text-sm border rounded px-0.5 transition-colors ${darkMode
         ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400"
         : "bg-white border-slate-300 text-slate-900"
@@ -120,6 +177,10 @@ export const CalificacionRow = React.memo(function CalificacionRow({
   isAdmin,
   onBorrar,
   promedioDecimal = false,
+  rowIndex = 0,
+  totalRows = 0,
+  onNavigate,
+  inputRefs,
 }: CalificacionRowProps) {
   const numAC = config?.numActividadesCotidianas ?? 4;
   const numAI = config?.numActividadesIntegradoras ?? 1;
@@ -264,6 +325,22 @@ export const CalificacionRow = React.memo(function CalificacionRow({
     setRecupError(v === "" || v === null);
   }, []);
 
+  // Helper para navegación por teclado
+  // Columnas: AC(0..numAC-1), AI(numAC..numAC+numAI-1), Examen(numAC+numAI), Recuperación(numAC+numAI+1)
+  const getColIndex = useCallback((type: 'ac' | 'ai' | 'examen' | 'recup', index: number = 0): number => {
+    if (type === 'ac') return index;
+    if (type === 'ai') return numAC + index;
+    if (type === 'examen') return numAC + numAI;
+    return numAC + numAI + (tieneExamen ? 1 : 0); // recup
+  }, [numAC, numAI, tieneExamen]);
+
+  const handleNavigate = useCallback((type: 'ac' | 'ai' | 'examen' | 'recup', index: number = 0) => {
+    return (direction: 'up' | 'down' | 'left' | 'right') => {
+      const colIndex = getColIndex(type, index);
+      onNavigate?.(rowIndex, colIndex, direction);
+    };
+  }, [getColIndex, onNavigate, rowIndex]);
+
   useEffect(() => {
     return () => {
       if (stateRef.current.dirty) {
@@ -349,6 +426,9 @@ export const CalificacionRow = React.memo(function CalificacionRow({
               darkMode={darkMode}
               hasError={acErrors.has(i)}
               onBlur={() => blurAC(i, acNotas[i])}
+              onNavigate={handleNavigate('ac', i)}
+              inputKey={`${estudiante.id}-${getColIndex('ac', i)}`}
+              inputRefs={inputRefs}
             />
           </td>
         ))}
@@ -363,6 +443,9 @@ export const CalificacionRow = React.memo(function CalificacionRow({
               darkMode={darkMode}
               hasError={aiErrors.has(i)}
               onBlur={() => blurAI(i, aiNotas[i])}
+              onNavigate={handleNavigate('ai', i)}
+              inputKey={`${estudiante.id}-${getColIndex('ai', i)}`}
+              inputRefs={inputRefs}
             />
           </td>
         ))}
@@ -377,6 +460,9 @@ export const CalificacionRow = React.memo(function CalificacionRow({
               darkMode={darkMode}
               hasError={examenError}
               onBlur={() => blurExamen(examen)}
+              onNavigate={handleNavigate('examen')}
+              inputKey={`${estudiante.id}-${getColIndex('examen')}`}
+              inputRefs={inputRefs}
             />
           </td>
         )}
@@ -392,6 +478,9 @@ export const CalificacionRow = React.memo(function CalificacionRow({
             darkMode={darkMode}
             hasError={recupError}
             onBlur={() => blurRecup(recup)}
+            onNavigate={handleNavigate('recup')}
+            inputKey={`${estudiante.id}-${getColIndex('recup')}`}
+            inputRefs={inputRefs}
           />
         </td>
         <td className={`p-2 text-center border-l ${cellBorder} ${finalBg}`}>
@@ -431,6 +520,9 @@ export const CalificacionRow = React.memo(function CalificacionRow({
             darkMode={darkMode}
             hasError={acErrors.has(i)}
             onBlur={() => blurAC(i, n)}
+            onNavigate={handleNavigate('ac', i)}
+            inputKey={`${estudiante.id}-${getColIndex('ac', i)}`}
+            inputRefs={inputRefs}
           />
         </td>
       ))}
@@ -445,6 +537,9 @@ export const CalificacionRow = React.memo(function CalificacionRow({
             darkMode={darkMode}
             hasError={aiErrors.has(i)}
             onBlur={() => blurAI(i, n)}
+            onNavigate={handleNavigate('ai', i)}
+            inputKey={`${estudiante.id}-${getColIndex('ai', i)}`}
+            inputRefs={inputRefs}
           />
         </td>
       ))}
@@ -459,6 +554,9 @@ export const CalificacionRow = React.memo(function CalificacionRow({
             darkMode={darkMode}
             hasError={examenError}
             onBlur={() => blurExamen(examen)}
+            onNavigate={handleNavigate('examen')}
+            inputKey={`${estudiante.id}-${getColIndex('examen')}`}
+            inputRefs={inputRefs}
           />
         </td>
       )}
@@ -474,6 +572,9 @@ export const CalificacionRow = React.memo(function CalificacionRow({
           darkMode={darkMode}
           hasError={recupError}
           onBlur={() => blurRecup(recup)}
+          onNavigate={handleNavigate('recup')}
+          inputKey={`${estudiante.id}-${getColIndex('recup')}`}
+          inputRefs={inputRefs}
         />
       </td>
       <td className={`p-2 text-center border-l ${cellBorder} ${finalBg}`}>
