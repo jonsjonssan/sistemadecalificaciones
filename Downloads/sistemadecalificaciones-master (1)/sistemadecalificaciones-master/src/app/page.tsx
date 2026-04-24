@@ -30,6 +30,7 @@ import { CalificacionRow } from "@/components/grading/CalificacionRow";
 import { Usuario, UsuarioSesion, Estudiante, Asignatura, AsignaturaConGrado, Calificacion, Grado, ConfigActividad, ConfigActividadPartial, ConfiguracionSistema } from "@/types";
 import { calcularPromedio, calcularPromedioFinal, parseNotas } from "@/utils/gradeCalculations";
 import { isAdmin, canDeleteUsers, getDocentesDelGrado } from "@/utils/roleHelpers";
+import { useRealtimeMonitor } from "@/hooks/useRealtimeMonitor";
 
 export default function Home() {
   const { toast } = useToast();
@@ -147,11 +148,19 @@ export default function Home() {
   const [auditTotalPages, setAuditTotalPages] = useState(1);
   const [auditTotal, setAuditTotal] = useState(0);
 
-  // Monitoreo en tiempo real
-  const [usuariosConectados, setUsuariosConectados] = useState<any[]>([]);
-  const [actividadReciente, setActividadReciente] = useState<any[]>([]);
-  const [monitoreoLoading, setMonitoreoLoading] = useState(false);
-  const [monitoreoAutoRefresh, setMonitoreoAutoRefresh] = useState(true);
+  // Monitoreo en tiempo real via WebSocket
+  const {
+    usuariosConectados,
+    actividadReciente,
+    monitoreoLoading,
+    connected: wsConnected,
+  } = useRealtimeMonitor(
+    usuario?.id,
+    usuario?.nombre,
+    usuario?.rol,
+    checkIsAdmin(usuario?.rol || "")
+  );
+
 
   // Persistence: Cargar de localStorage/sessionStorage
   useEffect(() => {
@@ -401,27 +410,13 @@ export default function Home() {
     } catch { /* ignore */ }
   }, []);
 
+  // Recarga manual de datos iniciales desde la API (fallback)
   const loadMonitoreo = useCallback(async () => {
     if (!checkIsAdmin(usuario?.rol || "")) return;
-    setMonitoreoLoading(true);
     try {
       const res = await fetch("/api/usuarios-conectados", { cache: "no-store", credentials: "include" });
-      if (res.ok) {
-        const data = await res.json();
-        setUsuariosConectados(data.usuariosConectados || []);
-        setActividadReciente(data.actividadReciente || []);
-      }
     } catch { /* ignore */ }
-    finally { setMonitoreoLoading(false); }
   }, [usuario]);
-
-  // Auto-refresh para monitoreo en tiempo real
-  useEffect(() => {
-    if (!checkIsAdmin(usuario?.rol || "") || !monitoreoAutoRefresh) return;
-    loadMonitoreo();
-    const interval = setInterval(loadMonitoreo, 30000);
-    return () => clearInterval(interval);
-  }, [usuario, monitoreoAutoRefresh, loadMonitoreo]);
 
   // Persistencia del estado del usuario
   const getStorageKey = () => usuario ? `sis_state_${usuario.id}` : null;
@@ -2396,17 +2391,14 @@ export default function Home() {
                 {/* Panel de Monitoreo en Tiempo Real */}
                 <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
                   <CardHeader className={`py-3 px-4 flex-row items-center justify-between space-y-0 ${darkMode ? 'border-slate-700' : ''}`}>
-                    <div><CardTitle className="text-sm sm:text-base">Monitoreo en Tiempo Real</CardTitle><CardDescription className={`text-xs ${darkMode ? 'text-slate-400' : ''}`}>Usuarios conectados y actividad reciente</CardDescription></div>
+                    <div>
+                      <CardTitle className="text-sm sm:text-base flex items-center gap-2">
+                        Monitoreo en Tiempo Real
+                        <span className={`h-2 w-2 rounded-full ${wsConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} title={wsConnected ? 'WebSocket conectado' : 'WebSocket desconectado'} />
+                      </CardTitle>
+                      <CardDescription className={`text-xs ${darkMode ? 'text-slate-400' : ''}`}>Usuarios conectados y actividad reciente {wsConnected ? '- En vivo' : '- Sin conexión en tiempo real'}</CardDescription>
+                    </div>
                     <div className="flex gap-2">
-                      <label className={`flex items-center gap-1.5 text-xs cursor-pointer ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                        <input
-                          type="checkbox"
-                          checked={monitoreoAutoRefresh}
-                          onChange={e => setMonitoreoAutoRefresh(e.target.checked)}
-                          className="h-3.5 w-3.5"
-                        />
-                        Auto-actualizar
-                      </label>
                       <Button size="sm" variant="outline" className={`h-7 text-xs ${darkMode ? 'border-slate-600' : ''}`} onClick={loadMonitoreo} disabled={monitoreoLoading}>
                         <RefreshCw className={`h-3.5 w-3.5 ${monitoreoLoading ? 'animate-spin' : ''}`} />
                       </Button>
