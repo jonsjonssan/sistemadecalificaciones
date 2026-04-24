@@ -465,12 +465,12 @@ useEffect(() => {
   }, [view, gradoId, summaryRange, selectedMonth, selectedYear]);
 
 useEffect(() => {
-    if (estudiantes.length > 0 && gradoId) {
+    if (estudiantes.length > 0 && gradoId && fecha) {
       loadAsistencia();
     } else {
       setAsistencias({});
     }
-  }, [estudiantes, gradoId, loadAsistencia]);
+  }, [estudiantes, gradoId, fecha, loadAsistencia]);
 
   // Cargar resumen cuando se cambia a vista summary
   useEffect(() => {
