@@ -33,7 +33,9 @@ export async function GET(req: Request) {
     if (materiaId) {
       where.materiaId = materiaId;
     }
-    // Si no se especifica materiaId, mostrar toda la asistencia del día sin importar la materia
+
+    const asistCount = await db.asistencia.count({ where });
+    console.log("GET asistencia - fecha:", fechaParam, "gradoId:", gradoId, "materiaId:", materiaId, "where:", JSON.stringify(where), "count:", asistCount);
 
     const asistencias = await db.asistencia.findMany({
       where,

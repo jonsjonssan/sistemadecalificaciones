@@ -87,8 +87,10 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
       if (asignaturaId) url += `&materiaId=${asignaturaId}`;
 
       const res = await fetch(url);
+      console.log("loadAsistencia - URL:", url, "response status:", res.status);
       if (res.ok) {
         const data = await res.json();
+        console.log("loadAsistencia - data:", data);
         const loadedAsistencias: Record<string, string> = { ...initializeAttendance() };
         data.forEach((a: any) => {
           loadedAsistencias[a.estudianteId] = a.estado;
