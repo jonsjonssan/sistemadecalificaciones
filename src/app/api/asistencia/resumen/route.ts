@@ -7,6 +7,8 @@ export async function GET(req: Request) {
     const gradoId = searchParams.get("gradoId");
     const mes = searchParams.get("mes");
     const trimestre = searchParams.get("trimestre");
+    const anual = searchParams.get("anual") === "true";
+    const año = searchParams.get("año") ? parseInt(searchParams.get("año")!) : new Date().getFullYear();
     const incluirFechas = searchParams.get("incluirFechas") === "true";
 
     if (!gradoId) {
@@ -18,17 +20,20 @@ export async function GET(req: Request) {
 
     if (trimestre) {
       const t = parseInt(trimestre);
-      const año = new Date().getFullYear();
+      const currentYear = new Date().getFullYear();
       let startMonth: number, endMonth: number;
       if (t === 1) { startMonth = 1; endMonth = 4; }
       else if (t === 2) { startMonth = 5; endMonth = 8; }
       else { startMonth = 9; endMonth = 12; }
-      startDate = new Date(año, startMonth - 1, 1).toISOString();
-      endDate = new Date(año, endMonth, 0, 23, 59, 59).toISOString();
+      startDate = new Date(currentYear, startMonth - 1, 1).toISOString();
+      endDate = new Date(currentYear, endMonth, 0, 23, 59, 59).toISOString();
+    } else if (anual) {
+      startDate = new Date(año, 0, 1).toISOString();
+      endDate = new Date(año, 11, 31, 23, 59, 59).toISOString();
     } else if (mes) {
-      const [año, m] = mes.split('-').map(Number);
-      startDate = new Date(año, m - 1, 1).toISOString();
-      endDate = new Date(año, m, 0, 23, 59, 59).toISOString();
+      const [añoMes, m] = mes.split('-').map(Number);
+      startDate = new Date(añoMes, m - 1, 1).toISOString();
+      endDate = new Date(añoMes, m, 0, 23, 59, 59).toISOString();
     }
 
     let asistencia;

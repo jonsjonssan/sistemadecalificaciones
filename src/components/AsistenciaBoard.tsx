@@ -66,7 +66,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
   const [deleting, setDeleting] = useState(false);
   const [expandedStudent, setExpandedStudent] = useState<string | null>(null);
   const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().slice(0, 7));
-  const [selectedYear] = useState<string>(new Date().getFullYear().toString());
+  const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
   const [asistenciaDetallada, setAsistenciaDetallada] = useState<Record<string, Record<string, string>>>({});
   const [dateToDelete, setDateToDelete] = useState<string>("");
   const [deletingDate, setDeletingDate] = useState<string | null>(null);
@@ -112,6 +112,8 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
       let url = `/api/asistencia/resumen?gradoId=${gradoId}&incluirFechas=true`;
       if (summaryRange === "month") {
         url += `&mes=${selectedMonth}`;
+      } else {
+        url += `&anual=true&año=${selectedYear}`;
       }
       const res = await fetch(url);
       if (res.ok) {
@@ -123,7 +125,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
       if (summaryRange === "month") {
         urlDetallada += `&mes=${selectedMonth}`;
       } else {
-        urlDetallada += `&anual=true`;
+        urlDetallada += `&anual=true&año=${selectedYear}`;
       }
       const resDetallada = await fetch(urlDetallada);
       if (resDetallada.ok) {
@@ -308,7 +310,15 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
 
     // Si es para un estudiante específico
     const estudiante = estudianteId ? estudiantes.find(e => e.id === estudianteId) : null;
-    const asistenciaEst = estudianteId ? (asistenciaDetallada[estudianteId] || {}) : {};
+    let asistenciaEst: Record<string, string> = {};
+    
+    if (estudianteId) {
+      asistenciaEst = asistenciaDetallada[estudianteId] || {};
+    } else {
+      Object.values(asistenciaDetallada).forEach((estData) => {
+        Object.assign(asistenciaEst, estData);
+      });
+    }
 
     // Calcular resumen por mes
     const resumenPorMes = monthNames.map((_, m) => {
@@ -450,17 +460,24 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     }
   };
 
-  useEffect(() => {
+useEffect(() => {
     if (view === "summary") loadResumen();
-  }, [view, gradoId, summaryRange, selectedMonth]);
+  }, [view, gradoId, summaryRange, selectedMonth, selectedYear]);
 
-  useEffect(() => {
+useEffect(() => {
     if (estudiantes.length > 0 && gradoId) {
       loadAsistencia();
     } else {
       setAsistencias({});
     }
   }, [estudiantes, gradoId, loadAsistencia]);
+
+  // Cargar resumen cuando se cambia a vista summary
+  useEffect(() => {
+    if (view === "summary" && gradoId) {
+      loadResumen();
+    }
+  }, [view, gradoId, summaryRange, selectedMonth, selectedYear]);
 
   // Sincronizar cuando cambian los props del padre
   useEffect(() => {
@@ -1008,6 +1025,16 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                     value={selectedMonth}
                     onChange={(e) => setSelectedMonth(e.target.value)}
                     className={`flex h-7 rounded-md border px-2 text-xs font-medium ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-slate-200'}`}
+                  />
+                )}
+                {summaryRange === "all" && (
+                  <input
+                    type="number"
+                    value={selectedYear}
+                    onChange={(e) => setSelectedYear(e.target.value)}
+                    min="2020"
+                    max="2030"
+                    className={`flex h-7 rounded-md border px-2 text-xs font-medium w-20 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-slate-200'}`}
                   />
                 )}
               </div>
