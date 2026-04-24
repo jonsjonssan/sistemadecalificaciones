@@ -79,14 +79,27 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     return initial;
   }, [estudiantes]);
 
+  // Ref para el AbortController de la carga de asistencia
+  const abortControllerRef = useRef<AbortController | null>(null);
+
   const loadAsistencia = useCallback(async () => {
     if (!gradoId || !fecha) return;
+    
+    // Cancelar petición anterior si existe
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    // Crear nuevo AbortController para esta petición
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+    
     setLoading(true);
     try {
       let url = `/api/asistencia?gradoId=${gradoId}&fecha=${fecha}T00:00:00.000Z`;
       if (asignaturaId) url += `&materiaId=${asignaturaId}`;
 
-      const res = await fetch(url);
+      const res = await fetch(url, { signal: abortController.signal });
       console.log("loadAsistencia - URL:", url, "response status:", res.status);
       if (res.ok) {
         const data = await res.json();
@@ -99,11 +112,19 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
       } else {
         setAsistencias(initializeAttendance());
       }
-    } catch {
+    } catch (error: any) {
+      // Ignorar errores de aborto
+      if (error.name === 'AbortError') {
+        console.log('Petición de asistencia cancelada');
+        return;
+      }
       toast({ title: "Error cargar asistencia", variant: "destructive" });
       setAsistencias(initializeAttendance());
     } finally {
-      setLoading(false);
+      // Solo quitar loading si no fue abortado
+      if (!abortController.signal.aborted) {
+        setLoading(false);
+      }
     }
   }, [gradoId, asignaturaId, fecha, initializeAttendance, toast]);
 
@@ -183,7 +204,6 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(parseInt(year), parseInt(month) - 1, day);
       const dayOfWeek = date.getDay();
-      const dayName = dayNames[dayOfWeek];
       const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
       headersHTML += `<th style="width: ${daysInMonth > 20 ? '28px' : '32px'}; text-align: center; padding: 4px 2px; background: ${isWeekend ? '#f1f5f9' : '#1e293b'}; color: ${isWeekend ? '#94a3b8' : 'white'}; font-size: 7pt; border: 1px solid #475569;">${day}<br>${dayName}</th>`;
     }
@@ -467,12 +487,21 @@ useEffect(() => {
   }, [view, gradoId, summaryRange, selectedMonth, selectedYear]);
 
 useEffect(() => {
-    if (estudiantes.length > 0 && gradoId && fecha) {
+    if (estudiantes.length > 0 && gradoId && fecha && asignaturaId !== undefined) {
       loadAsistencia();
-    } else {
+    } else if (!gradoId || !fecha) {
       setAsistencias({});
     }
-  }, [estudiantes, gradoId, fecha, loadAsistencia]);
+  }, [estudiantes, gradoId, fecha, asignaturaId, loadAsistencia]);
+
+  // Cleanup del AbortController al desmontar
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   // Cargar resumen cuando se cambia a vista summary
   useEffect(() => {
