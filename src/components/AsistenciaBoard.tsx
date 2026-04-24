@@ -133,6 +133,8 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     setLoading(true);
     try {
       let url = `/api/asistencia/resumen?gradoId=${gradoId}&incluirFechas=true`;
+      if (asignaturaId) url += `&materiaId=${asignaturaId}`;
+      
       if (summaryRange === "month") {
         url += `&mes=${selectedMonth}`;
       } else {
@@ -145,6 +147,8 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
 
       // Cargar asistencia detallada por estudiante
       let urlDetallada = `/api/asistencia/detallada?gradoId=${gradoId}`;
+      if (asignaturaId) urlDetallada += `&materiaId=${asignaturaId}`;
+      
       if (summaryRange === "month") {
         urlDetallada += `&mes=${selectedMonth}`;
       } else {

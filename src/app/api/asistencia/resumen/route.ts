@@ -36,13 +36,16 @@ export async function GET(req: Request) {
       endDate = new Date(añoMes, m, 0, 23, 59, 59).toISOString();
     }
 
+    const materiaId = searchParams.get("materiaId");
+    const materiaFilter = materiaId ? sql`AND a."materiaId" = ${materiaId}` : sql`AND a."materiaId" IS NULL`;
+
     let asistencia;
     if (startDate && endDate) {
       asistencia = await sql`
         SELECT a.estado, a.fecha, a."estudianteId", e.nombre as estudiante_nombre, e.numero as estudiante_numero
         FROM "Asistencia" a
         JOIN "Estudiante" e ON a."estudianteId" = e.id
-        WHERE e."gradoId" = ${gradoId} AND a.fecha >= ${startDate} AND a.fecha <= ${endDate}
+        WHERE a."gradoId" = ${gradoId} ${materiaFilter} AND a.fecha >= ${startDate} AND a.fecha <= ${endDate}
         ORDER BY a.fecha DESC
       `;
     } else {
@@ -50,7 +53,7 @@ export async function GET(req: Request) {
         SELECT a.estado, a.fecha, a."estudianteId", e.nombre as estudiante_nombre, e.numero as estudiante_numero
         FROM "Asistencia" a
         JOIN "Estudiante" e ON a."estudianteId" = e.id
-        WHERE e."gradoId" = ${gradoId}
+        WHERE a."gradoId" = ${gradoId} ${materiaFilter}
         ORDER BY a.fecha DESC
       `;
     }

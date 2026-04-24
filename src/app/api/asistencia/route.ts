@@ -23,16 +23,14 @@ export async function GET(req: Request) {
     endOfDay.setUTCHours(23, 59, 59, 999);
 
     const where: any = {
+      gradoId,
       estudiante: { gradoId },
       fecha: {
         gte: startOfDay,
         lte: endOfDay,
       },
+      materiaId: materiaId || null,
     };
-
-    if (materiaId) {
-      where.materiaId = materiaId;
-    }
 
     const asistCount = await db.asistencia.count({ where });
     console.log("GET asistencia - fecha:", fechaParam, "gradoId:", gradoId, "materiaId:", materiaId, "where:", JSON.stringify(where), "count:", asistCount);

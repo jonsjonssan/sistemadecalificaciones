@@ -26,6 +26,9 @@ export async function GET(req: Request) {
       endDate = new Date(año, m, 0, 23, 59, 59).toISOString();
     }
 
+    const materiaId = searchParams.get("materiaId");
+    const materiaFilter = materiaId ? sql`AND "materiaId" = ${materiaId}` : sql`AND "materiaId" IS NULL`;
+
     // Obtener estudiantes del grado
     const estudiantes = await sql`
       SELECT id, numero, nombre FROM "Estudiante" 
@@ -47,14 +50,14 @@ export async function GET(req: Request) {
         asistenciaQuery = await sql`
           SELECT fecha, estado
           FROM "Asistencia"
-          WHERE "estudianteId" = ${est.id} AND fecha >= ${startDate} AND fecha <= ${endDate}
+          WHERE "estudianteId" = ${est.id} AND "gradoId" = ${gradoId} ${materiaFilter} AND fecha >= ${startDate} AND fecha <= ${endDate}
           ORDER BY fecha ASC
         `;
       } else {
         asistenciaQuery = await sql`
           SELECT fecha, estado
           FROM "Asistencia"
-          WHERE "estudianteId" = ${est.id}
+          WHERE "estudianteId" = ${est.id} AND "gradoId" = ${gradoId} ${materiaFilter}
           ORDER BY fecha ASC
         `;
       }
