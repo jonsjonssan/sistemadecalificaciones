@@ -698,23 +698,6 @@ useEffect(() => {
                 </Select>
               </div>
 
-              <div className="flex-1 min-w-[150px] sm:min-w-[200px]">
-                <Label className={`text-xs sm:text-sm font-bold mb-1 block ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Asignatura (Opcional)</Label>
-                <Select value={asignaturaId || "ninguna"} onValueChange={(v) => setAsignaturaId(v === "ninguna" ? "" : v)}>
-                  <SelectTrigger className={`h-10 text-xs sm:text-sm font-medium ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white'}`}>
-                    <SelectValue placeholder="General / Tutor" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={"ninguna"} className="text-xs sm:text-sm font-medium italic">Asistencia General</SelectItem>
-                    {asignaturas.map(m => (
-                      <SelectItem key={m.id} value={m.id} className="text-xs sm:text-sm font-medium">
-                        {m.nombre}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
               <div className="min-w-[100px] sm:min-w-[120px] flex-1 sm:flex-none">
                 <Label className={`text-xs sm:text-sm font-bold mb-1 block ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Fecha</Label>
                 <input
