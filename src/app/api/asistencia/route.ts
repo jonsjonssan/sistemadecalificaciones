@@ -32,9 +32,8 @@ export async function GET(req: Request) {
 
     if (materiaId) {
       where.materiaId = materiaId;
-    } else {
-      where.materiaId = null;
     }
+    // Si no se especifica materiaId, mostrar toda la asistencia del día sin importar la materia
 
     const asistencias = await db.asistencia.findMany({
       where,
@@ -196,20 +195,10 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Manejar materiaId correctamente
-    if (estudianteId) {
-      // Si es borrado individual y se especifica materiaId, usarlo
-      if (materiaId) {
-        where.materiaId = materiaId;
-      }
-      // Si no se especifica materiaId en borrado individual, buscar todos
-    } else {
-      // Borrado masivo: filtrar por materiaId o null
-      if (materiaId) {
-        where.materiaId = materiaId;
-      } else {
-        where.materiaId = null;
-      }
+    if (estudianteId && materiaId) {
+      where.materiaId = materiaId;
     }
+    // Si no se especifica materiaId, eliminar toda la asistencia del día
 
     console.log("DELETE where clause:", JSON.stringify(where, null, 2));
 
