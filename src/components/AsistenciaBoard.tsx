@@ -73,6 +73,11 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
   const [dateToDelete, setDateToDelete] = useState<string>("");
   const [deletingDate, setDeletingDate] = useState<string | null>(null);
 
+  // Auto-save individual por estudiante
+  const [savingByStudent, setSavingByStudent] = useState<Record<string, boolean>>({});
+  const [savedByStudent, setSavedByStudent] = useState<Record<string, boolean>>({});
+  const autoSaveTimersRef = useRef<Record<string, NodeJS.Timeout>>({});
+
   const initializeAttendance = useCallback(() => {
     // No asumir presente por defecto; el docente debe marcar explícitamente
     return {} as Record<string, string>;
@@ -519,6 +524,8 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
       if (resumenAbortControllerRef.current) {
         resumenAbortControllerRef.current.abort();
       }
+      // Limpiar timers de auto-save
+      Object.values(autoSaveTimersRef.current).forEach(timer => clearTimeout(timer));
     };
   }, []);
 
@@ -536,8 +543,47 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     }
   }, [asignaturaInicial, asignaturas]);
 
+  const guardarEstudianteIndividual = useCallback(async (estudianteId: string, estado: string) => {
+    if (!gradoId || !fecha) return;
+    setSavingByStudent(prev => ({ ...prev, [estudianteId]: true }));
+    setSavedByStudent(prev => ({ ...prev, [estudianteId]: false }));
+    try {
+      const res = await fetch("/api/asistencia", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          asistencias: [{ estudianteId, estado }],
+          fecha: `${fecha}T00:00:00.000Z`,
+          gradoId,
+          materiaId: asignaturaId || null
+        })
+      });
+      if (res.ok) {
+        setSavedByStudent(prev => ({ ...prev, [estudianteId]: true }));
+        // Limpiar el indicador de guardado después de 2 segundos
+        setTimeout(() => {
+          setSavedByStudent(prev => ({ ...prev, [estudianteId]: false }));
+        }, 2000);
+      } else {
+        toast({ title: "Error al guardar asistencia", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Error de red al guardar", variant: "destructive" });
+    } finally {
+      setSavingByStudent(prev => ({ ...prev, [estudianteId]: false }));
+    }
+  }, [gradoId, fecha, asignaturaId, toast]);
+
   const handleEstadoChange = (estudianteId: string, estado: string) => {
     setAsistencias(prev => ({ ...prev, [estudianteId]: estado }));
+    // Auto-save individual con debounce de 800ms
+    if (autoSaveTimersRef.current[estudianteId]) {
+      clearTimeout(autoSaveTimersRef.current[estudianteId]);
+    }
+    autoSaveTimersRef.current[estudianteId] = setTimeout(() => {
+      guardarEstudianteIndividual(estudianteId, estado);
+    }, 800);
   };
 
   const handleSave = async () => {
@@ -851,7 +897,15 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                             {est.numero}
                           </TableCell>
                           <TableCell className={`font-semibold sticky-col left-10 z-10 shadow-right whitespace-nowrap ${darkMode ? 'text-white' : ''}`} style={{ backgroundColor: stickyBg }}>
-                            {est.nombre}
+                            <div className="flex items-center gap-2">
+                              {est.nombre}
+                              {savingByStudent[est.id] && (
+                                <RefreshCw className="h-3 w-3 text-teal-500 animate-spin" />
+                              )}
+                              {!savingByStudent[est.id] && savedByStudent[est.id] && (
+                                <span className="text-green-500 text-xs">✓</span>
+                              )}
+                            </div>
                           </TableCell>
                           <TableCell>
                             <div className="w-full">
