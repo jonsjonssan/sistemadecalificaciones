@@ -187,18 +187,12 @@ export async function DELETE(request: NextRequest) {
         lte: endOfDay,
       },
       gradoId,
+      materiaId: materiaId || null,
     };
 
-    // Si se proporciona estudianteId, filtrar por ese estudiante
     if (estudianteId) {
       where.estudianteId = estudianteId;
     }
-
-    // Manejar materiaId correctamente
-    if (estudianteId && materiaId) {
-      where.materiaId = materiaId;
-    }
-    // Si no se especifica materiaId, eliminar toda la asistencia del día
 
     console.log("DELETE where clause:", JSON.stringify(where, null, 2));
 

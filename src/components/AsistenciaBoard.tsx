@@ -82,6 +82,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
 
   // Ref para el AbortController de la carga de asistencia
   const abortControllerRef = useRef<AbortController | null>(null);
+  const resumenAbortControllerRef = useRef<AbortController | null>(null);
 
   const loadAsistencia = useCallback(async () => {
     if (!gradoId || !fecha) return;
@@ -131,6 +132,11 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
 
   const loadResumen = async () => {
     if (!gradoId) return;
+    if (resumenAbortControllerRef.current) {
+      resumenAbortControllerRef.current.abort();
+    }
+    const abortController = new AbortController();
+    resumenAbortControllerRef.current = abortController;
     setLoading(true);
     try {
       let url = `/api/asistencia/resumen?gradoId=${gradoId}&incluirFechas=true`;
@@ -141,12 +147,11 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
       } else {
         url += `&anual=true&año=${selectedYear}`;
       }
-      const res = await fetch(url);
-      if (res.ok) {
+      const res = await fetch(url, { signal: abortController.signal });
+      if (res.ok && !abortController.signal.aborted) {
         setResumen(await res.json());
       }
 
-      // Cargar asistencia detallada por estudiante
       let urlDetallada = `/api/asistencia/detallada?gradoId=${gradoId}`;
       if (asignaturaId) urlDetallada += `&materiaId=${asignaturaId}`;
       
@@ -155,8 +160,8 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
       } else {
         urlDetallada += `&anual=true&año=${selectedYear}`;
       }
-      const resDetallada = await fetch(urlDetallada);
-      if (resDetallada.ok) {
+      const resDetallada = await fetch(urlDetallada, { signal: abortController.signal });
+      if (resDetallada.ok && !abortController.signal.aborted) {
         const data = await resDetallada.json();
         const detalladaMap: Record<string, Record<string, string>> = {};
         data.forEach((est: any) => {
@@ -164,10 +169,14 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
         });
         setAsistenciaDetallada(detalladaMap);
       }
-    } catch (error) {
-      console.error("Error loading summary:", error);
+    } catch (error: any) {
+      if (error?.name !== "AbortError") {
+        console.error("Error loading summary:", error);
+      }
     } finally {
-      setLoading(false);
+      if (!abortController.signal.aborted) {
+        setLoading(false);
+      }
     }
   };
 
@@ -349,18 +358,19 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
 
     // Calcular resumen por mes
     const resumenPorMes = monthNames.map((_, m) => {
-      let p = 0, a = 0, pe = 0;
+      let p = 0, a = 0, pe = 0, t = 0;
       for (let d = 1; d <= daysInMonths[m]; d++) {
         const dateKey = `${year}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
         const estado = asistenciaEst[dateKey];
         if (estado === 'presente') p++;
         else if (estado === 'ausente') a++;
-        else if (estado === 'justificada' || estado === 'tarde') pe++;
+        else if (estado === 'justificada') pe++;
+        else if (estado === 'tarde') { pe++; t++; }
       }
-      return { p, a, pe };
+      return { p, a, pe, t };
     });
 
-    const totalAnual = resumenPorMes.reduce((acc, r) => ({ p: acc.p + r.p, a: acc.a + r.a, pe: acc.pe + r.pe }), { p: 0, a: 0, pe: 0 });
+    const totalAnual = resumenPorMes.reduce((acc, r) => ({ p: acc.p + r.p, a: acc.a + r.a, pe: acc.pe + r.pe, t: acc.t + r.t }), { p: 0, a: 0, pe: 0, t: 0 });
 
     // Generar filas del calendario (1-31)
     let calendarRows = '';
@@ -386,9 +396,11 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     // Filas de resumen por mes
     let summaryRows = '';
     monthNames.forEach((m, i) => {
-      summaryRows += `<tr><td>${m}</td><td style="text-align:center;">${resumenPorMes[i].p || '-'}</td><td style="text-align:center;">${resumenPorMes[i].a || '-'}</td><td style="text-align:center;">${resumenPorMes[i].pe || '-'}</td></tr>`;
+      const j = (resumenPorMes[i].pe || 0) - (resumenPorMes[i].t || 0);
+      summaryRows += `<tr><td>${m}</td><td style="text-align:center;">${resumenPorMes[i].p || '-'}</td><td style="text-align:center;">${resumenPorMes[i].a || '-'}</td><td style="text-align:center;">${j || '-'}</td><td style="text-align:center;">${resumenPorMes[i].t || '-'}</td></tr>`;
     });
-    summaryRows += `<tr style="font-weight:bold;background:#f0f0f0;"><td>TOTAL ANUAL</td><td style="text-align:center;">${totalAnual.p}</td><td style="text-align:center;">${totalAnual.a}</td><td style="text-align:center;">${totalAnual.pe}</td></tr>`;
+    const jAnual = (totalAnual.pe || 0) - (totalAnual.t || 0);
+    summaryRows += `<tr style="font-weight:bold;background:#f0f0f0;"><td>TOTAL ANUAL</td><td style="text-align:center;">${totalAnual.p}</td><td style="text-align:center;">${totalAnual.a}</td><td style="text-align:center;">${jAnual}</td><td style="text-align:center;">${totalAnual.t}</td></tr>`;
 
     const html = `<!DOCTYPE html>
 <html>
@@ -487,11 +499,13 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     }
   };
 
-useEffect(() => {
-    if (view === "summary") loadResumen();
+  useEffect(() => {
+    if (view === "summary" && gradoId) {
+      loadResumen();
+    }
   }, [view, gradoId, summaryRange, selectedMonth, selectedYear]);
 
-useEffect(() => {
+  useEffect(() => {
     if (estudiantes.length > 0 && gradoId && fecha && asignaturaId !== undefined) {
       loadAsistencia();
     } else if (!gradoId || !fecha) {
@@ -499,21 +513,16 @@ useEffect(() => {
     }
   }, [estudiantes, gradoId, fecha, asignaturaId, loadAsistencia]);
 
-  // Cleanup del AbortController al desmontar
   useEffect(() => {
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
+      if (resumenAbortControllerRef.current) {
+        resumenAbortControllerRef.current.abort();
+      }
     };
   }, []);
-
-  // Cargar resumen cuando se cambia a vista summary
-  useEffect(() => {
-    if (view === "summary" && gradoId) {
-      loadResumen();
-    }
-  }, [view, gradoId, summaryRange, selectedMonth, selectedYear]);
 
   // Sincronizar cuando cambian los props del padre
   useEffect(() => {
@@ -583,7 +592,7 @@ useEffect(() => {
         if (onPresenceEmit) {
           const gradoName = grados.find(g => g.id === gradoId);
           const mat = asignaturas.find(a => a.id === asignaturaId);
-          onPresenceEmit("Tomando asistencia", `Registró asistencia del ${fecha} en ${gradoName ? `${gradoName.numero}° "${gradoName.seccion}"` : ""}${mat ? ` - ${mat.nombre}` : ""}`, { grado: gradoId, asignatura: mat?.nombre });
+          onPresenceEmit("Tomando asistencia", `Registró asistencia del ${fecha} en ${gradoName ? `${gradoName.numero}° "${gradoName.seccion}"` : ""}${mat ? ` - ${mat.nombre}` : ""}`, { grado: gradoName ? `${gradoName.numero}° "${gradoName.seccion}"` : gradoId, asignatura: mat?.nombre });
         }
       } else {
         const data = await res.json();
