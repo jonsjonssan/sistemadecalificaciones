@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     const año = searchParams.get("año") ? parseInt(searchParams.get("año")!) : 2026;
 
     const isAdminUser = ["admin", "admin-directora", "admin-codirectora"].includes(session.rol);
-    const materiaIdsAsignadas = session.asignaturasAsignadas?.map((m: any) => m.id) || [];
+    const materiaIdsAsignadas = session.asignaturasAsignadas?.map((m: any) => m.id as string) || [];
 
     let materias;
     if (todas === "true") {
