@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { cookies } from "next/headers";
 import { verifySession } from "@/lib/session";
 import { z } from "zod";
+import { isAdmin } from "@/utils/roleHelpers";
 
 const calificacionSchema = z.object({
   estudianteId: z.string().min(1, "ID de estudiante requerido"),
@@ -405,7 +406,7 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const session = await getUsuarioSession();
-    if (!session || session.rol !== "admin") {
+    if (!session || !isAdmin(session.rol)) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 

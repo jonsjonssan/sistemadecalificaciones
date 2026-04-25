@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/neon";
+import { db } from "@/lib/db";
 import { cookies } from "next/headers";
 import { verifySession } from "@/lib/session";
 
@@ -24,8 +25,77 @@ export async function GET(request: NextRequest) {
     const todas = searchParams.get("todas");
     const año = searchParams.get("año") ? parseInt(searchParams.get("año")!) : 2026;
 
+    const isAdminUser = ["admin", "admin-directora", "admin-codirectora"].includes(session.rol);
+    const materiaIdsAsignadas = session.asignaturasAsignadas?.map((m: any) => m.id) || [];
+
     let materias;
     if (todas === "true") {
+      if (!isAdminUser && materiaIdsAsignadas.length === 0) {
+        return NextResponse.json([]);
+      }
+      if (isAdminUser) {
+        materias = await sql`
+          SELECT m.*, g.id as grado_id, g.numero as grado_numero, g.seccion as grado_seccion
+          FROM "Materia" m
+          JOIN "Grado" g ON m."gradoId" = g.id
+          WHERE g.año = ${año}
+          ORDER BY g.numero, m.nombre
+        `;
+      } else {
+        materias = await db.materia.findMany({
+          where: { id: { in: materiaIdsAsignadas } },
+          include: { grado: true },
+          orderBy: [{ grado: { numero: 'asc' } }, { nombre: 'asc' }]
+        });
+      }
+
+      const formatted = isAdminUser
+        ? materias.map((m: any) => ({
+            id: m.id,
+            nombre: m.nombre,
+            gradoId: m.gradoId,
+            grado: {
+              id: m.grado_id,
+              numero: m.grado_numero,
+              seccion: m.grado_seccion
+            }
+          }))
+        : materias.map((m: any) => ({
+            id: m.id,
+            nombre: m.nombre,
+            gradoId: m.gradoId,
+            grado: {
+              id: m.grado.id,
+              numero: m.grado.numero,
+              seccion: m.grado.seccion
+            }
+          }));
+      return NextResponse.json(formatted);
+    }
+
+    if (gradoId) {
+      if (!isAdminUser && materiaIdsAsignadas.length === 0) {
+        return NextResponse.json([]);
+      }
+      if (isAdminUser) {
+        materias = await sql`
+          SELECT * FROM "Materia"
+          WHERE "gradoId" = ${gradoId}
+          ORDER BY nombre
+        `;
+      } else {
+        materias = await db.materia.findMany({
+          where: { gradoId, id: { in: materiaIdsAsignadas } },
+          orderBy: { nombre: 'asc' }
+        });
+      }
+      return NextResponse.json(materias);
+    }
+
+    if (!isAdminUser && materiaIdsAsignadas.length === 0) {
+      return NextResponse.json([]);
+    }
+    if (isAdminUser) {
       materias = await sql`
         SELECT m.*, g.id as grado_id, g.numero as grado_numero, g.seccion as grado_seccion
         FROM "Materia" m
@@ -33,47 +103,35 @@ export async function GET(request: NextRequest) {
         WHERE g.año = ${año}
         ORDER BY g.numero, m.nombre
       `;
-
-      const formatted = materias.map((m: any) => ({
-        id: m.id,
-        nombre: m.nombre,
-        gradoId: m.gradoId,
-        grado: {
-          id: m.grado_id,
-          numero: m.grado_numero,
-          seccion: m.grado_seccion
-        }
-      }));
-      return NextResponse.json(formatted);
+    } else {
+      materias = await db.materia.findMany({
+        where: { id: { in: materiaIdsAsignadas } },
+        include: { grado: true },
+        orderBy: [{ grado: { numero: 'asc' } }, { nombre: 'asc' }]
+      });
     }
 
-    if (gradoId) {
-      materias = await sql`
-        SELECT * FROM "Materia"
-        WHERE "gradoId" = ${gradoId}
-        ORDER BY nombre
-      `;
-      return NextResponse.json(materias);
-    }
-
-    materias = await sql`
-      SELECT m.*, g.id as grado_id, g.numero as grado_numero, g.seccion as grado_seccion
-      FROM "Materia" m
-      JOIN "Grado" g ON m."gradoId" = g.id
-      WHERE g.año = ${año}
-      ORDER BY g.numero, m.nombre
-    `;
-
-    const formatted = materias.map((m: any) => ({
-      id: m.id,
-      nombre: m.nombre,
-      gradoId: m.gradoId,
-      grado: {
-        id: m.grado_id,
-        numero: m.grado_numero,
-        seccion: m.grado_seccion
-      }
-    }));
+    const formatted = isAdminUser
+      ? materias.map((m: any) => ({
+          id: m.id,
+          nombre: m.nombre,
+          gradoId: m.gradoId,
+          grado: {
+            id: m.grado_id,
+            numero: m.grado_numero,
+            seccion: m.grado_seccion
+          }
+        }))
+      : materias.map((m: any) => ({
+          id: m.id,
+          nombre: m.nombre,
+          gradoId: m.gradoId,
+          grado: {
+            id: m.grado.id,
+            numero: m.grado.numero,
+            seccion: m.grado.seccion
+          }
+        }));
     return NextResponse.json(formatted);
   } catch (error) {
     console.error("Error al obtener materias:", error);

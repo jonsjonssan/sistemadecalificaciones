@@ -377,15 +377,19 @@ export const CalificacionRow = React.memo(function CalificacionRow({
 
   useEffect(() => {
     if (!dirty) return;
-    const handler = setTimeout(() => {
+    const handler = setTimeout(async () => {
       savingRef.current = true;
       stateRef.current = { ...stateRef.current, dirty: false };
-      onSave(estudiante.id, materiaId, {
-        actividadesCotidianas: stateRef.current.acNotas,
-        actividadesIntegradoras: stateRef.current.aiNotas,
-        examenTrimestral: stateRef.current.examen,
-        recuperacion: stateRef.current.recup,
-      });
+      try {
+        await onSave(estudiante.id, materiaId, {
+          actividadesCotidianas: stateRef.current.acNotas,
+          actividadesIntegradoras: stateRef.current.aiNotas,
+          examenTrimestral: stateRef.current.examen,
+          recuperacion: stateRef.current.recup,
+        });
+      } finally {
+        savingRef.current = false;
+      }
       setDirty(false);
     }, 800);
     return () => clearTimeout(handler);

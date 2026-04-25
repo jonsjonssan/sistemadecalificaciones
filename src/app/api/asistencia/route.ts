@@ -8,7 +8,7 @@ function canAccessGrado(session: any, gradoId: string): boolean {
 }
 
 export async function GET(req: Request) {
-  const { error: authError } = await requireSession();
+  const { session, error: authError } = await requireSession();
   if (authError) return authError;
   try {
     const { searchParams } = new URL(req.url);
@@ -18,6 +18,10 @@ export async function GET(req: Request) {
 
     if (!fechaParam || !gradoId) {
       return NextResponse.json({ error: "Faltan parámetros requeridos" }, { status: 400 });
+    }
+
+    if (!canAccessGrado(session, gradoId)) {
+      return NextResponse.json({ error: "No tiene acceso a este grado" }, { status: 403 });
     }
 
     const fecha = new Date(fechaParam);

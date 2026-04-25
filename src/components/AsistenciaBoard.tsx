@@ -74,12 +74,9 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
   const [deletingDate, setDeletingDate] = useState<string | null>(null);
 
   const initializeAttendance = useCallback(() => {
-    const initial: Record<string, string> = {};
-    estudiantes.filter(e => e.activo).forEach(est => {
-      initial[est.id] = "presente";
-    });
-    return initial;
-  }, [estudiantes]);
+    // No asumir presente por defecto; el docente debe marcar explícitamente
+    return {} as Record<string, string>;
+  }, []);
 
   // Ref para el AbortController de la carga de asistencia
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -570,6 +567,18 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
       estado
     }));
 
+    // Validar que todos los estudiantes activos tengan un estado definido
+    const sinMarcar = activeStudents.filter(est => !asistencias[est.id]);
+    if (sinMarcar.length > 0) {
+      const confirmar = confirm(
+        `Hay ${sinMarcar.length} estudiante(s) sin marcar asistencia (${sinMarcar.slice(0, 3).map(e => e.nombre).join(", ")}${sinMarcar.length > 3 ? "..." : ""}).\n\n¿Deseas guardar solo los marcados?`
+      );
+      if (!confirmar) {
+        setSaving(false);
+        return;
+      }
+    }
+
     try {
       const res = await fetch("/api/asistencia", {
         method: "POST",
@@ -831,7 +840,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                   </TableHeader>
                   <TableBody>
                     {activeStudents.map((est, idx) => {
-                      const estado = asistencias[est.id] || "presente";
+                      const estado = asistencias[est.id];
                       const evenRow = idx % 2 === 0;
                       const rowBg = evenRow ? (darkMode ? 'bg-[#1e293b]' : '') : (darkMode ? 'bg-slate-800/50' : 'bg-slate-50/50');
                       const stickyBg = evenRow ? (darkMode ? 'bg-[#1e293b]' : 'bg-white') : (darkMode ? 'bg-slate-800/50' : 'bg-slate-50/50');
