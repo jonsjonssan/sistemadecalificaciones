@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { cookies } from "next/headers";
+import { verifySession } from "@/lib/session";
+import bcrypt from "bcryptjs";
 
 // API para crear usuarios docentes con sus asignaciones
 export async function POST(request: NextRequest) {
@@ -13,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verificar que sea admin
-    const sessionData = JSON.parse(session.value);
+    const sessionData = verifySession(session.value);
     if (sessionData.rol !== "admin") {
       return NextResponse.json({ error: "Solo administradores pueden ejecutar esta acción" }, { status: 403 });
     }
@@ -52,7 +54,7 @@ export async function POST(request: NextRequest) {
       const usuario = await db.usuario.create({
         data: {
           email,
-          password,
+          password: await bcrypt.hash(password, 10),
           nombre,
           rol: "docente",
         },

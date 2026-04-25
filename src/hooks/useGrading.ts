@@ -8,6 +8,7 @@ interface UseGradingReturn {
   handleSaveCalificacion: (
     estId: string,
     matId: string,
+    trimestre: number,
     data: {
       actividadesCotidianas: (number | null)[];
       actividadesIntegradoras: (number | null)[];
@@ -17,6 +18,7 @@ interface UseGradingReturn {
   ) => Promise<void>;
   handleSaveConfig: (
     materiaId: string,
+    trimestre: number,
     config: ConfigActividadPartial
   ) => Promise<void>;
   handleDeleteCalif: (
@@ -33,6 +35,7 @@ export function useGrading(): UseGradingReturn {
     async (
       estId: string,
       matId: string,
+      trimestre: number,
       data: {
         actividadesCotidianas: (number | null)[];
         actividadesIntegradoras: (number | null)[];
@@ -49,6 +52,7 @@ export function useGrading(): UseGradingReturn {
           body: JSON.stringify({
             estudianteId: estId,
             materiaId: matId,
+            trimestre,
             actividadesCotidianas: JSON.stringify(data.actividadesCotidianas),
             actividadesIntegradoras: JSON.stringify(data.actividadesIntegradoras),
             examenTrimestral: data.examenTrimestral,
@@ -66,7 +70,7 @@ export function useGrading(): UseGradingReturn {
   );
 
   const handleSaveConfig = useCallback(
-    async (materiaId: string, config: ConfigActividadPartial) => {
+    async (materiaId: string, trimestre: number, config: ConfigActividadPartial) => {
       setSaving(true);
       try {
         const res = await fetch("/api/config-actividades", {
@@ -75,7 +79,7 @@ export function useGrading(): UseGradingReturn {
           credentials: "include",
           body: JSON.stringify({
             materiaId,
-            trimestre: config.numActividadesCotidianas,
+            trimestre,
             numActividadesCotidianas: config.numActividadesCotidianas,
             numActividadesIntegradoras: config.numActividadesIntegradoras,
             tieneExamen: config.tieneExamen,

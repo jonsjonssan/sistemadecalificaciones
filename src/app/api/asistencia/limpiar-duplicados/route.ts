@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { requireAdmin } from "@/lib/api-middleware";
 
 export async function POST() {
+  const { error: authError } = await requireAdmin();
+  if (authError) return authError;
   try {
     // Obtener todos los registros de asistencia
     const allRecords = await db.asistencia.findMany({

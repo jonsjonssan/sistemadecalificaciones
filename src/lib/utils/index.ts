@@ -100,3 +100,12 @@ export function generarNumeroLista(estudiantes: { numero: number }[]): number {
   const maxNumero = Math.max(...estudiantes.map(e => e.numero));
   return maxNumero + 1;
 }
+
+export function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;");
+}

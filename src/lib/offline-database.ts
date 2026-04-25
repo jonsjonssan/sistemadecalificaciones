@@ -26,61 +26,68 @@ export interface OfflineQueueItem {
 class OfflineDatabase {
   private db: IDBPDatabase | null = null;
   private isInitialized = false;
+  private initPromise: Promise<void> | null = null;
 
   /**
    * Inicializa la conexión a IndexedDB
    */
   async init(): Promise<void> {
     if (this.isInitialized) return;
+    if (this.initPromise) return this.initPromise;
 
-    try {
-      this.db = await openDB(DB_NAME, DB_VERSION, {
-        upgrade(db, oldVersion, newVersion) {
-          // Store para caché de datos
-          if (!db.objectStoreNames.contains("cache")) {
-            db.createObjectStore("cache", { keyPath: "key" });
-          }
+    this.initPromise = (async () => {
+      try {
+        this.db = await openDB(DB_NAME, DB_VERSION, {
+          upgrade(db, oldVersion, newVersion) {
+            // Store para caché de datos
+            if (!db.objectStoreNames.contains("cache")) {
+              db.createObjectStore("cache", { keyPath: "key" });
+            }
 
-          // Store para cola de peticiones pendientes
-          if (!db.objectStoreNames.contains("offlineQueue")) {
-            const queueStore = db.createObjectStore("offlineQueue", {
-              keyPath: "id",
-            });
-            queueStore.createIndex("timestamp", "timestamp");
-          }
+            // Store para cola de peticiones pendientes
+            if (!db.objectStoreNames.contains("offlineQueue")) {
+              const queueStore = db.createObjectStore("offlineQueue", {
+                keyPath: "id",
+              });
+              queueStore.createIndex("timestamp", "timestamp");
+            }
 
-          // Store para datos de estudiantes (uso frecuente)
-          if (!db.objectStoreNames.contains("estudiantes")) {
-            const estudiantesStore = db.createObjectStore("estudiantes", {
-              keyPath: "id",
-            });
-            estudiantesStore.createIndex("grado", "grado");
-            estudiantesStore.createIndex("lastUpdated", "lastUpdated");
-          }
+            // Store para datos de estudiantes (uso frecuente)
+            if (!db.objectStoreNames.contains("estudiantes")) {
+              const estudiantesStore = db.createObjectStore("estudiantes", {
+                keyPath: "id",
+              });
+              estudiantesStore.createIndex("grado", "grado");
+              estudiantesStore.createIndex("lastUpdated", "lastUpdated");
+            }
 
-          // Store para calificaciones
-          if (!db.objectStoreNames.contains("calificaciones")) {
-            const calificacionesStore = db.createObjectStore("calificaciones", {
-              keyPath: "id",
-            });
-            calificacionesStore.createIndex("estudianteId", "estudianteId");
-            calificacionesStore.createIndex("materia", "materia");
-            calificacionesStore.createIndex("trimestre", "trimestre");
-            calificacionesStore.createIndex("lastUpdated", "lastUpdated");
-          }
+            // Store para calificaciones
+            if (!db.objectStoreNames.contains("calificaciones")) {
+              const calificacionesStore = db.createObjectStore("calificaciones", {
+                keyPath: "id",
+              });
+              calificacionesStore.createIndex("estudianteId", "estudianteId");
+              calificacionesStore.createIndex("materia", "materia");
+              calificacionesStore.createIndex("trimestre", "trimestre");
+              calificacionesStore.createIndex("lastUpdated", "lastUpdated");
+            }
 
-          // Store para configuraciones
-          if (!db.objectStoreNames.contains("configuraciones")) {
-            db.createObjectStore("configuraciones", { keyPath: "key" });
-          }
-        },
-      });
+            // Store para configuraciones
+            if (!db.objectStoreNames.contains("configuraciones")) {
+              db.createObjectStore("configuraciones", { keyPath: "key" });
+            }
+          },
+        });
 
-      this.isInitialized = true;
-    } catch (error) {
-      console.error("Error initializing IndexedDB:", error);
-      throw error;
-    }
+        this.isInitialized = true;
+      } catch (error) {
+        console.error("Error initializing IndexedDB:", error);
+        this.initPromise = null;
+        throw error;
+      }
+    })();
+
+    return this.initPromise;
   }
 
   /**
@@ -363,7 +370,7 @@ class OfflineDatabase {
    * Obtiene el tamaño aproximado de la base de datos
    */
   async getStorageSize(): Promise<number> {
-    if (navigator.storage && navigator.storage.estimate) {
+    if (typeof window !== "undefined" && navigator.storage && navigator.storage.estimate) {
       const estimate = await navigator.storage.estimate();
       return estimate.usage || 0;
     }

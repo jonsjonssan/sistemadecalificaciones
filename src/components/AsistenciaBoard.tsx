@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Calendar as CalendarIcon, Save, RefreshCw, CheckCircle2, XCircle, Clock, CalendarDays, Download, Trash2, FileCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { escapeHtml } from "@/lib/utils/index";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -130,7 +131,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     }
   }, [gradoId, asignaturaId, fecha, initializeAttendance, toast]);
 
-  const loadResumen = async () => {
+  const loadResumen = useCallback(async () => {
     if (!gradoId) return;
     if (resumenAbortControllerRef.current) {
       resumenAbortControllerRef.current.abort();
@@ -178,7 +179,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
         setLoading(false);
       }
     }
-  };
+  }, [gradoId, asignaturaId, summaryRange, selectedMonth, selectedYear, toast]);
 
   const exportCSV = () => {
     if (!resumen.length) return;
@@ -232,7 +233,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
       const asistenciaEst = asistenciaTodos[est.id] || {};
       let totalP = 0, totalA = 0, totalJ = 0, totalT = 0;
 
-      let cellsHTML = `<td style="padding: 4px 6px; border: 1px solid #cbd5e1; font-size: 8pt; background: ${idx % 2 === 0 ? '#f8fafc' : 'white'}; font-weight: 500;">${est.numero}. ${est.nombre}</td>`;
+      let cellsHTML = `<td style="padding: 4px 6px; border: 1px solid #cbd5e1; font-size: 8pt; background: ${idx % 2 === 0 ? '#f8fafc' : 'white'}; font-weight: 500;">${est.numero}. ${escapeHtml(est.nombre)}</td>`;
 
       for (let day = 1; day <= daysInMonth; day++) {
         const date = new Date(parseInt(year), parseInt(month) - 1, day);
@@ -272,7 +273,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Asistencia Mensual - ${grado?.numero}° ${grado?.seccion}</title>
+  <title>Asistencia Mensual - ${grado?.numero}° ${escapeHtml(grado?.seccion || "")}</title>
   <style>
     @page { size: letter landscape; margin: 10mm; }
     body { font-family: Arial, sans-serif; font-size: 9pt; color: #333; margin: 0; padding: 15px; }
@@ -296,7 +297,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
 
   <div class="info-section">
     <div>
-      <p><strong>Grado y Sección:</strong> ${grado?.numero}° "${grado?.seccion}"</p>
+      <p><strong>Grado y Sección:</strong> ${grado?.numero}° "${escapeHtml(grado?.seccion || "")}"</p>
       <p><strong>Director:</strong> Centro Escolar</p>
     </div>
     <div style="text-align: right;">
@@ -503,7 +504,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     if (view === "summary" && gradoId) {
       loadResumen();
     }
-  }, [view, gradoId, summaryRange, selectedMonth, selectedYear]);
+  }, [view, gradoId, summaryRange, selectedMonth, selectedYear, loadResumen]);
 
   useEffect(() => {
     if (estudiantes.length > 0 && gradoId && fecha && asignaturaId !== undefined) {

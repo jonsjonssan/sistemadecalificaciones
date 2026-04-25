@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/neon";
+import { requireSession } from "@/lib/api-middleware";
 
 export async function GET(req: Request) {
+  const { error: authError } = await requireSession();
+  if (authError) return authError;
   try {
     const { searchParams } = new URL(req.url);
     const gradoId = searchParams.get("gradoId");

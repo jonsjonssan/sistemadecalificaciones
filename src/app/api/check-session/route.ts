@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { verifySession } from "@/lib/session";
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,7 +11,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "No hay sesión activa" });
     }
 
-    const sessionData = JSON.parse(session.value);
+    const sessionData = verifySession(session.value) as any;
+    if (!sessionData) {
+      return NextResponse.json({ error: "Sesión inválida" }, { status: 401 });
+    }
     return NextResponse.json({
       hasSession: true,
       session: {

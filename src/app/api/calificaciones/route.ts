@@ -1,12 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { cookies } from "next/headers";
+import { verifySession } from "@/lib/session";
+import { z } from "zod";
+
+const calificacionSchema = z.object({
+  estudianteId: z.string().min(1, "ID de estudiante requerido"),
+  materiaId: z.string().min(1, "ID de materia requerido"),
+  trimestre: z.number().int().min(1).max(4, "Trimestre inválido"),
+  actividadesCotidianas: z.union([z.string(), z.array(z.number().min(0).max(10).nullable())]).optional(),
+  actividadesIntegradoras: z.union([z.string(), z.array(z.number().min(0).max(10).nullable())]).optional(),
+  examenTrimestral: z.number().min(0).max(10).nullable().optional(),
+  recuperacion: z.number().min(0).max(10).nullable().optional(),
+});
 
 async function getUsuarioSession() {
   const cookieStore = await cookies();
   const session = cookieStore.get("session");
   if (!session) return null;
-  return JSON.parse(session.value);
+  return verifySession(session.value);
+}
+
+function canAccessMateria(session: any, materiaId: string): boolean {
+  if (["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) return true;
+  return session.asignaturasAsignadas?.some((m: any) => m.id === materiaId) ?? false;
 }
 
 /**
@@ -186,6 +203,16 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await request.json();
+
+    // Validar entrada con Zod
+    const parsed = calificacionSchema.safeParse(data);
+    if (!parsed.success) {
+      return NextResponse.json({
+        error: "Datos inválidos",
+        details: parsed.error.flatten().fieldErrors,
+      }, { status: 400 });
+    }
+
     const {
       estudianteId,
       materiaId,
@@ -194,10 +221,10 @@ export async function POST(request: NextRequest) {
       actividadesIntegradoras,
       examenTrimestral,
       recuperacion,
-    } = data;
+    } = parsed.data;
 
-    if (!estudianteId || !materiaId || !trimestre) {
-      return NextResponse.json({ error: "Estudiante, materia y trimestre son requeridos" }, { status: 400 });
+    if (!canAccessMateria(session, materiaId)) {
+      return NextResponse.json({ error: "No tiene acceso a esta materia" }, { status: 403 });
     }
 
     // Parsear notas de actividades
@@ -248,7 +275,7 @@ export async function POST(request: NextRequest) {
     } else {
       const tieneNotas = calificacionAC !== null || calificacionAI !== null || examenTrimestral !== null;
       if (tieneNotas) {
-        const suma = (calificacionAC ?? 0) * 0.35 + (calificacionAI ?? 0) * 0.30 + ((examenTrimestral ?? 0)) * 0.35;
+        const suma = (calificacionAC ?? 0) * 0.35 + (calificacionAI ?? 0) * 0.35 + ((examenTrimestral ?? 0)) * 0.30;
         promedioFinal = isNaN(suma) ? null : suma;
         if (recuperacion !== null && recuperacion !== undefined) {
           promedioFinal = Math.min(10, (promedioFinal ?? 0) + recuperacion);
@@ -295,41 +322,40 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Actualizar notas de actividades cotidianas (borrar y recrear)
-    await db.notaActividad.deleteMany({
-      where: { calificacionId: result.id, tipo: "cotidiana" },
-    });
-
+    // Actualizar notas de actividades (borrar y recrear en transacción)
+    const notasCreateData: { calificacionId: string; tipo: string; numeroActividad: number; nota: number }[] = [];
     for (let i = 0; i < acNotas.length; i++) {
       if (acNotas[i] !== null && acNotas[i] !== undefined) {
-        await db.notaActividad.create({
-          data: {
-            calificacionId: result.id,
-            tipo: "cotidiana",
-            numeroActividad: i + 1,
-            nota: acNotas[i] as number,
-          },
+        notasCreateData.push({
+          calificacionId: result.id,
+          tipo: "cotidiana",
+          numeroActividad: i + 1,
+          nota: acNotas[i] as number,
         });
       }
     }
-
-    // Actualizar notas de actividades integradoras
-    await db.notaActividad.deleteMany({
-      where: { calificacionId: result.id, tipo: "integradora" },
-    });
-
     for (let i = 0; i < aiNotas.length; i++) {
       if (aiNotas[i] !== null && aiNotas[i] !== undefined) {
-        await db.notaActividad.create({
-          data: {
-            calificacionId: result.id,
-            tipo: "integradora",
-            numeroActividad: i + 1,
-            nota: aiNotas[i] as number,
-          },
+        notasCreateData.push({
+          calificacionId: result.id,
+          tipo: "integradora",
+          numeroActividad: i + 1,
+          nota: aiNotas[i] as number,
         });
       }
     }
+
+    await db.$transaction([
+      db.notaActividad.deleteMany({
+        where: { calificacionId: result.id, tipo: "cotidiana" },
+      }),
+      db.notaActividad.deleteMany({
+        where: { calificacionId: result.id, tipo: "integradora" },
+      }),
+      ...notasCreateData.map(data =>
+        db.notaActividad.create({ data })
+      ),
+    ]);
 
     // Obtener resultado final con notas
     const finalResult = await db.calificacion.findUnique({

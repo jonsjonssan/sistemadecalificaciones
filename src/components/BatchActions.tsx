@@ -139,7 +139,6 @@ export default function BatchActions({ gradoId, materiaId, trimestre, estudiante
           materiaId,
           trimestre: parseInt(trimestre),
           actividadesCotidianas: JSON.stringify([gradeValue]),
-          actividadesIntegradoras: JSON.stringify([]),
           examenTrimestral: null,
           recuperacion: null
         })

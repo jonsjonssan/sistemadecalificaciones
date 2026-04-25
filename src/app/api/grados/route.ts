@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/neon";
+import { db } from "@/lib/db";
 import { cookies } from "next/headers";
+import { verifySession } from "@/lib/session";
 
 export const revalidate = 300;
 
@@ -8,7 +10,7 @@ async function getUsuarioSession() {
   const cookieStore = await cookies();
   const session = cookieStore.get("session");
   if (!session) return null;
-  return JSON.parse(session.value);
+  return verifySession(session.value);
 }
 
 export async function GET(request: NextRequest) {
@@ -68,7 +70,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const usuario = JSON.parse(session.value);
+    const usuario = session as any;
     const isAdmin = ["admin", "admin-directora", "admin-codirectora"].includes(usuario.rol);
     if (!isAdmin) {
       return NextResponse.json({ error: "Solo administradores pueden crear grados" }, { status: 403 });
@@ -79,13 +81,6 @@ export async function POST(request: NextRequest) {
     if (!numero || numero < 2 || numero > 9) {
       return NextResponse.json({ error: "El grado debe estar entre 2 y 9" }, { status: 400 });
     }
-
-    const gradoResult = await sql`
-      INSERT INTO "Grado" (numero, seccion, año)
-      VALUES (${numero}, ${seccion || "A"}, ${año || 2026})
-      RETURNING *
-    `;
-    const grado = gradoResult[0];
 
     const materia6ta = numero >= 7 ? "Educación Física y Deportes" : "Desarrollo Corporal";
 
@@ -99,27 +94,41 @@ export async function POST(request: NextRequest) {
       "Educación en la Fe",
     ];
 
-    for (const nombre of materiasNombres) {
-      const materiaResult = await sql`
-        INSERT INTO "Materia" (nombre, "gradoId")
-        VALUES (${nombre}, ${grado.id})
-        RETURNING *
-      `;
-      const materia = materiaResult[0];
+    const grado = await db.$transaction(async (tx: any) => {
+      const nuevoGrado = await tx.grado.create({
+        data: {
+          numero,
+          seccion: seccion || "A",
+          año: año || 2026,
+        },
+      });
 
-      for (let trimestre = 1; trimestre <= 3; trimestre++) {
-        await sql`
-          INSERT INTO "ConfigActividad" (
-            "materiaId", trimestre,
-            "numActividadesCotidianas", "numActividadesIntegradoras",
-            "tieneExamen", "porcentajeAC", "porcentajeAI", "porcentajeExamen"
-          ) VALUES (
-            ${materia.id}, ${trimestre},
-            4, 1, true, 35.0, 35.0, 30.0
-          )
-        `;
+      for (const nombre of materiasNombres) {
+        const materia = await tx.materia.create({
+          data: {
+            nombre,
+            gradoId: nuevoGrado.id,
+          },
+        });
+
+        for (let trimestre = 1; trimestre <= 3; trimestre++) {
+          await tx.configActividad.create({
+            data: {
+              materiaId: materia.id,
+              trimestre,
+              numActividadesCotidianas: 4,
+              numActividadesIntegradoras: 1,
+              tieneExamen: true,
+              porcentajeAC: 35.0,
+              porcentajeAI: 35.0,
+              porcentajeExamen: 30.0,
+            },
+          });
+        }
       }
-    }
+
+      return nuevoGrado;
+    });
 
     return NextResponse.json(grado);
   } catch (error) {

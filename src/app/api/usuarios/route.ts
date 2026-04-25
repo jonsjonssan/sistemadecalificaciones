@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/neon";
+import { db } from "@/lib/db";
 import { cookies } from "next/headers";
+import { verifySession } from "@/lib/session";
 import bcrypt from "bcryptjs";
 import { randomUUID } from "crypto";
 
@@ -12,7 +14,7 @@ async function getUsuarioSession() {
   const cookieStore = await cookies();
   const session = cookieStore.get("session");
   if (!session) return null;
-  return JSON.parse(session.value);
+  return verifySession(session.value);
 }
 
 /**
@@ -161,44 +163,61 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "No puedes desactivarte a ti mismo" }, { status: 400 });
     }
 
-    if (nombre !== undefined || rol !== undefined || activo !== undefined || password) {
-      const current = await sql`SELECT * FROM "Usuario" WHERE id = ${id}`;
-      if (current.length === 0) {
-        return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+    const usuarioActualizado = await db.$transaction(async (tx: any) => {
+      let updatedUser: any;
+
+      if (nombre !== undefined || rol !== undefined || activo !== undefined || password) {
+        const current = await tx.usuario.findUnique({ where: { id } });
+        if (!current) {
+          throw { status: 404, message: "Usuario no encontrado" };
+        }
+
+        const updateData: any = { updatedAt: new Date() };
+        if (nombre !== undefined) updateData.nombre = nombre;
+        if (rol !== undefined) updateData.rol = rol;
+        if (activo !== undefined) updateData.activo = activo;
+        if (password) {
+          updateData.password = await bcrypt.hash(password, 10);
+        }
+
+        updatedUser = await tx.usuario.update({
+          where: { id },
+          data: updateData,
+          select: { id: true, email: true, nombre: true, rol: true, activo: true },
+        });
       }
 
-      let finalPassword = current[0].password;
-      if (password) {
-        finalPassword = await bcrypt.hash(password, 10);
-      }
-
-      await sql`
-        UPDATE "Usuario" SET
-          nombre = ${nombre || current[0].nombre},
-          rol = ${rol || current[0].rol},
-          activo = ${activo !== undefined ? activo : current[0].activo},
-          password = ${finalPassword},
-          "updatedAt" = NOW()
-        WHERE id = ${id}
-      `;
-    }
-
-    if (materiasAsignadas !== undefined) {
-      await sql`DELETE FROM "DocenteMateria" WHERE "docenteId" = ${id}`;
-      if (materiasAsignadas && materiasAsignadas.length > 0) {
-        for (const materiaId of materiasAsignadas) {
-          await sql`
-            INSERT INTO "DocenteMateria" ("id", "docenteId", "materiaId")
-            VALUES (${randomUUID()}, ${id}, ${materiaId})
-            ON CONFLICT DO NOTHING
-          `;
+      if (materiasAsignadas !== undefined) {
+        await tx.docenteMateria.deleteMany({ where: { docenteId: id } });
+        if (materiasAsignadas && materiasAsignadas.length > 0) {
+          for (const materiaId of materiasAsignadas) {
+            await tx.docenteMateria.create({
+              data: { docenteId: id, materiaId },
+            });
+          }
         }
       }
+
+      // Si no se actualizó el usuario (solo materias), obtenerlo para respuesta
+      if (!updatedUser) {
+        updatedUser = await tx.usuario.findUnique({
+          where: { id },
+          select: { id: true, email: true, nombre: true, rol: true, activo: true },
+        });
+      }
+
+      return updatedUser;
+    });
+
+    if (!usuarioActualizado) {
+      return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
     }
 
-    const usuarioActualizado = await sql`SELECT id, email, nombre, rol, activo FROM "Usuario" WHERE id = ${id}`;
-    return NextResponse.json(usuarioActualizado[0]);
+    return NextResponse.json(usuarioActualizado);
   } catch (error: any) {
+    if (error?.status === 404) {
+      return NextResponse.json({ error: error.message }, { status: 404 });
+    }
     console.error("Error al actualizar usuario:", error);
     return NextResponse.json({ error: error.message || "Error al actualizar usuario" }, { status: 500 });
   }

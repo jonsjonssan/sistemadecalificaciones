@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/neon";
 import { cookies } from "next/headers";
+import { verifySession } from "@/lib/session";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
@@ -9,7 +10,7 @@ async function getUsuarioSession() {
   const cookieStore = await cookies();
   const session = cookieStore.get("session");
   if (!session) return null;
-  return JSON.parse(session.value);
+  return verifySession(session.value);
 }
 
 export async function GET(request: NextRequest) {
@@ -48,9 +49,7 @@ export async function GET(request: NextRequest) {
           e.numero,
           m.nombre as materia,
           c.trimestre,
-          c."actividadesCotidianas",
           c."calificacionAC",
-          c."actividadesIntegradoras",
           c."calificacionAI",
           c."examenTrimestral",
           c."promedioFinal",
@@ -116,7 +115,7 @@ async function getBoletaData(gradoId: string) {
   `;
 
   const materias = await sql`
-    SELECT id, nombre FROM "Materia" WHERE "gradoId" = ${gradoId} AND activa = true
+    SELECT id, nombre FROM "Materia" WHERE "gradoId" = ${gradoId}
   `;
 
   if (estudiantes.length === 0) {

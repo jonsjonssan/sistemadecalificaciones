@@ -1,0 +1,37 @@
+import { createHmac, timingSafeEqual } from "crypto";
+
+const SESSION_SECRET = process.env.SESSION_SECRET || "change-me-in-production-use-a-long-random-string";
+
+function getHmac(data: string): string {
+  return createHmac("sha256", SESSION_SECRET).update(data).digest("hex");
+}
+
+export function signSession(data: object): string {
+  const payload = Buffer.from(JSON.stringify(data)).toString("base64url");
+  const signature = getHmac(payload);
+  return `${payload}.${signature}`;
+}
+
+export function verifySession(cookieValue: string): any {
+  const dotIndex = cookieValue.indexOf(".");
+  if (dotIndex === -1) return null;
+
+  const payload = cookieValue.substring(0, dotIndex);
+  const providedSignature = cookieValue.substring(dotIndex + 1);
+
+  const expectedSignature = getHmac(payload);
+
+  if (
+    providedSignature.length !== expectedSignature.length ||
+    !timingSafeEqual(Buffer.from(providedSignature), Buffer.from(expectedSignature))
+  ) {
+    return null;
+  }
+
+  try {
+    const decoded = Buffer.from(payload, "base64url").toString("utf8");
+    return JSON.parse(decoded);
+  } catch {
+    return null;
+  }
+}

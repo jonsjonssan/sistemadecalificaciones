@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/neon";
+import { requireAdmin } from "@/lib/api-middleware";
 
 export async function GET(request: NextRequest) {
+  const { error: authError } = await requireAdmin();
+  if (authError) return authError;
   try {
     const { searchParams } = new URL(request.url);
     const email = searchParams.get("email");

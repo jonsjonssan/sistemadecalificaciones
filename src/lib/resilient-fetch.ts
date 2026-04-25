@@ -14,12 +14,17 @@ export interface CircuitBreakerState {
   state: "closed" | "open" | "half-open";
 }
 
-// Estado del circuit breaker
-const circuitBreaker: CircuitBreakerState = {
-  failures: 0,
-  lastFailure: null,
-  state: "closed",
-};
+// Estado del circuit breaker por endpoint
+const circuitBreakers = new Map<string, CircuitBreakerState>();
+
+function getCircuitBreaker(url: string): CircuitBreakerState {
+  // Usar el pathname como clave para aislar endpoints
+  const key = new URL(url, "http://localhost").pathname;
+  if (!circuitBreakers.has(key)) {
+    circuitBreakers.set(key, { failures: 0, lastFailure: null, state: "closed" });
+  }
+  return circuitBreakers.get(key)!;
+}
 
 const FAILURE_THRESHOLD = 5;
 const RESET_TIMEOUT = 30000; // 30 segundos
@@ -54,8 +59,9 @@ export async function fetchWithCache<T = unknown>(
   }
 
   // Verificar circuit breaker
-  if (circuitBreaker.state === "open") {
-    const timeSinceLastFailure = Date.now() - (circuitBreaker.lastFailure || 0);
+  const breaker = getCircuitBreaker(url);
+  if (breaker.state === "open") {
+    const timeSinceLastFailure = Date.now() - (breaker.lastFailure || 0);
     if (timeSinceLastFailure < RESET_TIMEOUT) {
       // Intentar desde caché si está disponible
       if (useCache) {
@@ -65,7 +71,7 @@ export async function fetchWithCache<T = unknown>(
       throw new CircuitBreakerOpenError("Servicio temporalmente no disponible");
     } else {
       // Cambiar a half-open para probar
-      circuitBreaker.state = "half-open";
+      breaker.state = "half-open";
     }
   }
 
@@ -96,9 +102,9 @@ export async function fetchWithCache<T = unknown>(
       }
 
       // Resetear circuit breaker si tuvo éxito
-      if (circuitBreaker.failures > 0) {
-        circuitBreaker.failures = 0;
-        circuitBreaker.state = "closed";
+      if (breaker.failures > 0) {
+        breaker.failures = 0;
+        breaker.state = "closed";
       }
 
       return data as T;
@@ -118,11 +124,11 @@ export async function fetchWithCache<T = unknown>(
       }
 
       // Actualizar circuit breaker
-      circuitBreaker.failures += 1;
-      circuitBreaker.lastFailure = Date.now();
+      breaker.failures += 1;
+      breaker.lastFailure = Date.now();
 
-      if (circuitBreaker.failures >= FAILURE_THRESHOLD) {
-        circuitBreaker.state = "open";
+      if (breaker.failures >= FAILURE_THRESHOLD) {
+        breaker.state = "open";
       }
 
       // Si no es el último intento, esperar antes de reintentar
@@ -209,19 +215,17 @@ export async function syncOfflineQueue(
 }
 
 /**
- * Obtiene el estado del circuit breaker
+ * Obtiene el estado de todos los circuit breakers
  */
-export function getCircuitBreakerState(): CircuitBreakerState {
-  return { ...circuitBreaker };
+export function getCircuitBreakerState(): Map<string, CircuitBreakerState> {
+  return new Map(circuitBreakers);
 }
 
 /**
- * Resetea manualmente el circuit breaker
+ * Resetea manualmente todos los circuit breakers
  */
 export function resetCircuitBreaker(): void {
-  circuitBreaker.failures = 0;
-  circuitBreaker.lastFailure = null;
-  circuitBreaker.state = "closed";
+  circuitBreakers.clear();
 }
 
 // ==================== Clases de Error ====================

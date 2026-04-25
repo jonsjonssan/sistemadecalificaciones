@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { cookies } from "next/headers";
+import { verifySession } from "@/lib/session";
 
 async function getUsuarioSession() {
   try {
     const cookieStore = await cookies();
     const session = cookieStore.get("session");
     if (!session) return null;
-    const parsed = JSON.parse(session.value);
+    const parsed = verifySession(session.value);
     if (!parsed || !parsed.id) return null;
     return parsed;
   } catch (error) {

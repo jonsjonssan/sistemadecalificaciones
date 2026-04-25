@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@/lib/neon';
-import { cookies } from 'next/headers';
 import { randomUUID } from 'crypto';
+import { requireAdmin } from '@/lib/api-middleware';
 
 export const revalidate = 300;
 
-// Obtener configuración del sistema
 export async function GET() {
   try {
     let config = await sql`SELECT * FROM "ConfiguracionSistema" LIMIT 1`;
 
-    // Si no existe, crear configuración inicial
     if (config.length === 0) {
       const id = randomUUID();
       await sql`INSERT INTO "ConfiguracionSistema" (id, "añoEscolar", escuela, "nombreDirectora") VALUES (${id}, 2026, 'Centro Escolar', '_______________________________')`;
@@ -27,26 +25,10 @@ export async function GET() {
   }
 }
 
-// Actualizar configuración (solo admin)
 export async function PUT(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const session = cookieStore.get('session');
-
-    if (!session) {
-      return NextResponse.json(
-        { error: 'No autenticado' },
-        { status: 401 }
-      );
-    }
-
-    const usuario = JSON.parse(session.value);
-    if (usuario.rol !== 'admin') {
-      return NextResponse.json(
-        { error: 'No autorizado. Solo administradores pueden cambiar la configuración.' },
-        { status: 403 }
-      );
-    }
+    const { error: authError } = await requireAdmin();
+    if (authError) return authError;
 
     const body = await request.json();
     const { añoEscolar, escuela, nombreDirectora } = body;

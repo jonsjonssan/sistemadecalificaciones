@@ -11,6 +11,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { db } from "./db";
+import { verifySession } from "./session";
 
 // ==========================================
 // Session Helpers
@@ -21,7 +22,9 @@ export async function getSession() {
   const session = cookieStore.get("session");
   if (!session) return null;
   try {
-    return JSON.parse(session.value);
+    const verified = verifySession(session.value);
+    if (!verified) return null;
+    return verified as { id: string; email: string; nombre: string; rol: string; asignaturasAsignadas?: any[] };
   } catch {
     return null;
   }
@@ -38,7 +41,7 @@ export async function requireSession() {
 export async function requireAdmin() {
   const { session, error } = await requireSession();
   if (error) return { error };
-  if (session.rol !== "admin") {
+  if (!["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) {
     return { error: NextResponse.json({ error: "Solo administradores pueden realizar esta acción" }, { status: 403 }) };
   }
   return { session };
@@ -136,11 +139,3 @@ export function checkRateLimit(key: string, maxAttempts = 10, windowMs = 60 * 10
   entry.count++;
   return { allowed: true, remaining: maxAttempts - entry.count, resetIn: entry.resetTime - now };
 }
-
-// Cleanup cada 5 minutos
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, entry] of rateLimitStore.entries()) {
-    if (now > entry.resetTime) rateLimitStore.delete(key);
-  }
-}, 5 * 60 * 1000);

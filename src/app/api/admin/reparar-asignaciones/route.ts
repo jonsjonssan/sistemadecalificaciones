@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { neon } from "@neondatabase/serverless";
 import { randomUUID } from "crypto";
+import { requireAdmin } from "@/lib/api-middleware";
 
 export async function POST() {
+  const { error: authError } = await requireAdmin();
+  if (authError) return authError;
   const sql = neon(process.env.DATABASE_URL!);
 
   try {

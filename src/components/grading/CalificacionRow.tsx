@@ -218,6 +218,7 @@ export const CalificacionRow = React.memo(function CalificacionRow({
   }, [key, numAC, numAI, calificacion?.actividadesCotidianas, calificacion?.actividadesIntegradoras, calificacion?.examenTrimestral, calificacion?.recuperacion]);
 
   const stateRef = useRef({ dirty, acNotas, aiNotas, examen, recup });
+  const savingRef = useRef(false);
   useEffect(() => {
     stateRef.current = { dirty, acNotas, aiNotas, examen, recup };
   }, [dirty, acNotas, aiNotas, examen, recup]);
@@ -226,11 +227,11 @@ export const CalificacionRow = React.memo(function CalificacionRow({
     promAI = calcularPromedio(aiNotas);
   const promACPeso = config && promAC !== null ? promAC * (config.porcentajeAC / 100) : promAC !== null ? promAC * 0.35 : null;
   const promAIPeso = config && promAI !== null ? promAI * (config.porcentajeAI / 100) : promAI !== null ? promAI * 0.35 : null;
-  const promExPeso = config && config.tieneExamen && examen !== null ? examen * (config.porcentajeExamen / 100) : examen !== null ? examen * 0.35 : null;
+  const promExPeso = config && config.tieneExamen && examen !== null ? examen * (config.porcentajeExamen / 100) : examen !== null ? examen * 0.30 : null;
   const promFinal = config
     ? calcularPromedioFinal(promAC, promAI, examen, config, recup)
     : promAC !== null || promAI !== null || examen !== null
-      ? ((promAC ?? 0) * 0.35 + (promAI ?? 0) * 0.30 + (examen ?? 0) * 0.35)
+      ? ((promAC ?? 0) * 0.35 + (promAI ?? 0) * 0.35 + (examen ?? 0) * 0.30)
       : null;
 
   // Helper para formatear números: muestra entero si es entero, decimal si tiene decimales
@@ -363,7 +364,7 @@ export const CalificacionRow = React.memo(function CalificacionRow({
 
   useEffect(() => {
     return () => {
-      if (stateRef.current.dirty) {
+      if (stateRef.current.dirty && !savingRef.current) {
         onSave(estudiante.id, materiaId, {
           actividadesCotidianas: stateRef.current.acNotas,
           actividadesIntegradoras: stateRef.current.aiNotas,
@@ -377,6 +378,8 @@ export const CalificacionRow = React.memo(function CalificacionRow({
   useEffect(() => {
     if (!dirty) return;
     const handler = setTimeout(() => {
+      savingRef.current = true;
+      stateRef.current = { ...stateRef.current, dirty: false };
       onSave(estudiante.id, materiaId, {
         actividadesCotidianas: stateRef.current.acNotas,
         actividadesIntegradoras: stateRef.current.aiNotas,

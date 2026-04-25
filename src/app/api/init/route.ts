@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { neon } from "@neondatabase/serverless";
 import { randomUUID } from "crypto";
+import bcrypt from "bcryptjs";
+import { requireAdmin } from "@/lib/api-middleware";
 
 export async function POST() {
   if (process.env.NODE_ENV === "production") {
@@ -9,6 +11,9 @@ export async function POST() {
       { status: 403 }
     );
   }
+
+  const { error: authError } = await requireAdmin();
+  if (authError) return authError;
 
   const sql = neon(process.env.DATABASE_URL!);
 
@@ -70,7 +75,8 @@ export async function POST() {
         await sql`UPDATE "Usuario" SET nombre = ${u.nombre}, rol = ${u.rol}, "updatedAt" = NOW() WHERE id = ${userId}`;
       } else {
         userId = randomUUID();
-        await sql`INSERT INTO "Usuario" (id, email, password, nombre, rol, activo, "createdAt", "updatedAt") VALUES (${userId}, ${u.email}, ${u.password}, ${u.nombre}, ${u.rol}, true, NOW(), NOW())`;
+        const hashedPassword = await bcrypt.hash(u.password, 10);
+        await sql`INSERT INTO "Usuario" (id, email, password, nombre, rol, activo, "createdAt", "updatedAt") VALUES (${userId}, ${u.email}, ${hashedPassword}, ${u.nombre}, ${u.rol}, true, NOW(), NOW())`;
       }
 
       if (u.tutorGrado) {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { cookies } from "next/headers";
+import { verifySession } from "@/lib/session";
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -11,7 +12,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const sessionData = JSON.parse(session.value);
+    const sessionData = verifySession(session.value);
 
     // Solo el administrador puede resetear el sistema
     if (sessionData.rol !== "admin") {

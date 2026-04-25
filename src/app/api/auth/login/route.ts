@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import { createAuditLog } from "@/lib/audit";
+import { signSession } from "@/lib/session";
 
 // Simple in-memory rate limiter for login attempts
 // Limits: 5 attempts per minute per IP
@@ -30,16 +31,6 @@ function checkRateLimit(ip: string): { allowed: boolean; remaining: number; rese
   attempt.count++;
   return { allowed: true, remaining: maxAttempts - attempt.count, resetIn: attempt.resetTime - now };
 }
-
-// Cleanup old entries every 5 minutes
-setInterval(() => {
-  const now = Date.now();
-  for (const [ip, attempt] of loginAttempts.entries()) {
-    if (now > attempt.resetTime) {
-      loginAttempts.delete(ip);
-    }
-  }
-}, 5 * 60 * 1000);
 
 export async function POST(request: NextRequest) {
   try {
@@ -126,7 +117,7 @@ export async function POST(request: NextRequest) {
 
     console.log("[auth/login] User data to save in session:", JSON.stringify(userData));
 
-    cookieStore.set("session", JSON.stringify(userData), {
+    cookieStore.set("session", signSession(userData), {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",

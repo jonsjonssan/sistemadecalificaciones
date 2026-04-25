@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { requireSession } from "@/lib/api-middleware";
+
+function canAccessGrado(session: any, gradoId: string): boolean {
+  if (["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) return true;
+  return session.asignaturasAsignadas?.some((m: any) => m.gradoId === gradoId) ?? false;
+}
 
 export async function GET(req: Request) {
+  const { error: authError } = await requireSession();
+  if (authError) return authError;
   try {
     const { searchParams } = new URL(req.url);
     const fechaParam = searchParams.get("fecha");
@@ -65,12 +73,18 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const { session, error: authError } = await requireSession();
+  if (authError) return authError;
   try {
     const body = await req.json();
     const { asistencias, fecha: fechaStr, gradoId, materiaId } = body;
 
     if (!asistencias || !Array.isArray(asistencias) || !fechaStr || !gradoId) {
       return NextResponse.json({ error: "Datos de asistencia inválidos" }, { status: 400 });
+    }
+
+    if (!canAccessGrado(session, gradoId)) {
+      return NextResponse.json({ error: "No tiene acceso a este grado" }, { status: 403 });
     }
 
     const fecha = new Date(fechaStr);
@@ -160,6 +174,8 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE(request: NextRequest) {
+  const { session, error: authError } = await requireSession();
+  if (authError) return authError;
   try {
     const { searchParams } = new URL(request.url);
     const fechaParam = searchParams.get("fecha");
@@ -169,6 +185,10 @@ export async function DELETE(request: NextRequest) {
 
     if (!fechaParam || !gradoId) {
       return NextResponse.json({ error: "Faltan parámetros requeridos" }, { status: 400 });
+    }
+
+    if (!canAccessGrado(session, gradoId)) {
+      return NextResponse.json({ error: "No tiene acceso a este grado" }, { status: 403 });
     }
 
     const fecha = new Date(fechaParam);

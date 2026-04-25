@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { FileText, Printer, Download, Loader2 } from "lucide-react";
+import { escapeHtml } from "@/lib/utils/index";
 
 interface InformeTecnicoProps {
   open: boolean;
@@ -156,7 +157,7 @@ export default function InformeTecnicoDialog({
 
   <div class="header">
     <h1>📊 Informe Técnico Pedagógico-Didáctico</h1>
-    <h2>${configuracion.escuela} San José de la Montaña</h2>
+    <h2>${escapeHtml(configuracion.escuela)} San José de la Montaña</h2>
     <p class="subtitulo">Análisis Estadístico de Rendimiento Académico</p>
     <p class="meta">${TRIMESTRES.find(t => t.valor === trimestre)?.label} · Año Escolar ${configuracion.añoEscolar} · Generado: ${new Date().toLocaleDateString("es-SV", { year: "numeric", month: "long", day: "numeric" })}</p>
   </div>
@@ -237,14 +238,14 @@ export default function InformeTecnicoDialog({
   <div class="seccion">
     <div class="seccion-titulo">3. Cuadro de Honor — Estudiantes Destacados</div>
     ${cuadroHonor.map(g => `
-      <p style="font-size:10pt;font-weight:600;color:#0d9488;margin:8px 0 4px;">${g.grado}</p>
+      <p style="font-size:10pt;font-weight:600;color:#0d9488;margin:8px 0 4px;">${escapeHtml(g.grado)}</p>
       <table class="tabla">
         <thead><tr><th>N°</th><th>Estudiante</th><th>Promedio</th><th>Reconocimiento</th></tr></thead>
         <tbody>
           ${g.estudiantes.map((e: any, i: number) => `
           <tr>
             <td>${e.numero}</td>
-            <td>${e.nombre}</td>
+            <td>${escapeHtml(e.nombre)}</td>
             <td class="num destacado">${e.promedio.toFixed(2)}</td>
             <td>${i === 0 ? '🥇 Primer Lugar' : i === 1 ? '🥈 Segundo Lugar' : '🥉 Tercer Lugar'}</td>
           </tr>`).join('')}
@@ -260,7 +261,7 @@ export default function InformeTecnicoDialog({
     <div class="observaciones">
       <h4>⚠️ Atención Requerida</h4>
       <ul>
-        ${enRiesgo.map(g => g.estudiantes.map((e: any) => `<li><strong>${g.grado}:</strong> ${e.nombre} (N°${e.numero}) — Promedio: ${e.promedio.toFixed(2)}</li>`).join('')).join('')}
+        ${enRiesgo.map(g => g.estudiantes.map((e: any) => `<li><strong>${escapeHtml(g.grado)}:</strong> ${escapeHtml(e.nombre)} (N°${e.numero}) — Promedio: ${e.promedio.toFixed(2)}</li>`).join('')).join('')}
       </ul>
     </div>
   </div>` : ''}
@@ -287,7 +288,7 @@ export default function InformeTecnicoDialog({
   <div class="firma-section">
     <div class="firma">
       <div class="linea"></div>
-      <div class="nombre">${usuario.nombre}</div>
+      <div class="nombre">${escapeHtml(usuario.nombre)}</div>
       <div class="cargo">${usuario.rol === 'admin-directora' ? 'Directora' : usuario.rol === 'admin-codirectora' ? 'Codirectora' : 'Administrador del Sistema'}</div>
     </div>
     <div class="firma">

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,9 @@ import { CalificacionRow } from "@/components/grading/CalificacionRow";
 import { Usuario, UsuarioSesion, Estudiante, Asignatura, AsignaturaConGrado, Calificacion, Grado, ConfigActividad, ConfigActividadPartial, ConfiguracionSistema } from "@/types";
 import { calcularPromedio, calcularPromedioFinal, parseNotas } from "@/utils/gradeCalculations";
 import { isAdmin, canDeleteUsers, getDocentesDelGrado } from "@/utils/roleHelpers";
+import { escapeHtml } from "@/lib/utils/index";
 import PresenceIndicator from "@/components/PresenceIndicator";
+import BoletaList from "@/components/BoletaList";
 
 export default function Home() {
   const { toast } = useToast();
@@ -925,43 +927,41 @@ export default function Home() {
     }
   };
 
-  const getPromedioFinalForStudent = (estudianteId: string) => {
+  const getPromedioFinalForStudent = useCallback((estudianteId: string) => {
     const calif = calificaciones.find(c => c.estudianteId === estudianteId);
     return calif?.promedioFinal ?? null;
-  };
+  }, [calificaciones]);
 
-  const getPromedioACForStudent = (estudianteId: string) => {
+  const getPromedioACForStudent = useCallback((estudianteId: string) => {
     const calif = calificaciones.find(c => c.estudianteId === estudianteId);
     if (!calif?.calificacionAC) return null;
     const config = configActual;
     if (!config) return calif.calificacionAC;
     return calif.calificacionAC * (config.porcentajeAC / 100);
-  };
+  }, [calificaciones, configActual]);
 
-  const getPromedioAIForStudent = (estudianteId: string) => {
+  const getPromedioAIForStudent = useCallback((estudianteId: string) => {
     const calif = calificaciones.find(c => c.estudianteId === estudianteId);
     if (!calif?.calificacionAI) return null;
     const config = configActual;
     if (!config) return calif.calificacionAI;
     return calif.calificacionAI * (config.porcentajeAI / 100);
-  };
+  }, [calificaciones, configActual]);
 
-  const getExamenForStudent = (estudianteId: string) => {
+  const getExamenForStudent = useCallback((estudianteId: string) => {
     const calif = calificaciones.find(c => c.estudianteId === estudianteId);
     return calif?.examenTrimestral ?? null;
-  };
+  }, [calificaciones]);
 
-  // Filtrar y ordenar estudiantes
-  const getFilteredAndSortedStudents = () => {
+  // Filtrar y ordenar estudiantes (memoizado para evitar O(n²) cada render)
+  const filteredAndSortedStudents = useMemo(() => {
     let filtered = [...estudiantes];
 
-    // Búsqueda por nombre
     if (busquedaEstudiante.trim()) {
       const query = busquedaEstudiante.toLowerCase();
       filtered = filtered.filter(e => e.nombre.toLowerCase().includes(query));
     }
 
-    // Filtro por estado
     if (filtroEstado !== "todos") {
       filtered = filtered.filter(e => {
         const promFinal = getPromedioFinalForStudent(e.id);
@@ -973,7 +973,6 @@ export default function Home() {
       });
     }
 
-    // Ordenamiento
     if (sortColumn) {
       filtered.sort((a, b) => {
         let valA: number, valB: number;
@@ -1005,11 +1004,11 @@ export default function Home() {
     }
 
     return filtered;
-  };
+  }, [estudiantes, calificaciones, configActual, busquedaEstudiante, filtroEstado, sortColumn, sortDirection, getPromedioFinalForStudent, getPromedioACForStudent, getPromedioAIForStudent, getExamenForStudent]);
 
   // Navegación por teclado en tabla de calificaciones
   const handleNavigate = useCallback((fromRow: number, fromCol: number, direction: 'up' | 'down' | 'left' | 'right') => {
-    const students = getFilteredAndSortedStudents();
+    const students = filteredAndSortedStudents;
     const config = configActual;
     const numAC = config?.numActividadesCotidianas ?? 4;
     const numAI = config?.numActividadesIntegradoras ?? 1;
@@ -1049,11 +1048,11 @@ export default function Home() {
       input.focus();
       input.select();
     }
-  }, [configActual, getFilteredAndSortedStudents]);
+  }, [configActual, filteredAndSortedStudents]);
 
   // Exportar PDF
   const handleExportarPDF = () => {
-    const filtered = getFilteredAndSortedStudents();
+    const filtered = filteredAndSortedStudents;
     if (!filtered.length || !configActual) return;
 
     const materia = asignaturas.find(m => m.id === asignaturaSeleccionada);
@@ -1073,7 +1072,7 @@ export default function Home() {
 
       return [
         est.numero.toString(),
-        est.nombre,
+        escapeHtml(est.nombre),
         ...notasAC.map((n: number | null) => n !== null ? n.toString() : ""),
         promAC !== null ? promAC.toFixed(2) : "",
         ...notasAI.map((n: number | null) => n !== null ? n.toString() : ""),
@@ -1093,7 +1092,7 @@ export default function Home() {
       <html>
       <head>
         <meta charset="UTF-8">
-        <title>Calificaciones - ${grado?.numero}° ${grado?.seccion} - ${materia?.nombre}</title>
+        <title>Calificaciones - ${grado?.numero}° ${escapeHtml(grado?.seccion || "")} - ${escapeHtml(materia?.nombre || "")}</title>
         <style>
           @page { size: letter landscape; margin: 1cm; }
           body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
@@ -1108,7 +1107,7 @@ export default function Home() {
       </head>
       <body>
         <h1>Centro Escolar - Sistema de Calificaciones</h1>
-        <h2>${grado?.numero}° "${grado?.seccion}" | ${materia?.nombre} | Trimestre ${trimestreSeleccionado} | ${new Date().toLocaleDateString('es-SV')}</h2>
+        <h2>${grado?.numero}° "${escapeHtml(grado?.seccion || "")}" | ${escapeHtml(materia?.nombre || "")} | Trimestre ${trimestreSeleccionado} | ${new Date().toLocaleDateString('es-SV')}</h2>
         <table>
           <thead><tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>
           <tbody>
@@ -1130,7 +1129,7 @@ export default function Home() {
 
   // Exportar Excel
   const handleExportarExcel = () => {
-    const filtered = getFilteredAndSortedStudents();
+    const filtered = filteredAndSortedStudents;
     if (!filtered.length || !configActual) return;
 
     const materia = asignaturas.find(m => m.id === asignaturaSeleccionada);
@@ -1459,7 +1458,7 @@ export default function Home() {
         saveUserState({ gradoSeleccionado: gradosFiltrados[0].id });
       }
     }
-  }, [gradosFiltrados, gradoSeleccionado]);
+  }, [gradosFiltrados, gradoSeleccionado, loadUserState, saveUserState]);
 
   // Auto-selección de asignatura restaurada o primera disponible
   useEffect(() => {
@@ -1473,7 +1472,7 @@ export default function Home() {
         saveUserState({ asignaturaSeleccionada: asignaturasFiltradas[0].id });
       }
     }
-  }, [asignaturasFiltradas, asignaturaSeleccionada]);
+  }, [asignaturasFiltradas, asignaturaSeleccionada, loadUserState, saveUserState]);
 
   // Guardar estado automáticamente cuando cambie la selección
   useEffect(() => {
@@ -1483,7 +1482,7 @@ export default function Home() {
       }, 500);
       return () => clearTimeout(timeoutId);
     }
-  }, [gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado, activeTab, usuario]);
+  }, [gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado, activeTab, usuario, saveUserState]);
 
   // Cargar tab activo al iniciar sesión
   useEffect(() => {
@@ -1493,7 +1492,7 @@ export default function Home() {
         setActiveTab(savedState.activeTab);
       }
     }
-  }, [usuario]);
+  }, [usuario, loadUserState]);
 
   // Guardar estado antes de cerrar la pestaña - intentar guardar datos primero
   useEffect(() => {
@@ -2013,7 +2012,7 @@ export default function Home() {
                               </tr>
                             ))
                           ) : (
-                            getFilteredAndSortedStudents().map((est, idx, arr) => {
+                            filteredAndSortedStudents.map((est, idx, arr) => {
                               const calif = calificaciones.find(c => c.estudianteId === est.id);
                               return <CalificacionRow
                                 key={`${est.id}-${asignaturaSeleccionada}-${trimestreSeleccionado}-${configActual?.numActividadesCotidianas ?? 4}-${configActual?.numActividadesIntegradoras ?? 1}`}
@@ -2664,791 +2663,4 @@ interface SortableEstudianteRowProps {
   onReorder: (nuevos: Estudiante[]) => void;
 }
 
-function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, expandedBoleta, setExpandedBoleta, darkMode, configuracion }: { estudiantes: Estudiante[]; calificaciones: Calificacion[]; materias: Asignatura[]; grado?: Grado; trimestre: number; expandedBoleta: string | null; setExpandedBoleta: (id: string | null) => void; darkMode: boolean; configuracion?: { nombreDirectora?: string }; }) {
-  const [resumenAsistencia, setResumenAsistencia] = useState<any[]>([]);
-  const [todasCalificaciones, setTodasCalificaciones] = useState<Calificacion[]>([]);
-  const [resumenAsistenciaAnual, setResumenAsistenciaAnual] = useState<any[]>([]);
-  const [loadingAsistencia, setLoadingAsistencia] = useState(true);
-  const [loadingAnual, setLoadingAnual] = useState(true);
 
-  useEffect(() => {
-    const fetchAsistencia = async () => {
-      if (!grado?.id) return;
-      setLoadingAsistencia(true);
-      try {
-        const res = await fetch(`/api/asistencia/resumen?gradoId=${grado.id}&trimestre=${trimestre}`, { credentials: "include" });
-        if (res.ok) setResumenAsistencia(await res.json());
-      } catch (e) { console.error(e); }
-      finally { setLoadingAsistencia(false); }
-    };
-    fetchAsistencia();
-  }, [grado?.id, trimestre]);
-
-  useEffect(() => {
-    const fetchDatosAnuales = async () => {
-      if (!grado?.id) return;
-      setLoadingAnual(true);
-      try {
-        const resCal = await fetch(`/api/calificaciones?gradoId=${grado.id}`, { credentials: "include" });
-        if (resCal.ok) setTodasCalificaciones(await resCal.json());
-
-        const resAsist = await fetch(`/api/asistencia/resumen?gradoId=${grado.id}&anual=true`, { credentials: "include" });
-        if (resAsist.ok) setResumenAsistenciaAnual(await resAsist.json());
-      } catch (e) { console.error(e); }
-      finally { setLoadingAnual(false); }
-    };
-    fetchDatosAnuales();
-  }, [grado?.id]);
-
-  const getCalifs = (id: string) => todasCalificaciones.length > 0
-    ? todasCalificaciones.filter(c => c.estudianteId === id && c.trimestre === trimestre)
-    : calificaciones.filter(c => c.estudianteId === id && c.trimestre === trimestre);
-  const calcProm = (c: Calificacion[]) => {
-    const notas = materias.map(m => {
-      const cal = c.find(x => x.materiaId === m.id);
-      if (!cal || cal.promedioFinal === null || cal.promedioFinal === undefined) return null;
-      return cal.promedioFinal;
-    }).filter((x): x is number => x !== null && x > 0);
-    return notas.length ? notas.reduce((a, b) => a + b, 0) / notas.length : null;
-  };
-
-  const getTrimestreRomano = (t: number) => {
-    const romanos = ['I', 'II', 'III'];
-    return romanos[t - 1] || t.toString();
-  };
-
-  const getEstadoFinal = (promedio: number | null) => {
-    if (promedio === null) return 'PENDIENTE';
-    return promedio >= 5 ? 'APROBADO' : 'REPROBADO';
-  };
-
-  const getAsistInfo = (id: string) => resumenAsistencia.find(r => r.id === id) || { asistencias: 0, ausencias: 0, tardanzas: 0, total: 0 };
-
-  const imprimir = async (id: string) => {
-    const est = estudiantes.find(e => e.id === id);
-    if (!est) return;
-    const califs = getCalifs(id);
-
-    const prom = calcProm(califs);
-    const estadoFinal = getEstadoFinal(prom);
-    const año = grado?.año || new Date().getFullYear();
-    const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
-
-    // Obtener nombre del docente orientador
-    const docenteOrientador = grado?.docente?.nombre || '_______________________________';
-    const nombreDirectora = configuracion?.nombreDirectora || '_______________________________';
-
-    // Crear tabla de asignaturas
-    let tablaAsignaturas = materias.map(m => {
-      const c = califs.find(x => x.materiaId === m.id);
-      const notaFinal = c?.promedioFinal !== null && c?.promedioFinal !== undefined ? Math.round(c.promedioFinal).toString() : '-';
-      const recupVal = c?.recuperacion !== null && c?.recuperacion !== undefined ? c.recuperacion.toFixed(1) : '-';
-      const estado = c?.promedioFinal !== null && c?.promedioFinal !== undefined
-        ? (c.promedioFinal >= 5 ? 'A' : 'R')
-        : '-';
-      return `<tr>
-        <td style="text-align:left;padding:6px 8px">${m.nombre}</td>
-        <td>${c?.calificacionAC?.toFixed(1) ?? '-'}</td>
-        <td>${c?.calificacionAI?.toFixed(1) ?? '-'}</td>
-        <td>${c?.examenTrimestral?.toFixed(1) ?? '-'}</td>
-        <td>${recupVal}</td>
-        <td style="font-weight:bold">${notaFinal}</td>
-        <td style="font-weight:bold;color:${estado === 'A' ? '#059669' : estado === 'R' ? '#dc2626' : '#666'}">${estado}</td>
-      </tr>`;
-    }).join('');
-
-    const asist = getAsistInfo(id);
-
-    const html = `<!DOCTYPE html>
-<html>
-<head>
-  <title>Boleta de Calificaciones - ${est.nombre}</title>
-  <style>
-    @page { size: letter; margin: 15mm; }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Times New Roman', serif; font-size: 11pt; line-height: 1.4; color: #333; }
-    .boleta { max-width: 190mm; margin: 0 auto; padding: 5mm; }
-    
-    .header { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 15px; }
-    .logo { width: 100px; height: 100px; object-fit: contain; }
-    .header-text { text-align: center; flex: 1; }
-    .header-text h1 { font-size: 13pt; font-weight: bold; margin-bottom: 3px; text-transform: uppercase; }
-    .header-text h2 { font-size: 10pt; font-weight: normal; margin-bottom: 2px; }
-    .header-text .codigo { font-size: 8pt; color: #555; }
-    
-    .titulo-boleta { text-align: center; background: #f3f4f6; padding: 8px; margin: 15px 0; border: 1px solid #333; }
-    .titulo-boleta h3 { font-size: 12pt; text-transform: uppercase; letter-spacing: 1px; }
-    
-    .info-estudiante { display: flex; justify-content: space-between; margin-bottom: 15px; padding: 10px; background: #fafafa; border: 1px solid #ddd; border-radius: 4px; }
-    .info-estudiante p { margin: 3px 0; }
-    .info-estudiante .label { font-weight: bold; }
-    
-    table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-    th, td { border: 1px solid #333; padding: 5px 8px; text-align: center; }
-    th { background: #e5e7eb; font-weight: bold; font-size: 9pt; }
-    td { font-size: 10pt; }
-    
-    .resumen { display: flex; justify-content: space-between; margin: 20px 0; padding: 10px; background: #f0fdf4; border: 2px solid #059669; border-radius: 4px; }
-    .resumen-item { text-align: center; }
-    .resumen-item .valor { font-size: 16pt; font-weight: bold; color: #059669; }
-    .resumen-item.reprobado .valor { color: #dc2626; }
-    .resumen-item .etiqueta { font-size: 9pt; color: #666; }
-    
-    .seccion-asistencia { margin: 15px 0; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; }
-    .seccion-asistencia-header { background: #f8fafc; padding: 6px 10px; border-bottom: 1px solid #ddd; font-weight: bold; font-size: 9pt; display: flex; justify-content: space-between; }
-    .asistencia-grid { display: grid; grid-template-columns: repeat(4, 1fr); padding: 10px; text-align: center; }
-    .asistencia-item .n { font-size: 12pt; font-weight: bold; }
-    .asistencia-item .l { font-size: 8pt; color: #666; text-transform: uppercase; }
-    .asistencia-asist { color: #059669; }
-    .asistencia-aus { color: #dc2626; }
-    .asistencia-tard { color: #d97706; }
-    
-    .firmas { display: flex; justify-content: space-between; margin-top: 40px; padding-top: 20px; }
-    .firma { text-align: center; width: 45%; }
-    .firma .linea { border-top: 1px solid #333; margin-top: 50px; padding-top: 5px; }
-    .firma .nombre { font-weight: bold; font-size: 10pt; }
-    .firma .cargo { font-size: 8pt; color: #555; }
-    
-    .pie { margin-top: 30px; text-align: center; font-size: 8pt; color: #666; border-top: 1px solid #ccc; padding-top: 10px; }
-    .pie p { margin: 2px 0; }
-    
-    @media print {
-      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .no-print { display: none; }
-    }
-  </style>
-</head>
-<body>
-  <div class="boleta">
-    <div class="header">
-      <img src="${window.location.origin}/0.png" alt="Logo" class="logo" onerror="this.style.display='none'">
-      <div class="header-text">
-        <h1>Centro Escolar Católico San José de la Montaña</h1>
-        <h2>Centro Educativo Católico</h2>
-        <p class="codigo">Código: 88125 | Departamento: 06-San Salvador | Municipio: 0614 San Salvador</p>
-      </div>
-      <img src="${window.location.origin}/0.png" alt="Logo" class="logo" onerror="this.style.display='none'">
-    </div>
-
-    <div class="titulo-boleta">
-      <h3>Boleta de Calificaciones - Trimestre ${getTrimestreRomano(trimestre)}</h3>
-    </div>
-
-    <div class="info-estudiante">
-      <div>
-        <p><span class="label">Estudiante:</span> ${est.nombre}</p>
-        ${est.email ? `<p><span class="label">Correo:</span> ${est.email}</p>` : ''}
-        <p><span class="label">Grado:</span> ${grado?.numero}° Grado "${grado?.seccion}"</p>
-      </div>
-      <div style="text-align: right;">
-        <p><span class="label">Año Lectivo:</span> ${año}</p>
-        <p><span class="label">N° de Lista:</span> ${est.numero}</p>
-      </div>
-    </div>
-
-    <table>
-      <thead>
-        <tr>
-          <th style="width: 32%">Asignatura</th>
-          <th style="width: 11%">Prom. A.C.<br><small>(35%)</small></th>
-          <th style="width: 11%">Prom. A.I.<br><small>(35%)</small></th>
-          <th style="width: 11%">Examen<br><small>(30%)</small></th>
-          <th style="width: 10%">Recup.</th>
-          <th style="width: 12%">Promedio<br>Final</th>
-          <th style="width: 13%">Estado</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${tablaAsignaturas}
-      </tbody>
-    </table>
-
-    <div class="seccion-asistencia">
-      <div class="seccion-asistencia-header">
-        <span>RESUMEN DE ASISTENCIA</span>
-        <span>Período: Trimestre ${getTrimestreRomano(trimestre)}</span>
-      </div>
-      <div class="asistencia-grid">
-        <div class="asistencia-item">
-          <div class="n asistencia-asist">${asist.asistencias}</div>
-          <div class="l">Asistencias</div>
-        </div>
-        <div class="asistencia-item">
-          <div class="n asistencia-aus">${asist.ausencias}</div>
-          <div class="l">Inasistencias</div>
-        </div>
-        <div class="asistencia-item">
-          <div class="n asistencia-tard">${asist.tardanzas}</div>
-          <div class="l">Tardanzas</div>
-        </div>
-        <div class="asistencia-item">
-          <div class="n">${asist.justificadas || 0}</div>
-          <div class="l">Justificadas</div>
-        </div>
-        <div class="asistencia-item">
-          <div class="n">${asist.total}</div>
-          <div class="l">Total Días</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="resumen">
-      <div class="resumen-item">
-        <div class="valor">${prom !== null && prom !== undefined ? Math.round(prom).toString() : 'N/A'}</div>
-        <div class="etiqueta">Promedio General</div>
-      </div>
-      <div class="resumen-item ${estadoFinal === 'REPROBADO' ? 'reprobado' : ''}">
-        <div class="valor">${estadoFinal}</div>
-        <div class="etiqueta">Estado Final</div>
-      </div>
-      <div class="resumen-item">
-        <div class="valor">${getTrimestreRomano(trimestre)} Trimestre</div>
-        <div class="etiqueta">Período Evaluado</div>
-      </div>
-    </div>
-
-    <div class="firmas">
-      <div class="firma">
-        <div class="linea">
-          <p class="nombre">${docenteOrientador}</p>
-          <p class="cargo">Firma del Docente Orientador</p>
-        </div>
-      </div>
-      <div class="firma">
-        <div class="linea">
-          <p class="nombre">${nombreDirectora}</p>
-          <p class="cargo">Firma de la Directora</p>
-          <p class="cargo">Centro Escolar Católico San José de la Montaña</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="pie">
-      <p>Fecha de impresión: ${fechaImpresion}</p>
-      <p>Código: 88125 | Departamento: 06-San Salvador | Municipio: 0614 San Salvador</p>
-    </div>
-  </div>
-</body>
-</html>`;
-
-    const w = window.open('', '_blank');
-    if (w) {
-      w.document.write(html);
-      w.document.close();
-      setTimeout(() => w.print(), 500);
-    }
-  };
-
-  const imprimirTodas = async () => {
-    if (!estudiantes.length) return;
-
-    let allBoletasHtml = '';
-    const año = grado?.año || new Date().getFullYear();
-    const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
-
-    // Obtener nombre del docente orientador
-    const docenteOrientador = grado?.docente?.nombre || '_______________________________';
-    const nombreDirectora = configuracion?.nombreDirectora || '_______________________________';
-
-    for (const est of estudiantes) {
-      const califs = getCalifs(est.id);
-      const prom = calcProm(califs);
-      const estadoFinal = getEstadoFinal(prom);
-      const asist = getAsistInfo(est.id);
-
-      let tablaAsignaturas = materias.map(m => {
-        const c = califs.find(x => x.materiaId === m.id);
-        const notaFinal = c?.promedioFinal !== null && c?.promedioFinal !== undefined ? Math.round(c.promedioFinal).toString() : '-';
-        const recupVal = c?.recuperacion !== null && c?.recuperacion !== undefined ? c.recuperacion.toFixed(1) : '-';
-        const estado = c?.promedioFinal !== null && c?.promedioFinal !== undefined
-          ? (c.promedioFinal >= 5 ? 'A' : 'R')
-          : '-';
-        return `<tr>
-          <td style="text-align:left;padding:6px 8px">${m.nombre}</td>
-          <td>${c?.calificacionAC?.toFixed(1) ?? '-'}</td>
-          <td>${c?.calificacionAI?.toFixed(1) ?? '-'}</td>
-          <td>${c?.examenTrimestral?.toFixed(1) ?? '-'}</td>
-          <td>${recupVal}</td>
-          <td style="font-weight:bold">${notaFinal}</td>
-          <td style="font-weight:bold;color:${estado === 'A' ? '#059669' : estado === 'R' ? '#dc2626' : '#666'}">${estado}</td>
-        </tr>`;
-      }).join('');
-
-      allBoletasHtml += `
-      <div class="boleta" style="page-break-after: always;">
-        <div class="header">
-          <img src="${window.location.origin}/0.png" alt="Logo" class="logo" onerror="this.style.display='none'">
-          <div class="header-text">
-            <h1>Centro Escolar Católico San José de la Montaña</h1>
-            <h2>Centro Educativo Católico</h2>
-            <p class="codigo">Código: 88125 | Departamento: 06-San Salvador | Municipio: 0614 San Salvador</p>
-          </div>
-          <img src="${window.location.origin}/0.png" alt="Logo" class="logo" onerror="this.style.display='none'">
-        </div>
-
-        <div class="titulo-boleta">
-          <h3>Boleta de Calificaciones - Trimestre ${getTrimestreRomano(trimestre)}</h3>
-        </div>
-
-        <div class="info-estudiante">
-          <div>
-            <p><span class="label">Estudiante:</span> ${est.nombre}</p>
-            ${est.email ? `<p><span class="label">Correo:</span> ${est.email}</p>` : ''}
-            <p><span class="label">Grado:</span> ${grado?.numero}° Grado "${grado?.seccion}"</p>
-          </div>
-          <div style="text-align: right;">
-            <p><span class="label">Año Lectivo:</span> ${año}</p>
-            <p><span class="label">N° de Lista:</span> ${est.numero}</p>
-          </div>
-        </div>
-
-        <table>
-          <thead>
-            <tr>
-              <th style="width: 32%">Asignatura</th>
-              <th style="width: 11%">Prom. A.C.<br><small>(35%)</small></th>
-              <th style="width: 11%">Prom. A.I.<br><small>(35%)</small></th>
-              <th style="width: 11%">Examen<br><small>(30%)</small></th>
-              <th style="width: 10%">Recup.</th>
-              <th style="width: 12%">Promedio<br>Final</th>
-              <th style="width: 13%">Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${tablaAsignaturas}
-          </tbody>
-        </table>
-
-        <div class="seccion-asistencia">
-          <div class="seccion-asistencia-header">
-            <span>RESUMEN DE ASISTENCIA</span>
-            <span>Período: Trimestre ${getTrimestreRomano(trimestre)}</span>
-          </div>
-          <div class="asistencia-grid">
-            <div class="asistencia-item">
-              <div class="n asistencia-asist">${asist.asistencias}</div>
-              <div class="l">Asistencias</div>
-            </div>
-            <div class="asistencia-item">
-              <div class="n asistencia-aus">${asist.ausencias}</div>
-              <div class="l">Inasistencias</div>
-            </div>
-            <div class="asistencia-item">
-              <div class="n asistencia-tard">${asist.tardanzas}</div>
-              <div class="l">Tardanzas</div>
-            </div>
-            <div class="asistencia-item">
-              <div class="n">${asist.justificadas || 0}</div>
-              <div class="l">Justificadas</div>
-            </div>
-            <div class="asistencia-item">
-              <div class="n">${asist.total}</div>
-              <div class="l">Total Días</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="resumen">
-          <div class="resumen-item">
-            <div class="valor">${prom?.toFixed(2) ?? 'N/A'}</div>
-            <div class="etiqueta">Promedio General</div>
-          </div>
-          <div class="resumen-item ${estadoFinal === 'REPROBADO' ? 'reprobado' : ''}">
-            <div class="valor">${estadoFinal}</div>
-            <div class="etiqueta">Estado Final</div>
-          </div>
-          <div class="resumen-item">
-            <div class="valor">${getTrimestreRomano(trimestre)} Trimestre</div>
-            <div class="etiqueta">Período Evaluado</div>
-          </div>
-        </div>
-
-        <div class="firmas">
-          <div class="firma">
-            <div class="linea">
-              <p class="nombre">${docenteOrientador}</p>
-              <p class="cargo">Firma del Docente Orientador</p>
-            </div>
-          </div>
-          <div class="firma">
-            <div class="linea">
-              <p class="nombre">${nombreDirectora}</p>
-              <p class="cargo">Firma de la Directora</p>
-              <p class="cargo">Centro Escolar Católico San José de la Montaña</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="pie">
-          <p>Fecha de impresión: ${fechaImpresion}</p>
-          <p>Código: 88125 | Departamento: 06-San Salvador | Municipio: 0614 San Salvador</p>
-        </div>
-      </div>`;
-    }
-
-    const html = `<!DOCTYPE html>
-<html>
-<head>
-  <title>Boletas de Calificaciones - ${grado?.numero}° ${grado?.seccion}</title>
-  <style>
-    @page { size: letter; margin: 15mm; }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Times New Roman', serif; font-size: 11pt; line-height: 1.4; color: #333; }
-    .boleta { max-width: 190mm; margin: 0 auto; padding: 5mm; }
-    
-    .header { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 15px; }
-    .logo { width: 100px; height: 100px; object-fit: contain; }
-    .header-text { text-align: center; flex: 1; }
-    .header-text h1 { font-size: 13pt; font-weight: bold; margin-bottom: 3px; text-transform: uppercase; }
-    .header-text h2 { font-size: 10pt; font-weight: normal; margin-bottom: 2px; }
-    .header-text .codigo { font-size: 8pt; color: #555; }
-    
-    .titulo-boleta { text-align: center; background: #f3f4f6; padding: 8px; margin: 15px 0; border: 1px solid #333; }
-    .titulo-boleta h3 { font-size: 12pt; text-transform: uppercase; letter-spacing: 1px; }
-    
-    .info-estudiante { display: flex; justify-content: space-between; margin-bottom: 15px; padding: 10px; background: #fafafa; border: 1px solid #ddd; border-radius: 4px; }
-    .info-estudiante p { margin: 3px 0; }
-    .info-estudiante .label { font-weight: bold; }
-    
-    table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-    th, td { border: 1px solid #333; padding: 5px 8px; text-align: center; }
-    th { background: #e5e7eb; font-weight: bold; font-size: 9pt; }
-    td { font-size: 10pt; }
-    
-    .resumen { display: flex; justify-content: space-between; margin: 20px 0; padding: 10px; background: #f0fdf4; border: 2px solid #059669; border-radius: 4px; }
-    .resumen-item { text-align: center; }
-    .resumen-item .valor { font-size: 16pt; font-weight: bold; color: #059669; }
-    .resumen-item.reprobado .valor { color: #dc2626; }
-    .resumen-item .etiqueta { font-size: 9pt; color: #666; }
-    
-    .firmas { display: flex; justify-content: space-between; margin-top: 40px; padding-top: 20px; }
-    .firma { text-align: center; width: 45%; }
-    .firma .linea { border-top: 1px solid #333; margin-top: 50px; padding-top: 5px; }
-    .firma .nombre { font-weight: bold; font-size: 10pt; }
-    .firma .cargo { font-size: 8pt; color: #555; }
-    
-    .pie { margin-top: 30px; text-align: center; font-size: 8pt; color: #666; border-top: 1px solid #ccc; padding-top: 10px; }
-    .pie p { margin: 2px 0; }
-    
-    @media print {
-      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .no-print { display: none; }
-    }
-  </style>
-</head>
-<body>
-  ${allBoletasHtml}
-</body>
-</html>`;
-
-    const w = window.open('', '_blank');
-    if (w) {
-      w.document.write(html);
-      w.document.close();
-      setTimeout(() => w.print(), 500);
-    }
-  };
-
-  const imprimirAnual = async (id: string) => {
-    const est = estudiantes.find(e => e.id === id);
-    if (!est) return;
-
-    const año = grado?.año || new Date().getFullYear();
-    const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
-    const asistAnual = resumenAsistenciaAnual.find(r => r.id === id) || { asistencias: 0, ausencias: 0, tardanzas: 0, total: 0 };
-
-    // Obtener nombre del docente orientador
-    const docenteOrientador = grado?.docente?.nombre || '_______________________________';
-    const nombreDirectora = configuracion?.nombreDirectora || '_______________________________';
-
-    // Filtrar calificaciones de este estudiante para todo el año
-    const califsEst = todasCalificaciones.filter(c => c.estudianteId === id);
-
-    let tablaAsignaturas = materias.map(m => {
-      const c1 = califsEst.find(c => c.materiaId === m.id && c.trimestre === 1);
-      const c2 = califsEst.find(c => c.materiaId === m.id && c.trimestre === 2);
-      const c3 = califsEst.find(c => c.materiaId === m.id && c.trimestre === 3);
-
-      const n1 = c1?.promedioFinal;
-      const n2 = c2?.promedioFinal;
-      const n3 = c3?.promedioFinal;
-
-      const notasValidas = [n1, n2, n3].filter((n): n is number => n !== null && n !== undefined);
-      const promAnual = notasValidas.length ? notasValidas.reduce((a, b) => a + b, 0) / notasValidas.length : null;
-      const promAnualRedondeado = promAnual !== null ? Math.round(promAnual).toString() : '-';
-      const estado = promAnual !== null ? (promAnual >= 5 ? 'APROBADO' : 'REPROBADO') : '-';
-
-      return `<tr>
-        <td style="text-align:left;padding:6px 8px">${m.nombre}</td>
-        <td>${n1 != null ? Math.round(n1).toString() : '-'}</td>
-        <td>${n2 != null ? Math.round(n2).toString() : '-'}</td>
-        <td>${n3 != null ? Math.round(n3).toString() : '-'}</td>
-        <td style="font-weight:bold">${promAnualRedondeado}</td>
-        <td style="font-weight:bold;color:${estado === 'APROBADO' ? '#059669' : estado === 'REPROBADO' ? '#dc2626' : '#666'}">${estado}</td>
-      </tr>`;
-    }).join('');
-
-    const promGralAnual = () => {
-      const notasFinales = materias.map(m => {
-        const califs = califsEst.filter(c => c.materiaId === m.id);
-        const sums = califs.map(c => c.promedioFinal).filter((n): n is number => n !== null && n !== undefined);
-        return sums.length ? sums.reduce((a, b) => a + b, 0) / sums.length : null;
-      }).filter((n): n is number => n !== null);
-      return notasFinales.length ? notasFinales.reduce((a, b) => a + b, 0) / notasFinales.length : null;
-    };
-
-    const pFinal = promGralAnual();
-
-    const html = `<!DOCTYPE html>
-<html>
-<head>
-  <title>Boleta Anual Consolidada - ${est.nombre}</title>
-  <style>
-    @page { size: letter; margin: 15mm; }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Times New Roman', serif; font-size: 11pt; line-height: 1.4; color: #333; }
-    .boleta { max-width: 190mm; margin: 0 auto; padding: 5mm; }
-    .header { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 15px; }
-    .logo { width: 100px; height: 100px; object-fit: contain; }
-    .header-text { text-align: center; flex: 1; }
-    .header-text h1 { font-size: 13pt; font-weight: bold; margin-bottom: 3px; text-transform: uppercase; }
-    .titulo-boleta { text-align: center; background: #1e293b; color: white; padding: 8px; margin: 15px 0; border: 1px solid #333; }
-    .info-estudiante { display: flex; justify-content: space-between; margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; }
-    .info-estudiante .label { font-weight: bold; }
-    table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-    th, td { border: 1px solid #333; padding: 6px; text-align: center; }
-    th { background: #e5e7eb; font-weight: bold; font-size: 9pt; }
-    .resumen-anual { display: flex; justify-content: space-between; margin: 20px 0; padding: 15px; background: #f8fafc; border: 2px solid #1e293b; }
-    .resumen-item .valor { font-size: 18pt; font-weight: bold; }
-    .seccion-asistencia { margin: 15px 0; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; }
-    .seccion-asistencia-header { background: #f8fafc; padding: 6px 10px; border-bottom: 1px solid #ddd; font-weight: bold; font-size: 9pt; }
-    .asistencia-grid { display: grid; grid-template-columns: repeat(4, 1fr); padding: 10px; text-align: center; }
-    .asistencia-item .n { font-size: 12pt; font-weight: bold; }
-    .asistencia-item .l { font-size: 8pt; color: #666; }
-    .firmas { display: flex; justify-content: space-between; margin-top: 50px; }
-    .firma { text-align: center; width: 45%; border-top: 1px solid #333; padding-top: 5px; }
-  </style>
-</head>
-<body>
-  <div class="boleta">
-    <div class="header">
-      <img src="${window.location.origin}/0.png" alt="Logo" class="logo">
-      <div class="header-text">
-        <h1>Centro Escolar Católico San José de la Montaña</h1>
-        <p>Código: 88125 | San Salvador</p>
-      </div>
-      <img src="${window.location.origin}/0.png" alt="Logo" class="logo">
-    </div>
-    <div class="titulo-boleta">
-      <h3>BOLETA DE CALIFICACIONES CONSOLIDADA - ANUAL</h3>
-    </div>
-    <div class="info-estudiante">
-      <div>
-        <p><span class="label">Estudiante:</span> ${est.nombre}</p>
-        ${est.email ? `<p><span class="label">Correo:</span> ${est.email}</p>` : ''}
-        <p><span class="label">Grado:</span> ${grado?.numero}° Grado "${grado?.seccion}"</p>
-      </div>
-      <div style="text-align: right;">
-        <p><span class="label">Año Lectivo:</span> ${año}</p>
-        <p><span class="label">N° Lista:</span> ${est.numero}</p>
-      </div>
-    </div>
-    <table>
-      <thead>
-        <tr>
-          <th style="width: 35%">Asignatura</th>
-          <th style="width: 12%">Trim. I</th>
-          <th style="width: 12%">Trim. II</th>
-          <th style="width: 12%">Trim. III</th>
-          <th style="width: 14%">Promedio Anual</th>
-          <th style="width: 15%">Resultado</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${tablaAsignaturas}
-      </tbody>
-    </table>
-    <div class="seccion-asistencia">
-      <div class="seccion-asistencia-header">RESUMEN DE ASISTENCIA ANUAL (TOTAL ACUMULADO)</div>
-      <div class="asistencia-grid">
-        <div class="asistencia-item"><div class="n" style="color:#059669">${asistAnual.asistencias}</div><div class="l">Asistencias</div></div>
-        <div class="asistencia-item"><div class="n" style="color:#dc2626">${asistAnual.ausencias}</div><div class="l">Inasistencias</div></div>
-        <div class="asistencia-item"><div class="n" style="color:#d97706">${asistAnual.tardanzas}</div><div class="l">Tardanzas</div></div>
-        <div class="asistencia-item"><div class="n">${asistAnual.total}</div><div class="l">Total Días</div></div>
-      </div>
-    </div>
-    <div class="resumen-anual">
-      <div class="resumen-item">
-        <div class="valor" style="color:#1e293b">${pFinal !== null ? Math.round(pFinal).toString() : 'N/A'}</div>
-        <div class="etiqueta">PROMEDIO FINAL ANUAL</div>
-      </div>
-      <div class="resumen-item">
-        <div class="valor" style="color:${pFinal && pFinal >= 5 ? '#059669' : '#dc2626'}">${pFinal && pFinal >= 5 ? 'APROBADO' : 'REPROBADO'}</div>
-        <div class="etiqueta">ESTADO FINAL</div>
-      </div>
-    </div>
-    <div class="firmas">
-      <div class="firma">
-        <p>${docenteOrientador}</p>
-        <p>Firma del Docente Orientador</p>
-      </div>
-      <div class="firma">
-        <p>${nombreDirectora}</p>
-        <p>Firma de la Directora</p>
-      </div>
-    </div>
-  </div>
-</body>
-</html>`;
-
-    const w = window.open('', '_blank');
-    if (w) { w.document.write(html); w.document.close(); setTimeout(() => w.print(), 500); }
-  };
-
-  const imprimirTodasAnual = async () => {
-    if (!estudiantes.length) return;
-
-    let allBoletasHtml = '';
-    const año = grado?.año || new Date().getFullYear();
-    const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
-
-    // Obtener nombre del docente orientador
-    const docenteOrientador = grado?.docente?.nombre || '_______________________________';
-    const nombreDirectora = configuracion?.nombreDirectora || '_______________________________';
-
-    for (const est of estudiantes) {
-      const asistAnual = resumenAsistenciaAnual.find(r => r.id === est.id) || { asistencias: 0, ausencias: 0, tardanzas: 0, total: 0 };
-      const califsEst = todasCalificaciones.filter(c => c.estudianteId === est.id);
-
-      let tablaAsignaturas = materias.map(m => {
-        const c1 = califsEst.find(c => c.materiaId === m.id && c.trimestre === 1);
-        const c2 = califsEst.find(c => c.materiaId === m.id && c.trimestre === 2);
-        const c3 = califsEst.find(c => c.materiaId === m.id && c.trimestre === 3);
-        const n1 = c1?.promedioFinal, n2 = c2?.promedioFinal, n3 = c3?.promedioFinal;
-        const notasValidas = [n1, n2, n3].filter((n): n is number => n !== null && n !== undefined);
-        const promAnual = notasValidas.length ? notasValidas.reduce((a, b) => a + b, 0) / notasValidas.length : null;
-        const promAnualRedondeado = promAnual !== null ? Math.round(promAnual).toString() : '-';
-        const estado = promAnual !== null ? (promAnual >= 5 ? 'APROBADO' : 'REPROBADO') : '-';
-        return `<tr><td style="text-align:left;padding:6px 8px">${m.nombre}</td><td>${n1 != null ? Math.round(n1).toString() : '-'}</td><td>${n2 != null ? Math.round(n2).toString() : '-'}</td><td>${n3 != null ? Math.round(n3).toString() : '-'}</td><td style="font-weight:bold">${promAnualRedondeado}</td><td style="font-weight:bold;color:${estado === 'APROBADO' ? '#059669' : estado === 'REPROBADO' ? '#dc2626' : '#666'}">${estado}</td></tr>`;
-      }).join('');
-
-      const notasFinales = materias.map(m => {
-        const califs = califsEst.filter(c => c.materiaId === m.id);
-        const sums = califs.map(c => c.promedioFinal).filter((n): n is number => n !== null && n !== undefined);
-        return sums.length ? sums.reduce((a, b) => a + b, 0) / sums.length : null;
-      }).filter((n): n is number => n !== null);
-      const pFinal = notasFinales.length ? notasFinales.reduce((a, b) => a + b, 0) / notasFinales.length : null;
-
-      allBoletasHtml += `
-      <div class="boleta" style="page-break-after: always;">
-        <div class="header">
-          <img src="${window.location.origin}/0.png" alt="Logo" class="logo">
-          <div class="header-text"><h1>Centro Escolar Católico San José de la Montaña</h1><p>Código: 88125 | San Salvador</p></div>
-          <img src="${window.location.origin}/0.png" alt="Logo" class="logo">
-        </div>
-        <div class="titulo-boleta"><h3>BOLETA DE CALIFICACIONES CONSOLIDADA - ANUAL</h3></div>
-        <div class="info-estudiante">
-          <div><p><span class="label">Estudiante:</span> ${est.nombre}</p>${est.email ? `<p><span class="label">Correo:</span> ${est.email}</p>` : ''}<p><span class="label">Grado:</span> ${grado?.numero}° Grado "${grado?.seccion}"</p></div>
-          <div style="text-align: right;"><p><span class="label">Año Lectivo:</span> ${año}</p><p><span class="label">N° Lista:</span> ${est.numero}</p></div>
-        </div>
-        <table>
-          <thead><tr><th style="width: 35%">Asignatura</th><th style="width: 12%">Trim. I</th><th style="width: 12%">Trim. II</th><th style="width: 12%">Trim. III</th><th style="width: 14%">Promedio Anual</th><th style="width: 15%">Resultado</th></tr></thead>
-          <tbody>${tablaAsignaturas}</tbody>
-        </table>
-        <div class="seccion-asistencia">
-          <div class="seccion-asistencia-header">RESUMEN DE ASISTENCIA ANUAL (TOTAL ACUMULADO)</div>
-          <div class="asistencia-grid">
-            <div class="asistencia-item"><div class="n" style="color:#059669">${asistAnual.asistencias}</div><div class="l">Asistencias</div></div>
-            <div class="asistencia-item"><div class="n" style="color:#dc2626">${asistAnual.ausencias}</div><div class="l">Inasistencias</div></div>
-            <div class="asistencia-item"><div class="n" style="color:#d97706">${asistAnual.tardanzas}</div><div class="l">Tardanzas</div></div>
-            <div class="asistencia-item"><div class="n">${asistAnual.total}</div><div class="l">Total Días</div></div>
-          </div>
-        </div>
-        <div class="resumen-anual">
-          <div class="resumen-item"><div class="valor" style="color:#1e293b">${pFinal !== null ? Math.round(pFinal).toString() : 'N/A'}</div><div class="etiqueta">PROMEDIO FINAL ANUAL</div></div>
-          <div class="resumen-item"><div class="valor" style="color:${pFinal && pFinal >= 5 ? '#059669' : '#dc2626'}">${pFinal && pFinal >= 5 ? 'APROBADO' : 'REPROBADO'}</div><div class="etiqueta">ESTADO FINAL</div></div>
-        </div>
-        <div class="firmas">
-          <div class="firma"><p>${docenteOrientador}</p><p>Firma del Docente Orientador</p></div>
-          <div class="firma"><p>${nombreDirectora}</p><p>Firma de la Directora</p></div>
-        </div>
-      </div>`;
-    }
-
-    const html = `<!DOCTYPE html><html><head><title>Boletas Consolidadas - ${grado?.numero}° ${grado?.seccion}</title>
-    <style>
-      @page { size: letter; margin: 15mm; }
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      body { font-family: 'Times New Roman', serif; font-size: 11pt; line-height: 1.4; color: #333; }
-      .boleta { max-width: 190mm; margin: 0 auto; padding: 5mm; }
-      .header { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 15px; }
-      .logo { width: 100px; height: 100px; object-fit: contain; }
-      .header-text { text-align: center; flex: 1; }
-      .header-text h1 { font-size: 13pt; font-weight: bold; margin-bottom: 3px; text-transform: uppercase; }
-      .titulo-boleta { text-align: center; background: #1e293b; color: white; padding: 8px; margin: 15px 0; border: 1px solid #333; }
-      .info-estudiante { display: flex; justify-content: space-between; margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; }
-      .info-estudiante .label { font-weight: bold; }
-      table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-      th, td { border: 1px solid #333; padding: 6px; text-align: center; }
-      th { background: #e5e7eb; font-weight: bold; font-size: 9pt; }
-      .resumen-anual { display: flex; justify-content: space-between; margin: 20px 0; padding: 15px; background: #f8fafc; border: 2px solid #1e293b; }
-      .resumen-item .valor { font-size: 18pt; font-weight: bold; }
-      .seccion-asistencia { margin: 15px 0; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; }
-      .seccion-asistencia-header { background: #f8fafc; padding: 6px 10px; border-bottom: 1px solid #ddd; font-weight: bold; font-size: 9pt; }
-      .asistencia-grid { display: grid; grid-template-columns: repeat(4, 1fr); padding: 10px; text-align: center; }
-      .asistencia-item .n { font-size: 12pt; font-weight: bold; }
-      .asistencia-item .l { font-size: 8pt; color: #666; }
-      .firmas { display: flex; justify-content: space-between; margin-top: 50px; }
-      .firma { text-align: center; width: 45%; border-top: 1px solid #333; padding-top: 5px; }
-      @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
-    </style></head><body>${allBoletasHtml}</body></html>`;
-
-    const w = window.open('', '_blank');
-    if (w) { w.document.write(html); w.document.close(); setTimeout(() => w.print(), 500); }
-  };
-
-  return (
-    <div className="space-y-1.5">
-      {(loadingAsistencia || loadingAnual) && (
-        <div className="space-y-2 mb-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Card key={i} className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
-              <div className="p-2.5 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Skeleton className={`h-3 w-5 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
-                  <Skeleton className={`h-3 w-36 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
-                  <Skeleton className={`h-4 w-16 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
-                </div>
-                <div className="flex items-center gap-1">
-                  <Skeleton className={`h-6 w-14 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
-                  <Skeleton className={`h-6 w-14 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
-                  <Skeleton className={`h-4 w-4 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
-      {(estudiantes || []).map(est => {
-        const califs = getCalifs(est.id), prom = calcProm(califs), open = expandedBoleta === est.id;
-        return (
-          <Card key={est.id} className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
-            <div className={`p-2.5 flex items-center justify-between cursor-pointer ${darkMode ? 'hover:bg-slate-800' : 'hover:bg-slate-50'}`} onClick={() => setExpandedBoleta(open ? null : est.id)}>
-              <div className="flex items-center gap-2"><span className={`text-xs w-5 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>{est.numero}</span><span className={`text-xs sm:text-sm font-medium ${darkMode ? 'text-white' : ''}`}>{est.nombre}</span><Badge variant={prom !== null && prom >= 5 ? "default" : prom !== null ? "destructive" : "secondary"} className={`text-[10px] h-5 ${prom !== null && prom >= 5 ? (darkMode ? 'bg-teal-600' : 'bg-teal-600') : ''}`}>Prom: {prom !== null ? Math.round(prom).toString() : "N/A"}</Badge></div>
-              <div className="flex items-center gap-1">
-                <Button size="sm" variant="ghost" title="Consolidado Anual" className={`h-6 px-2 text-xs ${darkMode ? 'text-teal-400' : 'text-teal-600'}`} onClick={e => { e.stopPropagation(); imprimirAnual(est.id); }}>
-                  <FileText className="h-3.5 w-3.5 mr-1" />Anual
-                </Button>
-                <Button size="sm" variant="ghost" title="Imprimir Trimestre" className={`h-6 px-2 text-xs ${darkMode ? 'text-slate-300' : ''}`} onClick={e => { e.stopPropagation(); imprimir(est.id); }}>
-                  <Printer className="h-3 w-3 mr-1" />Boleta
-                </Button>
-                {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              </div>
-            </div>
-            {open && <div className={`border-t p-2 ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50'}`}><Table className="text-xs"><TableHeader><TableRow className={`h-7 ${darkMode ? 'bg-slate-700' : 'bg-slate-100'}`}><TableHead>Asignatura</TableHead><TableHead className="text-center">Prom. A.C.</TableHead><TableHead className="text-center">Prom. A.I.</TableHead><TableHead className="text-center">Examen</TableHead><TableHead className="text-center">Recup.</TableHead><TableHead className="text-center font-bold">Promedio</TableHead></TableRow></TableHeader><TableBody>{materias.map(m => { const c = califs.find(x => x.materiaId === m.id); return <TableRow key={m.id} className={`h-7 ${darkMode ? 'border-slate-700' : ''}`}><TableCell className={`font-medium ${darkMode ? 'text-white' : ''}`}>{m.nombre}</TableCell><TableCell className="text-center">{c?.calificacionAC !== null && c?.calificacionAC !== undefined ? c.calificacionAC.toFixed(1) : "-"}</TableCell><TableCell className="text-center">{c?.calificacionAI !== null && c?.calificacionAI !== undefined ? c.calificacionAI.toFixed(1) : "-"}</TableCell><TableCell className="text-center">{c?.examenTrimestral !== null && c?.examenTrimestral !== undefined ? c.examenTrimestral.toFixed(1) : "-"}</TableCell><TableCell className="text-center">{c?.recuperacion !== null && c?.recuperacion !== undefined ? c.recuperacion.toFixed(1) : "-"}</TableCell><TableCell className="text-center"><Badge variant={c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= 5 ? "default" : "secondary"} className={`text-[10px] ${c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= 5 ? 'bg-teal-600' : ''}`}>{c?.promedioFinal !== null && c?.promedioFinal !== undefined ? Math.round(c.promedioFinal).toString() : "-"}</Badge></TableCell></TableRow>; })}</TableBody></Table></div>}
-          </Card>
-        );
-      })}
-    </div>
-  );
-}

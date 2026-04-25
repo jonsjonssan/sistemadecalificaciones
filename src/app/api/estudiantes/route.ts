@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { cookies } from "next/headers";
+import { verifySession } from "@/lib/session";
 
 async function getUsuarioSession() {
   const cookieStore = await cookies();
   const session = cookieStore.get("session");
   if (!session) return null;
-  return JSON.parse(session.value);
+  return verifySession(session.value);
+}
+
+function canAccessGrado(session: any, gradoId: string): boolean {
+  if (["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) return true;
+  return session.asignaturasAsignadas?.some((m: any) => m.gradoId === gradoId) ?? false;
 }
 
 export async function GET(request: NextRequest) {
@@ -80,8 +86,6 @@ export async function GET(request: NextRequest) {
       code: "ESTUDIANTES_LOAD_ERROR",
       message: "Hubo un problema al obtener la lista de estudiantes. Intenta de nuevo."
     }, { status: 500 });
-  } finally {
-    await db.$disconnect();
   }
 }
 
@@ -101,6 +105,10 @@ export async function POST(request: NextRequest) {
 
     if (!nombre || !gradoId) {
       return NextResponse.json({ error: "Nombre y grado son requeridos" }, { status: 400 });
+    }
+
+    if (!canAccessGrado(session, gradoId)) {
+      return NextResponse.json({ error: "No tiene acceso a este grado" }, { status: 403 });
     }
 
     const grado = await db.grado.findUnique({ where: { id: gradoId } });
@@ -128,8 +136,6 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Error al crear estudiante:", error);
     return NextResponse.json({ error: "Error al crear estudiante" }, { status: 500 });
-  } finally {
-    await db.$disconnect();
   }
 }
 
@@ -152,6 +158,10 @@ export async function PUT(request: NextRequest) {
 
     if (!gradoId) {
       return NextResponse.json({ error: "Grado es requerido" }, { status: 400 });
+    }
+
+    if (!canAccessGrado(session, gradoId)) {
+      return NextResponse.json({ error: "No tiene acceso a este grado" }, { status: 403 });
     }
 
     const grado = await db.grado.findUnique({ where: { id: gradoId } });
@@ -183,8 +193,6 @@ export async function PUT(request: NextRequest) {
   } catch (error) {
     console.error("Error al crear estudiantes:", error);
     return NextResponse.json({ error: "Error al crear estudiantes" }, { status: 500 });
-  } finally {
-    await db.$disconnect();
   }
 }
 
@@ -206,16 +214,16 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "ID requerido" }, { status: 400 });
     }
 
-    await db.calificacion.deleteMany({ where: { estudianteId: id } });
-    await db.asistencia.deleteMany({ where: { estudianteId: id } });
-    await db.estudiante.delete({ where: { id } });
+    await db.$transaction([
+      db.calificacion.deleteMany({ where: { estudianteId: id } }),
+      db.asistencia.deleteMany({ where: { estudianteId: id } }),
+      db.estudiante.delete({ where: { id } }),
+    ]);
 
     return NextResponse.json({ message: "Estudiante eliminado" });
   } catch (error) {
     console.error("Error al eliminar estudiante:", error);
     return NextResponse.json({ error: "Error al eliminar estudiante" }, { status: 500 });
-  } finally {
-    await db.$disconnect();
   }
 }
 
@@ -249,7 +257,5 @@ export async function PATCH(request: NextRequest) {
   } catch (error) {
     console.error("Error al reordenar estudiantes:", error);
     return NextResponse.json({ error: "Error al reordenar estudiantes" }, { status: 500 });
-  } finally {
-    await db.$disconnect();
   }
 }

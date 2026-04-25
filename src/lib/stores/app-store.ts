@@ -22,12 +22,12 @@ export const useAppStore = create<AppState>((set) => ({
   setUsuario: (usuario) => set({ usuario }),
   setLoading: (loading) => set({ loading }),
   logout: async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
+    await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
     set({ usuario: null });
   },
   checkAuth: async () => {
     try {
-      const res = await fetch("/api/auth/me");
+      const res = await fetch("/api/auth/me", { credentials: "include" });
       const data = await res.json();
       set({ usuario: data.usuario, loading: false });
     } catch {
