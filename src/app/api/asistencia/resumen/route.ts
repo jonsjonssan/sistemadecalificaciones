@@ -18,8 +18,11 @@ export async function GET(req: Request) {
     }
 
     // Obtener año escolar desde configuración o query param
-    let año = searchParams.get("año") ? parseInt(searchParams.get("año")!) : null;
-    if (!año) {
+    let año: number;
+    const añoParam = searchParams.get("año");
+    if (añoParam) {
+      año = parseInt(añoParam);
+    } else {
       const configResult = await sql`SELECT "añoEscolar" FROM "ConfiguracionSistema" LIMIT 1`;
       if (configResult.length > 0) {
         año = configResult[0].añoEscolar;
