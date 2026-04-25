@@ -39,9 +39,10 @@ interface AsistenciaBoardProps {
   gradoInicial?: string;
   asignaturaInicial?: string;
   onGradoChange?: (gradoId: string) => void;
+  onPresenceEmit?: (accion: string, descripcion: string, extra?: { grado?: string; asignatura?: string; estudiante?: string }) => void;
 }
 
-export default function AsistenciaBoard({ grados, asignaturas, estudiantes, gradoInicial = "", asignaturaInicial = "", onGradoChange }: AsistenciaBoardProps) {
+export default function AsistenciaBoard({ grados, asignaturas, estudiantes, gradoInicial = "", asignaturaInicial = "", onGradoChange, onPresenceEmit }: AsistenciaBoardProps) {
   const { resolvedTheme } = useTheme();
   const darkMode = resolvedTheme === "dark";
   const { toast } = useToast();
@@ -579,6 +580,11 @@ useEffect(() => {
           toast({ title: "Asistencia guardada correctamente" });
         }
         loadAsistencia();
+        if (onPresenceEmit) {
+          const gradoName = grados.find(g => g.id === gradoId);
+          const mat = asignaturas.find(a => a.id === asignaturaId);
+          onPresenceEmit("Tomando asistencia", `Registró asistencia del ${fecha} en ${gradoName ? `${gradoName.numero}° "${gradoName.seccion}"` : ""}${mat ? ` - ${mat.nombre}` : ""}`, { grado: gradoId, asignatura: mat?.nombre });
+        }
       } else {
         const data = await res.json();
         toast({ title: data.error || "Error al guardar", variant: "destructive" });

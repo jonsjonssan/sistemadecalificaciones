@@ -30,6 +30,7 @@ import { CalificacionRow } from "@/components/grading/CalificacionRow";
 import { Usuario, UsuarioSesion, Estudiante, Asignatura, AsignaturaConGrado, Calificacion, Grado, ConfigActividad, ConfigActividadPartial, ConfiguracionSistema } from "@/types";
 import { calcularPromedio, calcularPromedioFinal, parseNotas } from "@/utils/gradeCalculations";
 import { isAdmin, canDeleteUsers, getDocentesDelGrado } from "@/utils/roleHelpers";
+import PresenceIndicator from "@/components/PresenceIndicator";
 
 export default function Home() {
   const { toast } = useToast();
@@ -118,6 +119,12 @@ export default function Home() {
   const [borrarCalifLoading, setBorrarCalifLoading] = useState(false);
   const [sectionLoading, setSectionLoading] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
+
+  // Presencia en tiempo real
+  const emitActionRef = useRef<(accion: string, descripcion: string, extra?: { grado?: string; asignatura?: string; estudiante?: string }) => void>(() => {});
+  const handlePresenceEmit = useCallback((emit: typeof emitActionRef.current) => {
+    emitActionRef.current = emit;
+  }, []);
   const [autoSaveStatus, setAutoSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [quickActionsOpen, setQuickActionsOpen] = useState(false);
   const [promedioDecimal, setPromedioDecimal] = useState<boolean>(() => {
@@ -685,6 +692,9 @@ export default function Home() {
         });
         setAutoSaveStatus("saved");
         setTimeout(() => setAutoSaveStatus("idle"), 2000);
+        const est = estudiantes.find(e => e.id === estudianteId);
+        const mat = asignaturas.find(a => a.id === materiaId);
+        emitActionRef.current("Editando calificación", `Calificó a ${est?.nombre ?? estudianteId} en ${mat?.nombre ?? materiaId}`, { grado: gradoSeleccionado, asignatura: mat?.nombre, estudiante: est?.nombre });
       } else {
         const err = await res.json();
         console.error("Error API:", err);
@@ -727,6 +737,9 @@ export default function Home() {
       if (ok > 0) {
         toast({ title: `${ok} calificaciones guardadas en Neon` });
         loadCalificaciones();
+        const mat = asignaturas.find(a => a.id === asignaturaSeleccionada);
+        const grado = grados.find(g => g.id === gradoSeleccionado);
+        emitActionRef.current("Guardando calificaciones", `Guardó ${ok} calificaciones en ${mat?.nombre ?? asignaturaSeleccionada} de ${grado ? `${grado.numero}° "${grado.seccion}"` : gradoSeleccionado}`, { grado: gradoSeleccionado, asignatura: mat?.nombre });
       } else {
         toast({ title: "No hay calificaciones para guardar" });
       }
@@ -1621,6 +1634,13 @@ export default function Home() {
   // Main
   return (
     <div className={`min-h-screen flex flex-col transition-colors duration-300 ${darkMode ? 'bg-[#0f172a] text-white' : 'bg-slate-100 text-slate-900'} safe-area-bottom`}>
+      <PresenceIndicator
+        userId={usuario.id}
+        nombre={usuario.nombre}
+        email={usuario.email}
+        rol={usuario.rol}
+        onActionEmit={handlePresenceEmit}
+      />
       <header className={`shadow-lg ${darkMode ? 'bg-[#1e293b] text-white border-b border-slate-700' : 'bg-teal-600 text-white'} mobile-header`}>
         <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
@@ -1780,6 +1800,7 @@ export default function Home() {
                 setGradoSeleccionado(nuevoGradoId);
                 saveUserState({ gradoSeleccionado: nuevoGradoId });
               }}
+              onPresenceEmit={(accion, descripcion, extra) => emitActionRef.current(accion, descripcion, extra)}
             />
           </TabsContent>
 
