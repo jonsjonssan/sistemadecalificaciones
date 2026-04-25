@@ -52,29 +52,48 @@ export async function GET(req: Request) {
     }
 
     const materiaId = searchParams.get("materiaId");
-    // La boleta y resumen general muestran asistencia del grado (materiaId IS NULL).
-    // Solo se filtra por materia específica si se pasa el param materiaId.
-    const materiaFilter = materiaId
-      ? sql`AND a."materiaId" = ${materiaId}`
-      : sql`AND a."materiaId" IS NULL`;
 
     let asistencia;
-    if (startDate && endDate) {
-      asistencia = await sql`
-        SELECT a.estado, a.fecha, a."estudianteId", e.nombre as estudiante_nombre, e.numero as estudiante_numero
-        FROM "Asistencia" a
-        JOIN "Estudiante" e ON a."estudianteId" = e.id
-        WHERE a."gradoId" = ${gradoId} ${materiaFilter} AND a.fecha >= ${startDate} AND a.fecha <= ${endDate}
-        ORDER BY a.fecha DESC
-      `;
+    if (materiaId) {
+      // Resumen por materia específica (grados 6-9)
+      if (startDate && endDate) {
+        asistencia = await sql`
+          SELECT a.estado, a.fecha, a."estudianteId", e.nombre as estudiante_nombre, e.numero as estudiante_numero
+          FROM "Asistencia" a
+          JOIN "Estudiante" e ON a."estudianteId" = e.id
+          WHERE a."gradoId" = ${gradoId} AND a."materiaId" = ${materiaId} AND a.fecha >= ${startDate} AND a.fecha <= ${endDate}
+          ORDER BY a.fecha DESC
+        `;
+      } else {
+        asistencia = await sql`
+          SELECT a.estado, a.fecha, a."estudianteId", e.nombre as estudiante_nombre, e.numero as estudiante_numero
+          FROM "Asistencia" a
+          JOIN "Estudiante" e ON a."estudianteId" = e.id
+          WHERE a."gradoId" = ${gradoId} AND a."materiaId" = ${materiaId}
+          ORDER BY a.fecha DESC
+        `;
+      }
     } else {
-      asistencia = await sql`
-        SELECT a.estado, a.fecha, a."estudianteId", e.nombre as estudiante_nombre, e.numero as estudiante_numero
-        FROM "Asistencia" a
-        JOIN "Estudiante" e ON a."estudianteId" = e.id
-        WHERE a."gradoId" = ${gradoId} ${materiaFilter}
-        ORDER BY a.fecha DESC
-      `;
+      // Resumen general: un registro por día por estudiante (evita duplicados por materia)
+      if (startDate && endDate) {
+        asistencia = await sql`
+          SELECT DISTINCT ON (a."estudianteId", a.fecha::date)
+            a.estado, a.fecha, a."estudianteId", e.nombre as estudiante_nombre, e.numero as estudiante_numero
+          FROM "Asistencia" a
+          JOIN "Estudiante" e ON a."estudianteId" = e.id
+          WHERE a."gradoId" = ${gradoId} AND a.fecha >= ${startDate} AND a.fecha <= ${endDate}
+          ORDER BY a."estudianteId", a.fecha::date, a.fecha DESC
+        `;
+      } else {
+        asistencia = await sql`
+          SELECT DISTINCT ON (a."estudianteId", a.fecha::date)
+            a.estado, a.fecha, a."estudianteId", e.nombre as estudiante_nombre, e.numero as estudiante_numero
+          FROM "Asistencia" a
+          JOIN "Estudiante" e ON a."estudianteId" = e.id
+          WHERE a."gradoId" = ${gradoId}
+          ORDER BY a."estudianteId", a.fecha::date, a.fecha DESC
+        `;
+      }
     }
 
     const resumen: Record<string, {
