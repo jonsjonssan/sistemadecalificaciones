@@ -12,10 +12,14 @@ export async function POST() {
     );
   }
 
-  const { error: authError } = await requireAdmin();
-  if (authError) return authError;
-
   const sql = neon(process.env.DATABASE_URL!);
+
+  // Permitir init sin admin solo si no hay usuarios en el sistema
+  const usuariosExistentes = await sql`SELECT id FROM "Usuario" LIMIT 1`;
+  if (usuariosExistentes.length > 0) {
+    const { error: authError } = await requireAdmin();
+    if (authError) return authError;
+  }
 
   try {
     console.log("[init] Paso 1: Asegurar grados...");

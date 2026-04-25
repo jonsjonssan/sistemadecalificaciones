@@ -3,6 +3,7 @@ import { sql } from "@/lib/neon";
 import { OAuth2Client } from "google-auth-library";
 import { cookies } from "next/headers";
 import { createAuditLog } from "@/lib/audit";
+import { signSession } from "@/lib/session";
 
 // Inicializar cliente OAuth de Google
 const googleClient = new OAuth2Client(
@@ -90,7 +91,7 @@ export async function POST(request: NextRequest) {
 
     // Crear sesión en cookie
     const cookieStore = await cookies();
-    cookieStore.set("session", JSON.stringify(userData), {
+    cookieStore.set("session", signSession(userData), {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",

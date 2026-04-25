@@ -207,8 +207,12 @@ export default function Home() {
     try {
       const res = await fetch("/api/init", { method: "POST", credentials: "include" });
       const data = await res.json();
-      toast({ title: "Sistema inicializado", description: "Usuario administrador creado correctamente" });
-      setInitialized(true);
+      if (res.ok) {
+        toast({ title: "Sistema inicializado", description: "Usuario administrador creado correctamente" });
+        setInitialized(true);
+      } else {
+        toast({ title: data.error || "Error al inicializar", variant: "destructive" });
+      }
     } catch { toast({ title: "Error al inicializar", variant: "destructive" }); }
   };
 
