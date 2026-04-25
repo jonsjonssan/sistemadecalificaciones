@@ -11,11 +11,21 @@ export async function GET(req: Request) {
     const mes = searchParams.get("mes");
     const trimestre = searchParams.get("trimestre");
     const anual = searchParams.get("anual") === "true";
-    const año = searchParams.get("año") ? parseInt(searchParams.get("año")!) : new Date().getFullYear();
     const incluirFechas = searchParams.get("incluirFechas") === "true";
 
     if (!gradoId) {
       return NextResponse.json({ error: "Faltan parámetros requeridos" }, { status: 400 });
+    }
+
+    // Obtener año escolar desde configuración o query param
+    let año = searchParams.get("año") ? parseInt(searchParams.get("año")!) : null;
+    if (!año) {
+      const configResult = await sql`SELECT "añoEscolar" FROM "ConfiguracionSistema" LIMIT 1`;
+      if (configResult.length > 0) {
+        año = configResult[0].añoEscolar;
+      } else {
+        año = new Date().getFullYear();
+      }
     }
 
     let startDate: string | undefined;
@@ -23,13 +33,12 @@ export async function GET(req: Request) {
 
     if (trimestre) {
       const t = parseInt(trimestre);
-      const currentYear = new Date().getFullYear();
       let startMonth: number, endMonth: number;
       if (t === 1) { startMonth = 1; endMonth = 4; }
       else if (t === 2) { startMonth = 5; endMonth = 8; }
       else { startMonth = 9; endMonth = 12; }
-      startDate = new Date(currentYear, startMonth - 1, 1).toISOString();
-      endDate = new Date(currentYear, endMonth, 0, 23, 59, 59).toISOString();
+      startDate = new Date(año, startMonth - 1, 1).toISOString();
+      endDate = new Date(año, endMonth, 0, 23, 59, 59).toISOString();
     } else if (anual) {
       startDate = new Date(año, 0, 1).toISOString();
       endDate = new Date(año, 11, 31, 23, 59, 59).toISOString();
@@ -40,7 +49,8 @@ export async function GET(req: Request) {
     }
 
     const materiaId = searchParams.get("materiaId");
-    const materiaFilter = materiaId ? sql`AND a."materiaId" = ${materiaId}` : sql`AND a."materiaId" IS NULL`;
+    // Si no se especifica materia, no filtrar por materiaId (contar todo el grado)
+    const materiaFilter = materiaId ? sql`AND a."materiaId" = ${materiaId}` : sql``;
 
     let asistencia;
     if (startDate && endDate) {
