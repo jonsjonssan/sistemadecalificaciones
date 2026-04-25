@@ -17,7 +17,7 @@ interface CalificacionRowProps {
     actividadesIntegradoras: (number | null)[];
     examenTrimestral: number | null;
     recuperacion: number | null;
-  }) => void;
+  }) => void | Promise<void>;
   saving: boolean;
   darkMode: boolean;
   evenRow: boolean;
@@ -197,12 +197,16 @@ export const CalificacionRow = React.memo(function CalificacionRow({
   const [examen, setExamen] = useState<number | null>(() => calificacion?.examenTrimestral ?? null);
   const [recup, setRecup] = useState<number | null>(() => calificacion?.recuperacion ?? null);
   const [dirty, setDirty] = useState(false);
+  const [saveError, setSaveError] = useState(false);
   const [acErrors, setAcErrors] = useState<Set<number>>(new Set());
   const [aiErrors, setAiErrors] = useState<Set<number>>(new Set());
   const [examenError, setExamenError] = useState(false);
   const [recupError, setRecupError] = useState(false);
 
+  // Sincronizar con props SOLO cuando no haya cambios locales pendientes (dirty)
+  // para evitar sobreescribir lo que el usuario acaba de escribir
   useEffect(() => {
+    if (dirty) return; // No sobreescribir si el usuario tiene cambios sin guardar
     const timer = setTimeout(() => {
       const newAC = parseNotas(calificacion?.actividadesCotidianas ?? null, numAC);
       const newAI = parseNotas(calificacion?.actividadesIntegradoras ?? null, numAI);
@@ -212,10 +216,10 @@ export const CalificacionRow = React.memo(function CalificacionRow({
       setAiNotas(newAI);
       setExamen(newEx);
       setRecup(newRc);
-      setDirty(false);
+      setSaveError(false);
     }, 0);
     return () => clearTimeout(timer);
-  }, [key, numAC, numAI, calificacion?.actividadesCotidianas, calificacion?.actividadesIntegradoras, calificacion?.examenTrimestral, calificacion?.recuperacion]);
+  }, [key, numAC, numAI, calificacion?.actividadesCotidianas, calificacion?.actividadesIntegradoras, calificacion?.examenTrimestral, calificacion?.recuperacion, dirty]);
 
   const stateRef = useRef({ dirty, acNotas, aiNotas, examen, recup });
   const savingRef = useRef(false);
@@ -362,38 +366,52 @@ export const CalificacionRow = React.memo(function CalificacionRow({
     };
   }, [getColIndex, onNavigate, rowIndex]);
 
+  const doSave = useCallback(async () => {
+    if (savingRef.current) return;
+    savingRef.current = true;
+    setSaveError(false);
+    try {
+      await onSave(estudiante.id, materiaId, {
+        actividadesCotidianas: stateRef.current.acNotas,
+        actividadesIntegradoras: stateRef.current.aiNotas,
+        examenTrimestral: stateRef.current.examen,
+        recuperacion: stateRef.current.recup,
+      });
+      setDirty(false);
+      setSaveError(false);
+    } catch {
+      setSaveError(true);
+      // No resetear dirty para que se reintente en el próximo cambio o desmonte
+    } finally {
+      savingRef.current = false;
+    }
+  }, [estudiante.id, materiaId, onSave]);
+
+  // Guardado al desmontar: siempre intentar guardar cambios pendientes
   useEffect(() => {
     return () => {
-      if (stateRef.current.dirty && !savingRef.current) {
-        onSave(estudiante.id, materiaId, {
+      if (stateRef.current.dirty) {
+        const result = onSave(estudiante.id, materiaId, {
           actividadesCotidianas: stateRef.current.acNotas,
           actividadesIntegradoras: stateRef.current.aiNotas,
           examenTrimestral: stateRef.current.examen,
           recuperacion: stateRef.current.recup,
         });
+        if (result && typeof result.catch === "function") {
+          result.catch(() => {});
+        }
       }
     };
   }, [estudiante.id, materiaId, onSave]);
 
+  // Auto-save con debounce de 800ms
   useEffect(() => {
     if (!dirty) return;
-    const handler = setTimeout(async () => {
-      savingRef.current = true;
-      stateRef.current = { ...stateRef.current, dirty: false };
-      try {
-        await onSave(estudiante.id, materiaId, {
-          actividadesCotidianas: stateRef.current.acNotas,
-          actividadesIntegradoras: stateRef.current.aiNotas,
-          examenTrimestral: stateRef.current.examen,
-          recuperacion: stateRef.current.recup,
-        });
-      } finally {
-        savingRef.current = false;
-      }
-      setDirty(false);
+    const handler = setTimeout(() => {
+      doSave();
     }, 800);
     return () => clearTimeout(handler);
-  }, [acNotas, aiNotas, examen, recup, dirty, estudiante.id, materiaId, onSave]);
+  }, [acNotas, aiNotas, examen, recup, dirty, doSave]);
 
   const rowBg = evenRow
     ? darkMode
@@ -416,7 +434,9 @@ export const CalificacionRow = React.memo(function CalificacionRow({
   const finalBg = darkMode ? "bg-emerald-900/60" : "bg-emerald-50/80";
   const hasData = acNotas.some(n => n !== null) || aiNotas.some(n => n !== null) || examen !== null;
   const statusIcon =
-    saving && dirty ? (
+    saveError ? (
+      <span title="Error al guardar. Se reintentará automáticamente.">⚠️</span>
+    ) : saving && dirty ? (
       <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 text-teal-500 animate-spin mx-auto" />
     ) : !dirty && hasData ? (
       <span title="Guardado">✅</span>

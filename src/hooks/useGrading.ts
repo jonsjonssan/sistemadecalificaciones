@@ -1,6 +1,5 @@
 import { useState, useCallback } from "react";
 import { Calificacion, ConfigActividadPartial } from "@/types";
-import { calcularPromedioFinal } from "@/utils/gradeCalculations";
 
 interface UseGradingReturn {
   saving: boolean;
@@ -28,6 +27,27 @@ interface UseGradingReturn {
   ) => Promise<void>;
 }
 
+/** Reintentar una función async con delay exponencial */
+async function retry<T>(
+  fn: () => Promise<T>,
+  maxAttempts = 3,
+  baseDelayMs = 1000
+): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastError = err;
+      if (attempt < maxAttempts) {
+        const delay = baseDelayMs * Math.pow(2, attempt - 1);
+        await new Promise((r) => setTimeout(r, delay));
+      }
+    }
+  }
+  throw lastError;
+}
+
 export function useGrading(): UseGradingReturn {
   const [saving, setSaving] = useState(false);
 
@@ -45,23 +65,26 @@ export function useGrading(): UseGradingReturn {
     ) => {
       setSaving(true);
       try {
-        const res = await fetch("/api/calificaciones", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            estudianteId: estId,
-            materiaId: matId,
-            trimestre,
-            actividadesCotidianas: JSON.stringify(data.actividadesCotidianas),
-            actividadesIntegradoras: JSON.stringify(data.actividadesIntegradoras),
-            examenTrimestral: data.examenTrimestral,
-            recuperacion: data.recuperacion,
-          }),
-        });
-        if (!res.ok) console.error("Error saving calification");
-      } catch (e) {
-        console.error("Save error:", e);
+        await retry(async () => {
+          const res = await fetch("/api/calificaciones", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+              estudianteId: estId,
+              materiaId: matId,
+              trimestre,
+              actividadesCotidianas: JSON.stringify(data.actividadesCotidianas),
+              actividadesIntegradoras: JSON.stringify(data.actividadesIntegradoras),
+              examenTrimestral: data.examenTrimestral,
+              recuperacion: data.recuperacion,
+            }),
+          });
+          if (!res.ok) {
+            const body = await res.json().catch(() => ({}));
+            throw new Error(body.error || `HTTP ${res.status}`);
+          }
+        }, 3, 800);
       } finally {
         setSaving(false);
       }
@@ -73,24 +96,27 @@ export function useGrading(): UseGradingReturn {
     async (materiaId: string, trimestre: number, config: ConfigActividadPartial) => {
       setSaving(true);
       try {
-        const res = await fetch("/api/config-actividades", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            materiaId,
-            trimestre,
-            numActividadesCotidianas: config.numActividadesCotidianas,
-            numActividadesIntegradoras: config.numActividadesIntegradoras,
-            tieneExamen: config.tieneExamen,
-            porcentajeAC: config.porcentajeAC,
-            porcentajeAI: config.porcentajeAI,
-            porcentajeExamen: config.porcentajeExamen,
-          }),
-        });
-        if (!res.ok) console.error("Error saving config");
-      } catch (e) {
-        console.error("Save config error:", e);
+        await retry(async () => {
+          const res = await fetch("/api/config-actividades", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+              materiaId,
+              trimestre,
+              numActividadesCotidianas: config.numActividadesCotidianas,
+              numActividadesIntegradoras: config.numActividadesIntegradoras,
+              tieneExamen: config.tieneExamen,
+              porcentajeAC: config.porcentajeAC,
+              porcentajeAI: config.porcentajeAI,
+              porcentajeExamen: config.porcentajeExamen,
+            }),
+          });
+          if (!res.ok) {
+            const body = await res.json().catch(() => ({}));
+            throw new Error(body.error || `HTTP ${res.status}`);
+          }
+        }, 3, 800);
       } finally {
         setSaving(false);
       }
@@ -114,9 +140,10 @@ export function useGrading(): UseGradingReturn {
           method: "DELETE",
           credentials: "include",
         });
-        if (!res.ok) console.error("Error deleting califications");
-      } catch (e) {
-        console.error("Delete error:", e);
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(body.error || `HTTP ${res.status}`);
+        }
       } finally {
         setSaving(false);
       }
