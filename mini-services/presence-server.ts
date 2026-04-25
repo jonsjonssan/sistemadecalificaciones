@@ -20,14 +20,30 @@ interface OnlineUser {
   rol: string
   acciones: string[]
   ultimaAccion: { tipo: string; descripcion: string; timestamp: Date } | null
+  sessions: number
 }
 
 const onlineUsers = new Map<string, OnlineUser>()
+const userSessions = new Map<string, Set<string>>()
+
+function getUniqueUsers(): OnlineUser[] {
+  const byUserId = new Map<string, OnlineUser>()
+  for (const user of onlineUsers.values()) {
+    const existing = byUserId.get(user.userId)
+    if (!existing) {
+      const sessions = userSessions.get(user.userId)?.size ?? 1
+      byUserId.set(user.userId, { ...user, sessions })
+    }
+  }
+  return Array.from(byUserId.values())
+}
 
 io.on('connection', (socket) => {
-  console.log(`[Presencia] Usuario conectado: ${socket.id}`)
+  console.log(`[Presencia] Socket conectado: ${socket.id}`)
 
   socket.on('join', (data: { userId: string; nombre: string; email: string; rol: string }) => {
+    const wasAlreadyOnline = userSessions.has(data.userId) && (userSessions.get(data.userId)?.size ?? 0) > 0
+
     const user: OnlineUser = {
       socketId: socket.id,
       userId: data.userId,
@@ -36,12 +52,27 @@ io.on('connection', (socket) => {
       rol: data.rol,
       acciones: ['Conectado'],
       ultimaAccion: null,
+      sessions: 1,
     }
     onlineUsers.set(socket.id, user)
-    console.log(`[Presencia] ${user.nombre} (${user.rol}) se unio — ${onlineUsers.size} en linea`)
 
-    socket.broadcast.emit('user-joined', user)
-    socket.emit('users-list', Array.from(onlineUsers.values()))
+    // Trackear sesiones del usuario
+    if (!userSessions.has(data.userId)) {
+      userSessions.set(data.userId, new Set())
+    }
+    userSessions.get(data.userId)!.add(socket.id)
+
+    const totalSockets = onlineUsers.size
+    const totalUsers = userSessions.size
+    console.log(`[Presencia] ${user.nombre} (${user.rol}) sesion=${userSessions.get(data.userId)!.size} — ${totalUsers} usuarios / ${totalSockets} sockets`)
+
+    // Solo notificar a otros si es la primera sesion de este usuario
+    if (!wasAlreadyOnline) {
+      socket.broadcast.emit('user-joined', { ...user, sessions: userSessions.get(data.userId)!.size })
+    }
+
+    // Enviar lista deduplicada al nuevo socket
+    socket.emit('users-list', getUniqueUsers())
   })
 
   socket.on('action', (data: {
@@ -59,8 +90,9 @@ io.on('connection', (socket) => {
         descripcion: data.descripcion,
         timestamp: new Date()
       }
+      const sessions = userSessions.get(user.userId)?.size ?? 1
       const event = {
-        user,
+        user: { ...user, sessions },
         accion: data.accion,
         descripcion: data.descripcion,
         grado: data.grado,
@@ -77,10 +109,21 @@ io.on('connection', (socket) => {
     const user = onlineUsers.get(socket.id)
     if (user) {
       onlineUsers.delete(socket.id)
-      io.emit('user-left', user)
-      console.log(`[Presencia] ${user.nombre} salio — ${onlineUsers.size} en linea`)
+
+      const sessions = userSessions.get(user.userId)
+      if (sessions) {
+        sessions.delete(socket.id)
+        if (sessions.size === 0) {
+          userSessions.delete(user.userId)
+          // Era la ultima sesion: notificar a todos que se fue
+          io.emit('user-left', { ...user, sessions: 0 })
+          console.log(`[Presencia] ${user.nombre} salio (ultima sesion) — ${userSessions.size} usuarios / ${onlineUsers.size} sockets`)
+        } else {
+          console.log(`[Presencia] ${user.nombre} cerro una pestaña (${sessions.size} restantes) — ${userSessions.size} usuarios / ${onlineUsers.size} sockets`)
+        }
+      }
     } else {
-      console.log(`[Presencia] Usuario desconectado: ${socket.id}`)
+      console.log(`[Presencia] Socket desconectado: ${socket.id}`)
     }
   })
 

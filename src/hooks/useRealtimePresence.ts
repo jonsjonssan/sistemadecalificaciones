@@ -11,6 +11,7 @@ export interface OnlineUser {
   rol: string;
   acciones: string[];
   ultimaAccion: { tipo: string; descripcion: string; timestamp: Date } | null;
+  sessions: number;
 }
 
 export interface ActionEvent {
@@ -93,24 +94,26 @@ export function useRealtimePresence({
 
     socket.on("user-joined", (user: OnlineUser) => {
       setOnlineUsers((prev) => {
-        if (!prev.find((u) => u.socketId === user.socketId)) {
-          return [...prev, user];
+        const idx = prev.findIndex((u) => u.userId === user.userId);
+        if (idx >= 0) {
+          // Actualizar sesiones si ya existe
+          const next = [...prev];
+          next[idx] = { ...user };
+          return next;
         }
-        return prev.map((u) =>
-          u.socketId === user.socketId ? user : u
-        );
+        return [...prev, user];
       });
     });
 
     socket.on("user-left", (user: OnlineUser) => {
-      setOnlineUsers((prev) => prev.filter((u) => u.socketId !== user.socketId));
+      setOnlineUsers((prev) => prev.filter((u) => u.userId !== user.userId));
     });
 
     socket.on("user-action", (event: ActionEvent) => {
       setLastAction(event);
       setOnlineUsers((prev) =>
         prev.map((u) =>
-          u.socketId === event.user.socketId ? { ...event.user } : u
+          u.userId === event.user.userId ? { ...event.user } : u
         )
       );
     });

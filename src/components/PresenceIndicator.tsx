@@ -69,6 +69,7 @@ export default function PresenceIndicator({
     onActionEmit(emitAction);
   }, [emitAction, onActionEmit]);
 
+  // Filtrar a los demas usuarios (excluirme a mi)
   const others = onlineUsers.filter((u) => u.userId !== userId);
   const visibleAvatars = others.slice(0, 5);
   const overflowCount = Math.max(0, others.length - 5);
@@ -102,15 +103,47 @@ export default function PresenceIndicator({
           )}
         </Button>
 
+        {/* Avatares flotantes de otros usuarios */}
+        <div className="flex -space-x-2">
+          {visibleAvatars.map((user) => (
+            <Tooltip key={user.userId}>
+              <TooltipTrigger asChild>
+                <div className={`relative inline-flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold text-white ring-2 ring-background ${getRoleColor(user.userId)}`}>
+                  {getInitials(user.nombre)}
+                  {user.sessions > 1 && (
+                    <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-blue-500 text-[7px] font-bold text-white ring-1 ring-background">
+                      {user.sessions}
+                    </span>
+                  )}
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <p className="text-xs font-medium">{user.nombre}</p>
+                {user.ultimaAccion && (
+                  <p className="text-[10px] text-muted-foreground">{user.ultimaAccion.descripcion}</p>
+                )}
+                {user.sessions > 1 && (
+                  <p className="text-[10px] text-blue-400">{user.sessions} pestañas abiertas</p>
+                )}
+              </TooltipContent>
+            </Tooltip>
+          ))}
+          {overflowCount > 0 && (
+            <div className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-muted text-[10px] font-medium ring-2 ring-background">
+              +{overflowCount}
+            </div>
+          )}
+        </div>
+
         <AnimatePresence>
-          {expanded && onlineUsers.length > 1 && (
+          {expanded && onlineUsers.length > 0 && (
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden"
             >
-              <div className="bg-background/95 backdrop-blur border border-muted-foreground/20 rounded-xl shadow-lg p-3 min-w-[220px] space-y-2">
+              <div className="bg-background/95 backdrop-blur border border-muted-foreground/20 rounded-xl shadow-lg p-3 min-w-[240px] space-y-2">
                 <div className="flex items-center gap-2">
                   <Wifi className="h-3 w-3 text-emerald-500" />
                   <span className="text-xs font-medium">
@@ -119,15 +152,20 @@ export default function PresenceIndicator({
                 </div>
                 <div className="space-y-1.5">
                   {onlineUsers.map((user) => (
-                    <Tooltip key={user.socketId}>
+                    <Tooltip key={user.userId}>
                       <TooltipTrigger asChild>
                         <div className="flex items-center gap-2 cursor-default">
                           <div
                             className={`${getRoleColor(user.userId)} h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0 ${user.userId === userId ? "ring-2 ring-primary ring-offset-1" : ""}`}
                           >
                             {getInitials(user.nombre)}
+                            {user.sessions > 1 && (
+                              <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3 items-center justify-center rounded-full bg-blue-500 text-[6px] font-bold text-white ring-1 ring-background">
+                                {user.sessions}
+                              </span>
+                            )}
                           </div>
-                          <div className="min-w-0">
+                          <div className="min-w-0 flex-1">
                             <div className="text-xs font-medium truncate">
                               {user.nombre}
                               {user.userId === userId ? " (tú)" : ""}
@@ -139,9 +177,16 @@ export default function PresenceIndicator({
                               </div>
                             )}
                           </div>
-                          <Badge variant="outline" className="ml-auto text-[9px] px-1 py-0 h-4">
-                            {getRoleLabel(user.rol)}
-                          </Badge>
+                          <div className="flex items-center gap-1">
+                            {user.sessions > 1 && (
+                              <Badge variant="secondary" className="text-[8px] px-1 py-0 h-3.5 bg-blue-100 text-blue-700">
+                                {user.sessions}x
+                              </Badge>
+                            )}
+                            <Badge variant="outline" className="text-[9px] px-1 py-0 h-4">
+                              {getRoleLabel(user.rol)}
+                            </Badge>
+                          </div>
                         </div>
                       </TooltipTrigger>
                       <TooltipContent side="right">
@@ -150,6 +195,9 @@ export default function PresenceIndicator({
                           <p className="text-[10px] text-muted-foreground">
                             {user.ultimaAccion.descripcion}
                           </p>
+                        )}
+                        {user.sessions > 1 && (
+                          <p className="text-[10px] text-blue-400">{user.sessions} pestañas abiertas</p>
                         )}
                       </TooltipContent>
                     </Tooltip>
