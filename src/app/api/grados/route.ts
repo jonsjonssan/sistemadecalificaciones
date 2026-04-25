@@ -43,7 +43,8 @@ export async function GET(request: NextRequest) {
         ORDER BY g.numero, g.seccion
       `;
     } else {
-      const gradoIds: string[] = [...new Set(session.asignaturasAsignadas?.map((m: any) => m.gradoId as string) || [])];
+      const asignaturas = (session.asignaturasAsignadas || []) as Array<{ gradoId: string }>;
+      const gradoIds = [...new Set(asignaturas.map(m => m.gradoId))];
       if (gradoIds.length === 0) {
         return NextResponse.json([]);
       }
