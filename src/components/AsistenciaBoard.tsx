@@ -102,7 +102,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
       let url = `/api/asistencia?gradoId=${gradoId}&fecha=${fecha}T00:00:00.000Z`;
       if (asignaturaId) url += `&materiaId=${asignaturaId}`;
 
-      const res = await fetch(url, { signal: abortController.signal });
+      const res = await fetch(url, { signal: abortController.signal, credentials: "include" });
       console.log("loadAsistencia - URL:", url, "response status:", res.status);
       if (res.ok) {
         const data = await res.json();
@@ -148,7 +148,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
       } else {
         url += `&anual=true&año=${selectedYear}`;
       }
-      const res = await fetch(url, { signal: abortController.signal });
+      const res = await fetch(url, { signal: abortController.signal, credentials: "include" });
       if (res.ok && !abortController.signal.aborted) {
         setResumen(await res.json());
       }
@@ -161,7 +161,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
       } else {
         urlDetallada += `&anual=true&año=${selectedYear}`;
       }
-      const resDetallada = await fetch(urlDetallada, { signal: abortController.signal });
+      const resDetallada = await fetch(urlDetallada, { signal: abortController.signal, credentials: "include" });
       if (resDetallada.ok && !abortController.signal.aborted) {
         const data = await resDetallada.json();
         const detalladaMap: Record<string, Record<string, string>> = {};
@@ -550,7 +550,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     // Verificar si ya existe asistencia para esta fecha
     try {
       const checkUrl = `/api/asistencia?fecha=${fecha}T00:00:00.000Z&gradoId=${gradoId}${asignaturaId ? `&materiaId=${asignaturaId}` : ''}`;
-      const checkRes = await fetch(checkUrl);
+      const checkRes = await fetch(checkUrl, { credentials: "include" });
       if (checkRes.ok) {
         const existingRecords = await checkRes.json();
         if (existingRecords && existingRecords.length > 0) {
@@ -573,6 +573,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     try {
       const res = await fetch("/api/asistencia", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           asistencias: records,
@@ -620,7 +621,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
       });
       if (asignaturaId) params.set("materiaId", asignaturaId);
 
-      const res = await fetch(`/api/asistencia?${params.toString()}`, { method: "DELETE" });
+      const res = await fetch(`/api/asistencia?${params.toString()}`, { method: "DELETE", credentials: "include" });
       if (res.ok) {
         const data = await res.json();
         toast({ title: data.eliminados > 0 ? `Asistencia de ${estudiante.nombre} eliminada` : "No se encontró asistencia para eliminar" });
@@ -650,7 +651,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
       });
       if (asignaturaId) params.set("materiaId", asignaturaId);
 
-      const res = await fetch(`/api/asistencia?${params.toString()}`, { method: "DELETE" });
+      const res = await fetch(`/api/asistencia?${params.toString()}`, { method: "DELETE", credentials: "include" });
       if (res.ok) {
         const data = await res.json();
         toast({ title: data.eliminados > 0 ? `Asistencia del ${fechaAEliminar} eliminada` : "No se encontró asistencia para eliminar" });
@@ -674,7 +675,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     try {
       const params = new URLSearchParams({ fecha: `${fecha}T00:00:00.000Z`, gradoId });
       if (asignaturaId) params.set("materiaId", asignaturaId);
-      const res = await fetch(`/api/asistencia?${params.toString()}`, { method: "DELETE" });
+      const res = await fetch(`/api/asistencia?${params.toString()}`, { method: "DELETE", credentials: "include" });
       if (res.ok) {
         const data = await res.json();
         toast({ title: `${data.eliminados} registros eliminados` });
