@@ -52,8 +52,11 @@ export async function GET(req: Request) {
     }
 
     const materiaId = searchParams.get("materiaId");
-    // Si no se especifica materia, no filtrar por materiaId (contar todo el grado)
-    const materiaFilter = materiaId ? sql`AND a."materiaId" = ${materiaId}` : sql``;
+    // La boleta y resumen general muestran asistencia del grado (materiaId IS NULL).
+    // Solo se filtra por materia específica si se pasa el param materiaId.
+    const materiaFilter = materiaId
+      ? sql`AND a."materiaId" = ${materiaId}`
+      : sql`AND a."materiaId" IS NULL`;
 
     let asistencia;
     if (startDate && endDate) {
