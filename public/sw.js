@@ -102,23 +102,26 @@ async function fetchWithStrategy(
   maxAge?: number
 ): Promise<Response> {
   const cache = await caches.open(cacheName);
+  const isNoStore = request.cache === "no-store" || request.cache === "no-cache";
 
   if (strategy === "cache-first") {
-    // Cache First: Intentar desde caché primero
-    const cachedResponse = await cache.match(request);
-    
-    if (cachedResponse) {
-      // Verificar si está expirado
-      if (maxAge) {
-        const cachedDate = cachedResponse.headers.get("sw-cache-date");
-        if (cachedDate) {
-          const age = Date.now() - parseInt(cachedDate, 10);
-          if (age < maxAge) {
-            return cachedResponse;
+    // Cache First: Intentar desde caché primero (solo si no es no-store)
+    if (!isNoStore) {
+      const cachedResponse = await cache.match(request);
+      
+      if (cachedResponse) {
+        // Verificar si está expirado
+        if (maxAge) {
+          const cachedDate = cachedResponse.headers.get("sw-cache-date");
+          if (cachedDate) {
+            const age = Date.now() - parseInt(cachedDate, 10);
+            if (age < maxAge) {
+              return cachedResponse;
+            }
           }
+        } else {
+          return cachedResponse;
         }
-      } else {
-        return cachedResponse;
       }
     }
 
@@ -126,7 +129,7 @@ async function fetchWithStrategy(
     try {
       const networkResponse = await fetch(request);
       
-      if (networkResponse.ok) {
+      if (networkResponse.ok && !isNoStore) {
         // Clonar respuesta para guardar en caché
         const responseToCache = networkResponse.clone();
         const headers = new Headers(responseToCache.headers);
@@ -151,7 +154,7 @@ async function fetchWithStrategy(
     try {
       const networkResponse = await fetch(request);
       
-      if (networkResponse.ok) {
+      if (networkResponse.ok && !isNoStore) {
         // Guardar en caché para uso futuro
         const responseToCache = networkResponse.clone();
         const headers = new Headers(responseToCache.headers);
@@ -168,6 +171,12 @@ async function fetchWithStrategy(
 
       return networkResponse;
     } catch (error) {
+      // Si la petición es no-store, no usar fallback de caché
+      if (isNoStore) {
+        console.log("[SW] Network failed for no-store request, no cache fallback");
+        throw error;
+      }
+
       console.log("[SW] Network failed, trying cache...");
       
       // Fallback a caché

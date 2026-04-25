@@ -17,7 +17,7 @@ interface CalificacionRowProps {
     actividadesIntegradoras: (number | null)[];
     examenTrimestral: number | null;
     recuperacion: number | null;
-  }) => void | Promise<void>;
+  }) => Promise<Calificacion | void> | void;
   saving: boolean;
   darkMode: boolean;
   evenRow: boolean;
@@ -371,12 +371,19 @@ export const CalificacionRow = React.memo(function CalificacionRow({
     savingRef.current = true;
     setSaveError(false);
     try {
-      await onSave(estudiante.id, materiaId, {
+      const result = await onSave(estudiante.id, materiaId, {
         actividadesCotidianas: stateRef.current.acNotas,
         actividadesIntegradoras: stateRef.current.aiNotas,
         examenTrimestral: stateRef.current.examen,
         recuperacion: stateRef.current.recup,
       });
+      if (result && typeof result === "object") {
+        // Actualizar estado local inmediatamente con los datos persistidos
+        setAcNotas(parseNotas(result.actividadesCotidianas ?? null, numAC));
+        setAiNotas(parseNotas(result.actividadesIntegradoras ?? null, numAI));
+        setExamen(result.examenTrimestral ?? null);
+        setRecup(result.recuperacion ?? null);
+      }
       setDirty(false);
       setSaveError(false);
     } catch {
@@ -385,7 +392,7 @@ export const CalificacionRow = React.memo(function CalificacionRow({
     } finally {
       savingRef.current = false;
     }
-  }, [estudiante.id, materiaId, onSave]);
+  }, [estudiante.id, materiaId, onSave, numAC, numAI]);
 
   // Guardado al desmontar: siempre intentar guardar cambios pendientes
   useEffect(() => {

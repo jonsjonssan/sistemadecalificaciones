@@ -14,7 +14,7 @@ interface UseGradingReturn {
       examenTrimestral: number | null;
       recuperacion: number | null;
     }
-  ) => Promise<void>;
+  ) => Promise<Calificacion>;
   handleSaveConfig: (
     materiaId: string,
     trimestre: number,
@@ -62,10 +62,10 @@ export function useGrading(): UseGradingReturn {
         examenTrimestral: number | null;
         recuperacion: number | null;
       }
-    ) => {
+    ): Promise<Calificacion> => {
       setSaving(true);
       try {
-        await retry(async () => {
+        return await retry(async () => {
           const res = await fetch("/api/calificaciones", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -84,6 +84,7 @@ export function useGrading(): UseGradingReturn {
             const body = await res.json().catch(() => ({}));
             throw new Error(body.error || `HTTP ${res.status}`);
           }
+          return res.json() as Promise<Calificacion>;
         }, 3, 800);
       } finally {
         setSaving(false);

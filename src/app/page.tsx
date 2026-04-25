@@ -298,7 +298,7 @@ export default function Home() {
   const loadCalificaciones = useCallback(async () => {
     if (!gradoSeleccionado || !trimestreSeleccionado || !asignaturaSeleccionada) return;
     try {
-      const res = await fetch(`/api/calificaciones?gradoId=${gradoSeleccionado}&materiaId=${asignaturaSeleccionada}&trimestre=${trimestreSeleccionado}`, { cache: "no-store", credentials: "include" });
+      const res = await fetch(`/api/calificaciones?gradoId=${gradoSeleccionado}&materiaId=${asignaturaSeleccionada}&trimestre=${trimestreSeleccionado}&_=${Date.now()}`, { cache: "no-store", credentials: "include" });
       if (res.ok) {
         const data = await res.json();
         setCalificaciones(data);
@@ -326,7 +326,7 @@ export default function Home() {
   const loadPromedioGrado = useCallback(async () => {
     if (!gradoSeleccionado || !trimestreSeleccionado) return;
     try {
-      const res = await fetch(`/api/calificaciones/promedio-grado?gradoId=${gradoSeleccionado}&trimestre=${trimestreSeleccionado}`, { cache: "no-store", credentials: "include" });
+      const res = await fetch(`/api/calificaciones/promedio-grado?gradoId=${gradoSeleccionado}&trimestre=${trimestreSeleccionado}&_=${Date.now()}`, { cache: "no-store", credentials: "include" });
       if (res.ok) {
         const data = await res.json();
         setPromedioGrado(data.promedio);
@@ -670,7 +670,7 @@ export default function Home() {
   const materiaRef = useRef(asignaturaSeleccionada);
   useEffect(() => { materiaRef.current = asignaturaSeleccionada; }, [asignaturaSeleccionada]);
 
-  const handleSaveCalificacion = useCallback(async (estudianteId: string, materiaId: string, data: { actividadesCotidianas: (number | null)[]; actividadesIntegradoras: (number | null)[]; examenTrimestral: number | null; recuperacion: number | null; }) => {
+  const handleSaveCalificacion = useCallback(async (estudianteId: string, materiaId: string, data: { actividadesCotidianas: (number | null)[]; actividadesIntegradoras: (number | null)[]; examenTrimestral: number | null; recuperacion: number | null; }): Promise<Calificacion> => {
     setAutoSaveStatus("saving");
     setSaving(true);
     const trimestre = parseInt(trimestreRef.current);
@@ -682,7 +682,7 @@ export default function Home() {
         body: JSON.stringify({ estudianteId, materiaId, trimestre, actividadesCotidianas: JSON.stringify(data.actividadesCotidianas), actividadesIntegradoras: JSON.stringify(data.actividadesIntegradoras), examenTrimestral: data.examenTrimestral, recuperacion: data.recuperacion }),
       });
       if (res.ok) {
-        const saved = await res.json();
+        const saved: Calificacion = await res.json();
         setCalificaciones(prev => {
           const idx = prev.findIndex(c => c.estudianteId === estudianteId && c.materiaId === materiaId && c.trimestre === trimestre);
           if (idx >= 0) {
@@ -697,14 +697,17 @@ export default function Home() {
         const est = estudiantes.find(e => e.id === estudianteId);
         const mat = asignaturas.find(a => a.id === materiaId);
         emitActionRef.current("Editando calificación", `Calificó a ${est?.nombre ?? estudianteId} en ${mat?.nombre ?? materiaId}`, { grado: gradoSeleccionado, asignatura: mat?.nombre, estudiante: est?.nombre });
+        return saved;
       } else {
         const err = await res.json();
         console.error("Error API:", err);
         setAutoSaveStatus("idle");
+        throw new Error(err.error || "Error al guardar calificación");
       }
     } catch (e) {
       console.error("Error conexión:", e);
       setAutoSaveStatus("idle");
+      throw e;
     } finally { setSaving(false); }
   }, []);
 
