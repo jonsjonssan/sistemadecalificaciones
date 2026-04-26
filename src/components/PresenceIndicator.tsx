@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Users, ChevronDown, ChevronUp, Wifi, WifiOff, Pencil, ClipboardList, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useRealtimePresence, OnlineUser, ActionEvent } from "@/hooks/useRealtimePresence";
 
 interface PresenceIndicatorProps {
@@ -97,27 +97,38 @@ export default function PresenceIndicator({
         animate={{ y: 0, opacity: 1 }}
         className="flex flex-col items-start gap-1"
       >
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setExpanded(!expanded)}
-          className="rounded-full h-9 px-3 gap-1.5 bg-background/95 backdrop-blur shadow-lg border-muted-foreground/20 text-xs"
-        >
-          {isConnected ? (
-            <Wifi className="h-3 w-3 text-emerald-500" />
-          ) : (
-            <WifiOff className="h-3 w-3 text-muted-foreground" />
-          )}
-          <Users className="h-3.5 w-3.5" />
-          <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">
-            {onlineUsers.length}
-          </Badge>
-          {expanded ? (
-            <ChevronDown className="h-3 w-3" />
-          ) : (
-            <ChevronUp className="h-3 w-3" />
-          )}
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setExpanded(!expanded)}
+                className="rounded-full h-9 px-3 gap-1.5 bg-background/95 backdrop-blur shadow-lg border-muted-foreground/20 text-xs"
+              >
+                {isConnected ? (
+                  <Wifi className="h-3 w-3 text-emerald-500" />
+                ) : (
+                  <WifiOff className="h-3 w-3 text-muted-foreground" />
+                )}
+                <Users className="h-3.5 w-3.5" />
+                {isConnected && onlineUsers.length > 0 && (
+                  <Badge variant="secondary" className="h-5 px-1.5 text-[10px]">
+                    {onlineUsers.length}
+                  </Badge>
+                )}
+                {expanded ? (
+                  <ChevronDown className="h-3 w-3" />
+                ) : (
+                  <ChevronUp className="h-3 w-3" />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              {isConnected ? `${onlineUsers.length} usuario(s) en línea` : "Servidor de presencia no conectado. Usa el botón Refrescar para actualizar datos."}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
         {/* Avatares flotantes de otros usuarios */}
         <div className="flex -space-x-2">
