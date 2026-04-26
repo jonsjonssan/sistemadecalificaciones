@@ -91,11 +91,11 @@ self.addEventListener("activate", (event) => {
 
 // Estrategia de fetch con caché
 async function fetchWithStrategy(
-  request: Request,
-  strategy: "network-first" | "cache-first",
-  cacheName: string,
-  maxAge?: number
-): Promise<Response> {
+  request,
+  strategy,
+  cacheName,
+  maxAge
+) {
   const cache = await caches.open(cacheName);
   const isNoStore = request.cache === "no-store" || request.cache === "no-cache";
 
@@ -196,7 +196,7 @@ async function fetchWithStrategy(
 }
 
 // Interceptación de peticiones
-self.addEventListener("fetch", (event: FetchEvent) => {
+self.addEventListener("fetch", (event) => {
   const url = new URL(event.request.url);
 
   // Ignorar peticiones que no son GET
@@ -215,7 +215,7 @@ self.addEventListener("fetch", (event: FetchEvent) => {
         event.request,
         strategyConfig.strategy,
         strategyConfig.cacheName,
-        (strategyConfig as any).maxAge
+        strategyConfig.maxAge
       ).catch((error) => {
         console.error("[SW] All strategies failed:", error);
         
@@ -238,7 +238,7 @@ self.addEventListener("fetch", (event: FetchEvent) => {
 });
 
 // Sincronización en segundo plano (Background Sync)
-self.addEventListener("sync", (event: SyncEvent) => {
+self.addEventListener("sync", (event) => {
   console.log("[SW] Background sync triggered:", event.tag);
   
   if (event.tag === "sync-calificaciones") {
@@ -260,7 +260,7 @@ async function syncCalificaciones() {
 }
 
 // Manejo de mensajes desde la app
-self.addEventListener("message", (event: ExtendableMessageEvent) => {
+self.addEventListener("message", (event) => {
   console.log("[SW] Message received:", event.data);
   
   if (event.data.type === "CLEAR_CACHE") {
@@ -275,14 +275,14 @@ self.addEventListener("message", (event: ExtendableMessageEvent) => {
 });
 
 // Notificación de actualización disponible
-self.addEventListener("updatefound", (event: Event) => {
-  const newWorker = (event.target as ServiceWorkerContainer).controller;
+self.addEventListener("updatefound", (event) => {
+  const newWorker = self.registration.installing;
   
   if (newWorker) {
     newWorker.addEventListener("statechange", () => {
-      if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+      if (newWorker.state === "installed" && self.registration.active) {
         // Nueva versión disponible
-        navigator.serviceWorker.controller.postMessage({
+        self.registration.active.postMessage({
           type: "UPDATE_AVAILABLE",
         });
       }

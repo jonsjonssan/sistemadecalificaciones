@@ -212,7 +212,7 @@ const prevCalifId = useRef(calificacion?.id);
 
 useEffect(() => {
   const currId = calificacion?.id;
-  // Si antes tenía ID y ahora no tiene (ocalificacion es undefined), fue eliminado
+  // Si antes tenía ID y ahora no tiene (calificacion es undefined), fue eliminado
   if (prevCalifId.current !== undefined && currId === undefined) {
     wasDeleted.current = true;
   }

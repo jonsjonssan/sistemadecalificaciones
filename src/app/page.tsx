@@ -88,13 +88,17 @@ export default function Home() {
   const [listaEstudiantes, setListaEstudiantes] = useState("");
   const [saving, setSaving] = useState(false);
   const [initialized, setInitialized] = useState(false);
-  const [materiasEnBoleta, setMateriasEnBoleta] = useState<string[]>(() => {
-    if (typeof window !== "undefined") {
-      const v = localStorage.getItem("ss_materiasBoleta");
-      return v ? JSON.parse(v) : [];
+  const [materiasEnBoleta, setMateriasEnBoleta] = useState<string[]>([]);
+
+// Load persisted state from localStorage after hydration
+useEffect(() => {
+  if (typeof window !== "undefined") {
+    const v = localStorage.getItem("ss_materiasBoleta");
+    if (v) {
+      try { setMateriasEnBoleta(JSON.parse(v)); } catch { }
     }
-    return [];
-  });
+  }
+}, []);
   const [expandedBoleta, setExpandedBoleta] = useState<string | null>(null);
   const [editConfig, setEditConfig] = useState<ConfigActividadPartial | null>(null);
   const [configAplicarATodas, setConfigAplicarATodas] = useState(false);
@@ -129,13 +133,17 @@ export default function Home() {
   }, []);
   const [autoSaveStatus, setAutoSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [quickActionsOpen, setQuickActionsOpen] = useState(false);
-  const [promedioDecimal, setPromedioDecimal] = useState<boolean>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("ss_promedio_decimal");
-      return saved ? JSON.parse(saved) : false;
+  const [promedioDecimal, setPromedioDecimal] = useState<boolean>(false);
+
+// Load persisted state from localStorage after hydration
+useEffect(() => {
+  if (typeof window !== "undefined") {
+    const saved = localStorage.getItem("ss_promedio_decimal");
+    if (saved !== null) {
+      try { setPromedioDecimal(JSON.parse(saved)); } catch { }
     }
-    return false;
-  });
+  }
+}, []);
 
   // Promedios
   const [promedioAsignatura, setPromedioAsignatura] = useState<number | null>(null);
