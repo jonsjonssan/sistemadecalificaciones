@@ -382,6 +382,18 @@ useEffect(() => {
     }
   }, [gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado, loadCalificaciones, loadPromedioGrado, toast]);
 
+  // Polling automático para refrescar calificaciones cada 30s
+  // Necesario porque Vercel no soporta WebSockets persistentes
+  useEffect(() => {
+    if (activeTab !== "calificaciones" || !gradoSeleccionado || !asignaturaSeleccionada || !trimestreSeleccionado) return;
+
+    const interval = setInterval(() => {
+      loadCalificaciones();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [activeTab, gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado, loadCalificaciones]);
+
   const loadUsuarios = useCallback(async () => {
     try {
       const res = await fetch("/api/usuarios", { cache: "no-store", credentials: "include" });
