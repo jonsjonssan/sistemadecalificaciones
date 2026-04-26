@@ -422,8 +422,15 @@ export async function DELETE(request: NextRequest) {
         include: {
           estudiante: { include: { grado: true } },
           materia: true,
+          notasActividad: true,
         },
       });
+      // Borrar notas asociadas primero para evitar restricciones de FK
+      if (cal) {
+        await db.notaActividad.deleteMany({
+          where: { calificacionId: cal.id }
+        });
+      }
       const deleted = await db.calificacion.deleteMany({
         where: { estudianteId, materiaId, trimestre: parseInt(trimestre) }
       });
@@ -452,6 +459,21 @@ export async function DELETE(request: NextRequest) {
     if (gradoId && materiaId && trimestre) {
       const grado = await db.grado.findUnique({ where: { id: gradoId }, select: { numero: true, seccion: true } });
       const materia = await db.materia.findUnique({ where: { id: materiaId }, select: { nombre: true } });
+      // Borrar notas asociadas primero para evitar restricciones de FK
+      const calificacionesGrado = await db.calificacion.findMany({
+        where: {
+          estudiante: { gradoId },
+          materiaId,
+          trimestre: parseInt(trimestre)
+        },
+        select: { id: true }
+      });
+      if (calificacionesGrado.length > 0) {
+        const califIds = calificacionesGrado.map(c => c.id);
+        await db.notaActividad.deleteMany({
+          where: { calificacionId: { in: califIds } }
+        });
+      }
       const deleted = await db.calificacion.deleteMany({
         where: {
           estudiante: { gradoId },

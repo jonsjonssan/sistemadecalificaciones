@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Estudiante, Calificacion, ConfigActividadPartial } from "@/types";
 import { calcularPromedio, calcularPromedioFinal, parseNotas } from "@/utils/gradeCalculations";
 import { RefreshCw } from "lucide-react";
@@ -146,21 +146,24 @@ function NotaInput({ value, onChange, darkMode, hasError, onBlur, onNavigate, in
   };
 
   return (
-    <input
-      ref={inputRef}
-      type="text"
-      inputMode="decimal"
-      value={rawValue}
-      onChange={handleChange}
-      onBlur={handleBlur}
-      onKeyDown={handleKeyDown}
-      className={`w-full h-7 sm:h-8 text-center text-xs sm:text-sm border rounded px-0.5 transition-colors ${darkMode
-        ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400"
-        : "bg-white border-slate-300 text-slate-900"
-        } ${hasError ? "border-red-500 bg-red-50 dark:bg-red-900/20" : ""} focus:ring-1 focus:ring-teal-500 focus:border-teal-500`}
-      placeholder="-"
-      maxLength={6}
-    />
+    <div suppressHydrationWarning>
+      <input
+        ref={inputRef}
+        type="text"
+        inputMode="decimal"
+        value={rawValue}
+        onChange={handleChange}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDown}
+        className={`w-full h-7 sm:h-8 text-center text-xs sm:text-sm border rounded px-0.5 transition-colors ${darkMode
+          ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400"
+          : "bg-white border-slate-300 text-slate-900"
+          } ${hasError ? "border-red-500 bg-red-50 dark:bg-red-900/20" : ""} focus:ring-1 focus:ring-teal-500 focus:border-teal-500`}
+        placeholder="-"
+        maxLength={6}
+        suppressHydrationWarning
+      />
+    </div>
   );
 }
 
@@ -203,8 +206,34 @@ export const CalificacionRow = React.memo(function CalificacionRow({
   const [examenError, setExamenError] = useState(false);
   const [recupError, setRecupError] = useState(false);
 
-  // Sincronizar con props SOLO cuando no haya cambios locales pendientes (dirty)
-  // para evitar sobreescribir lo que el usuario acaba de escribir
+// Detectar cuando calificacion es eliminada (cambia de tener valor a undefined)
+const wasDeleted = useRef(false);
+const prevCalifId = useRef(calificacion?.id);
+
+useEffect(() => {
+  const currId = calificacion?.id;
+  // Si antes tenía ID y ahora no tiene (ocalificacion es undefined), fue eliminado
+  if (prevCalifId.current !== undefined && currId === undefined) {
+    wasDeleted.current = true;
+  }
+  prevCalifId.current = currId;
+}, [calificacion?.id]);
+
+// Efecto defensivo: si fue eliminado, resetear todo el estado local
+useEffect(() => {
+  if (wasDeleted.current) {
+    setAcNotas(Array(numAC).fill(null));
+    setAiNotas(Array(numAI).fill(null));
+    setExamen(null);
+    setRecup(null);
+    setDirty(false);
+    setSaveError(false);
+    wasDeleted.current = false;
+  }
+}, [calificacion?.id, numAC, numAI]);
+
+// Sincronizar con props SOLO cuando no haya cambios locales pendientes (dirty)
+// para evitar sobreescribir lo que el usuario acaba de escribir
   useEffect(() => {
     if (dirty) return; // No sobreescribir si el usuario tiene cambios sin guardar
     const timer = setTimeout(() => {

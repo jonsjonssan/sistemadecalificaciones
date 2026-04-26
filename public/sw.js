@@ -1,8 +1,8 @@
 // Service Worker para sistema de calificaciones
 // Estrategia de caché: Network First con fallback a cache
 
-const CACHE_NAME = "sistema-calificaciones-v1";
-const RUNTIME_CACHE = "runtime-cache-v1";
+const CACHE_NAME = "sistema-calificaciones-v2";
+const RUNTIME_CACHE = "runtime-cache-v2";
 
 // Recursos estáticos para caché inicial
 const STATIC_ASSETS = [
@@ -13,41 +13,36 @@ const STATIC_ASSETS = [
 
 // Estrategia de caché para diferentes tipos de peticiones
 const CACHE_STRATEGIES = {
-  // Páginas HTML: Network first, cache fallback
   pages: {
     pattern: /^\/(?!api|_next|static)/,
-    strategy: "network-first" as const,
+    strategy: "network-first",
     cacheName: CACHE_NAME,
   },
-  // API calls: Network first, short cache
   api: {
     pattern: /^\/api\//,
-    strategy: "network-first" as const,
+    strategy: "network-first",
     cacheName: RUNTIME_CACHE,
-    maxAge: 5 * 60 * 1000, // 5 minutos
+    maxAge: 5 * 60 * 1000,
   },
-  // Next.js static assets: Cache first
   static: {
     pattern: /^\/_next\/static\//,
-    strategy: "cache-first" as const,
+    strategy: "cache-first",
     cacheName: "static-cache-v1",
   },
-  // Imágenes: Cache first
   images: {
     pattern: /\.(png|jpg|jpeg|gif|svg|webp|ico)$/,
-    strategy: "cache-first" as const,
+    strategy: "cache-first",
     cacheName: "images-cache-v1",
   },
-  // Fonts: Cache first
   fonts: {
     pattern: /\.(woff2?|ttf|otf|eot)$/,
-    strategy: "cache-first" as const,
+    strategy: "cache-first",
     cacheName: "fonts-cache-v1",
   },
 };
 
 // Instalación del Service Worker
-self.addEventListener("install", (event: ExtendableEvent) => {
+self.addEventListener("install", (event) => {
   console.log("[SW] Installing Service Worker...");
   
   event.waitUntil(
@@ -65,7 +60,7 @@ self.addEventListener("install", (event: ExtendableEvent) => {
 });
 
 // Activación y limpieza de caché viejo
-self.addEventListener("activate", (event: ExtendableEvent) => {
+self.addEventListener("activate", (event) => {
   console.log("[SW] Activating Service Worker...");
   
   event.waitUntil(
