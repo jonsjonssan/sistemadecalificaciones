@@ -125,6 +125,7 @@ useEffect(() => {
   const [borrarCalifLoading, setBorrarCalifLoading] = useState(false);
   const [sectionLoading, setSectionLoading] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Presencia en tiempo real
   const emitActionRef = useRef<(accion: string, descripcion: string, extra?: { grado?: string; asignatura?: string; estudiante?: string }) => void>(() => {});
@@ -361,6 +362,25 @@ useEffect(() => {
       setPromedioGrado(null);
     }
   }, [gradoSeleccionado, trimestreSeleccionado]);
+
+  const handleRefrescar = useCallback(async () => {
+    if (!gradoSeleccionado || !asignaturaSeleccionada || !trimestreSeleccionado) {
+      toast({ title: "Selecciona grado, materia y trimestre primero", variant: "destructive" });
+      return;
+    }
+    setRefreshing(true);
+    try {
+      await Promise.all([
+        loadCalificaciones(),
+        loadPromedioGrado(),
+      ]);
+      toast({ title: "Datos actualizados" });
+    } catch {
+      toast({ title: "Error al refrescar", variant: "destructive" });
+    } finally {
+      setRefreshing(false);
+    }
+  }, [gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado, loadCalificaciones, loadPromedioGrado, toast]);
 
   const loadUsuarios = useCallback(async () => {
     try {
@@ -1865,7 +1885,7 @@ useEffect(() => {
                     <div className="w-20 sm:w-28"><Label className={`text-sm font-medium mb-1 block ${darkMode ? 'text-slate-300' : ''}`}>Trimestre</Label><Select value={trimestreSeleccionado} onValueChange={setTrimestreSeleccionado}><SelectTrigger className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue /></SelectTrigger><SelectContent><SelectItem value="1" className="text-sm">I</SelectItem><SelectItem value="2" className="text-sm">II</SelectItem><SelectItem value="3" className="text-sm">III</SelectItem></SelectContent></Select></div>
                     {configActual && <div className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded ${darkMode ? 'text-slate-400 bg-slate-800' : 'text-slate-500 bg-slate-50'}`}><span>{configActual.numActividadesCotidianas} AC ({configActual.porcentajeAC}%)</span><span>•</span><span>{configActual.numActividadesIntegradoras} AI ({configActual.porcentajeAI}%)</span>{configActual.tieneExamen && <><span>•</span><span>Ex ({configActual.porcentajeExamen}%)</span></>}</div>}
                     <Button size="sm" aria-label={saving ? "Guardando calificaciones" : "Guardar todas las calificaciones"} className={`h-11 sm:h-12 font-semibold text-sm ${darkMode ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white'} mobile-button`} onClick={handleGuardarTodo} disabled={saving}><Save className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">{saving ? 'Guardando...' : 'Guardar Todo'}</span><span className="sm:hidden">{saving ? '...' : 'Guardar'}</span></Button>
-                    <Button size="sm" variant="outline" className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''} mobile-button`} onClick={loadCalificaciones} title="Refrescar calificaciones"><RefreshCw className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Refrescar</span></Button>
+                    <Button size="sm" variant="outline" className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''} mobile-button`} onClick={handleRefrescar} disabled={refreshing} title="Refrescar calificaciones"><RefreshCw className={`h-4 w-4 sm:h-5 sm:w-5 sm:mr-1 ${refreshing ? 'animate-spin' : ''}`} /><span className="hidden sm:inline">{refreshing ? 'Refrescando...' : 'Refrescar'}</span></Button>
                     <Button size="sm" variant="outline" className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''} mobile-button`} onClick={() => { setEditConfig(configActual); setConfigDialogOpen(true); }}><Settings className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Config</span></Button>
                     <Button size="sm" variant="outline" className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''} mobile-button`} onClick={() => setImportDialogOpen(true)}><Upload className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Importar</span></Button>
                     <Button size="sm" variant={promedioDecimal ? "default" : "outline"} className={`h-11 sm:h-12 text-sm ${promedioDecimal ? (darkMode ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white') : (darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : '')} mobile-button`} onClick={() => setPromedioDecimal(!promedioDecimal)} title={promedioDecimal ? "Mostrar como entero" : "Mostrar con decimales"}><Hash className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">{promedioDecimal ? "0.0" : "#"}</span></Button>
