@@ -2021,8 +2021,9 @@ export default function Home() {
                           ) : (
                             filteredAndSortedStudents.map((est, idx, arr) => {
                               const calif = calificaciones.find(c => c.estudianteId === est.id);
+                              const califId = calif?.id ?? `new-${est.id}`;
                               return <CalificacionRow
-                                key={`${est.id}-${asignaturaSeleccionada}-${trimestreSeleccionado}-${configActual?.numActividadesCotidianas ?? 4}-${configActual?.numActividadesIntegradoras ?? 1}`}
+                                key={`${califId}-${asignaturaSeleccionada}-${trimestreSeleccionado}-${configActual?.numActividadesCotidianas ?? 4}-${configActual?.numActividadesIntegradoras ?? 1}`}
                                 estudiante={est}
                                 materiaId={asignaturaSeleccionada}
                                 trimestre={trimestreSeleccionado}
