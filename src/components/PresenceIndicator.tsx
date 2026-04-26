@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Users, ChevronDown, ChevronUp, Wifi, WifiOff, Pencil, ClipboardList, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { useRealtimePresence, OnlineUser } from "@/hooks/useRealtimePresence";
+import { useRealtimePresence, OnlineUser, ActionEvent } from "@/hooks/useRealtimePresence";
 
 interface PresenceIndicatorProps {
   userId: string;
@@ -14,6 +14,7 @@ interface PresenceIndicatorProps {
   email: string;
   rol: string;
   onActionEmit: (emit: (action: string, description: string, extra?: { grado?: string; asignatura?: string; estudiante?: string }) => void) => void;
+  onRemoteAction?: (action: string, descripcion: string, extra?: { grado?: string; asignatura?: string; estudiante?: string }) => void;
 }
 
 function getInitials(nombre: string): string {
@@ -60,14 +61,29 @@ export default function PresenceIndicator({
   email,
   rol,
   onActionEmit,
+  onRemoteAction,
 }: PresenceIndicatorProps) {
   const { onlineUsers, isConnected, lastAction, emitAction } =
     useRealtimePresence({ userId, nombre, email, rol });
   const [expanded, setExpanded] = useState(false);
+  const lastActionRef = useRef<ActionEvent | null>(null);
 
   React.useEffect(() => {
     onActionEmit(emitAction);
   }, [emitAction, onActionEmit]);
+
+  React.useEffect(() => {
+    if (lastAction && lastAction !== lastActionRef.current) {
+      lastActionRef.current = lastAction;
+      if (lastAction.user.userId !== userId && onRemoteAction) {
+        onRemoteAction(lastAction.accion, lastAction.descripcion, {
+          grado: lastAction.grado,
+          asignatura: lastAction.asignatura,
+          estudiante: lastAction.estudiante,
+        });
+      }
+    }
+  }, [lastAction, userId, onRemoteAction]);
 
   // Filtrar a los demas usuarios (excluirme a mi)
   const others = onlineUsers.filter((u) => u.userId !== userId);

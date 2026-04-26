@@ -831,6 +831,9 @@ useEffect(() => {
         credentials: "include"
       });
       if (res.ok) {
+        const est = estudiantes.find(e => e.id === borrarCalifEstudianteId);
+        const mat = asignaturas.find(a => a.id === asignaturaSeleccionada);
+        emitActionRef.current("Borrando calificación", `Borró calificaciones de ${est?.nombre ?? borrarCalifEstudianteId} en ${mat?.nombre ?? asignaturaSeleccionada}`, { grado: gradoSeleccionado, asignatura: mat?.nombre, estudiante: est?.nombre });
         toast({ title: "Calificaciones del alumno borradas" });
         setBorrarCalifDialogOpen(false);
         loadCalificaciones();
@@ -851,6 +854,9 @@ useEffect(() => {
       });
       if (res.ok) {
         const data = await res.json();
+        const mat = asignaturas.find(a => a.id === asignaturaSeleccionada);
+        const grado = grados.find(g => g.id === gradoSeleccionado);
+        emitActionRef.current("Borrando calificaciones", `Borró ${data.borradas} calificaciones en ${mat?.nombre ?? asignaturaSeleccionada} de ${grado ? `${grado.numero}° "${grado.seccion}"` : gradoSeleccionado}`, { grado: gradoSeleccionado, asignatura: mat?.nombre });
         toast({ title: `${data.borradas} calificaciones borradas` });
         setBorrarCalifDialogOpen(false);
         loadCalificaciones();
@@ -1666,6 +1672,11 @@ useEffect(() => {
         email={usuario.email}
         rol={usuario.rol}
         onActionEmit={handlePresenceEmit}
+        onRemoteAction={(accion) => {
+          if (accion.includes("Borrando") || accion.includes("Borró")) {
+            loadCalificaciones();
+          }
+        }}
       />
       <header className={`shadow-lg ${darkMode ? 'bg-[#1e293b] text-white border-b border-slate-700' : 'bg-teal-600 text-white'} mobile-header`}>
         <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2 flex items-center justify-between gap-2">
