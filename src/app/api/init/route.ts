@@ -4,6 +4,18 @@ import { randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
 import { requireAdmin } from "@/lib/api-middleware";
 
+// GET: Verificar si el sistema está inicializado (público, no requiere auth)
+export async function GET() {
+  try {
+    const sql = neon(process.env.DATABASE_URL!);
+    const usuariosExistentes = await sql`SELECT id FROM "Usuario" LIMIT 1`;
+    return NextResponse.json({ initialized: usuariosExistentes.length > 0 });
+  } catch (error: any) {
+    console.error("[init/status] ERROR:", error.message);
+    return NextResponse.json({ initialized: false, error: error.message }, { status: 500 });
+  }
+}
+
 export async function POST() {
   if (process.env.NODE_ENV === "production") {
     return NextResponse.json(

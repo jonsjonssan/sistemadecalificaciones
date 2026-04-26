@@ -38,11 +38,12 @@ export default function RootLayout({
       </head>
       <body
         className={`${nunito.variable} antialiased bg-background text-foreground`}
+        suppressHydrationWarning
       >
         <ErrorBoundary>
           <ThemeProvider
             attribute="class"
-            defaultTheme="system"
+            defaultTheme="light"
             enableSystem
             disableTransitionOnChange
           >

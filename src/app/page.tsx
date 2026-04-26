@@ -224,6 +224,18 @@ useEffect(() => {
     } catch { toast({ title: "Error al inicializar", variant: "destructive" }); }
   };
 
+  // Verificar estado de inicialización del sistema (público, no requiere auth)
+  useEffect(() => {
+    fetch("/api/init", { cache: "no-store" })
+      .then(res => res.json())
+      .then(data => {
+        if (data.initialized) {
+          setInitialized(true);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   // Carga de datos
   const loadGrados = useCallback(async () => {
     try {
@@ -1437,27 +1449,27 @@ useEffect(() => {
   }, [usuario]);
   // Carga de datos base (estudiantes y materias del grado)
   useEffect(() => {
-    if (gradoSeleccionado) {
+    if (usuario && gradoSeleccionado) {
       setSectionLoading(true);
       Promise.all([loadEstudiantes(), loadAsignaturas()]).finally(() => setSectionLoading(false));
     }
-  }, [gradoSeleccionado]);
+  }, [usuario, gradoSeleccionado]);
 
   // Carga de configuración y calificaciones sincronizada
   useEffect(() => {
-    if (gradoSeleccionado && asignaturaSeleccionada && trimestreSeleccionado) {
+    if (usuario && gradoSeleccionado && asignaturaSeleccionada && trimestreSeleccionado) {
       setCalificaciones([]);
       setSectionLoading(true);
       Promise.all([loadConfig(), loadCalificaciones(), loadConfigsGrado()]).finally(() => setSectionLoading(false));
     }
-  }, [gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado]);
+  }, [usuario, gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado]);
 
   // Cargar promedio del grado cuando cambie el grado o trimestre
   useEffect(() => {
-    if (gradoSeleccionado && trimestreSeleccionado) {
+    if (usuario && gradoSeleccionado && trimestreSeleccionado) {
       loadPromedioGrado();
     }
-  }, [gradoSeleccionado, trimestreSeleccionado]);
+  }, [usuario, gradoSeleccionado, trimestreSeleccionado]);
   // Auto-selección inicial de grado - restaurar estado guardado o usar primero disponible
   useEffect(() => {
     if (gradosFiltrados && gradosFiltrados.length > 0 && !gradoSeleccionado) {
