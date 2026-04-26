@@ -42,6 +42,21 @@ interface UseRealtimePresenceReturn {
   ) => void;
 }
 
+function getPresenceServerUrl(): string {
+  if (process.env.NEXT_PUBLIC_PRESENCE_URL) {
+    return process.env.NEXT_PUBLIC_PRESENCE_URL;
+  }
+  if (typeof window !== "undefined" && window.location.hostname === "localhost") {
+    return "http://localhost:3004";
+  }
+  if (typeof window !== "undefined") {
+    const { protocol, hostname } = window.location;
+    const wsProtocol = protocol === "https:" ? "wss:" : "ws:";
+    return `${wsProtocol}//${hostname}:3004`;
+  }
+  return "/?XTransformPort=3004";
+}
+
 export function useRealtimePresence({
   userId,
   nombre,
@@ -71,12 +86,14 @@ export function useRealtimePresence({
   );
 
   useEffect(() => {
-    const socket = io("/?XTransformPort=3004", {
+    const presenceUrl = getPresenceServerUrl();
+    const socket = io(presenceUrl, {
       transports: ["websocket", "polling"],
       forceNew: true,
       reconnection: true,
-      reconnectionAttempts: Infinity,
-      reconnectionDelay: 1000,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 3000,
+      reconnectionDelayMax: 15000,
       timeout: 10000,
     });
     socketRef.current = socket;
@@ -88,6 +105,12 @@ export function useRealtimePresence({
 
     socket.on("disconnect", () => setIsConnected(false));
 
+    socket.on("connect_error", (err) => {
+      if (process.env.NODE_ENV === "development") {
+        console.warn("[Presencia] Error de conexion:", err.message);
+      }
+    });
+
     socket.on("users-list", (users: OnlineUser[]) => {
       setOnlineUsers(users);
     });
@@ -96,7 +119,6 @@ export function useRealtimePresence({
       setOnlineUsers((prev) => {
         const idx = prev.findIndex((u) => u.userId === user.userId);
         if (idx >= 0) {
-          // Actualizar sesiones si ya existe
           const next = [...prev];
           next[idx] = { ...user };
           return next;
