@@ -20,9 +20,9 @@ const CACHE_STRATEGIES = {
   },
   api: {
     pattern: /^\/api\//,
-    strategy: "network-first",
+    strategy: "network-only",
     cacheName: RUNTIME_CACHE,
-    maxAge: 5 * 60 * 1000,
+    maxAge: 0,
   },
   static: {
     pattern: /^\/_next\/static\//,
@@ -98,6 +98,10 @@ async function fetchWithStrategy(
 ) {
   const cache = await caches.open(cacheName);
   const isNoStore = request.cache === "no-store" || request.cache === "no-cache";
+
+  if (strategy === "network-only") {
+    return fetch(request);
+  }
 
   if (strategy === "cache-first") {
     // Cache First: Intentar desde caché primero (solo si no es no-store)
