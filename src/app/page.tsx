@@ -1705,7 +1705,7 @@ useEffect(() => {
         rol={usuario.rol}
         onActionEmit={handlePresenceEmit}
         onRemoteAction={(accion) => {
-          if (accion.includes("Borrando") || accion.includes("Borró")) {
+          if (accion.includes("Borrando") || accion.includes("Borró") || accion.includes("Editando") || accion.includes("Guardando")) {
             loadCalificaciones();
           }
         }}
