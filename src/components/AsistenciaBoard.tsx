@@ -524,6 +524,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
             await fetch("/api/asistencia", {
               method: "POST",
               credentials: "include",
+              keepalive: true,
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 asistencias: [{ estudianteId, estado }],
@@ -555,6 +556,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
               await fetch("/api/asistencia", {
                 method: "POST",
                 credentials: "include",
+                keepalive: true,
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                   asistencias: [{ estudianteId, estado }],
