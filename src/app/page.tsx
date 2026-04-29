@@ -1033,7 +1033,7 @@ useEffect(() => {
         if (promFinal === null) return false;
         if (filtroEstado === "aprobados") return promFinal >= 5;
         if (filtroEstado === "riesgo") return promFinal < 5;
-        if (filtroEstado === "honor") return promFinal >= 8;
+        if (filtroEstado === "honor") return promFinal >= 7;
         return true;
       });
     }
@@ -1937,7 +1937,7 @@ useEffect(() => {
                           <SelectItem value="todos">Todos</SelectItem>
                           <SelectItem value="aprobados">Aprobados (≥5)</SelectItem>
                           <SelectItem value="riesgo">En riesgo (&lt;5)</SelectItem>
-                          <SelectItem value="honor">Cuadro honor (≥8)</SelectItem>
+                          <SelectItem value="honor">Cuadro honor (≥7)</SelectItem>
                         </SelectContent>
                       </Select>
 
