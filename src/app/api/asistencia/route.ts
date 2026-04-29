@@ -41,8 +41,10 @@ export async function GET(req: Request) {
         gte: startOfDay,
         lte: endOfDay,
       },
-      materiaId: materiaId || null,
     };
+    if (materiaId) {
+      where.materiaId = materiaId;
+    }
 
     const asistCount = await db.asistencia.count({ where });
     console.log("GET asistencia - fecha:", fechaParam, "gradoId:", gradoId, "materiaId:", materiaId, "where:", JSON.stringify(where), "count:", asistCount);
@@ -211,9 +213,10 @@ export async function DELETE(request: NextRequest) {
         lte: endOfDay,
       },
       gradoId,
-      materiaId: materiaId || null,
     };
-
+    if (materiaId) {
+      where.materiaId = materiaId;
+    }
     if (estudianteId) {
       where.estudianteId = estudianteId;
     }

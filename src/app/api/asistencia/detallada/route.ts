@@ -30,7 +30,7 @@ export async function GET(req: Request) {
     }
 
     const materiaId = searchParams.get("materiaId");
-    const materiaFilter = materiaId ? sql`AND "materiaId" = ${materiaId}` : sql`AND "materiaId" IS NULL`;
+    const materiaFilter = materiaId ? sql`AND "materiaId" = ${materiaId}` : sql``;
 
     // Obtener estudiantes del grado
     const estudiantes = await sql`
