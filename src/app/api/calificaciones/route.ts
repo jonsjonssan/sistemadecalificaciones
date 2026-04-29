@@ -290,45 +290,11 @@ export async function POST(request: NextRequest) {
     const aiFinal = (calificacionAI !== null && !isNaN(calificacionAI)) ? calificacionAI : null;
     const promFinal = (promedioFinal !== null && !isNaN(promedioFinal)) ? promedioFinal : null;
 
-    // Upsert calificación
-    const result = await db.calificacion.upsert({
-      where: {
-        estudianteId_materiaId_trimestre: {
-          estudianteId,
-          materiaId,
-          trimestre: parseInt(String(trimestre)),
-        },
-      },
-      update: {
-        calificacionAC: acFinal,
-        calificacionAI: aiFinal,
-        examenTrimestral: examenVal,
-        promedioFinal: promFinal,
-        recuperacion: recupVal,
-      },
-      create: {
-        estudianteId,
-        materiaId,
-        trimestre: parseInt(String(trimestre)),
-        calificacionAC: acFinal,
-        calificacionAI: aiFinal,
-        examenTrimestral: examenVal,
-        promedioFinal: promFinal,
-        recuperacion: recupVal,
-      },
-      include: {
-        estudiante: { select: { id: true, numero: true, nombre: true, gradoId: true } },
-        materia: { select: { id: true, nombre: true } },
-        notasActividad: true,
-      },
-    });
-
-    // Actualizar notas de actividades (borrar y recrear en transacción)
-    const notasCreateData: { calificacionId: string; tipo: string; numeroActividad: number; nota: number }[] = [];
+    // Preparar datos de notas para crear
+    const notasCreateData: { tipo: string; numeroActividad: number; nota: number }[] = [];
     for (let i = 0; i < acNotas.length; i++) {
       if (acNotas[i] !== null && acNotas[i] !== undefined) {
         notasCreateData.push({
-          calificacionId: result.id,
           tipo: "cotidiana",
           numeroActividad: i + 1,
           nota: acNotas[i] as number,
@@ -338,7 +304,6 @@ export async function POST(request: NextRequest) {
     for (let i = 0; i < aiNotas.length; i++) {
       if (aiNotas[i] !== null && aiNotas[i] !== undefined) {
         notasCreateData.push({
-          calificacionId: result.id,
           tipo: "integradora",
           numeroActividad: i + 1,
           nota: aiNotas[i] as number,
@@ -346,53 +311,102 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    await db.$transaction([
-      db.notaActividad.deleteMany({
-        where: { calificacionId: result.id, tipo: "cotidiana" },
-      }),
-      db.notaActividad.deleteMany({
-        where: { calificacionId: result.id, tipo: "integradora" },
-      }),
-      ...notasCreateData.map(data =>
-        db.notaActividad.create({ data })
-      ),
-    ]);
-
-    // Obtener resultado final con notas
-    const finalResult = await db.calificacion.findUnique({
-      where: { id: result.id },
-      include: {
-        estudiante: { select: { id: true, numero: true, nombre: true, gradoId: true } },
-        materia: { select: { id: true, nombre: true } },
-        notasActividad: true,
-      },
-    });
-
-    // Audit log
-    try {
-      if (session && session.id) {
-        const gradoInfo = finalResult?.estudiante?.gradoId
-          ? await db.grado.findUnique({ where: { id: finalResult.estudiante.gradoId }, select: { numero: true, seccion: true } })
-          : null;
-        await db.auditLog.create({
-          data: {
-            usuarioId: session.id,
-            accion: "UPDATE",
-            entidad: "Calificacion",
-            entidadId: result.id,
-            detalles: JSON.stringify({
-              estudiante: finalResult?.estudiante?.nombre,
-              materia: finalResult?.materia?.nombre,
-              trimestre: parseInt(String(trimestre)),
-              promedioFinal: promFinal,
-              grado: gradoInfo ? `${gradoInfo.numero}${gradoInfo.seccion}` : null
-            }),
+    // Ejecutar todo en una sola transacción interactiva para atomicidad
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const finalResult = await db.$transaction(async (tx: any) => {
+      const result = await tx.calificacion.upsert({
+        where: {
+          estudianteId_materiaId_trimestre: {
+            estudianteId,
+            materiaId,
+            trimestre: parseInt(String(trimestre)),
           },
+        },
+        update: {
+          calificacionAC: acFinal,
+          calificacionAI: aiFinal,
+          examenTrimestral: examenVal,
+          promedioFinal: promFinal,
+          recuperacion: recupVal,
+        },
+        create: {
+          estudianteId,
+          materiaId,
+          trimestre: parseInt(String(trimestre)),
+          calificacionAC: acFinal,
+          calificacionAI: aiFinal,
+          examenTrimestral: examenVal,
+          promedioFinal: promFinal,
+          recuperacion: recupVal,
+        },
+      });
+
+      await tx.notaActividad.deleteMany({
+        where: { calificacionId: result.id },
+      });
+
+      if (notasCreateData.length > 0) {
+        await tx.notaActividad.createMany({
+          data: notasCreateData.map(n => ({
+            calificacionId: result.id,
+            tipo: n.tipo,
+            numeroActividad: n.numeroActividad,
+            nota: n.nota,
+          })),
         });
       }
-    } catch (auditError) {
-      console.error("[calificaciones] Audit error:", auditError);
-    }
+
+      // Audit log dentro de la transacción
+      if (session && session.id) {
+        let gradoNombre: string | null = null;
+        try {
+          const est = await tx.estudiante.findUnique({
+            where: { id: estudianteId },
+            select: { nombre: true, gradoId: true },
+          });
+          if (est?.gradoId) {
+            const gr = await tx.grado.findUnique({
+              where: { id: est.gradoId },
+              select: { numero: true, seccion: true },
+            });
+            gradoNombre = gr ? `${gr.numero}${gr.seccion}` : null;
+          }
+
+          const mat = await tx.materia.findUnique({
+            where: { id: materiaId },
+            select: { nombre: true },
+          });
+
+          await tx.auditLog.create({
+            data: {
+              usuarioId: session.id,
+              accion: "UPDATE",
+              entidad: "Calificacion",
+              entidadId: result.id,
+              detalles: JSON.stringify({
+                estudiante: est?.nombre,
+                materia: mat?.nombre,
+                trimestre: parseInt(String(trimestre)),
+                promedioFinal: promFinal,
+                grado: gradoNombre,
+              }),
+            },
+          });
+        } catch (auditError) {
+          console.error("[calificaciones] Audit error dentro de tx:", auditError);
+        }
+      }
+
+      return tx.calificacion.findUnique({
+        where: { id: result.id },
+        include: {
+          estudiante: { select: { id: true, numero: true, nombre: true, gradoId: true } },
+          materia: { select: { id: true, nombre: true } },
+          notasActividad: true,
+        },
+      });
+    });
+
     return NextResponse.json(transformCalificacion(finalResult));
   } catch (error) {
     console.error("Error al guardar calificación:", error);

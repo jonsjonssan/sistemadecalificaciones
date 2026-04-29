@@ -205,6 +205,8 @@ export const CalificacionRow = React.memo(function CalificacionRow({
   const [aiErrors, setAiErrors] = useState<Set<number>>(new Set());
   const [examenError, setExamenError] = useState(false);
   const [recupError, setRecupError] = useState(false);
+  const retryCountRef = useRef(0);
+  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 // Detectar cuando calificacion es eliminada (cambia de tener valor a undefined)
 const wasDeleted = useRef(false);
@@ -246,6 +248,11 @@ useEffect(() => {
       setExamen(newEx);
       setRecup(newRc);
       setSaveError(false);
+      retryCountRef.current = 0;
+      if (retryTimerRef.current) {
+        clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = null;
+      }
     }, 0);
     return () => clearTimeout(timer);
   }, [key, numAC, numAI, calificacion?.actividadesCotidianas, calificacion?.actividadesIntegradoras, calificacion?.examenTrimestral, calificacion?.recuperacion, dirty]);
@@ -407,7 +414,6 @@ useEffect(() => {
         recuperacion: stateRef.current.recup,
       });
       if (result && typeof result === "object") {
-        // Actualizar estado local inmediatamente con los datos persistidos
         setAcNotas(parseNotas(result.actividadesCotidianas ?? null, numAC));
         setAiNotas(parseNotas(result.actividadesIntegradoras ?? null, numAI));
         setExamen(result.examenTrimestral ?? null);
@@ -415,17 +421,36 @@ useEffect(() => {
       }
       setDirty(false);
       setSaveError(false);
+      retryCountRef.current = 0;
+      if (retryTimerRef.current) {
+        clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = null;
+      }
     } catch {
       setSaveError(true);
-      // No resetear dirty para que se reintente en el próximo cambio o desmonte
+      scheduleRetry();
     } finally {
       savingRef.current = false;
     }
   }, [estudiante.id, materiaId, onSave, numAC, numAI]);
 
+  const scheduleRetry = useCallback(() => {
+    if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+    const delay = Math.min(2000 * Math.pow(2, retryCountRef.current), 30000);
+    retryCountRef.current += 1;
+    retryTimerRef.current = setTimeout(() => {
+      retryTimerRef.current = null;
+      doSave();
+    }, delay);
+  }, [doSave]);
+
   // Guardado al desmontar: siempre intentar guardar cambios pendientes
   useEffect(() => {
     return () => {
+      if (retryTimerRef.current) {
+        clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = null;
+      }
       if (stateRef.current.dirty) {
         const result = onSave(estudiante.id, materiaId, {
           actividadesCotidianas: stateRef.current.acNotas,
@@ -440,14 +465,14 @@ useEffect(() => {
     };
   }, [estudiante.id, materiaId, onSave]);
 
-  // Auto-save con debounce de 800ms
+  // Auto-save con debounce (800ms) - solo para cambios nuevos, no reintentos
   useEffect(() => {
-    if (!dirty) return;
+    if (!dirty || saveError) return;
     const handler = setTimeout(() => {
       doSave();
     }, 800);
     return () => clearTimeout(handler);
-  }, [acNotas, aiNotas, examen, recup, dirty, doSave]);
+  }, [acNotas, aiNotas, examen, recup, dirty, saveError, doSave]);
 
   const rowBg = evenRow
     ? darkMode
