@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
     }
 
     const usuario = await sql`
-      SELECT * FROM "Usuario" WHERE email = ${email}
+      SELECT * FROM "Usuario" WHERE LOWER(email) = LOWER(${email})
     `;
 
     if (usuario.length === 0) {
