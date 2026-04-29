@@ -101,8 +101,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     
     setLoading(true);
     try {
-      let url = `/api/asistencia?gradoId=${gradoId}&fecha=${fecha}T00:00:00.000Z`;
-      if (asignaturaId) url += `&materiaId=${asignaturaId}`;
+      const url = `/api/asistencia?gradoId=${gradoId}&fecha=${fecha}T00:00:00.000Z`;
 
       const res = await fetch(url, { signal: abortController.signal, credentials: "include" });
       console.log("loadAsistencia - URL:", url, "response status:", res.status);
@@ -131,7 +130,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
         setLoading(false);
       }
     }
-  }, [gradoId, asignaturaId, fecha, initializeAttendance, toast]);
+  }, [gradoId, fecha, initializeAttendance, toast]);
 
   const loadResumen = useCallback(async () => {
     if (!gradoId) return;
@@ -143,7 +142,6 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     setLoading(true);
     try {
       let url = `/api/asistencia/resumen?gradoId=${gradoId}&incluirFechas=true`;
-      if (asignaturaId) url += `&materiaId=${asignaturaId}`;
       
       if (summaryRange === "month") {
         url += `&mes=${selectedMonth}`;
@@ -156,7 +154,6 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
       }
 
       let urlDetallada = `/api/asistencia/detallada?gradoId=${gradoId}`;
-      if (asignaturaId) urlDetallada += `&materiaId=${asignaturaId}`;
       
       if (summaryRange === "month") {
         urlDetallada += `&mes=${selectedMonth}`;
@@ -181,7 +178,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
         setLoading(false);
       }
     }
-  }, [gradoId, asignaturaId, summaryRange, selectedMonth, selectedYear, toast]);
+  }, [gradoId, summaryRange, selectedMonth, selectedYear, toast]);
 
   const exportCSV = () => {
     if (!resumen.length) return;
@@ -509,12 +506,12 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
   }, [view, gradoId, summaryRange, selectedMonth, selectedYear, loadResumen]);
 
   useEffect(() => {
-    if (estudiantes.length > 0 && gradoId && fecha && asignaturaId !== undefined) {
+    if (estudiantes.length > 0 && gradoId && fecha) {
       loadAsistencia();
     } else if (!gradoId || !fecha) {
       setAsistencias({});
     }
-  }, [estudiantes, gradoId, fecha, asignaturaId, loadAsistencia]);
+  }, [estudiantes, gradoId, fecha, loadAsistencia]);
 
   useEffect(() => {
     return () => {
@@ -553,10 +550,9 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          asistencias: [{ estudianteId, estado }],
+          asignaturas: [{ estudianteId, estado }],
           fecha: `${fecha}T00:00:00.000Z`,
           gradoId,
-          materiaId: asignaturaId || null
         })
       });
       if (res.ok) {
@@ -573,7 +569,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     } finally {
       setSavingByStudent(prev => ({ ...prev, [estudianteId]: false }));
     }
-  }, [gradoId, fecha, asignaturaId, toast]);
+  }, [gradoId, fecha, toast]);
 
   const handleEstadoChange = (estudianteId: string, estado: string) => {
     setAsistencias(prev => ({ ...prev, [estudianteId]: estado }));
@@ -592,7 +588,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
 
     // Verificar si ya existe asistencia para esta fecha
     try {
-      const checkUrl = `/api/asistencia?fecha=${fecha}T00:00:00.000Z&gradoId=${gradoId}${asignaturaId ? `&materiaId=${asignaturaId}` : ''}`;
+      const checkUrl = `/api/asistencia?fecha=${fecha}T00:00:00.000Z&gradoId=${gradoId}`;
       const checkRes = await fetch(checkUrl, { credentials: "include" });
       if (checkRes.ok) {
         const existingRecords = await checkRes.json();
@@ -631,10 +627,9 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          asistencias: records,
+          asignaturas: records,
           fecha: `${fecha}T00:00:00.000Z`,
           gradoId,
-          materiaId: asignaturaId || null
         })
       });
 
@@ -674,8 +669,6 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
         gradoId,
         estudianteId
       });
-      if (asignaturaId) params.set("materiaId", asignaturaId);
-
       const res = await fetch(`/api/asistencia?${params.toString()}`, { method: "DELETE", credentials: "include" });
       if (res.ok) {
         const data = await res.json();
@@ -704,8 +697,6 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
         gradoId,
         estudianteId
       });
-      if (asignaturaId) params.set("materiaId", asignaturaId);
-
       const res = await fetch(`/api/asistencia?${params.toString()}`, { method: "DELETE", credentials: "include" });
       if (res.ok) {
         const data = await res.json();
@@ -729,7 +720,6 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     setDeleting(true);
     try {
       const params = new URLSearchParams({ fecha: `${fecha}T00:00:00.000Z`, gradoId });
-      if (asignaturaId) params.set("materiaId", asignaturaId);
       const res = await fetch(`/api/asistencia?${params.toString()}`, { method: "DELETE", credentials: "include" });
       if (res.ok) {
         const data = await res.json();

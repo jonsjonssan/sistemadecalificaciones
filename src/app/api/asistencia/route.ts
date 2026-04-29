@@ -109,8 +109,6 @@ export async function POST(req: Request) {
 
     for (const record of asistencias) {
       const { estudianteId, estado } = record;
-      const matId = materiaId || null;
-
       // Buscar todos los registros existentes para este estudiante en esta fecha
       const existentes = await db.asistencia.findMany({
         where: {
@@ -120,7 +118,6 @@ export async function POST(req: Request) {
             lte: endOfDay,
           },
           gradoId,
-          materiaId: matId,
         },
         orderBy: { createdAt: 'desc' }
       });
@@ -152,7 +149,6 @@ export async function POST(req: Request) {
             fecha: startOfDay,
             estado,
             gradoId,
-            materiaId: matId,
           },
           include: {
             estudiante: { select: { id: true, nombre: true, numero: true } },
