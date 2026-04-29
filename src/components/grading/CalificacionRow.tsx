@@ -454,7 +454,7 @@ useEffect(() => {
     }
   }, [estudiante.id, doSave, onRegisterForceSave]);
 
-  // Guardado al desmontar: guardar cambios pendientes con keepalive + sendBeacon
+  // Guardado al desmontar: guardar cambios pendientes con keepalive (solo un envío)
   useEffect(() => {
     return () => {
       if (retryTimerRef.current) {
@@ -472,10 +472,6 @@ useEffect(() => {
           examenTrimestral: stateRef.current.examen,
           recuperacion: stateRef.current.recup,
         });
-        const blob = new Blob([body], { type: "application/json" });
-        if (navigator.sendBeacon) {
-          navigator.sendBeacon("/api/calificaciones", blob);
-        }
         fetch("/api/calificaciones", {
           method: "POST",
           headers: { "Content-Type": "application/json" },

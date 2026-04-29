@@ -38,17 +38,15 @@ interface AsistenciaBoardProps {
   asignaturas: Asignatura[];
   estudiantes: Estudiante[];
   gradoInicial?: string;
-  asignaturaInicial?: string;
   onGradoChange?: (gradoId: string) => void;
   onPresenceEmit?: (accion: string, descripcion: string, extra?: { grado?: string; asignatura?: string; estudiante?: string }) => void;
 }
 
-export default function AsistenciaBoard({ grados, asignaturas, estudiantes, gradoInicial = "", asignaturaInicial = "", onGradoChange, onPresenceEmit }: AsistenciaBoardProps) {
+export default function AsistenciaBoard({ grados, asignaturas, estudiantes, gradoInicial = "", onGradoChange, onPresenceEmit }: AsistenciaBoardProps) {
   const { resolvedTheme } = useTheme();
   const darkMode = resolvedTheme === "dark";
   const { toast } = useToast();
   const [gradoId, setGradoId] = useState<string>(gradoInicial);
-  const [asignaturaId, setAsignaturaId] = useState<string>(asignaturaInicial);
   const [fecha, setFecha] = useState<string>(new Date().toISOString().split('T')[0]);
 
   // Wrapper para notificar al padre cuando cambie el grado
@@ -513,14 +511,62 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     }
   }, [estudiantes, gradoId, fecha, loadAsistencia]);
 
-  // Limpiar timers de auto-save pendientes al cambiar de grado o fecha
+  // Limpiar timers de auto-save pendientes al cambiar de grado o fecha (guardar pendientes primero)
   useEffect(() => {
+    const currentAsistencias = asistenciasRef.current;
+    // Guardar todos los cambios pendientes antes de limpiar
+    const pendingEntries = Object.entries(autoSaveTimersRef.current);
+    if (pendingEntries.length > 0) {
+      const saves = pendingEntries.map(async ([estudianteId]) => {
+        const estado = currentAsistencias[estudianteId];
+        if (estado) {
+          try {
+            await fetch("/api/asistencia", {
+              method: "POST",
+              credentials: "include",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                asistencias: [{ estudianteId, estado }],
+                fecha: `${fechaRef.current}T00:00:00.000Z`,
+                gradoId: gradoRef.current,
+              })
+            });
+          } catch {}
+        }
+      });
+      Promise.all(saves).catch(() => {});
+    }
     Object.values(autoSaveTimersRef.current).forEach(timer => clearTimeout(timer));
     autoSaveTimersRef.current = {};
   }, [gradoId, fecha]);
 
   useEffect(() => {
     return () => {
+      const currentAsistencias = asistenciasRef.current;
+      const currentGradoId = gradoRef.current;
+      const currentFecha = fechaRef.current;
+      // Guardar todos los cambios de asistencia pendientes antes de desmontar
+      const pendingEntries = Object.entries(autoSaveTimersRef.current);
+      if (pendingEntries.length > 0 && currentGradoId && currentFecha) {
+        const saves = pendingEntries.map(async ([estudianteId]) => {
+          const estado = currentAsistencias[estudianteId];
+          if (estado) {
+            try {
+              await fetch("/api/asistencia", {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  asistencias: [{ estudianteId, estado }],
+                  fecha: `${currentFecha}T00:00:00.000Z`,
+                  gradoId: currentGradoId,
+                })
+              });
+            } catch {}
+          }
+        });
+        Promise.all(saves).catch(() => {});
+      }
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
@@ -537,19 +583,12 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     setGradoId(gradoInicial);
   }, [gradoInicial]);
 
-  // Sincronizar asignatura cuando cambian los props del padre
-  useEffect(() => {
-    if (asignaturas.some(m => m.id === asignaturaInicial)) {
-      setAsignaturaId(asignaturaInicial);
-    } else if (asignaturas.length > 0) {
-      setAsignaturaId(asignaturas[0].id);
-    }
-  }, [asignaturaInicial, asignaturas]);
-
   const gradoRef = useRef(gradoId);
   const fechaRef = useRef(fecha);
+  const asistenciasRef = useRef(asistencias);
   useEffect(() => { gradoRef.current = gradoId; }, [gradoId]);
   useEffect(() => { fechaRef.current = fecha; }, [fecha]);
+  useEffect(() => { asistenciasRef.current = asistencias; }, [asistencias]);
 
   const guardarEstudianteIndividual = useCallback(async (estudianteId: string, estado: string) => {
     const currentGradoId = gradoRef.current;
@@ -656,8 +695,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
         loadAsistencia();
         if (onPresenceEmit) {
           const gradoName = grados.find(g => g.id === gradoId);
-          const mat = asignaturas.find(a => a.id === asignaturaId);
-          onPresenceEmit("Tomando asistencia", `Registró asistencia del ${fecha} en ${gradoName ? `${gradoName.numero}° "${gradoName.seccion}"` : ""}${mat ? ` - ${mat.nombre}` : ""}`, { grado: gradoName ? `${gradoName.numero}° "${gradoName.seccion}"` : gradoId, asignatura: mat?.nombre });
+          onPresenceEmit("Tomando asistencia", `Registró asistencia del ${fecha} en ${gradoName ? `${gradoName.numero}° "${gradoName.seccion}"` : ""}`, { grado: gradoName ? `${gradoName.numero}° "${gradoName.seccion}"` : gradoId });
         }
       } else {
         const data = await res.json();
