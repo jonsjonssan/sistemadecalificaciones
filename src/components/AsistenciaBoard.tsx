@@ -513,6 +513,12 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     }
   }, [estudiantes, gradoId, fecha, loadAsistencia]);
 
+  // Limpiar timers de auto-save pendientes al cambiar de grado o fecha
+  useEffect(() => {
+    Object.values(autoSaveTimersRef.current).forEach(timer => clearTimeout(timer));
+    autoSaveTimersRef.current = {};
+  }, [gradoId, fecha]);
+
   useEffect(() => {
     return () => {
       if (abortControllerRef.current) {
@@ -540,8 +546,15 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     }
   }, [asignaturaInicial, asignaturas]);
 
+  const gradoRef = useRef(gradoId);
+  const fechaRef = useRef(fecha);
+  useEffect(() => { gradoRef.current = gradoId; }, [gradoId]);
+  useEffect(() => { fechaRef.current = fecha; }, [fecha]);
+
   const guardarEstudianteIndividual = useCallback(async (estudianteId: string, estado: string) => {
-    if (!gradoId || !fecha) return;
+    const currentGradoId = gradoRef.current;
+    const currentFecha = fechaRef.current;
+    if (!currentGradoId || !currentFecha) return;
     setSavingByStudent(prev => ({ ...prev, [estudianteId]: true }));
     setSavedByStudent(prev => ({ ...prev, [estudianteId]: false }));
     try {
@@ -550,9 +563,9 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          asignaturas: [{ estudianteId, estado }],
-          fecha: `${fecha}T00:00:00.000Z`,
-          gradoId,
+          asistencias: [{ estudianteId, estado }],
+          fecha: `${currentFecha}T00:00:00.000Z`,
+          gradoId: currentGradoId,
         })
       });
       if (res.ok) {
@@ -569,7 +582,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     } finally {
       setSavingByStudent(prev => ({ ...prev, [estudianteId]: false }));
     }
-  }, [gradoId, fecha, toast]);
+  }, [toast]);
 
   const handleEstadoChange = (estudianteId: string, estado: string) => {
     setAsistencias(prev => ({ ...prev, [estudianteId]: estado }));
@@ -627,7 +640,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          asignaturas: records,
+          asistencias: records,
           fecha: `${fecha}T00:00:00.000Z`,
           gradoId,
         })
