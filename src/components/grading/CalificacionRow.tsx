@@ -444,7 +444,7 @@ useEffect(() => {
     }, delay);
   }, [doSave]);
 
-  // Guardado al desmontar: siempre intentar guardar cambios pendientes
+  // Guardado al desmontar: guardar cambios pendientes con keepalive
   useEffect(() => {
     return () => {
       if (retryTimerRef.current) {
@@ -452,18 +452,25 @@ useEffect(() => {
         retryTimerRef.current = null;
       }
       if (stateRef.current.dirty) {
-        const result = onSave(estudiante.id, materiaId, {
-          actividadesCotidianas: stateRef.current.acNotas,
-          actividadesIntegradoras: stateRef.current.aiNotas,
-          examenTrimestral: stateRef.current.examen,
-          recuperacion: stateRef.current.recup,
-        });
-        if (result && typeof result.catch === "function") {
-          result.catch(() => {});
-        }
+        const trimestreNum = parseInt(trimestre);
+        fetch("/api/calificaciones", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          keepalive: true,
+          body: JSON.stringify({
+            estudianteId: estudiante.id,
+            materiaId,
+            trimestre: trimestreNum,
+            actividadesCotidianas: JSON.stringify(stateRef.current.acNotas),
+            actividadesIntegradoras: JSON.stringify(stateRef.current.aiNotas),
+            examenTrimestral: stateRef.current.examen,
+            recuperacion: stateRef.current.recup,
+          }),
+        }).catch(() => {});
       }
     };
-  }, [estudiante.id, materiaId, onSave]);
+  }, [estudiante.id, materiaId, trimestre]);
 
   // Auto-save con debounce (800ms) - solo para cambios nuevos, no reintentos
   useEffect(() => {
