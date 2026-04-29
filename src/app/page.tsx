@@ -719,12 +719,20 @@ useEffect(() => {
     handleReordenarEstudiantes(nuevos);
   };
 
-  const dirtyRowsRef = useRef<Map<string, { estudianteId: string; materiaId: string; data: any }>>(new Map());
+  const forceSaveRefs = useRef<Map<string, () => Promise<void>>>(new Map());
   const inputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
   const trimestreRef = useRef(trimestreSeleccionado);
   useEffect(() => { trimestreRef.current = trimestreSeleccionado; }, [trimestreSeleccionado]);
   const materiaRef = useRef(asignaturaSeleccionada);
   useEffect(() => { materiaRef.current = asignaturaSeleccionada; }, [asignaturaSeleccionada]);
+
+  const handleRegisterForceSave = useCallback((studentId: string, saveFn: (() => Promise<void>) | null) => {
+    if (saveFn) {
+      forceSaveRefs.current.set(studentId, saveFn);
+    } else {
+      forceSaveRefs.current.delete(studentId);
+    }
+  }, []);
 
   const handleSaveCalificacion = useCallback(async (estudianteId: string, materiaId: string, data: { actividadesCotidianas: (number | null)[]; actividadesIntegradoras: (number | null)[]; examenTrimestral: number | null; recuperacion: number | null; }): Promise<Calificacion> => {
     setAutoSaveStatus("saving");
@@ -774,8 +782,17 @@ useEffect(() => {
     }
     setSaving(true);
     const trimestre = parseInt(trimestreSeleccionado);
+
+    // Paso 1: Forzar guardado inmediato de todas las filas con datos sucios (datos vivos de los inputs)
+    const forceSaveFns = Array.from(forceSaveRefs.current.values());
+    const forceSaves = forceSaveFns.map(saveFn => saveFn().catch(() => {}));
+    await Promise.all(forceSaves);
+    forceSaveRefs.current.clear();
+
+    // Paso 2: Respaldo adicional - guardar desde el estado sincronizado para filas que ya tenían datos
+    const califsSnapshot = calificaciones;
     const saves = estudiantes.map(async (est) => {
-      const calif = calificaciones.find(c => c.estudianteId === est.id && c.materiaId === asignaturaSeleccionada && c.trimestre === trimestre);
+      const calif = califsSnapshot.find(c => c.estudianteId === est.id && c.materiaId === asignaturaSeleccionada && c.trimestre === trimestre);
       if (!calif) return null;
       return fetch("/api/calificaciones", {
         method: "POST",
@@ -792,18 +809,23 @@ useEffect(() => {
         }),
       });
     }).filter(Boolean);
+
     try {
-      const results = await Promise.all(saves);
-      const ok = results.filter(r => r && r.ok).length;
-      if (ok > 0) {
+      // Ejecutar paso 2 SOLO si no hubo force-saves (para evitar sobrescribir datos recién guardados)
+      if (forceSaveFns.length === 0 && saves.length > 0) {
+        const results = await Promise.all(saves);
+        const ok = results.filter(r => r && r.ok).length;
         toast({ title: `${ok} calificaciones guardadas en Neon` });
-        loadCalificaciones();
-        const mat = asignaturas.find(a => a.id === asignaturaSeleccionada);
-        const grado = grados.find(g => g.id === gradoSeleccionado);
-        emitActionRef.current("Guardando calificaciones", `Guardó ${ok} calificaciones en ${mat?.nombre ?? asignaturaSeleccionada} de ${grado ? `${grado.numero}° "${grado.seccion}"` : gradoSeleccionado}`, { grado: gradoSeleccionado, asignatura: mat?.nombre });
+      } else if (forceSaveFns.length > 0) {
+        toast({ title: "Calificaciones guardadas" });
       } else {
         toast({ title: "No hay calificaciones para guardar" });
       }
+      // Recargar siempre desde el servidor para asegurar consistencia
+      loadCalificaciones();
+      const mat = asignaturas.find(a => a.id === asignaturaSeleccionada);
+      const grado = grados.find(g => g.id === gradoSeleccionado);
+      emitActionRef.current("Guardando calificaciones", `Guardó calificaciones en ${mat?.nombre ?? asignaturaSeleccionada} de ${grado ? `${grado.numero}° "${grado.seccion}"` : gradoSeleccionado}`, { grado: gradoSeleccionado, asignatura: mat?.nombre });
     } catch (e) {
       console.error("Error:", e);
       toast({ title: "Error al guardar", variant: "destructive" });
@@ -1562,17 +1584,27 @@ useEffect(() => {
   // Guardar estado antes de cerrar la pestaña - intentar guardar datos primero
   useEffect(() => {
     const handleBeforeUnload = async (e: BeforeUnloadEvent) => {
-      if (usuario && saving) {
-        // Si hay datos sin guardar, intentar guardarlos
-        e.preventDefault();
-        // Intentar guardar sin esperar respuesta ( navigator.sendBeacon no funciona bien con fetch)
-        try {
-          await fetch("/api/auth/logout", {
-            method: "POST",
-            credentials: "include",
-            keepalive: true
-          });
-        } catch { }
+      if (usuario) {
+        // Guardar todas las calificaciones sucias antes de cerrar
+        const forceSaves: Promise<void>[] = [];
+        forceSaveRefs.current.forEach((saveFn) => {
+          forceSaves.push(saveFn().catch(() => {}));
+        });
+        forceSaveRefs.current.clear();
+        if (forceSaves.length > 0) {
+          try { await Promise.all(forceSaves); } catch { }
+        }
+
+        if (saving) {
+          e.preventDefault();
+          try {
+            await fetch("/api/auth/logout", {
+              method: "POST",
+              credentials: "include",
+              keepalive: true
+            });
+          } catch { }
+        }
       }
 
       // Guardar estado en localStorage
@@ -1584,6 +1616,10 @@ useEffect(() => {
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === "hidden" && usuario) {
+        // Forzar guardado de filas sucias antes de ocultar
+        forceSaveRefs.current.forEach((saveFn) => {
+          saveFn().catch(() => {});
+        });
         // Cuando la pestaña se oculta, guardar estado
         saveUserState({ gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado, activeTab });
         localStorage.setItem(`sis_last_session_${usuario.id}`, new Date().toISOString());
@@ -2084,7 +2120,7 @@ useEffect(() => {
                             ))
                           ) : (
                             filteredAndSortedStudents.map((est, idx, arr) => {
-                              const calif = calificaciones.find(c => c.estudianteId === est.id);
+                              const calif = calificaciones.find(c => c.estudianteId === est.id && c.materiaId === asignaturaSeleccionada);
                               const califId = calif?.id ?? `new-${est.id}`;
                               return <CalificacionRow
                                 key={`${califId}-${asignaturaSeleccionada}-${trimestreSeleccionado}-${configActual?.numActividadesCotidianas ?? 4}-${configActual?.numActividadesIntegradoras ?? 1}`}
@@ -2094,6 +2130,7 @@ useEffect(() => {
                                 calificacion={calif}
                                 config={configActual}
                                 onSave={handleSaveCalificacion}
+                                onRegisterForceSave={handleRegisterForceSave}
                                 saving={saving}
                                 darkMode={darkMode}
                                 evenRow={idx % 2 === 0}

@@ -18,6 +18,7 @@ interface CalificacionRowProps {
     examenTrimestral: number | null;
     recuperacion: number | null;
   }) => Promise<Calificacion | void> | void;
+  onRegisterForceSave?: (studentId: string, saveFn: (() => Promise<void>) | null) => void;
   saving: boolean;
   darkMode: boolean;
   evenRow: boolean;
@@ -174,6 +175,7 @@ export const CalificacionRow = React.memo(function CalificacionRow({
   calificacion,
   config,
   onSave,
+  onRegisterForceSave,
   saving,
   darkMode,
   evenRow,
@@ -444,7 +446,15 @@ useEffect(() => {
     }, delay);
   }, [doSave]);
 
-  // Guardado al desmontar: guardar cambios pendientes con keepalive
+  // Registrar función de guardado forzado en el padre (para Guardar Todo)
+  useEffect(() => {
+    if (onRegisterForceSave) {
+      onRegisterForceSave(estudiante.id, doSave);
+      return () => { onRegisterForceSave(estudiante.id, null); };
+    }
+  }, [estudiante.id, doSave, onRegisterForceSave]);
+
+  // Guardado al desmontar: guardar cambios pendientes con keepalive + sendBeacon
   useEffect(() => {
     return () => {
       if (retryTimerRef.current) {
@@ -453,20 +463,25 @@ useEffect(() => {
       }
       if (stateRef.current.dirty) {
         const trimestreNum = parseInt(trimestre);
+        const body = JSON.stringify({
+          estudianteId: estudiante.id,
+          materiaId,
+          trimestre: trimestreNum,
+          actividadesCotidianas: JSON.stringify(stateRef.current.acNotas),
+          actividadesIntegradoras: JSON.stringify(stateRef.current.aiNotas),
+          examenTrimestral: stateRef.current.examen,
+          recuperacion: stateRef.current.recup,
+        });
+        const blob = new Blob([body], { type: "application/json" });
+        if (navigator.sendBeacon) {
+          navigator.sendBeacon("/api/calificaciones", blob);
+        }
         fetch("/api/calificaciones", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
           keepalive: true,
-          body: JSON.stringify({
-            estudianteId: estudiante.id,
-            materiaId,
-            trimestre: trimestreNum,
-            actividadesCotidianas: JSON.stringify(stateRef.current.acNotas),
-            actividadesIntegradoras: JSON.stringify(stateRef.current.aiNotas),
-            examenTrimestral: stateRef.current.examen,
-            recuperacion: stateRef.current.recup,
-          }),
+          body,
         }).catch(() => {});
       }
     };
