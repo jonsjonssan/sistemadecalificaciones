@@ -314,6 +314,35 @@ export async function POST(request: NextRequest) {
     // Ejecutar todo en una sola transacción interactiva para atomicidad
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const finalResult = await db.$transaction(async (tx: any) => {
+      // Obtener calificación existente para comparar valores anteriores
+      const existingCal = await tx.calificacion.findUnique({
+        where: {
+          estudianteId_materiaId_trimestre: {
+            estudianteId,
+            materiaId,
+            trimestre: parseInt(String(trimestre)),
+          },
+        },
+        include: {
+          notasActividad: true,
+        },
+      });
+
+      // Construir mapas de valores anteriores para comparación
+      const oldNotasMap = new Map<string, number | null>();
+      if (existingCal) {
+        for (const nota of existingCal.notasActividad || []) {
+          const key = `${nota.tipo}_${nota.numeroActividad}`;
+          oldNotasMap.set(key, nota.nota);
+        }
+        if (existingCal.examenTrimestral !== null && existingCal.examenTrimestral !== undefined) {
+          oldNotasMap.set("examenTrimestral", existingCal.examenTrimestral);
+        }
+        if (existingCal.recuperacion !== null && existingCal.recuperacion !== undefined) {
+          oldNotasMap.set("recuperacion", existingCal.recuperacion);
+        }
+      }
+
       const result = await tx.calificacion.upsert({
         where: {
           estudianteId_materiaId_trimestre: {
@@ -356,7 +385,117 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // Audit log dentro de la transacción
+      // Registrar historial de cambios a nivel de celda (como Google Sheets)
+      if (session && session.id) {
+        try {
+          const historialEntries: any[] = [];
+
+          // Comparar actividades cotidianas
+          for (let i = 0; i < acNotas.length; i++) {
+            const key = `cotidiana_${i + 1}`;
+            const oldVal = oldNotasMap.has(key) ? oldNotasMap.get(key) : null;
+            const newVal = acNotas[i] !== null && acNotas[i] !== undefined ? acNotas[i] as number : null;
+            
+            if (oldVal !== newVal) {
+              const descripcion = oldVal === null
+                ? `AC${i + 1}: vacío → ${newVal}`
+                : newVal === null
+                  ? `AC${i + 1}: ${oldVal} → vacío`
+                  : `AC${i + 1}: ${oldVal} → ${newVal}`;
+              
+              historialEntries.push({
+                calificacionId: result.id,
+                usuarioId: session.id,
+                tipoCampo: key,
+                valorAnterior: oldVal,
+                valorNuevo: newVal,
+                descripcion,
+              });
+            }
+          }
+
+          // Comparar actividades integradoras
+          for (let i = 0; i < aiNotas.length; i++) {
+            const key = `integradora_${i + 1}`;
+            const oldVal = oldNotasMap.has(key) ? oldNotasMap.get(key) : null;
+            const newVal = aiNotas[i] !== null && aiNotas[i] !== undefined ? aiNotas[i] as number : null;
+            
+            if (oldVal !== newVal) {
+              const descripcion = oldVal === null
+                ? `AI${i + 1}: vacío → ${newVal}`
+                : newVal === null
+                  ? `AI${i + 1}: ${oldVal} → vacío`
+                  : `AI${i + 1}: ${oldVal} → ${newVal}`;
+              
+              historialEntries.push({
+                calificacionId: result.id,
+                usuarioId: session.id,
+                tipoCampo: key,
+                valorAnterior: oldVal,
+                valorNuevo: newVal,
+                descripcion,
+              });
+            }
+          }
+
+          // Comparar examen trimestral
+          {
+            const oldVal = oldNotasMap.has("examenTrimestral") ? oldNotasMap.get("examenTrimestral") : null;
+            const newVal = examenVal;
+            
+            if (oldVal !== newVal) {
+              const descripcion = oldVal === null
+                ? `Examen: vacío → ${newVal}`
+                : newVal === null
+                  ? `Examen: ${oldVal} → vacío`
+                  : `Examen: ${oldVal} → ${newVal}`;
+              
+              historialEntries.push({
+                calificacionId: result.id,
+                usuarioId: session.id,
+                tipoCampo: "examenTrimestral",
+                valorAnterior: oldVal,
+                valorNuevo: newVal,
+                descripcion,
+              });
+            }
+          }
+
+          // Comparar recuperación
+          {
+            const oldVal = oldNotasMap.has("recuperacion") ? oldNotasMap.get("recuperacion") : null;
+            const newVal = recupVal;
+            
+            if (oldVal !== newVal) {
+              const descripcion = oldVal === null
+                ? `Recuperación: vacío → ${newVal}`
+                : newVal === null
+                  ? `Recuperación: ${oldVal} → vacío`
+                  : `Recuperación: ${oldVal} → ${newVal}`;
+              
+              historialEntries.push({
+                calificacionId: result.id,
+                usuarioId: session.id,
+                tipoCampo: "recuperacion",
+                valorAnterior: oldVal,
+                valorNuevo: newVal,
+                descripcion,
+              });
+            }
+          }
+
+          // Insertar todos los cambios en el historial
+          if (historialEntries.length > 0) {
+            await tx.historialCalificacion.createMany({
+              data: historialEntries,
+            });
+          }
+        } catch (historialError) {
+          console.error("[calificaciones] Historial error dentro de tx:", historialError);
+        }
+      }
+
+      // Audit log dentro de la transacción (resumen general)
       if (session && session.id) {
         let gradoNombre: string | null = null;
         try {

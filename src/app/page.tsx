@@ -28,6 +28,7 @@ import GettingStartedWizard from "@/components/GettingStartedWizard";
 import PredictiveAlerts from "@/components/PredictiveAlerts";
 import { ContextualHelp } from "@/components/ContextualHelp";
 import { CalificacionRow } from "@/components/grading/CalificacionRow";
+import { HistorialCalificacionPopup } from "@/components/grading/HistorialCalificacionPopup";
 import { Usuario, UsuarioSesion, Estudiante, Asignatura, AsignaturaConGrado, Calificacion, Grado, ConfigActividad, ConfigActividadPartial, ConfiguracionSistema } from "@/types";
 import { calcularPromedio, calcularPromedioFinal, parseNotas } from "@/utils/gradeCalculations";
 import { isAdmin, canDeleteUsers, getDocentesDelGrado } from "@/utils/roleHelpers";
@@ -170,6 +171,14 @@ useEffect(() => {
   const [auditPage, setAuditPage] = useState(1);
   const [auditTotalPages, setAuditTotalPages] = useState(1);
   const [auditTotal, setAuditTotal] = useState(0);
+
+  // Historial de calificaciones (popup estilo Google Sheets)
+  const [historialPopup, setHistorialPopup] = useState<{
+    calificacionId: string;
+    tipoCampo: string;
+    campoLabel: string;
+    anchorRef: React.RefObject<HTMLElement | null>;
+  } | null>(null);
 
   // Persistence: Cargar de localStorage/sessionStorage
   useEffect(() => {
@@ -780,6 +789,14 @@ useEffect(() => {
       setAutoSaveStatus("idle");
       throw e;
     } finally { setSaving(false); }
+  }, []);
+
+  const handleShowHistory = useCallback((calificacionId: string, tipoCampo: string, campoLabel: string, anchorRef: React.RefObject<HTMLElement | null>) => {
+    setHistorialPopup({ calificacionId, tipoCampo, campoLabel, anchorRef });
+  }, []);
+
+  const handleCloseHistory = useCallback(() => {
+    setHistorialPopup(null);
   }, []);
 
   const handleGuardarTodo = useCallback(async () => {
@@ -2147,6 +2164,7 @@ useEffect(() => {
                                 totalRows={arr.length}
                                 onNavigate={handleNavigate}
                                 inputRefs={inputRefs}
+                                onShowHistory={handleShowHistory}
                               />
                             })
                           )}
@@ -2742,6 +2760,21 @@ useEffect(() => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Historial de Calificaciones Popup (estilo Google Sheets) */}
+      {historialPopup && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={handleCloseHistory} />
+          <HistorialCalificacionPopup
+            calificacionId={historialPopup.calificacionId}
+            tipoCampo={historialPopup.tipoCampo}
+            campoLabel={historialPopup.campoLabel}
+            darkMode={darkMode}
+            onClose={handleCloseHistory}
+            anchorRef={historialPopup.anchorRef}
+          />
+        </>
+      )}
 
       <footer className={`py-2 text-center text-xs hidden md:block ${darkMode ? 'bg-[#1e293b] text-slate-500' : 'bg-slate-800 text-slate-400'}`}>© 2026 Centro Escolar Católico San José de la Montaña</footer>
 

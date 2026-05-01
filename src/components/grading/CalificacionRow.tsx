@@ -3,8 +3,9 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Estudiante, Calificacion, ConfigActividadPartial } from "@/types";
 import { calcularPromedio, calcularPromedioFinal, parseNotas } from "@/utils/gradeCalculations";
-import { RefreshCw } from "lucide-react";
+import { RefreshCw, History } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { HistorialCalificacionPopup } from "./HistorialCalificacionPopup";
 
 interface CalificacionRowProps {
   estudiante: Estudiante;
@@ -29,9 +30,10 @@ interface CalificacionRowProps {
   totalRows?: number;
   onNavigate?: (fromRow: number, fromCol: number, direction: 'up' | 'down' | 'left' | 'right') => void;
   inputRefs?: React.MutableRefObject<Map<string, HTMLInputElement>>;
+  onShowHistory?: (calificacionId: string, tipoCampo: string, campoLabel: string, anchorRef: React.RefObject<HTMLElement | null>) => void;
 }
 
-function NotaInput({ value, onChange, darkMode, hasError, onBlur, onNavigate, inputKey, inputRefs }: {
+function NotaInput({ value, onChange, darkMode, hasError, onBlur, onNavigate, inputKey, inputRefs, onShowHistory, calificacionId, tipoCampo, campoLabel }: {
   value: string | number | null;
   onChange: (v: string) => void;
   darkMode: boolean;
@@ -40,8 +42,20 @@ function NotaInput({ value, onChange, darkMode, hasError, onBlur, onNavigate, in
   onNavigate?: (direction: 'up' | 'down' | 'left' | 'right') => void;
   inputKey?: string;
   inputRefs?: React.MutableRefObject<Map<string, HTMLInputElement>>;
+  onShowHistory?: (calificacionId: string, tipoCampo: string, campoLabel: string, anchorRef: React.RefObject<HTMLElement | null>) => void;
+  calificacionId?: string;
+  tipoCampo?: string;
+  campoLabel?: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const cellRef = useRef<HTMLDivElement>(null);
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (onShowHistory && calificacionId && tipoCampo && campoLabel) {
+      onShowHistory(calificacionId, tipoCampo, campoLabel, cellRef);
+    }
+  };
 
   // Registrar input en el Map de referencias
   useEffect(() => {
@@ -147,7 +161,7 @@ function NotaInput({ value, onChange, darkMode, hasError, onBlur, onNavigate, in
   };
 
   return (
-    <div suppressHydrationWarning>
+    <div ref={cellRef} suppressHydrationWarning onContextMenu={handleContextMenu} className="relative group">
       <input
         ref={inputRef}
         type="text"
@@ -164,6 +178,13 @@ function NotaInput({ value, onChange, darkMode, hasError, onBlur, onNavigate, in
         maxLength={6}
         suppressHydrationWarning
       />
+      {onShowHistory && (
+        <div className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className={`p-0.5 rounded-full cursor-pointer ${darkMode ? "bg-slate-600 hover:bg-slate-500" : "bg-slate-200 hover:bg-slate-300"}`} title="Ver historial de cambios">
+            <History className="h-2.5 w-2.5 text-teal-500" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -186,6 +207,7 @@ export const CalificacionRow = React.memo(function CalificacionRow({
   totalRows = 0,
   onNavigate,
   inputRefs,
+  onShowHistory,
 }: CalificacionRowProps) {
   const numAC = config?.numActividadesCotidianas ?? 4;
   const numAI = config?.numActividadesIntegradoras ?? 1;
@@ -555,6 +577,10 @@ useEffect(() => {
               onNavigate={handleNavigate('ac', i)}
               inputKey={`${estudiante.id}-${getColIndex('ac', i)}`}
               inputRefs={inputRefs}
+              onShowHistory={onShowHistory}
+              calificacionId={calificacion?.id}
+              tipoCampo={`cotidiana_${i + 1}`}
+              campoLabel={`AC${i + 1}`}
             />
           </td>
         ))}
@@ -572,6 +598,10 @@ useEffect(() => {
               onNavigate={handleNavigate('ai', i)}
               inputKey={`${estudiante.id}-${getColIndex('ai', i)}`}
               inputRefs={inputRefs}
+              onShowHistory={onShowHistory}
+              calificacionId={calificacion?.id}
+              tipoCampo={`integradora_${i + 1}`}
+              campoLabel={`AI${i + 1}`}
             />
           </td>
         ))}
@@ -589,6 +619,10 @@ useEffect(() => {
               onNavigate={handleNavigate('examen')}
               inputKey={`${estudiante.id}-${getColIndex('examen')}`}
               inputRefs={inputRefs}
+              onShowHistory={onShowHistory}
+              calificacionId={calificacion?.id}
+              tipoCampo="examenTrimestral"
+              campoLabel="Examen"
             />
           </td>
         )}
@@ -607,6 +641,10 @@ useEffect(() => {
             onNavigate={handleNavigate('recup')}
             inputKey={`${estudiante.id}-${getColIndex('recup')}`}
             inputRefs={inputRefs}
+            onShowHistory={onShowHistory}
+            calificacionId={calificacion?.id}
+            tipoCampo="recuperacion"
+            campoLabel="Recuperación"
           />
         </td>
         <td className={`p-2 text-center border-l ${cellBorder} ${finalBg}`}>
@@ -649,6 +687,10 @@ useEffect(() => {
             onNavigate={handleNavigate('ac', i)}
             inputKey={`${estudiante.id}-${getColIndex('ac', i)}`}
             inputRefs={inputRefs}
+            onShowHistory={onShowHistory}
+            calificacionId={calificacion?.id}
+            tipoCampo={`cotidiana_${i + 1}`}
+            campoLabel={`AC${i + 1}`}
           />
         </td>
       ))}
@@ -666,6 +708,10 @@ useEffect(() => {
             onNavigate={handleNavigate('ai', i)}
             inputKey={`${estudiante.id}-${getColIndex('ai', i)}`}
             inputRefs={inputRefs}
+            onShowHistory={onShowHistory}
+            calificacionId={calificacion?.id}
+            tipoCampo={`integradora_${i + 1}`}
+            campoLabel={`AI${i + 1}`}
           />
         </td>
       ))}
@@ -683,6 +729,10 @@ useEffect(() => {
             onNavigate={handleNavigate('examen')}
             inputKey={`${estudiante.id}-${getColIndex('examen')}`}
             inputRefs={inputRefs}
+            onShowHistory={onShowHistory}
+            calificacionId={calificacion?.id}
+            tipoCampo="examenTrimestral"
+            campoLabel="Examen"
           />
         </td>
       )}
@@ -701,6 +751,10 @@ useEffect(() => {
           onNavigate={handleNavigate('recup')}
           inputKey={`${estudiante.id}-${getColIndex('recup')}`}
           inputRefs={inputRefs}
+          onShowHistory={onShowHistory}
+          calificacionId={calificacion?.id}
+          tipoCampo="recuperacion"
+          campoLabel="Recuperación"
         />
       </td>
       <td className={`p-2 text-center border-l ${cellBorder} ${finalBg}`}>

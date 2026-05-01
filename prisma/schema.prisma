@@ -30,6 +30,7 @@ model Usuario {
   auditLogs         AuditLog[]
   loginSessions     LoginSession[]
   gradosOrientados  Grado[] @relation("GradoOrientador") // Grados donde es docente orientador
+  historialCambios  HistorialCalificacion[]
 
   @@index([email])
   @@index([rol, activo])
@@ -160,6 +161,8 @@ model Calificacion {
 
   // Relación con notas individuales (nueva estructura normalizada)
   notasActividad   NotaActividad[]
+  // Historial de cambios a nivel de celda
+  historialCambios HistorialCalificacion[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -237,6 +240,26 @@ model AuditLog {
   @@index([entidad])
   @@index([accion])
   @@index([createdAt])
+}
+
+// Historial de cambios de calificaciones - rastrea cada cambio a nivel de celda (como Google Sheets)
+model HistorialCalificacion {
+  id              String   @id @default(cuid())
+  calificacionId  String
+  usuarioId       String
+  tipoCampo       String   // "cotidiana_1", "integradora_1", "examenTrimestral", "recuperacion", etc.
+  valorAnterior   Float?   // Valor antes del cambio (null si era vacío)
+  valorNuevo      Float?   // Valor después del cambio (null si se borró)
+  descripcion     String?  // Descripción legible del cambio
+  createdAt       DateTime @default(now())
+
+  calificacion  Calificacion  @relation(fields: [calificacionId], references: [id], onDelete: Cascade)
+  usuario       Usuario       @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([calificacionId])
+  @@index([usuarioId])
+  @@index([createdAt])
+  @@index([calificacionId, tipoCampo])
 }
 
 // Registro de Sesiones - rastrea logins
