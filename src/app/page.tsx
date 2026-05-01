@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -135,6 +136,7 @@ useEffect(() => {
   const [autoSaveStatus, setAutoSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const [quickActionsOpen, setQuickActionsOpen] = useState(false);
   const [promedioDecimal, setPromedioDecimal] = useState<boolean>(false);
+  const [paperSize, setPaperSize] = useState<"letter" | "a4">("letter");
 
 // Load persisted state from localStorage after hydration
 useEffect(() => {
@@ -142,6 +144,10 @@ useEffect(() => {
     const saved = localStorage.getItem("ss_promedio_decimal");
     if (saved !== null) {
       try { setPromedioDecimal(JSON.parse(saved)); } catch { }
+    }
+    const savedPaperSize = localStorage.getItem("ss_paperSize");
+    if (savedPaperSize === "a4" || savedPaperSize === "letter") {
+      setPaperSize(savedPaperSize);
     }
   }
 }, []);
@@ -2258,7 +2264,31 @@ useEffect(() => {
                         </div>
                       </div>
                     )}
-                    <BoletaList estudiantes={estudiantes} calificaciones={calificaciones} materias={materiasEnBoleta.length > 0 ? asignaturasFiltradas.filter(m => materiasEnBoleta.includes(m.id)) : asignaturasFiltradas} grado={gradosFiltrados.find(g => g.id === gradoSeleccionado)} trimestre={parseInt(trimestreSeleccionado)} expandedBoleta={expandedBoleta} setExpandedBoleta={setExpandedBoleta} darkMode={darkMode} configuracion={configuracion ? { nombreDirectora: configuracion.nombreDirectora } : undefined} />
+                    <div className="flex items-center gap-4 pt-2 border-t">
+                      <span className={`text-xs font-medium ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Tamaño papel:</span>
+                      <RadioGroup
+                        value={paperSize}
+                        onValueChange={(val) => {
+                          const size = val as "letter" | "a4";
+                          setPaperSize(size);
+                          if (typeof window !== "undefined") localStorage.setItem("ss_paperSize", size);
+                        }}
+                        className="flex items-center gap-4"
+                      >
+                        <div className="flex items-center gap-1.5">
+                          <RadioGroupItem value="letter" id="pp-letter" className="h-3.5 w-3.5" />
+                          <Label htmlFor="pp-letter" className="text-xs cursor-pointer">Carta</Label>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <RadioGroupItem value="a4" id="pp-a4" className="h-3.5 w-3.5" />
+                          <Label htmlFor="pp-a4" className="text-xs cursor-pointer">A4</Label>
+                        </div>
+                      </RadioGroup>
+                      <span className={`text-[10px] ${darkMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                        {paperSize === "letter" ? "(215.9 x 279.4 mm)" : "(210 x 297 mm)"}
+                      </span>
+                    </div>
+                    <BoletaList estudiantes={estudiantes} calificaciones={calificaciones} materias={materiasEnBoleta.length > 0 ? asignaturasFiltradas.filter(m => materiasEnBoleta.includes(m.id)) : asignaturasFiltradas} grado={gradosFiltrados.find(g => g.id === gradoSeleccionado)} trimestre={parseInt(trimestreSeleccionado)} expandedBoleta={expandedBoleta} setExpandedBoleta={setExpandedBoleta} darkMode={darkMode} configuracion={configuracion ? { nombreDirectora: configuracion.nombreDirectora } : undefined} paperSize={paperSize} />
                   </>
                 )}
               </CardContent>

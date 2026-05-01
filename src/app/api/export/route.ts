@@ -95,7 +95,8 @@ export async function GET(request: NextRequest) {
 
     if (tipo === "boleta" && gradoId) {
       const boleta = await getBoletaData(gradoId);
-      return exportBoletaPDF(boleta);
+      const paperSize = searchParams.get("paperSize") || "letter";
+      return exportBoletaPDF(boleta, paperSize === "a4" ? "a4" : "letter");
     }
 
     return NextResponse.json({ error: "Tipo de exportación inválido" }, { status: 400 });
@@ -283,8 +284,8 @@ function exportAsistenciaExcel(asistencia: any[]) {
   });
 }
 
-function exportBoletaPDF(data: any) {
-  const doc = new jsPDF();
+function exportBoletaPDF(data: any, format: "letter" | "a4" = "letter") {
+  const doc = new jsPDF({ format });
   const { estudiantes, materias, calificaciones } = data;
 
   for (const estudiante of estudiantes) {

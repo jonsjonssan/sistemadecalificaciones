@@ -9,12 +9,16 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { escapeHtml } from "@/lib/utils/index";
 import type { Estudiante, Asignatura, Grado, Calificacion } from "@/types";
-export default function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, expandedBoleta, setExpandedBoleta, darkMode, configuracion }: { estudiantes: Estudiante[]; calificaciones: Calificacion[]; materias: Asignatura[]; grado?: Grado; trimestre: number; expandedBoleta: string | null; setExpandedBoleta: (id: string | null) => void; darkMode: boolean; configuracion?: { nombreDirectora?: string }; }) {
+export default function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, expandedBoleta, setExpandedBoleta, darkMode, configuracion, paperSize }: { estudiantes: Estudiante[]; calificaciones: Calificacion[]; materias: Asignatura[]; grado?: Grado; trimestre: number; expandedBoleta: string | null; setExpandedBoleta: (id: string | null) => void; darkMode: boolean; configuracion?: { nombreDirectora?: string }; paperSize?: "letter" | "a4"; }) {
   const [resumenAsistencia, setResumenAsistencia] = useState<any[]>([]);
   const [todasCalificaciones, setTodasCalificaciones] = useState<Calificacion[]>([]);
   const [resumenAsistenciaAnual, setResumenAsistenciaAnual] = useState<any[]>([]);
   const [loadingAsistencia, setLoadingAsistencia] = useState(true);
   const [loadingAnual, setLoadingAnual] = useState(true);
+
+  const paperStyles = paperSize === "a4"
+    ? { pageAt: `@page { size: a4; margin: 10mm; }`, fontSize: "10pt" }
+    : { pageAt: `@page { size: letter; margin: 15mm; }`, fontSize: "11pt" };
 
   useEffect(() => {
     const fetchAsistencia = async () => {
@@ -109,9 +113,9 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
 <head>
   <title>Boleta de Calificaciones - ${escapeHtml(est.nombre)}</title>
   <style>
-    @page { size: letter; margin: 15mm; }
+    ${paperStyles.pageAt}
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Times New Roman', serif; font-size: 11pt; line-height: 1.4; color: #333; }
+    body { font-family: 'Times New Roman', serif; font-size: ${paperStyles.fontSize}; line-height: 1.4; color: #333; }
     .boleta { max-width: 190mm; margin: 0 auto; padding: 5mm; }
     
     .header { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 15px; }
@@ -436,9 +440,9 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
 <head>
   <title>Boletas de Calificaciones - ${grado?.numero}° ${grado?.seccion}</title>
   <style>
-    @page { size: letter; margin: 15mm; }
+    ${paperStyles.pageAt}
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Times New Roman', serif; font-size: 11pt; line-height: 1.4; color: #333; }
+    body { font-family: 'Times New Roman', serif; font-size: ${paperStyles.fontSize}; line-height: 1.4; color: #333; }
     .boleta { max-width: 190mm; margin: 0 auto; padding: 5mm; }
     
     .header { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 15px; }
@@ -549,9 +553,9 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
 <head>
   <title>Boleta Anual Consolidada - ${est.nombre}</title>
   <style>
-    @page { size: letter; margin: 15mm; }
+    ${paperStyles.pageAt}
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Times New Roman', serif; font-size: 11pt; line-height: 1.4; color: #333; }
+    body { font-family: 'Times New Roman', serif; font-size: ${paperStyles.fontSize}; line-height: 1.4; color: #333; }
     .boleta { max-width: 190mm; margin: 0 auto; padding: 5mm; }
     .header { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 15px; }
     .logo { width: 100px; height: 100px; object-fit: contain; }
@@ -720,33 +724,33 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
       </div>`;
     }
 
-    const html = `<!DOCTYPE html><html><head><title>Boletas Consolidadas - ${grado?.numero}° ${grado?.seccion}</title>
-    <style>
-      @page { size: letter; margin: 15mm; }
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      body { font-family: 'Times New Roman', serif; font-size: 11pt; line-height: 1.4; color: #333; }
-      .boleta { max-width: 190mm; margin: 0 auto; padding: 5mm; }
-      .header { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 15px; }
-      .logo { width: 100px; height: 100px; object-fit: contain; }
-      .header-text { text-align: center; flex: 1; }
-      .header-text h1 { font-size: 13pt; font-weight: bold; margin-bottom: 3px; text-transform: uppercase; }
-      .titulo-boleta { text-align: center; background: #1e293b; color: white; padding: 8px; margin: 15px 0; border: 1px solid #333; }
-      .info-estudiante { display: flex; justify-content: space-between; margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; }
-      .info-estudiante .label { font-weight: bold; }
-      table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-      th, td { border: 1px solid #333; padding: 6px; text-align: center; }
-      th { background: #e5e7eb; font-weight: bold; font-size: 9pt; }
-      .resumen-anual { display: flex; justify-content: space-between; margin: 20px 0; padding: 15px; background: #f8fafc; border: 2px solid #1e293b; }
-      .resumen-item .valor { font-size: 18pt; font-weight: bold; }
-      .seccion-asistencia { margin: 15px 0; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; }
-      .seccion-asistencia-header { background: #f8fafc; padding: 6px 10px; border-bottom: 1px solid #ddd; font-weight: bold; font-size: 9pt; }
-      .asistencia-grid { display: grid; grid-template-columns: repeat(4, 1fr); padding: 10px; text-align: center; }
-      .asistencia-item .n { font-size: 12pt; font-weight: bold; }
-      .asistencia-item .l { font-size: 8pt; color: #666; }
-      .firmas { display: flex; justify-content: space-between; margin-top: 50px; }
-      .firma { text-align: center; width: 45%; border-top: 1px solid #333; padding-top: 5px; }
-      @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
-    </style></head><body>${allBoletasHtml}</body></html>`;
+    const html = "<!DOCTYPE html><html><head><title>Boletas Consolidadas - " + (grado?.numero || "") + "\u00B0 " + (grado?.seccion || "") + "</title>" +
+    "<style>" +
+    "  " + paperStyles.pageAt +
+    "  * { margin: 0; padding: 0; box-sizing: border-box; }" +
+    "  body { font-family: 'Times New Roman', serif; font-size: " + paperStyles.fontSize + "; line-height: 1.4; color: #333; }" +
+    "  .boleta { max-width: 190mm; margin: 0 auto; padding: 5mm; }" +
+    "  .header { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 15px; }" +
+    "  .logo { width: 100px; height: 100px; object-fit: contain; }" +
+    "  .header-text { text-align: center; flex: 1; }" +
+    "  .header-text h1 { font-size: 13pt; font-weight: bold; margin-bottom: 3px; text-transform: uppercase; }" +
+    "  .titulo-boleta { text-align: center; background: #1e293b; color: white; padding: 8px; margin: 15px 0; border: 1px solid #333; }" +
+    "  .info-estudiante { display: flex; justify-content: space-between; margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; }" +
+    "  .info-estudiante .label { font-weight: bold; }" +
+    "  table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }" +
+    "  th, td { border: 1px solid #333; padding: 6px; text-align: center; }" +
+    "  th { background: #e5e7eb; font-weight: bold; font-size: 9pt; }" +
+    "  .resumen-anual { display: flex; justify-content: space-between; margin: 20px 0; padding: 15px; background: #f8fafc; border: 2px solid #1e293b; }" +
+    "  .resumen-item .valor { font-size: 18pt; font-weight: bold; }" +
+    "  .seccion-asistencia { margin: 15px 0; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; }" +
+    "  .seccion-asistencia-header { background: #f8fafc; padding: 6px 10px; border-bottom: 1px solid #ddd; font-weight: bold; font-size: 9pt; }" +
+    "  .asistencia-grid { display: grid; grid-template-columns: repeat(4, 1fr); padding: 10px; text-align: center; }" +
+    "  .asistencia-item .n { font-size: 12pt; font-weight: bold; }" +
+    "  .asistencia-item .l { font-size: 8pt; color: #666; }" +
+    "  .firmas { display: flex; justify-content: space-between; margin-top: 50px; }" +
+    "  .firma { text-align: center; width: 45%; border-top: 1px solid #333; padding-top: 5px; }" +
+    "  @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }" +
+    "  </style></head><body>" + allBoletasHtml + "</body></html>";
 
     const w = window.open('', '_blank');
     if (w) { w.document.write(html); w.document.close(); setTimeout(() => w.print(), 500); }
