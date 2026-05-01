@@ -185,7 +185,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
 
     <div class="info-estudiante">
       <div>
-        <p><span class="label">Estudiante:</span> ${est.nombre}</p>
+        <p><span class="label">Estudiante:</span> ${escapeHtml(est.nombre)}</p>
         ${est.email ? `<p><span class="label">Correo:</span> ${est.email}</p>` : ''}
         <p><span class="label">Grado:</span> ${grado?.numero}° Grado "${grado?.seccion}"</p>
       </div>
@@ -296,8 +296,8 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
 
     // Obtener nombre del docente orientador
-    const docenteOrientador = grado?.docente?.nombre || '_______________________________';
-    const nombreDirectora = configuracion?.nombreDirectora || '_______________________________';
+    const docenteOrientador = escapeHtml(grado?.docente?.nombre || '_______________________________');
+    const nombreDirectora = escapeHtml(configuracion?.nombreDirectora || '_______________________________');
 
     for (const est of estudiantes) {
       const califs = getCalifs(est.id);
@@ -312,15 +312,15 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
         const estado = c?.promedioFinal !== null && c?.promedioFinal !== undefined
           ? (c.promedioFinal >= 5 ? 'A' : 'R')
           : '-';
-        return `<tr>
-          <td style="text-align:left;padding:6px 8px">${m.nombre}</td>
-          <td>${c?.calificacionAC?.toFixed(1) ?? '-'}</td>
-          <td>${c?.calificacionAI?.toFixed(1) ?? '-'}</td>
-          <td>${c?.examenTrimestral?.toFixed(1) ?? '-'}</td>
-          <td>${recupVal}</td>
-          <td style="font-weight:bold">${notaFinal}</td>
-          <td style="font-weight:bold;color:${estado === 'A' ? '#059669' : estado === 'R' ? '#dc2626' : '#666'}">${estado}</td>
-        </tr>`;
+        return "<tr>" +
+          "<td style=\"text-align:left;padding:6px 8px\">" + escapeHtml(m.nombre) + "</td>" +
+          "<td>" + (c?.calificacionAC?.toFixed(1) ?? '-') + "</td>" +
+          "<td>" + (c?.calificacionAI?.toFixed(1) ?? '-') + "</td>" +
+          "<td>" + (c?.examenTrimestral?.toFixed(1) ?? '-') + "</td>" +
+          "<td>" + recupVal + "</td>" +
+          "<td style=\"font-weight:bold\">" + notaFinal + "</td>" +
+          "<td style=\"font-weight:bold;color:" + (estado === 'A' ? '#059669' : estado === 'R' ? '#dc2626' : '#666') + "\">" + estado + "</td>" +
+          "</tr>";
       }).join('');
 
       allBoletasHtml += `
@@ -507,8 +507,8 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     const asistAnual = resumenAsistenciaAnual.find(r => r.id === id) || { asistencias: 0, ausencias: 0, tardanzas: 0, total: 0 };
 
     // Obtener nombre del docente orientador
-    const docenteOrientador = grado?.docente?.nombre || '_______________________________';
-    const nombreDirectora = configuracion?.nombreDirectora || '_______________________________';
+    const docenteOrientador = escapeHtml(grado?.docente?.nombre || '_______________________________');
+    const nombreDirectora = escapeHtml(configuracion?.nombreDirectora || '_______________________________');
 
     // Filtrar calificaciones de este estudiante para todo el año
     const califsEst = todasCalificaciones.filter(c => c.estudianteId === id);
@@ -528,7 +528,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
       const estado = promAnual !== null ? (promAnual >= 5 ? 'APROBADO' : 'REPROBADO') : '-';
 
       return `<tr>
-        <td style="text-align:left;padding:6px 8px">${m.nombre}</td>
+        <td style="text-align:left;padding:6px 8px">${escapeHtml(m.nombre)}</td>
         <td>${n1 != null ? Math.round(n1).toString() : '-'}</td>
         <td>${n2 != null ? Math.round(n2).toString() : '-'}</td>
         <td>${n3 != null ? Math.round(n3).toString() : '-'}</td>
@@ -593,7 +593,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     </div>
     <div class="info-estudiante">
       <div>
-        <p><span class="label">Estudiante:</span> ${est.nombre}</p>
+        <p><span class="label">Estudiante:</span> ${escapeHtml(est.nombre)}</p>
         ${est.email ? `<p><span class="label">Correo:</span> ${est.email}</p>` : ''}
         <p><span class="label">Grado:</span> ${grado?.numero}° Grado "${grado?.seccion}"</p>
       </div>
@@ -662,8 +662,8 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
 
     // Obtener nombre del docente orientador
-    const docenteOrientador = grado?.docente?.nombre || '_______________________________';
-    const nombreDirectora = configuracion?.nombreDirectora || '_______________________________';
+    const docenteOrientador = escapeHtml(grado?.docente?.nombre || '_______________________________');
+    const nombreDirectora = escapeHtml(configuracion?.nombreDirectora || '_______________________________');
 
     for (const est of estudiantes) {
       const asistAnual = resumenAsistenciaAnual.find(r => r.id === est.id) || { asistencias: 0, ausencias: 0, tardanzas: 0, total: 0 };
@@ -678,7 +678,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
         const promAnual = notasValidas.length ? notasValidas.reduce((a, b) => a + b, 0) / notasValidas.length : null;
         const promAnualRedondeado = promAnual !== null ? Math.round(promAnual).toString() : '-';
         const estado = promAnual !== null ? (promAnual >= 5 ? 'APROBADO' : 'REPROBADO') : '-';
-        return `<tr><td style="text-align:left;padding:6px 8px">${m.nombre}</td><td>${n1 != null ? Math.round(n1).toString() : '-'}</td><td>${n2 != null ? Math.round(n2).toString() : '-'}</td><td>${n3 != null ? Math.round(n3).toString() : '-'}</td><td style="font-weight:bold">${promAnualRedondeado}</td><td style="font-weight:bold;color:${estado === 'APROBADO' ? '#059669' : estado === 'REPROBADO' ? '#dc2626' : '#666'}">${estado}</td></tr>`;
+        return `<tr><td style="text-align:left;padding:6px 8px">${escapeHtml(m.nombre)}</td><td>${n1 != null ? Math.round(n1).toString() : '-'}</td><td>${n2 != null ? Math.round(n2).toString() : '-'}</td><td>${n3 != null ? Math.round(n3).toString() : '-'}</td><td style="font-weight:bold">${promAnualRedondeado}</td><td style="font-weight:bold;color:${estado === 'APROBADO' ? '#059669' : estado === 'REPROBADO' ? '#dc2626' : '#666'}">${estado}</td></tr>`;
       }).join('');
 
       const notasFinales = materias.map(m => {
@@ -697,7 +697,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
         </div>
         <div class="titulo-boleta"><h3>BOLETA DE CALIFICACIONES CONSOLIDADA - ANUAL</h3></div>
         <div class="info-estudiante">
-          <div><p><span class="label">Estudiante:</span> ${est.nombre}</p>${est.email ? `<p><span class="label">Correo:</span> ${est.email}</p>` : ''}<p><span class="label">Grado:</span> ${grado?.numero}° Grado "${grado?.seccion}"</p></div>
+          <div><p><span class="label">Estudiante:</span> ${escapeHtml(est.nombre)}</p>${est.email ? `<p><span class="label">Correo:</span> ${est.email}</p>` : ''}<p><span class="label">Grado:</span> ${grado?.numero}° Grado "${grado?.seccion}"</p></div>
           <div style="text-align: right;"><p><span class="label">Año Lectivo:</span> ${año}</p><p><span class="label">N° Lista:</span> ${est.numero}</p></div>
         </div>
         <table>

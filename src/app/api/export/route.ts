@@ -323,7 +323,7 @@ function exportBoletaPDF(data: any, format: "letter" | "a4" = "letter") {
       const prom3 = trim3?.recuperacion && trim3.recuperacion > (trim3.promedioFinal || 0)
         ? trim3.recuperacion : trim3?.promedioFinal;
 
-      const promFinal = prom1 && prom2 && prom3
+      const promFinal = prom1 != null && prom2 != null && prom3 != null
         ? ((prom1 + prom2 + prom3) / 3).toFixed(1)
         : "-";
 

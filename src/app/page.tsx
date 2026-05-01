@@ -197,6 +197,7 @@ useEffect(() => {
   useEffect(() => { if (typeof window !== "undefined" && asignaturaSeleccionada) localStorage.setItem("ss_materia", asignaturaSeleccionada); }, [asignaturaSeleccionada]);
   useEffect(() => { if (typeof window !== "undefined" && trimestreSeleccionado) localStorage.setItem("ss_trimestre", trimestreSeleccionado); }, [trimestreSeleccionado]);
   useEffect(() => { if (typeof window !== "undefined") localStorage.setItem("ss_promedio_decimal", JSON.stringify(promedioDecimal)); }, [promedioDecimal]);
+  useEffect(() => { if (typeof window !== "undefined") localStorage.setItem("ss_paperSize", paperSize); }, [paperSize]);
 
   // Auth
   const checkAuth = useCallback(async () => {
