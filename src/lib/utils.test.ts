@@ -24,8 +24,8 @@ describe('calcularPromedio', () => {
     expect(calcularPromedio([])).toBe(null);
   });
 
-  it('retorna null para array con valores nulos', () => {
-    expect(calcularPromedio([])).toBe(null);
+  it('retorna 0 para notas con valor cero', () => {
+    expect(calcularPromedio([0, 0, 0])).toBe(0);
   });
 
   it('redondea a 2 decimales', () => {
