@@ -98,7 +98,7 @@ useEffect(() => {
   if (typeof window !== "undefined") {
     const v = localStorage.getItem("ss_materiasBoleta");
     if (v) {
-      try { setMateriasEnBoleta(JSON.parse(v)); } catch { }
+      try { queueMicrotask(() => setMateriasEnBoleta(JSON.parse(v))); } catch { }
     }
   }
 }, []);
@@ -145,11 +145,11 @@ useEffect(() => {
   if (typeof window !== "undefined") {
     const saved = localStorage.getItem("ss_promedio_decimal");
     if (saved !== null) {
-      try { setPromedioDecimal(JSON.parse(saved)); } catch { }
+      try { queueMicrotask(() => setPromedioDecimal(JSON.parse(saved))); } catch { }
     }
     const savedPaperSize = localStorage.getItem("ss_paperSize");
     if (savedPaperSize === "a4" || savedPaperSize === "letter") {
-      setPaperSize(savedPaperSize);
+      queueMicrotask(() => setPaperSize(savedPaperSize));
     }
   }
 }, []);
@@ -184,10 +184,10 @@ useEffect(() => {
   // Persistence: Cargar de localStorage/sessionStorage
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const tb = localStorage.getItem("ss_tab"); if (tb) setActiveTab(tb);
-      const gr = localStorage.getItem("ss_grado"); if (gr) setGradoSeleccionado(gr);
-      const mt = localStorage.getItem("ss_materia"); if (mt) setAsignaturaSeleccionada(mt);
-      const tr = localStorage.getItem("ss_trimestre"); if (tr) setTrimestreSeleccionado(tr);
+      const tb = localStorage.getItem("ss_tab"); if (tb) queueMicrotask(() => setActiveTab(tb));
+      const gr = localStorage.getItem("ss_grado"); if (gr) queueMicrotask(() => setGradoSeleccionado(gr));
+      const mt = localStorage.getItem("ss_materia"); if (mt) queueMicrotask(() => setAsignaturaSeleccionada(mt));
+      const tr = localStorage.getItem("ss_trimestre"); if (tr) queueMicrotask(() => setTrimestreSeleccionado(tr));
 
       // "No mostrar de nuevo" se guarda en localStorage (permanente)
       // La visualización del wizard se controla por sesión usando sessionStorage
@@ -195,7 +195,7 @@ useEffect(() => {
       const wizardShownThisSession = sessionStorage.getItem("ss_wizard_shown_session");
 
       if (!wizardDismissed && !wizardShownThisSession && usuario) {
-        setShowWizard(true);
+        queueMicrotask(() => setShowWizard(true));
         sessionStorage.setItem("ss_wizard_shown_session", "true");
       }
     }
@@ -1491,23 +1491,7 @@ useEffect(() => {
 
   // Effects
   // Auth - run only once on mount
-  useEffect(() => { checkAuth(); }, []);
-
-  // Cargar Google Identity Services
-  useEffect(() => {
-    if (typeof window === "undefined" || usuario) return;
-    // Cargar script de Google si no está cargado
-    if ((window as any).google) {
-      initGoogleButton();
-      return;
-    }
-    const script = document.createElement("script");
-    script.src = "https://accounts.google.com/gsi/client";
-    script.async = true;
-    script.defer = true;
-    script.onload = () => initGoogleButton();
-    document.head.appendChild(script);
-  }, [usuario, initialized]);
+  useEffect(() => { queueMicrotask(() => checkAuth()); }, []);
 
   const initGoogleButton = () => {
     if (!googleButtonRef.current || !(window as any).google) return;
@@ -1525,50 +1509,74 @@ useEffect(() => {
     });
   };
 
+  // Cargar Google Identity Services
+  useEffect(() => {
+    if (typeof window === "undefined" || usuario) return;
+    // Cargar script de Google si no está cargado
+    if ((window as any).google) {
+      queueMicrotask(() => initGoogleButton());
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.onload = () => queueMicrotask(() => initGoogleButton());
+    document.head.appendChild(script);
+  }, [usuario, initialized]);
+
   // Carga inicial de datos estructurales
   useEffect(() => {
     if (usuario) {
-      setDataLoading(true);
-      Promise.all([loadGrados(), loadUsuarios(), loadTodasAsignaturas(), loadConfiguracion()]).finally(() => setDataLoading(false));
+      queueMicrotask(() => {
+        setDataLoading(true);
+        Promise.all([loadGrados(), loadUsuarios(), loadTodasAsignaturas(), loadConfiguracion()]).finally(() => setDataLoading(false));
+      });
     }
   }, [usuario]);
   // Carga de datos base (estudiantes y materias del grado)
   useEffect(() => {
     if (usuario && gradoSeleccionado) {
-      setSectionLoading(true);
-      Promise.all([loadEstudiantes(), loadAsignaturas()]).finally(() => setSectionLoading(false));
+      queueMicrotask(() => {
+        setSectionLoading(true);
+        Promise.all([loadEstudiantes(), loadAsignaturas()]).finally(() => setSectionLoading(false));
+      });
     }
   }, [usuario, gradoSeleccionado]);
 
   // Carga de configuración y calificaciones sincronizada
   useEffect(() => {
     if (usuario && gradoSeleccionado && asignaturaSeleccionada && trimestreSeleccionado) {
-      setCalificaciones([]);
-      setSectionLoading(true);
-      Promise.all([loadConfig(), loadCalificaciones(), loadConfigsGrado()]).finally(() => setSectionLoading(false));
+      queueMicrotask(() => {
+        setCalificaciones([]);
+        setSectionLoading(true);
+        Promise.all([loadConfig(), loadCalificaciones(), loadConfigsGrado()]).finally(() => setSectionLoading(false));
+      });
     }
   }, [usuario, gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado]);
 
   // Cargar promedio del grado cuando cambie el grado o trimestre
   useEffect(() => {
     if (usuario && gradoSeleccionado && trimestreSeleccionado) {
-      loadPromedioGrado();
+      queueMicrotask(() => loadPromedioGrado());
     }
   }, [usuario, gradoSeleccionado, trimestreSeleccionado]);
   // Auto-selección inicial de grado - restaurar estado guardado o usar primero disponible
   useEffect(() => {
     if (gradosFiltrados && gradosFiltrados.length > 0 && !gradoSeleccionado) {
       const savedState = loadUserState();
-      if (savedState?.gradoSeleccionado && gradosFiltrados.some(g => g.id === savedState.gradoSeleccionado)) {
-        setGradoSeleccionado(savedState.gradoSeleccionado);
-        if (savedState.trimestreSeleccionado) {
-          setTrimestreSeleccionado(savedState.trimestreSeleccionado);
+      queueMicrotask(() => {
+        if (savedState?.gradoSeleccionado && gradosFiltrados.some(g => g.id === savedState.gradoSeleccionado)) {
+          setGradoSeleccionado(savedState.gradoSeleccionado);
+          if (savedState.trimestreSeleccionado) {
+            setTrimestreSeleccionado(savedState.trimestreSeleccionado);
+          }
+          saveUserState({ gradoSeleccionado: savedState.gradoSeleccionado, trimestreSeleccionado: savedState.trimestreSeleccionado });
+        } else {
+          setGradoSeleccionado(gradosFiltrados[0].id);
+          saveUserState({ gradoSeleccionado: gradosFiltrados[0].id });
         }
-        saveUserState({ gradoSeleccionado: savedState.gradoSeleccionado, trimestreSeleccionado: savedState.trimestreSeleccionado });
-      } else {
-        setGradoSeleccionado(gradosFiltrados[0].id);
-        saveUserState({ gradoSeleccionado: gradosFiltrados[0].id });
-      }
+      });
     }
   }, [gradosFiltrados, gradoSeleccionado, loadUserState, saveUserState]);
 
@@ -1576,13 +1584,15 @@ useEffect(() => {
   useEffect(() => {
     if (asignaturasFiltradas && asignaturasFiltradas.length > 0 && !asignaturaSeleccionada) {
       const savedState = loadUserState();
-      if (savedState?.asignaturaSeleccionada && asignaturasFiltradas.some(m => m.id === savedState.asignaturaSeleccionada)) {
-        setAsignaturaSeleccionada(savedState.asignaturaSeleccionada);
-        saveUserState({ asignaturaSeleccionada: savedState.asignaturaSeleccionada });
-      } else {
-        setAsignaturaSeleccionada(asignaturasFiltradas[0].id);
-        saveUserState({ asignaturaSeleccionada: asignaturasFiltradas[0].id });
-      }
+      queueMicrotask(() => {
+        if (savedState?.asignaturaSeleccionada && asignaturasFiltradas.some(m => m.id === savedState.asignaturaSeleccionada)) {
+          setAsignaturaSeleccionada(savedState.asignaturaSeleccionada);
+          saveUserState({ asignaturaSeleccionada: savedState.asignaturaSeleccionada });
+        } else {
+          setAsignaturaSeleccionada(asignaturasFiltradas[0].id);
+          saveUserState({ asignaturaSeleccionada: asignaturasFiltradas[0].id });
+        }
+      });
     }
   }, [asignaturasFiltradas, asignaturaSeleccionada, loadUserState, saveUserState]);
 
@@ -1601,7 +1611,7 @@ useEffect(() => {
     if (usuario) {
       const savedState = loadUserState();
       if (savedState?.activeTab) {
-        setActiveTab(savedState.activeTab);
+        queueMicrotask(() => setActiveTab(savedState.activeTab));
       }
     }
   }, [usuario, loadUserState]);
@@ -1663,42 +1673,45 @@ useEffect(() => {
   // Filtrar grados según el usuario
   useEffect(() => {
     if (!usuario) {
-      setGradosFiltrados([]);
+      queueMicrotask(() => setGradosFiltrados([]));
       return;
     }
 
-    if (isAdmin(usuario.rol)) {
-      setGradosFiltrados(grados);
-    } else {
-      const gradoIdsAsignaturas = new Set((usuario.asignaturasAsignadas || []).map((m: any) => m.gradoId));
-      const filtrados = grados.filter((g: any) => gradoIdsAsignaturas.has(g.id));
+    queueMicrotask(() => {
+      if (isAdmin(usuario.rol)) {
+        setGradosFiltrados(grados);
+      } else {
+        const gradoIdsAsignaturas = new Set((usuario.asignaturasAsignadas || []).map((m: any) => m.gradoId));
+        const filtrados = grados.filter((g: any) => gradoIdsAsignaturas.has(g.id));
 
-      setGradosFiltrados(filtrados);
+        setGradosFiltrados(filtrados);
 
-      if (filtrados.length > 0 && !filtrados.some((g: any) => g.id === gradoSeleccionado)) {
-        setGradoSeleccionado(filtrados[0].id);
+        if (filtrados.length > 0 && !filtrados.some((g: any) => g.id === gradoSeleccionado)) {
+          setGradoSeleccionado(filtrados[0].id);
+        }
       }
-    }
+    });
   }, [usuario, grados, gradoSeleccionado]);
 
   // Cargar audit logs cuando cambie la página o los filtros
   useEffect(() => {
     if (usuario && isAdmin(usuario.rol)) {
-      loadAuditLogs();
+      queueMicrotask(() => loadAuditLogs());
     }
   }, [auditPage, auditFilter, usuario, loadAuditLogs]);
 
   // Filtrar materias según el usuario
   useEffect(() => {
     if (!usuario || !gradoSeleccionado) {
-      setAsignaturasFiltradas(asignaturas);
+      queueMicrotask(() => setAsignaturasFiltradas(asignaturas));
       return;
     }
 
-    if (isAdmin(usuario.rol)) {
-      // Admin ve todas las asignaturas
-      setAsignaturasFiltradas(asignaturas);
-    } else {
+    queueMicrotask(() => {
+      if (isAdmin(usuario.rol)) {
+        // Admin ve todas las asignaturas
+        setAsignaturasFiltradas(asignaturas);
+      } else {
       // Filtrar solo las asignaturas explícitamente asignadas en este grado (sin excepciones)
       const asignaturasDelGrado = new Set(
         usuario.asignaturasAsignadas
@@ -1714,7 +1727,8 @@ useEffect(() => {
       } else if (filtradas.length === 0) {
         setAsignaturaSeleccionada("");
       }
-    }
+      }
+    });
   }, [usuario, gradoSeleccionado, asignaturas, asignaturaSeleccionada]);
 
   // Loading
