@@ -18,7 +18,7 @@ import {
   LogOut, Users, User, ClipboardList, FileText, Plus, RefreshCw,
   School, Save, Printer, ChevronDown, ChevronUp,   Settings, Upload,
   Download, Trash2, ListPlus, UserPlus, Key, Calendar, LayoutDashboard, CalendarDays, Lightbulb, Hash,
-  Search, ArrowUpDown, Globe
+  Search, ArrowUpDown, Globe, BarChart3
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import Dashboard from "@/components/Dashboard";
@@ -35,6 +35,7 @@ import { isAdmin, canDeleteUsers, getDocentesDelGrado } from "@/utils/roleHelper
 import { escapeHtml } from "@/lib/utils/index";
 import PresenceIndicator from "@/components/PresenceIndicator";
 import BoletaList from "@/components/BoletaList";
+import ReporteCalificaciones from "@/components/ReporteCalificaciones";
 import EnlacesInstitucionales from "@/components/EnlacesInstitucionales";
 
 export default function Home() {
@@ -1844,6 +1845,7 @@ useEffect(() => {
               <TabsTrigger value="estudiantes" aria-label="Ver estudiantes" className={`text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 ${darkMode ? 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:data-[state=inactive]:text-slate-200 hover:bg-slate-800/50' : 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-600 hover:data-[state=inactive]:text-slate-800 hover:bg-slate-100'}`}><Users className="h-4 w-4" />Estudiantes</TabsTrigger>
               <TabsTrigger value="boletas" aria-label="Ver boletas" className={`text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 ${darkMode ? 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:data-[state=inactive]:text-slate-200 hover:bg-slate-800/50' : 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-600 hover:data-[state=inactive]:text-slate-800 hover:bg-slate-100'}`}><FileText className="h-4 w-4" />Boletas</TabsTrigger>
               <TabsTrigger value="enlaces" aria-label="Enlaces institucionales" className={`text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 ${darkMode ? 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:data-[state=inactive]:text-slate-200 hover:bg-slate-800/50' : 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-600 hover:data-[state=inactive]:text-slate-800 hover:bg-slate-100'}`}><Globe className="h-4 w-4" />Enlaces</TabsTrigger>
+              <TabsTrigger value="reportes" aria-label="Reportes de calificaciones" className={`text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 ${darkMode ? 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:data-[state=inactive]:text-slate-200 hover:bg-slate-800/50' : 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-600 hover:data-[state=inactive]:text-slate-800 hover:bg-slate-100'}`}><BarChart3 className="h-4 w-4" />Reportes</TabsTrigger>
               {isAdmin(usuario.rol) && <TabsTrigger value="admin" aria-label="Administración" className={`text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 ${darkMode ? 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:data-[state=inactive]:text-slate-200 hover:bg-slate-800/50' : 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-600 hover:data-[state=inactive]:text-slate-800 hover:bg-slate-100'}`}><Settings className="h-4 w-4" />Admin</TabsTrigger>}
             </motion.div>
           </TabsList>
@@ -1876,6 +1878,7 @@ useEffect(() => {
                 { value: "estudiantes", icon: Users, label: "Estud." },
                 { value: "boletas", icon: FileText, label: "Boletas" },
                 { value: "enlaces", icon: Globe, label: "Enlaces" },
+                { value: "reportes", icon: BarChart3, label: "Reportes" },
                 ...(isAdmin(usuario.rol) ? [{ value: "admin", icon: Settings, label: "Admin" }] : []),
               ].map((item, idx) => (
                 <motion.button
@@ -2403,6 +2406,15 @@ useEffect(() => {
           {/* Enlaces Institucionales */}
           <TabsContent value="enlaces" className="mt-3">
             <EnlacesInstitucionales darkMode={darkMode} />
+          </TabsContent>
+
+          {/* Reportes */}
+          <TabsContent value="reportes" className="mt-3">
+            <ReporteCalificaciones
+              grados={gradosFiltrados.length > 0 ? gradosFiltrados : grados}
+              darkMode={darkMode}
+              todasAsignaturas={todasAsignaturas}
+            />
           </TabsContent>
 
           {/* Admin */}
