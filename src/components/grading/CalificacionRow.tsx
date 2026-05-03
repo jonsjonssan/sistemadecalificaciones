@@ -70,12 +70,13 @@ function NotaInput({ value, onChange, darkMode, hasError, onBlur, onNavigate, in
   const [rawValue, setRawValue] = useState(() =>
     value === null || value === undefined ? "" : String(value)
   );
+  const isEditingRef = useRef(false);
 
   // Sincronizar rawValue cuando el valor externo cambie (e.g., carga de datos)
   useEffect(() => {
     const newVal = value === null || value === undefined ? "" : String(value);
-    // Solo actualizar si el input no está enfocado (evita sobrescribir mientras el usuario escribe)
-    if (document.activeElement !== inputRef.current) {
+    // Solo actualizar si el usuario no está editando activamente (evita sobrescribir mientras escribe)
+    if (!isEditingRef.current) {
       setRawValue(newVal);
     }
   }, [value]);
@@ -94,6 +95,7 @@ function NotaInput({ value, onChange, darkMode, hasError, onBlur, onNavigate, in
       v = v.replace(/-/g, "");
     }
     setRawValue(v);
+    isEditingRef.current = true;
     // Enviar el valor raw al padre también, para que se pueda parsear correctamente
     onChange(v);
   };
@@ -118,6 +120,7 @@ function NotaInput({ value, onChange, darkMode, hasError, onBlur, onNavigate, in
       // Aunque no cambie el valor numérico, actualizar display si fue modificado
       setRawValue(normalizedValue);
     }
+    isEditingRef.current = false;
     onBlur();
   };
 
@@ -231,6 +234,7 @@ export const CalificacionRow = React.memo(function CalificacionRow({
   const [recupError, setRecupError] = useState(false);
   const retryCountRef = useRef(0);
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const scheduleRetryRef = useRef<(() => void) | null>(null);
 
 // Detectar cuando calificacion es eliminada (cambia de tener valor a undefined)
 const wasDeleted = useRef(false);
@@ -452,20 +456,22 @@ useEffect(() => {
       }
     } catch {
       setSaveError(true);
-      scheduleRetry();
+      scheduleRetryRef.current?.();
     } finally {
       savingRef.current = false;
     }
   }, [estudiante.id, materiaId, onSave, numAC, numAI]);
 
-  const scheduleRetry = useCallback(() => {
-    if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
-    const delay = Math.min(2000 * Math.pow(2, retryCountRef.current), 30000);
-    retryCountRef.current += 1;
-    retryTimerRef.current = setTimeout(() => {
-      retryTimerRef.current = null;
-      doSave();
-    }, delay);
+  useEffect(() => {
+    scheduleRetryRef.current = () => {
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+      const delay = Math.min(2000 * Math.pow(2, retryCountRef.current), 30000);
+      retryCountRef.current += 1;
+      retryTimerRef.current = setTimeout(() => {
+        retryTimerRef.current = null;
+        doSave();
+      }, delay);
+    };
   }, [doSave]);
 
   // Registrar función de guardado forzado en el padre (para Guardar Todo)
