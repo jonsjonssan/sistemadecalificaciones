@@ -90,9 +90,9 @@ export async function GET(req: Request) {
         numero: grado.numero,
         seccion: grado.seccion,
         promedios: {
-          cotidiana: countAC > 0 ? sumAC / countAC : 0,
-          integradora: countAI > 0 ? sumAI / countAI : 0,
-          examen: countEx > 0 ? sumEx / countEx : 0
+          cotidiana: countAC > 0 ? sumAC / countAC : null,
+          integradora: countAI > 0 ? sumAI / countAI : null,
+          examen: countEx > 0 ? sumEx / countEx : null
         },
         topEstudiantes: ranking.slice(0, 3),
         alertas: ranking.slice(-3).reverse()

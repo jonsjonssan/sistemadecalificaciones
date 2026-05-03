@@ -101,17 +101,21 @@ function CiclosSection({ asignaturas, stats, grados, darkMode }: { asignaturas: 
           return ciclo.grados.includes(num);
         });
 
-        // Promedio del ciclo
-        const promCiclo = statsDelCiclo.length > 0
-          ? Math.round((statsDelCiclo.reduce((a, s) => a + ((s.promedios?.cotidiana ?? 0) + (s.promedios?.integradora ?? 0) + (s.promedios?.examen ?? 0)) / 3, 0) / statsDelCiclo.length) * 100) / 100
-          : 0;
+        // Promedio del ciclo - solo promediar grados que tengan al menos un tipo con datos
+        const statsConDatos = statsDelCiclo.filter(s =>
+          s.promedios?.cotidiana != null || s.promedios?.integradora != null || s.promedios?.examen != null
+        );
+        const promCiclo = statsConDatos.length > 0
+          ? Math.round((statsConDatos.reduce((a, s) => a + (((s.promedios?.cotidiana ?? 0) + (s.promedios?.integradora ?? 0) + (s.promedios?.examen ?? 0)) / 3), 0) / statsConDatos.length) * 100) / 100
+          : null;
 
-        // Promedio por grado
+        // Promedio por grado - null sin datos
         const promPorGrado = porGrado.map(g => {
           const stat = stats.find(s => s.nombre?.includes(`${g.grado}°`));
-          const prom = stat
+          const tieneDatos = stat && (stat.promedios?.cotidiana != null || stat.promedios?.integradora != null || stat.promedios?.examen != null);
+          const prom = tieneDatos && stat
             ? Math.round(((stat.promedios?.cotidiana ?? 0) + (stat.promedios?.integradora ?? 0) + (stat.promedios?.examen ?? 0)) / 3 * 100) / 100
-            : 0;
+            : null;
           return { ...g, promedio: prom };
         });
 
@@ -152,8 +156,8 @@ function CiclosSection({ asignaturas, stats, grados, darkMode }: { asignaturas: 
                   </div>
                   <div className="text-center col-span-2 sm:col-span-1">
                     <p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>Promedio Ciclo</p>
-                    <p className={`text-lg font-bold ${promCiclo >= 5 ? (darkMode ? 'text-teal-400' : 'text-teal-600') : (darkMode ? 'text-red-400' : 'text-red-600')}`}>
-                      {promCiclo > 0 ? promCiclo.toFixed(2) : "N/A"}
+                    <p className={`text-lg font-bold ${promCiclo != null && promCiclo >= 5 ? (darkMode ? 'text-teal-400' : 'text-teal-600') : (darkMode ? 'text-red-400' : 'text-red-600')}`}>
+                      {promCiclo != null ? promCiclo.toFixed(2) : "N/A"}
                     </p>
                   </div>
                 </div>
@@ -166,8 +170,8 @@ function CiclosSection({ asignaturas, stats, grados, darkMode }: { asignaturas: 
                         <h4 className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                           {grupo.grado}° "{grupo.seccion}"
                         </h4>
-                        <Badge variant={grupo.promedio >= 5 ? "default" : "destructive"} className={`text-[10px] h-5 ${grupo.promedio >= 5 ? (darkMode ? 'bg-teal-600' : 'bg-teal-600') : ''}`}>
-                          {grupo.promedio > 0 ? grupo.promedio.toFixed(1) : "N/A"}
+                        <Badge variant={grupo.promedio != null && grupo.promedio >= 5 ? "default" : "destructive"} className={`text-[10px] h-5 ${grupo.promedio != null && grupo.promedio >= 5 ? (darkMode ? 'bg-teal-600' : 'bg-teal-600') : ''}`}>
+                          {grupo.promedio != null ? grupo.promedio.toFixed(1) : "N/A"}
                         </Badge>
                       </div>
                       <div className="flex items-center gap-1 mb-2">
@@ -195,13 +199,13 @@ function CiclosSection({ asignaturas, stats, grados, darkMode }: { asignaturas: 
 }
 
 // Componente de progreso circular para promedio institucional
-function PromedioCircular({ valor, darkMode }: { valor: number; darkMode: boolean }) {
+function PromedioCircular({ valor, darkMode }: { valor: number | null; darkMode: boolean }) {
   const radius = 54;
   const stroke = 8;
   const normalizedRadius = radius - stroke;
   const circumference = normalizedRadius * 2 * Math.PI;
-  const strokeDashoffset = valor > 0 ? circumference - (valor / 10) * circumference : circumference;
-  const color = valor >= 5 ? "#14b8a6" : "#ef4444";
+  const strokeDashoffset = valor != null ? circumference - (valor / 10) * circumference : circumference;
+  const color = valor != null && valor >= 5 ? "#14b8a6" : "#ef4444";
 
   return (
     <div className="flex flex-col items-center">
@@ -220,7 +224,7 @@ function PromedioCircular({ valor, darkMode }: { valor: number; darkMode: boolea
             cy={radius}
             r={normalizedRadius}
             fill="none"
-            stroke={color}
+            stroke={valor != null ? color : "transparent"}
             strokeWidth={stroke}
             strokeDasharray={`${circumference} ${circumference}`}
             strokeDashoffset={strokeDashoffset}
@@ -230,14 +234,14 @@ function PromedioCircular({ valor, darkMode }: { valor: number; darkMode: boolea
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>
-            {valor > 0 ? valor.toFixed(2) : "—"}
+            {valor != null ? valor.toFixed(2) : "—"}
           </span>
           <span className={`text-[10px] ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>de 10</span>
         </div>
       </div>
       <div className="mt-2 flex items-center gap-1">
-        <span className={`text-xs font-medium ${valor >= 5 ? 'text-teal-500' : 'text-red-500'}`}>
-          {valor >= 5 ? '✓ Aprobado' : valor > 0 ? '⚠ En riesgo' : 'Sin datos'}
+        <span className={`text-xs font-medium ${valor != null && valor >= 5 ? 'text-teal-500' : valor != null ? 'text-red-500' : ''}`}>
+          {valor != null && valor >= 5 ? '✓ Aprobado' : valor != null ? '⚠ En riesgo' : 'Sin datos'}
         </span>
       </div>
     </div>
@@ -303,10 +307,13 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
     { name: "Exámenes", valor: selectedStats.promedios.examen, color: "#4f46e5" }
   ] : [];
 
-  // Promedio institucional
-  const promInstitucional = stats.length > 0
-    ? Math.round((stats.reduce((a, s) => a + ((s.promedios?.cotidiana ?? 0) + (s.promedios?.integradora ?? 0) + (s.promedios?.examen ?? 0)) / 3, 0) / stats.length) * 100) / 100
-    : 0;
+  // Promedio institucional - solo promediar grados con datos
+  const gradosConDatos = stats.filter(s =>
+    s.promedios?.cotidiana != null || s.promedios?.integradora != null || s.promedios?.examen != null
+  );
+  const promInstitucional = gradosConDatos.length > 0
+    ? Math.round((gradosConDatos.reduce((a, s) => a + (((s.promedios?.cotidiana ?? 0) + (s.promedios?.integradora ?? 0) + (s.promedios?.examen ?? 0)) / 3), 0) / gradosConDatos.length) * 100) / 100
+    : null;
 
   // Promedio por ciclo para la tarjeta institucional
   const promPorCiclo = CICLOS.map(ciclo => {
@@ -314,20 +321,31 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
       const num = parseInt(s.nombre?.match(/\d+/)?.[0] || "0");
       return ciclo.grados.includes(num);
     });
-    const prom = statsDelCiclo.length > 0
-      ? Math.round((statsDelCiclo.reduce((a, s) => a + ((s.promedios?.cotidiana ?? 0) + (s.promedios?.integradora ?? 0) + (s.promedios?.examen ?? 0)) / 3, 0) / statsDelCiclo.length) * 100) / 100
-      : 0;
+    const statsConDatos = statsDelCiclo.filter(s =>
+      s.promedios?.cotidiana != null || s.promedios?.integradora != null || s.promedios?.examen != null
+    );
+    const prom = statsConDatos.length > 0
+      ? Math.round((statsConDatos.reduce((a, s) => a + (((s.promedios?.cotidiana ?? 0) + (s.promedios?.integradora ?? 0) + (s.promedios?.examen ?? 0)) / 3), 0) / statsConDatos.length) * 100) / 100
+      : null;
     return { nombre: ciclo.nombre, prom, color: ciclo.ringColor };
   });
 
   const todasAsignaturasList = asignaturasAsignadas || [];
 
-  // Datos para gráfico de evolución por trimestre
-  const trimesterChartData = stats.length > 0 ? [
-    { name: "T1", value: Math.round(stats.reduce((a, s) => a + (s.promedios?.cotidiana ?? 0), 0) / stats.length * 100) / 100, target: 6.0 },
-    { name: "T2", value: Math.round(stats.reduce((a, s) => a + (s.promedios?.integradora ?? 0), 0) / stats.length * 100) / 100, target: 7.0 },
-    { name: "T3", value: Math.round(stats.reduce((a, s) => a + (s.promedios?.examen ?? 0), 0) / stats.length * 100) / 100, target: 7.0 },
-  ] : [];
+  // Datos para gráfico de evolución por trimestre - solo contar datos no nulos
+  const statsConAC = stats.filter(s => s.promedios?.cotidiana != null);
+  const statsConAI = stats.filter(s => s.promedios?.integradora != null);
+  const statsConEx = stats.filter(s => s.promedios?.examen != null);
+  const trimesterChartData: Array<{ name: string; value: number; target: number }> = [];
+  if (statsConAC.length > 0) {
+    trimesterChartData.push({ name: "T1", value: Math.round(statsConAC.reduce((a, s) => a + (s.promedios?.cotidiana ?? 0), 0) / statsConAC.length * 100) / 100, target: 6.0 });
+  }
+  if (statsConAI.length > 0) {
+    trimesterChartData.push({ name: "T2", value: Math.round(statsConAI.reduce((a, s) => a + (s.promedios?.integradora ?? 0), 0) / statsConAI.length * 100) / 100, target: 7.0 });
+  }
+  if (statsConEx.length > 0) {
+    trimesterChartData.push({ name: "T3", value: Math.round(statsConEx.reduce((a, s) => a + (s.promedios?.examen ?? 0), 0) / statsConEx.length * 100) / 100, target: 7.0 });
+  }
 
   return (
     <div className="space-y-4 pb-8">
@@ -432,11 +450,11 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
                   return (
                     <div key={c.nombre} className={`rounded-lg border p-3 text-center ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
                       <p className={`text-xs font-semibold mb-1 ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>{c.nombre}</p>
-                      <p className={`text-2xl font-bold ${c.prom >= 5 ? (darkMode ? 'text-teal-400' : 'text-teal-600') : (darkMode ? 'text-red-400' : 'text-red-600')}`}>
-                        {c.prom > 0 ? c.prom.toFixed(2) : "—"}
+                      <p className={`text-2xl font-bold ${c.prom != null && c.prom >= 5 ? (darkMode ? 'text-teal-400' : 'text-teal-600') : (darkMode ? 'text-red-400' : 'text-red-600')}`}>
+                        {c.prom != null ? c.prom.toFixed(2) : "—"}
                       </p>
                       <p className={`text-[10px] ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                        {c.prom >= 5 ? '✓ Sobre umbral' : c.prom > 0 ? '⚠ Bajo umbral' : 'Sin datos'}
+                        {c.prom != null && c.prom >= 5 ? '✓ Sobre umbral' : c.prom != null ? '⚠ Bajo umbral' : 'Sin datos'}
                       </p>
                     </div>
                   );
