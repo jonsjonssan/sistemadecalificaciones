@@ -228,6 +228,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No tiene acceso a esta materia" }, { status: 403 });
     }
 
+    // Validar que el estudiante pertenece al mismo grado que la materia (previene cross-grade contamination)
+    const materiaGrado = await db.materia.findUnique({
+      where: { id: materiaId },
+      select: { gradoId: true, nombre: true },
+    });
+    const estudianteGrado = await db.estudiante.findUnique({
+      where: { id: estudianteId },
+      select: { gradoId: true, nombre: true },
+    });
+    if (materiaGrado && estudianteGrado && materiaGrado.gradoId !== estudianteGrado.gradoId) {
+      return NextResponse.json({
+        error: "Inconsistencia de grado",
+        code: "GRADE_MISMATCH",
+        message: `El estudiante "${estudianteGrado.nombre}" no pertenece al mismo grado que la materia "${materiaGrado.nombre}".`,
+      }, { status: 400 });
+    }
+
     // Parsear notas de actividades
     let acNotas: (number | null)[] = [];
     let aiNotas: (number | null)[] = [];
