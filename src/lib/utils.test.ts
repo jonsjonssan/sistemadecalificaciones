@@ -58,14 +58,15 @@ describe('calcularPromedioFinal', () => {
 });
 
 describe('estaAprobado', () => {
-  it('retorna true para promedio >= 5', () => {
+  it('retorna true para promedio redondeado >= 5', () => {
     expect(estaAprobado(5)).toBe(true);
+    expect(estaAprobado(4.5)).toBe(true);
     expect(estaAprobado(7.5)).toBe(true);
     expect(estaAprobado(10)).toBe(true);
   });
 
-  it('retorna false para promedio < 5', () => {
-    expect(estaAprobado(4.9)).toBe(false);
+  it('retorna false para promedio redondeado < 5', () => {
+    expect(estaAprobado(4.4)).toBe(false);
     expect(estaAprobado(1)).toBe(false);
   });
 
@@ -80,18 +81,19 @@ describe('getColorPromedio', () => {
     expect(getColorPromedio(10)).toBe('text-green-600');
   });
 
-  it('retorna color azul para promedio >= 7 y < 9', () => {
+  it('retorna color azul para promedio redondeado >= 7 y < 9', () => {
     expect(getColorPromedio(7)).toBe('text-blue-600');
-    expect(getColorPromedio(8.9)).toBe('text-blue-600');
+    expect(getColorPromedio(8.4)).toBe('text-blue-600');
   });
 
-  it('retorna color amarillo para promedio >= 5 y < 7', () => {
+  it('retorna color amarillo para promedio redondeado >= 5 y < 7', () => {
     expect(getColorPromedio(5)).toBe('text-yellow-600');
-    expect(getColorPromedio(6.9)).toBe('text-yellow-600');
+    expect(getColorPromedio(4.5)).toBe('text-yellow-600');
+    expect(getColorPromedio(6.4)).toBe('text-yellow-600');
   });
 
-  it('retorna color rojo para promedio < 5', () => {
-    expect(getColorPromedio(4.9)).toBe('text-red-600');
+  it('retorna color rojo para promedio redondeado < 5', () => {
+    expect(getColorPromedio(4.4)).toBe('text-red-600');
     expect(getColorPromedio(0)).toBe('text-red-600');
   });
 

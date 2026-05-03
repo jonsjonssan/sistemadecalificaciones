@@ -178,7 +178,7 @@ export default function InformeTecnicoDialog({
       </div>
       <div class="info-card">
         <div class="label">Promedio General</div>
-        <div class="valor" style="color: ${promGeneral >= 5 ? '#059669' : '#dc2626'}">${promGeneral.toFixed(2)}</div>
+        <div class="valor" style="color: ${Math.round(promGeneral) >= 5 ? '#059669' : '#dc2626'}">${promGeneral.toFixed(2)}</div>
         <div class="sub">Escala 0-10</div>
       </div>
     </div>
@@ -209,8 +209,8 @@ export default function InformeTecnicoDialog({
     <table class="tabla">
       <thead><tr><th>Categoría</th><th>Actividades Cotidianas</th><th>Actividades Integradoras</th><th>Examen</th><th>Promedio Final</th></tr></thead>
       <tbody>
-        <tr><td><strong>Promedio</strong></td><td class="num">${pc.cot.toFixed(2)}</td><td class="num">${pc.int.toFixed(2)}</td><td class="num">${pc.ex.toFixed(2)}</td><td class="num ${pc.fin >= 5 ? 'destacado' : 'alerta'}">${pc.fin.toFixed(2)}</td></tr>
-        <tr><td><strong>Estado</strong></td><td colspan="4"><span class="badge ${pc.fin >= 5 ? 'badge-ok' : 'badge-danger'}">${pc.fin >= 5 ? '✅ Aprobado' : '⚠️ Bajo rendimiento'}</span></td></tr>
+        <tr><td><strong>Promedio</strong></td><td class="num">${pc.cot.toFixed(2)}</td><td class="num">${pc.int.toFixed(2)}</td><td class="num">${pc.ex.toFixed(2)}</td><td class="num ${Math.round(pc.fin) >= 5 ? 'destacado' : 'alerta'}">${pc.fin.toFixed(2)}</td></tr>
+        <tr><td><strong>Estado</strong></td><td colspan="4"><span class="badge ${Math.round(pc.fin) >= 5 ? 'badge-ok' : 'badge-danger'}">${Math.round(pc.fin) >= 5 ? '✅ Aprobado' : '⚠️ Bajo rendimiento'}</span></td></tr>
       </tbody>
     </table>
 
@@ -218,8 +218,8 @@ export default function InformeTecnicoDialog({
     <table class="tabla">
       <thead><tr><th>Categoría</th><th>Actividades Cotidianas</th><th>Actividades Integradoras</th><th>Examen</th><th>Promedio Final</th></tr></thead>
       <tbody>
-        <tr><td><strong>Promedio</strong></td><td class="num">${sc.cot.toFixed(2)}</td><td class="num">${sc.int.toFixed(2)}</td><td class="num">${sc.ex.toFixed(2)}</td><td class="num ${sc.fin >= 5 ? 'destacado' : 'alerta'}">${sc.fin.toFixed(2)}</td></tr>
-        <tr><td><strong>Estado</strong></td><td colspan="4"><span class="badge ${sc.fin >= 5 ? 'badge-ok' : 'badge-danger'}">${sc.fin >= 5 ? '✅ Aprobado' : '⚠️ Bajo rendimiento'}</span></td></tr>
+        <tr><td><strong>Promedio</strong></td><td class="num">${sc.cot.toFixed(2)}</td><td class="num">${sc.int.toFixed(2)}</td><td class="num">${sc.ex.toFixed(2)}</td><td class="num ${Math.round(sc.fin) >= 5 ? 'destacado' : 'alerta'}">${sc.fin.toFixed(2)}</td></tr>
+        <tr><td><strong>Estado</strong></td><td colspan="4"><span class="badge ${Math.round(sc.fin) >= 5 ? 'badge-ok' : 'badge-danger'}">${Math.round(sc.fin) >= 5 ? '✅ Aprobado' : '⚠️ Bajo rendimiento'}</span></td></tr>
       </tbody>
     </table>
 
@@ -227,8 +227,8 @@ export default function InformeTecnicoDialog({
     <table class="tabla">
       <thead><tr><th>Categoría</th><th>Actividades Cotidianas</th><th>Actividades Integradoras</th><th>Examen</th><th>Promedio Final</th></tr></thead>
       <tbody>
-        <tr><td><strong>Promedio</strong></td><td class="num">${tc.cot.toFixed(2)}</td><td class="num">${tc.int.toFixed(2)}</td><td class="num">${tc.ex.toFixed(2)}</td><td class="num ${tc.fin >= 5 ? 'destacado' : 'alerta'}">${tc.fin.toFixed(2)}</td></tr>
-        <tr><td><strong>Estado</strong></td><td colspan="4"><span class="badge ${tc.fin >= 5 ? 'badge-ok' : 'badge-danger'}">${tc.fin >= 5 ? '✅ Aprobado' : '⚠️ Bajo rendimiento'}</span></td></tr>
+        <tr><td><strong>Promedio</strong></td><td class="num">${tc.cot.toFixed(2)}</td><td class="num">${tc.int.toFixed(2)}</td><td class="num">${tc.ex.toFixed(2)}</td><td class="num ${Math.round(tc.fin) >= 5 ? 'destacado' : 'alerta'}">${tc.fin.toFixed(2)}</td></tr>
+        <tr><td><strong>Estado</strong></td><td colspan="4"><span class="badge ${Math.round(tc.fin) >= 5 ? 'badge-ok' : 'badge-danger'}">${Math.round(tc.fin) >= 5 ? '✅ Aprobado' : '⚠️ Bajo rendimiento'}</span></td></tr>
       </tbody>
     </table>
   </div>
@@ -272,11 +272,11 @@ export default function InformeTecnicoDialog({
     <div class="observaciones">
       <h4>📋 Observaciones</h4>
       <ul>
-        <li>El promedio general del sistema es de <strong>${promGeneral.toFixed(2)}</strong>, ${promGeneral >= 5 ? 'lo cual indica un rendimiento' : 'lo cual indica un rendimiento que requiere intervención'}.
-        ${promGeneral >= 7 ? ' satisfactorio y dentro de los parámetros esperados.' : promGeneral >= 5 ? ' aceptable pero con margen de mejora.' : ' por debajo del umbral de aprobación (5.0).'}</li>
-        ${pc.fin < 5 ? `<li>El <strong>Primer Ciclo</strong> presenta un promedio de ${pc.fin.toFixed(2)}, por debajo del umbral. Se recomienda refuerzo pedagógico inmediato.</li>` : ''}
-        ${sc.fin < 5 ? `<li>El <strong>Segundo Ciclo</strong> presenta un promedio de ${sc.fin.toFixed(2)}, por debajo del umbral. Se recomienda refuerzo pedagógico inmediato.</li>` : ''}
-        ${tc.fin < 5 ? `<li>El <strong>Tercer Ciclo</strong> presenta un promedio de ${tc.fin.toFixed(2)}, por debajo del umbral. Se recomienda refuerzo pedagógico inmediato.</li>` : ''}
+        <li>El promedio general del sistema es de <strong>${promGeneral.toFixed(2)}</strong>, ${Math.round(promGeneral) >= 5 ? 'lo cual indica un rendimiento' : 'lo cual indica un rendimiento que requiere intervención'}.
+        ${Math.round(promGeneral) >= 7 ? ' satisfactorio y dentro de los parámetros esperados.' : Math.round(promGeneral) >= 5 ? ' aceptable pero con margen de mejora.' : ' por debajo del umbral de aprobación (5.0).'}</li>
+        ${Math.round(pc.fin) < 5 ? `<li>El <strong>Primer Ciclo</strong> presenta un promedio de ${pc.fin.toFixed(2)}, por debajo del umbral. Se recomienda refuerzo pedagógico inmediato.</li>` : ''}
+        ${Math.round(sc.fin) < 5 ? `<li>El <strong>Segundo Ciclo</strong> presenta un promedio de ${sc.fin.toFixed(2)}, por debajo del umbral. Se recomienda refuerzo pedagógico inmediato.</li>` : ''}
+        ${Math.round(tc.fin) < 5 ? `<li>El <strong>Tercer Ciclo</strong> presenta un promedio de ${tc.fin.toFixed(2)}, por debajo del umbral. Se recomienda refuerzo pedagógico inmediato.</li>` : ''}
         ${totalRiesgo > 0 ? `<li>Se identificaron <strong>${totalRiesgo} estudiantes en riesgo</strong> que requieren planes de intervención individualizados.</li>` : ''}
         ${totalHonor > 0 ? `<li><strong>${totalHonor} estudiantes</strong> se encuentran en cuadro de honor, demostrando excelencia académica.</li>` : ''}
         <li>Se sugiere revisar las estrategias de evaluación en las áreas con menor rendimiento para optimizar los resultados del próximo trimestre.</li>

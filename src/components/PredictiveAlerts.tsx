@@ -24,27 +24,32 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode }: Predi
   const [expandedSection, setExpandedSection] = useState<string | null>("tendencias");
 
   useEffect(() => {
-    if (gradoId) {
-      fetchData();
-    }
-  }, [gradoId]);
+    if (!gradoId) return;
+    let cancelled = false;
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/alerts/predictive?gradoId=${gradoId}`, {
-        credentials: "include"
+    Promise.resolve().then(() => {
+      if (!cancelled) setLoading(true);
+    });
+
+    fetch(`/api/alerts/predictive?gradoId=${gradoId}`, {
+      credentials: "include"
+    })
+      .then(res => {
+        if (!cancelled && res.ok) return res.json();
+        return null;
+      })
+      .then(result => {
+        if (!cancelled && result) setData(result);
+      })
+      .catch(error => {
+        console.error("Error fetching predictive alerts:", error);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
       });
-      if (res.ok) {
-        const result = await res.json();
-        setData(result);
-      }
-    } catch (error) {
-      console.error("Error fetching predictive alerts:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+
+    return () => { cancelled = true; };
+  }, [gradoId]);
 
   if (loading) {
     return (
@@ -118,9 +123,9 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode }: Predi
             />
             <StatCard
               label="Estado"
-              value={(data.resumen?.promedioGeneral || 0) >= 5 ? "OK" : "Atención"}
+              value={Math.round(data.resumen?.promedioGeneral || 0) >= 5 ? "OK" : "Atención"}
               icon={CheckCircle2}
-              color={(data.resumen?.promedioGeneral || 0) >= 5 ? "text-green-600" : "text-amber-600"}
+              color={Math.round(data.resumen?.promedioGeneral || 0) >= 5 ? "text-green-600" : "text-amber-600"}
               darkMode={darkMode}
             />
           </div>
@@ -237,7 +242,7 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode }: Predi
                       <span className={`text-xs ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                         {a.estudiantesEnRiesgo}/{a.totalEstudiantes} en riesgo
                       </span>
-                      <span className={`text-sm font-bold ${a.promedioMateria < 5 ? 'text-red-600' : 'text-amber-600'}`}>
+                      <span className={`text-sm font-bold ${Math.round(a.promedioMateria) < 5 ? 'text-red-600' : 'text-amber-600'}`}>
                         {a.promedioMateria?.toFixed(1)}
                       </span>
                     </div>

@@ -551,7 +551,7 @@ useEffect(() => {
       <span className={darkMode ? "text-slate-600" : "text-slate-300"}>-</span>
     );
   const finalBadgeClass =
-    promFinal !== null && promFinal >= 5
+    promFinal !== null && Math.round(promFinal) >= 5
       ? darkMode
         ? "bg-emerald-700/80 text-emerald-100 ring-1 ring-emerald-500"
         : "bg-emerald-100 text-emerald-800 ring-1 ring-emerald-200"

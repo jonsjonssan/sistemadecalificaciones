@@ -156,7 +156,7 @@ function CiclosSection({ asignaturas, stats, grados, darkMode }: { asignaturas: 
                   </div>
                   <div className="text-center col-span-2 sm:col-span-1">
                     <p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>Promedio Ciclo</p>
-                    <p className={`text-lg font-bold ${promCiclo != null && promCiclo >= 5 ? (darkMode ? 'text-teal-400' : 'text-teal-600') : (darkMode ? 'text-red-400' : 'text-red-600')}`}>
+                    <p className={`text-lg font-bold ${promCiclo != null && Math.round(promCiclo) >= 5 ? (darkMode ? 'text-teal-400' : 'text-teal-600') : (darkMode ? 'text-red-400' : 'text-red-600')}`}>
                       {promCiclo != null ? promCiclo.toFixed(2) : "N/A"}
                     </p>
                   </div>
@@ -170,7 +170,7 @@ function CiclosSection({ asignaturas, stats, grados, darkMode }: { asignaturas: 
                         <h4 className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                           {grupo.grado}° "{grupo.seccion}"
                         </h4>
-                        <Badge variant={grupo.promedio != null && grupo.promedio >= 5 ? "default" : "destructive"} className={`text-[10px] h-5 ${grupo.promedio != null && grupo.promedio >= 5 ? (darkMode ? 'bg-teal-600' : 'bg-teal-600') : ''}`}>
+                        <Badge variant={grupo.promedio != null && Math.round(grupo.promedio) >= 5 ? "default" : "destructive"} className={`text-[10px] h-5 ${grupo.promedio != null && Math.round(grupo.promedio) >= 5 ? (darkMode ? 'bg-teal-600' : 'bg-teal-600') : ''}`}>
                           {grupo.promedio != null ? grupo.promedio.toFixed(1) : "N/A"}
                         </Badge>
                       </div>
@@ -205,7 +205,7 @@ function PromedioCircular({ valor, darkMode }: { valor: number | null; darkMode:
   const normalizedRadius = radius - stroke;
   const circumference = normalizedRadius * 2 * Math.PI;
   const strokeDashoffset = valor != null ? circumference - (valor / 10) * circumference : circumference;
-  const color = valor != null && valor >= 5 ? "#14b8a6" : "#ef4444";
+  const color = valor != null && Math.round(valor) >= 5 ? "#14b8a6" : "#ef4444";
 
   return (
     <div className="flex flex-col items-center">
@@ -240,8 +240,8 @@ function PromedioCircular({ valor, darkMode }: { valor: number | null; darkMode:
         </div>
       </div>
       <div className="mt-2 flex items-center gap-1">
-        <span className={`text-xs font-medium ${valor != null && valor >= 5 ? 'text-teal-500' : valor != null ? 'text-red-500' : ''}`}>
-          {valor != null && valor >= 5 ? '✓ Aprobado' : valor != null ? '⚠ En riesgo' : 'Sin datos'}
+        <span className={`text-xs font-medium ${valor != null && Math.round(valor) >= 5 ? 'text-teal-500' : valor != null ? 'text-red-500' : ''}`}>
+          {valor != null && Math.round(valor) >= 5 ? '✓ Aprobado' : valor != null ? '⚠ En riesgo' : 'Sin datos'}
         </span>
       </div>
     </div>
@@ -450,11 +450,11 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
                   return (
                     <div key={c.nombre} className={`rounded-lg border p-3 text-center ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
                       <p className={`text-xs font-semibold mb-1 ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>{c.nombre}</p>
-                      <p className={`text-2xl font-bold ${c.prom != null && c.prom >= 5 ? (darkMode ? 'text-teal-400' : 'text-teal-600') : (darkMode ? 'text-red-400' : 'text-red-600')}`}>
+                      <p className={`text-2xl font-bold ${c.prom != null && Math.round(c.prom) >= 5 ? (darkMode ? 'text-teal-400' : 'text-teal-600') : (darkMode ? 'text-red-400' : 'text-red-600')}`}>
                         {c.prom != null ? c.prom.toFixed(2) : "—"}
                       </p>
                       <p className={`text-[10px] ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                        {c.prom != null && c.prom >= 5 ? '✓ Sobre umbral' : c.prom != null ? '⚠ Bajo umbral' : 'Sin datos'}
+                        {c.prom != null && Math.round(c.prom) >= 5 ? '✓ Sobre umbral' : c.prom != null ? '⚠ Bajo umbral' : 'Sin datos'}
                       </p>
                     </div>
                   );

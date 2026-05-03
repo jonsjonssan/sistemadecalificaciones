@@ -53,14 +53,14 @@ export function calcularPromedioFinal(
 
 export function estaAprobado(promedio: number | null): boolean {
   if (promedio === null) return false;
-  return promedio >= NOTA_MINIMA_APROBATORIA;
+  return Math.round(promedio) >= NOTA_MINIMA_APROBATORIA;
 }
 
 export function getColorPromedio(promedio: number | null): string {
   if (promedio === null) return "text-muted-foreground";
-  if (promedio >= 9) return "text-green-600";
-  if (promedio >= 7) return "text-blue-600";
-  if (promedio >= 5) return "text-yellow-600";
+  if (Math.round(promedio) >= 9) return "text-green-600";
+  if (Math.round(promedio) >= 7) return "text-blue-600";
+  if (Math.round(promedio) >= 5) return "text-yellow-600";
   return "text-red-600";
 }
 
