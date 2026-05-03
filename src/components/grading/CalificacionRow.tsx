@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Estudiante, Calificacion, ConfigActividadPartial } from "@/types";
-import { calcularPromedio, calcularPromedioFinal, parseNotas } from "@/utils/gradeCalculations";
+import { calcularPromedio, calcularPromedioFinal, parseNotas, getEstadoCompletitud } from "@/utils/gradeCalculations";
 import { RefreshCw, History } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { HistorialCalificacionPopup } from "./HistorialCalificacionPopup";
@@ -540,6 +540,7 @@ useEffect(() => {
   const promExBg = darkMode ? "bg-amber-900/50" : "bg-amber-50/70";
   const finalBg = darkMode ? "bg-emerald-900/60" : "bg-emerald-50/80";
   const hasData = acNotas.some(n => n !== null) || aiNotas.some(n => n !== null) || examen !== null;
+  const estadoCompletitud = useMemo(() => getEstadoCompletitud(calificacion, config), [calificacion, config]);
   const statusIcon =
     saveError ? (
       <span title="Error al guardar. Se reintentará automáticamente.">⚠️</span>
@@ -570,6 +571,13 @@ useEffect(() => {
           {estudiante.numero}
         </td>
         <td className={`p-2 font-medium sticky-col shadow-right left-10 z-10 whitespace-nowrap border-r ${stickyBg} ${cellBorder}`}>
+          <span className={`inline-block w-2 h-2 rounded-full mr-1.5 flex-shrink-0 align-middle ${
+            estadoCompletitud === 'completo'
+              ? 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]'
+              : estadoCompletitud === 'parcial'
+                ? 'bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.5)]'
+                : 'bg-slate-300 dark:bg-slate-600'
+          }`} title={estadoCompletitud === 'completo' ? 'Completo' : estadoCompletitud === 'parcial' ? 'Incompleto' : 'Sin datos'} />
           {estudiante.nombre}
         </td>
         {Array.from({ length: numAC }).map((_, i) => (
@@ -680,6 +688,13 @@ useEffect(() => {
         {estudiante.numero}
       </td>
       <td className={`p-2 font-medium sticky-col shadow-right left-10 z-10 whitespace-nowrap border-r ${stickyBg} ${cellBorder}`}>
+        <span className={`inline-block w-2 h-2 rounded-full mr-1.5 flex-shrink-0 align-middle ${
+          estadoCompletitud === 'completo'
+            ? 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]'
+            : estadoCompletitud === 'parcial'
+              ? 'bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.5)]'
+              : 'bg-slate-300 dark:bg-slate-600'
+        }`} title={estadoCompletitud === 'completo' ? 'Completo' : estadoCompletitud === 'parcial' ? 'Incompleto' : 'Sin datos'} />
         {estudiante.nombre}
       </td>
       {acNotas.map((n, i) => (

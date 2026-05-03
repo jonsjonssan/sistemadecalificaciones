@@ -1,4 +1,40 @@
-import { ConfigActividadPartial } from "@/types";
+import { Calificacion, ConfigActividadPartial } from "@/types";
+
+export type EstadoCompletitud = 'completo' | 'parcial' | 'vacio';
+
+export const getEstadoCompletitud = (
+  calificacion: Calificacion | undefined,
+  config: ConfigActividadPartial | null
+): EstadoCompletitud => {
+  if (!calificacion || !config) return 'vacio';
+
+  const acNotas = parseNotas(calificacion.actividadesCotidianas ?? null, config.numActividadesCotidianas);
+  const aiNotas = parseNotas(calificacion.actividadesIntegradoras ?? null, config.numActividadesIntegradoras);
+
+  const totalFields = config.numActividadesCotidianas + config.numActividadesIntegradoras + (config.tieneExamen ? 1 : 0);
+  const filledFields =
+    acNotas.filter(n => n !== null).length +
+    aiNotas.filter(n => n !== null).length +
+    (config.tieneExamen && calificacion.examenTrimestral !== null ? 1 : 0);
+
+  if (filledFields === 0) return 'vacio';
+  if (filledFields >= totalFields) return 'completo';
+  return 'parcial';
+};
+
+export const contarEstados = (
+  estudiantes: Array<{ id: string }>,
+  calificaciones: Calificacion[],
+  materiaId: string,
+  config: ConfigActividadPartial | null
+): { completo: number; parcial: number; vacio: number; total: number } => {
+  const result = { completo: 0, parcial: 0, vacio: 0, total: estudiantes.length };
+  for (const est of estudiantes) {
+    const calif = calificaciones.find(c => c.estudianteId === est.id && c.materiaId === materiaId);
+    result[getEstadoCompletitud(calif, config)]++;
+  }
+  return result;
+};
 
 export const calcularPromedio = (notas: (number | null)[]): number | null => {
   const validas = notas.filter((n) => n !== null && !isNaN(n!)) as number[];

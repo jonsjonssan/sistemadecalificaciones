@@ -30,7 +30,7 @@ import { ContextualHelp } from "@/components/ContextualHelp";
 import { CalificacionRow } from "@/components/grading/CalificacionRow";
 import { HistorialCalificacionPopup } from "@/components/grading/HistorialCalificacionPopup";
 import { Usuario, UsuarioSesion, Estudiante, Asignatura, AsignaturaConGrado, Calificacion, Grado, ConfigActividad, ConfigActividadPartial, ConfiguracionSistema } from "@/types";
-import { calcularPromedio, calcularPromedioFinal, parseNotas } from "@/utils/gradeCalculations";
+import { calcularPromedio, calcularPromedioFinal, parseNotas, contarEstados } from "@/utils/gradeCalculations";
 import { isAdmin, canDeleteUsers, getDocentesDelGrado } from "@/utils/roleHelpers";
 import { escapeHtml } from "@/lib/utils/index";
 import PresenceIndicator from "@/components/PresenceIndicator";
@@ -1118,6 +1118,11 @@ useEffect(() => {
     return filtered;
   }, [estudiantes, calificaciones, configActual, busquedaEstudiante, filtroEstado, sortColumn, sortDirection, getPromedioFinalForStudent, getPromedioACForStudent, getPromedioAIForStudent, getExamenForStudent]);
 
+  const estadosCompletitud = useMemo(() =>
+    contarEstados(estudiantes, calificaciones, asignaturaSeleccionada, configActual),
+    [estudiantes, calificaciones, asignaturaSeleccionada, configActual]
+  );
+
   // Navegación por teclado en tabla de calificaciones
   const handleNavigate = useCallback((fromRow: number, fromCol: number, direction: 'up' | 'down' | 'left' | 'right') => {
     const students = filteredAndSortedStudents;
@@ -1987,6 +1992,55 @@ useEffect(() => {
             )}
             {gradoSeleccionado && asignaturaSeleccionada && (
               <>
+                {/* Barra de estado de digitación */}
+                <div className={`flex items-center gap-3 px-4 py-2.5 rounded-lg border text-sm ${
+                  darkMode ? 'bg-slate-800/80 border-slate-700 text-slate-300' : 'bg-white border-slate-200 text-slate-600'
+                }`}>
+                  <span className="font-medium text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider">Digitación</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.6)]" />
+                    <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">{estadosCompletitud.completo}</span>
+                    <span className="text-xs">completo{estadosCompletitud.completo !== 1 ? 's' : ''}</span>
+                  </div>
+                  <div className={`h-4 w-px ${darkMode ? 'bg-slate-600' : 'bg-slate-300'}`} />
+                  <div className="flex items-center gap-1.5">
+                    <span className="inline-block w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.6)]" />
+                    <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">{estadosCompletitud.parcial}</span>
+                    <span className="text-xs">incompleto{estadosCompletitud.parcial !== 1 ? 's' : ''}</span>
+                  </div>
+                  <div className={`h-4 w-px ${darkMode ? 'bg-slate-600' : 'bg-slate-300'}`} />
+                  <div className="flex items-center gap-1.5">
+                    <span className="inline-block w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-600" />
+                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{estadosCompletitud.vacio}</span>
+                    <span className="text-xs">sin datos</span>
+                  </div>
+                  <div className="flex-1" />
+                  {/* Barra de progreso */}
+                  <div className={`hidden sm:flex items-center gap-2 min-w-[120px] max-w-[200px]`}>
+                    <div className={`flex-1 h-1.5 rounded-full overflow-hidden flex ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`}>
+                      {estadosCompletitud.total > 0 && (
+                        <>
+                          <div
+                            className="h-full bg-emerald-500 transition-all duration-500"
+                            style={{ width: `${(estadosCompletitud.completo / estadosCompletitud.total) * 100}%` }}
+                          />
+                          <div
+                            className="h-full bg-amber-400 transition-all duration-500"
+                            style={{ width: `${(estadosCompletitud.parcial / estadosCompletitud.total) * 100}%` }}
+                          />
+                          <div
+                            className="h-full bg-slate-300 dark:bg-slate-600 transition-all duration-500"
+                            style={{ width: `${(estadosCompletitud.vacio / estadosCompletitud.total) * 100}%` }}
+                          />
+                        </>
+                      )}
+                    </div>
+                    <span className="text-xs font-mono text-slate-500 whitespace-nowrap">
+                      {estadosCompletitud.total > 0 ? Math.round((estadosCompletitud.completo / estadosCompletitud.total) * 100) : 0}%
+                    </span>
+                  </div>
+                </div>
+
                 {/* Barra de herramientas: Búsqueda, Filtro, Exportar */}
                 <Card className={`shadow-sm border ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'bg-white border-slate-200'}`}>
                   <CardContent className="p-3">
@@ -2200,6 +2254,21 @@ useEffect(() => {
                         <div className={`text-xs font-medium ${darkMode ? 'text-emerald-300' : 'text-emerald-700'}`}>Promedio del Grado</div>
                         <div className={`text-lg font-bold ${darkMode ? 'text-emerald-400' : 'text-emerald-800'}`}>
                           {sectionLoading ? <Skeleton className={`h-5 w-12 ${darkMode ? 'bg-emerald-800' : 'bg-emerald-200'}`} /> : (promedioGrado !== null ? promedioGrado.toFixed(2) : "—")}
+                        </div>
+                      </div>
+                      <div className={`flex items-center gap-3 px-3 py-2 rounded-lg ${darkMode ? 'bg-slate-700/50 border border-slate-600' : 'bg-slate-100 border border-slate-200'}`}>
+                        <div className="flex items-center gap-1.5">
+                          <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.5)]" />
+                          <span className={`text-xs font-medium ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                            {estadosCompletitud.completo} completo{estadosCompletitud.completo !== 1 ? 's' : ''}
+                          </span>
+                        </div>
+                        <span className="text-slate-400 dark:text-slate-500">•</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="inline-block w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_4px_rgba(251,191,36,0.5)]" />
+                          <span className={`text-xs font-medium ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                            {estadosCompletitud.parcial} incompleto{estadosCompletitud.parcial !== 1 ? 's' : ''}
+                          </span>
                         </div>
                       </div>
                     </div>
