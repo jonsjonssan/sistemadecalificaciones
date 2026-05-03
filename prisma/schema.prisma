@@ -198,23 +198,23 @@ model NotaActividad {
 model Asistencia {
   id           String   @id @default(cuid())
   estudianteId String
-  fecha        DateTime
+  fecha        DateTime @db.Date
   estado       String   // "presente", "ausente", "justificada", "tarde"
   
-  // La asistencia puede ser general por grado (tutor 2-5) o específica por materia (6-9)
-  gradoId      String?
+  // La asistencia pertenece a un grado (obligatorio)
+  // materiaId es opcional (para asistencia por materia en grados 6-9)
+  gradoId      String
   materiaId    String?
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   
   estudiante   Estudiante @relation(fields: [estudianteId], references: [id], onDelete: Cascade)
-  grado        Grado?     @relation(fields: [gradoId], references: [id], onDelete: Cascade)
+  grado        Grado      @relation(fields: [gradoId], references: [id], onDelete: Cascade)
   materia      Materia?   @relation(fields: [materiaId], references: [id], onDelete: Cascade)
   
-  // Un estudiante solo puede tener un registro de asistencia por día por materia/grado
-  // El índice cuidará que no haya duplicados el mismo día exacto. En la API limpiaremos la hora.
-  @@unique([estudianteId, fecha, gradoId, materiaId], name: "unica_asistencia_dia")
+  // Un estudiante solo puede tener un registro de asistencia por día por grado
+  @@unique([estudianteId, fecha, gradoId])
   @@index([estudianteId])
   @@index([fecha])
   @@index([estado])

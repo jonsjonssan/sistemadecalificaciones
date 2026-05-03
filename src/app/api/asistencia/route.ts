@@ -100,71 +100,43 @@ export async function POST(req: Request) {
 
     const startOfDay = new Date(fecha);
     startOfDay.setUTCHours(0, 0, 0, 0);
-    const endOfDay = new Date(startOfDay);
-    endOfDay.setUTCHours(23, 59, 59, 999);
 
     const resultados: any[] = [];
-    let actualizados = 0;
-    let creados = 0;
 
-    for (const record of asistencias) {
-      const { estudianteId, estado } = record;
-      // Buscar todos los registros existentes para este estudiante en esta fecha
-      const existentes = await db.asistencia.findMany({
-        where: {
-          estudianteId,
-          fecha: {
-            gte: startOfDay,
-            lte: endOfDay,
+    // Transacción atómica: upsert evita duplicados garantizado por el constraint único en BD
+    await db.$transaction(async (tx) => {
+      for (const record of asistencias) {
+        const { estudianteId, estado } = record;
+
+        const result = await tx.asistencia.upsert({
+          where: {
+            estudianteId_fecha_gradoId: {
+              estudianteId,
+              fecha: startOfDay,
+              gradoId,
+            },
           },
-          gradoId,
-        },
-        orderBy: { createdAt: 'desc' }
-      });
-
-      if (existentes.length > 0) {
-        // Si hay múltiples duplicados, eliminar todos excepto el más reciente
-        if (existentes.length > 1) {
-          const idsAEliminar = existentes.slice(1).map(e => e.id);
-          await db.asistencia.deleteMany({
-            where: { id: { in: idsAEliminar } }
-          });
-        }
-
-        // Actualizar el más reciente
-        const updated = await db.asistencia.update({
-          where: { id: existentes[0].id },
-          data: { estado },
-          include: {
-            estudiante: { select: { id: true, nombre: true, numero: true } },
-          },
-        });
-        actualizados++;
-        resultados.push(updated);
-      } else {
-        // Crear nuevo registro
-        const nuevo = await db.asistencia.create({
-          data: {
+          update: { estado },
+          create: {
             estudianteId,
             fecha: startOfDay,
             estado,
             gradoId,
+            ...(materiaId ? { materiaId } : {}),
           },
           include: {
             estudiante: { select: { id: true, nombre: true, numero: true } },
           },
         });
-        creados++;
-        resultados.push(nuevo);
+
+        resultados.push(result);
       }
-    }
+    });
 
     return NextResponse.json({
       success: true,
       guardados: resultados.length,
-      creados,
-      actualizados,
-      mensaje: `${creados} registros creados, ${actualizados} actualizados`
+      mensaje: `${resultados.length} registros guardados`
     });
   } catch (error) {
     console.error("Error guardando asistencia:", error);
