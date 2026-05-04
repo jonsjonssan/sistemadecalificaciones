@@ -154,21 +154,25 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
   // Exportar a CSV
   const exportarCSV = useCallback(() => {
     if (!grado) return;
-    const headers = ["N°", "Estudiante", ...materias.map(m => m.nombre), "Estado General"];
+    const headers = ["N°", "Estudiante", ...materias.map(m => m.nombre)];
     const rows = estudiantes.map(est => {
       const estadosMaterias = materias.map(mat => {
         const nota = matriz.get(est.id)?.get(mat.id);
         return getRangoLabel(getRangoNota(nota ?? null));
       });
-      const notasNumericas = materias.map(mat => matriz.get(est.id)?.get(mat.id)).filter(n => n !== null && n !== undefined) as number[];
-      let estado = "Sin datos";
-      if (notasNumericas.length > 0) {
-        const avg = notasNumericas.reduce((a, b) => a + b, 0) / notasNumericas.length;
-        estado = getRangoLabel(getRangoNota(avg));
-      }
-      return [est.numero.toString(), est.nombre, ...estadosMaterias, estado];
+      return [est.numero.toString(), est.nombre, ...estadosMaterias];
     });
-    const csv = [headers, ...rows].map(row => row.map(cell => `"${cell}"`).join(",")).join("\n");
+    // Leyenda normativa
+    const leyenda = [
+      [],
+      ["MARCO NORMATIVO"],
+      ["0 - 4.99", "Reprobado (MINED + C.E.)"],
+      ["5.00 - 6.49", "Aprueba MINED / Reprueba C.E."],
+      [">= 6.50", "Aprobado (MINED + C.E.)"],
+      [],
+      ["Segun el marco normativo del Ministerio de Educacion (MINED), todo estudiante con calificacion de 5.00 en adelante aprueba el grado. El Centro Escolar establece un estandar de excelencia de 6.50."],
+    ];
+    const csv = [headers, ...rows, ...leyenda].map(row => row.map(cell => `"${cell}"`).join(",")).join("\n");
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -198,6 +202,8 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
       return [est.numero.toString(), est.nombre, ...estados];
     });
 
+    const finalY = (doc as any).lastAutoTable?.finalY || 18;
+
     autoTable(doc, {
       head: [headers],
       body: rows,
@@ -223,6 +229,23 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
         }
       },
     });
+
+    // Leyenda normativa debajo de la tabla
+    const leyendaY = (doc as any).lastAutoTable?.finalY ? (doc as any).lastAutoTable.finalY + 6 : finalY + 6;
+    doc.setFontSize(9);
+    doc.setTextColor(60, 60, 60);
+    doc.text("MARCO NORMATIVO", 14, leyendaY);
+    doc.setFontSize(8);
+    doc.setTextColor(220, 38, 38);
+    doc.text("0 - 4.99  Reprobado (MINED + C.E.)", 14, leyendaY + 5);
+    doc.setTextColor(217, 119, 6);
+    doc.text("5.00 - 6.49  Aprueba MINED / Reprueba C.E.", 14, leyendaY + 10);
+    doc.setTextColor(5, 150, 105);
+    doc.text(">= 6.50  Aprobado (MINED + C.E.)", 14, leyendaY + 15);
+    doc.setTextColor(100, 100, 100);
+    doc.setFontSize(7);
+    doc.text("Segun el marco normativo del MINED, todo estudiante con calificacion de 5.00 en adelante aprueba el grado.", 14, leyendaY + 22);
+    doc.text("El Centro Escolar establece un estandar de excelencia de 6.50.", 14, leyendaY + 26);
 
     doc.save(`reporte_estados_${grado.numero}${grado.seccion}_T${trimestre}.pdf`);
   }, [grado, estudiantes, materias, matriz, trimestre]);
@@ -380,7 +403,6 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
                           <div className="rotate-180 whitespace-nowrap text-[10px] sm:text-xs py-1">{mat.nombre}</div>
                         </th>
                       ))}
-                      <th className={`p-2 text-center font-semibold border-b bg-slate-700 border-slate-500`} style={{ minWidth: "5rem" }}>Estado</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -389,13 +411,6 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
                         ? (darkMode ? "bg-[#1e293b]" : "bg-white")
                         : (darkMode ? "bg-slate-800/60" : "bg-slate-50/50");
                       const cellBorder = darkMode ? "border-slate-700" : "border-slate-200";
-                      const notasMaterias = materias.map(mat => matriz.get(est.id)?.get(mat.id) ?? null);
-                      const notasNumericas = notasMaterias.filter(n => n !== null) as number[];
-                      const promedioEst = notasNumericas.length > 0
-                        ? notasNumericas.reduce((a, b) => a + b, 0) / notasNumericas.length
-                        : null;
-                      const rangoEst = getRangoNota(promedioEst);
-                      const estadoLabel = getRangoLabel(rangoEst);
 
                       return (
                         <tr key={est.id} className={`border-b transition-colors ${rowBg}`}>
@@ -417,14 +432,6 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
                               </td>
                             );
                           })}
-                          <td className={`p-2 text-center ${cellBorder}`}>
-                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold ${getRangoColor(rangoEst, darkMode)}`}>
-                              {rangoEst === "reprobado" && <AlertTriangle className="h-3 w-3" />}
-                              {rangoEst === "condicionado" && <HelpCircle className="h-3 w-3" />}
-                              {rangoEst === "aprobado" && <CheckCircle2 className="h-3 w-3" />}
-                              {estadoLabel}
-                            </span>
-                          </td>
                         </tr>
                       );
                     })}
