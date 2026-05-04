@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FileText, Download, AlertTriangle, CheckCircle2, HelpCircle } from "lucide-react";
+import { FileText, Download, AlertTriangle, CheckCircle2, HelpCircle, X, Check } from "lucide-react";
 
 type CalificacionRow = {
   id: string;
@@ -77,6 +77,7 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
   const [trimestre, setTrimestre] = useState("1");
   const [estudiantes, setEstudiantes] = useState<Estudiante[]>([]);
   const [materias, setMaterias] = useState<Asignatura[]>([]);
+  const [materiasActivas, setMateriasActivas] = useState<Set<string>>(new Set());
   const [calificaciones, setCalificaciones] = useState<CalificacionRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -98,6 +99,7 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
         const [estData, matData, calData] = await Promise.all([estRes.json(), matRes.json(), calRes.json()]);
         setEstudiantes(estData);
         setMaterias(matData);
+        setMateriasActivas(new Set(matData.map((m: Asignatura) => m.id)));
         setCalificaciones(Array.isArray(calData) ? calData : []);
       })
       .catch((e) => setError(e instanceof Error ? e.message : "Error al cargar"))
@@ -122,7 +124,13 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
     return map;
   }, [calificacionesTrimestre]);
 
-  // Conteo por rango para el resumen
+  // Materias filtradas según selección del usuario
+  const materiasFiltradas = useMemo(() =>
+    materias.filter(m => materiasActivas.has(m.id)),
+    [materias, materiasActivas]
+  );
+
+  // Conteo por rango para el resumen (solo materias activas)
   const conteo = useMemo(() => {
     let reprobado = 0;
     let condicionado = 0;
@@ -130,7 +138,7 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
     let sinDatos = 0;
     for (const est of estudiantes) {
       const notasMaterias: (number | null)[] = [];
-      for (const mat of materias) {
+      for (const mat of materiasFiltradas) {
         const nota = matriz.get(est.id)?.get(mat.id) ?? null;
         notasMaterias.push(nota);
       }
@@ -149,14 +157,14 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
       }
     }
     return { reprobado, condicionado, aprobado, sinDatos };
-  }, [estudiantes, materias, matriz]);
+  }, [estudiantes, materiasFiltradas, matriz]);
 
   // Exportar a CSV
   const exportarCSV = useCallback(() => {
     if (!grado) return;
-    const headers = ["N°", "Estudiante", ...materias.map(m => m.nombre)];
+    const headers = ["N°", "Estudiante", ...materiasFiltradas.map(m => m.nombre)];
     const rows = estudiantes.map(est => {
-      const estadosMaterias = materias.map(mat => {
+      const estadosMaterias = materiasFiltradas.map(mat => {
         const nota = matriz.get(est.id)?.get(mat.id);
         return getRangoLabel(getRangoNota(nota ?? null));
       });
@@ -193,9 +201,9 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
     doc.setFontSize(11);
     doc.text(titulo, 14, 12);
 
-    const headers = ["N°", "Estudiante", ...materias.map(m => m.nombre.length > 12 ? m.nombre.substring(0, 12) + "…" : m.nombre)];
+    const headers = ["N°", "Estudiante", ...materiasFiltradas.map(m => m.nombre.length > 12 ? m.nombre.substring(0, 12) + "…" : m.nombre)];
     const rows = estudiantes.map(est => {
-      const estados = materias.map(mat => {
+      const estados = materiasFiltradas.map(mat => {
         const nota = matriz.get(est.id)?.get(mat.id);
         return getRangoLabel(getRangoNota(nota ?? null));
       });
@@ -333,6 +341,36 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
               </>
             )}
           </div>
+          {/* Selector de materias activas */}
+          {gradoId && materias.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5 mt-2 pt-2 border-t border-dashed border-slate-600/30">
+              <span className={`text-[10px] font-medium uppercase tracking-wider ${darkMode ? "text-slate-500" : "text-slate-400"}`}>Asignaturas:</span>
+              {materias.map(mat => {
+                const activa = materiasActivas.has(mat.id);
+                return (
+                  <button
+                    key={mat.id}
+                    onClick={() => {
+                      setMateriasActivas(prev => {
+                        const next = new Set(prev);
+                        if (next.has(mat.id)) next.delete(mat.id);
+                        else next.add(mat.id);
+                        return next;
+                      });
+                    }}
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium transition-all border ${
+                      activa
+                        ? (darkMode ? "bg-teal-900/40 border-teal-600 text-teal-300" : "bg-teal-50 border-teal-300 text-teal-700")
+                        : (darkMode ? "bg-slate-800 border-slate-600 text-slate-500 line-through opacity-60" : "bg-slate-100 border-slate-300 text-slate-400 line-through opacity-60")
+                    }`}
+                  >
+                    {activa ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                    {mat.nombre}
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -397,7 +435,7 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
                     <tr className={darkMode ? "bg-gradient-to-r from-slate-700 to-slate-600 text-white" : "bg-gradient-to-r from-slate-700 to-slate-600 text-white"}>
                       <th className="w-10 p-2 text-center font-semibold sticky left-0 z-20 border-r border-b bg-slate-700 border-slate-500">N°</th>
                       <th className="min-w-[140px] sm:min-w-[160px] p-2 text-left font-semibold sticky left-10 z-20 border-r border-b bg-slate-700 border-slate-500">Estudiante</th>
-                      {materias.map(mat => (
+                       {materiasFiltradas.map(mat => (
                         <th key={mat.id} className={`p-2 text-center font-semibold border-r border-b ${darkMode ? "border-slate-600 bg-slate-700" : "border-slate-500 bg-slate-700"}`}
                           style={{ writingMode: "vertical-rl", minWidth: "2.5rem", maxWidth: "3rem" }}>
                           <div className="rotate-180 whitespace-nowrap text-[10px] sm:text-xs py-1">{mat.nombre}</div>
@@ -420,7 +458,7 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
                           <td className={`p-2 font-medium sticky left-10 z-10 whitespace-nowrap border-r ${cellBorder} ${rowBg}`}>
                             {est.nombre}
                           </td>
-                          {materias.map(mat => {
+                          {materiasFiltradas.map(mat => {
                             const nota = matriz.get(est.id)?.get(mat.id) ?? null;
                             const rango = getRangoNota(nota);
                             const label = getRangoLabel(rango);
@@ -441,7 +479,7 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
 
               {/* Footer resumen materias */}
               <div className={`flex flex-wrap gap-3 p-3 mt-2 border-t text-xs ${darkMode ? "border-slate-700 bg-slate-800/50" : "border-slate-200 bg-slate-50"}`}>
-                {materias.map(mat => {
+                {materiasFiltradas.map(mat => {
                   const notas = estudiantes.map(est => matriz.get(est.id)?.get(mat.id) ?? null).filter(n => n !== null) as number[];
                   const promedio = notas.length > 0 ? notas.reduce((a, b) => a + b, 0) / notas.length : null;
                   const rango = getRangoNota(promedio);
