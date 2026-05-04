@@ -188,7 +188,7 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
     a.download = `reporte_${grado.numero}${grado.seccion}_T${trimestre}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [grado, estudiantes, materias, matriz, trimestre]);
+  }, [grado, estudiantes, materiasFiltradas, matriz, trimestre]);
 
   // Exportar a PDF
   const exportarPDF = useCallback(async () => {
@@ -256,7 +256,7 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
     doc.text("El Centro Escolar establece un estandar de excelencia de 6.50.", 14, leyendaY + 26);
 
     doc.save(`reporte_estados_${grado.numero}${grado.seccion}_T${trimestre}.pdf`);
-  }, [grado, estudiantes, materias, matriz, trimestre]);
+  }, [grado, estudiantes, materiasFiltradas, matriz, trimestre]);
 
   if (!grados || grados.length === 0) {
     return (
