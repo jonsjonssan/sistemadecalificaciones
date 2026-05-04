@@ -154,20 +154,19 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
   // Exportar a CSV
   const exportarCSV = useCallback(() => {
     if (!grado) return;
-    const headers = ["N°", "Estudiante", ...materias.map(m => m.nombre), "Estado"];
+    const headers = ["N°", "Estudiante", ...materias.map(m => m.nombre), "Estado General"];
     const rows = estudiantes.map(est => {
-      const notas = materias.map(mat => {
+      const estadosMaterias = materias.map(mat => {
         const nota = matriz.get(est.id)?.get(mat.id);
-        return nota !== null && nota !== undefined ? nota.toFixed(2) : "";
+        return getRangoLabel(getRangoNota(nota ?? null));
       });
-      const notasNumericas = notas.map(n => parseFloat(n)).filter(n => !isNaN(n));
+      const notasNumericas = materias.map(mat => matriz.get(est.id)?.get(mat.id)).filter(n => n !== null && n !== undefined) as number[];
       let estado = "Sin datos";
       if (notasNumericas.length > 0) {
         const avg = notasNumericas.reduce((a, b) => a + b, 0) / notasNumericas.length;
-        estado = getRangoNota(avg);
-        estado = getRangoLabel(estado as RangoNota);
+        estado = getRangoLabel(getRangoNota(avg));
       }
-      return [est.numero.toString(), est.nombre, ...notas, estado];
+      return [est.numero.toString(), est.nombre, ...estadosMaterias, estado];
     });
     const csv = [headers, ...rows].map(row => row.map(cell => `"${cell}"`).join(",")).join("\n");
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
@@ -183,21 +182,20 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
   const exportarPDF = useCallback(async () => {
     if (!grado) return;
     const { default: jsPDF } = await import("jspdf");
-     
     const autoTable = (await import("jspdf-autotable")).default;
     const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
 
-    const titulo = `Reporte de Calificaciones - ${grado.numero}° "${grado.seccion}" - Trimestre ${trimestre}`;
+    const titulo = `Reporte de Estados - ${grado.numero}° "${grado.seccion}" - Trimestre ${trimestre}`;
     doc.setFontSize(11);
     doc.text(titulo, 14, 12);
 
     const headers = ["N°", "Estudiante", ...materias.map(m => m.nombre.length > 12 ? m.nombre.substring(0, 12) + "…" : m.nombre)];
     const rows = estudiantes.map(est => {
-      const notas = materias.map(mat => {
+      const estados = materias.map(mat => {
         const nota = matriz.get(est.id)?.get(mat.id);
-        return nota !== null && nota !== undefined ? nota.toFixed(1) : "—";
+        return getRangoLabel(getRangoNota(nota ?? null));
       });
-      return [est.numero.toString(), est.nombre, ...notas];
+      return [est.numero.toString(), est.nombre, ...estados];
     });
 
     autoTable(doc, {
@@ -209,24 +207,24 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
       columnStyles: { 0: { cellWidth: 8 }, 1: { cellWidth: 38 } },
       didParseCell: (data: any) => {
         if (data.column.index >= 2 && data.row.section === "body") {
-          const val = parseFloat(data.cell.raw);
-          if (isNaN(val)) {
-            data.cell.styles.textColor = [150, 150, 150];
-          } else if (val < 5.0) {
+          const val = String(data.cell.raw).trim();
+          if (val === "Reprobado") {
             data.cell.styles.textColor = [220, 38, 38];
             data.cell.styles.fontStyle = "bold";
-          } else if (val < 6.5) {
+          } else if (val === "Condicionado") {
             data.cell.styles.textColor = [217, 119, 6];
             data.cell.styles.fontStyle = "bold";
-          } else {
+          } else if (val === "Aprobado") {
             data.cell.styles.textColor = [5, 150, 105];
             data.cell.styles.fontStyle = "bold";
+          } else {
+            data.cell.styles.textColor = [150, 150, 150];
           }
         }
       },
     });
 
-    doc.save(`reporte_${grado.numero}${grado.seccion}_T${trimestre}.pdf`);
+    doc.save(`reporte_estados_${grado.numero}${grado.seccion}_T${trimestre}.pdf`);
   }, [grado, estudiantes, materias, matriz, trimestre]);
 
   if (!grados || grados.length === 0) {
@@ -410,10 +408,11 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
                           {materias.map(mat => {
                             const nota = matriz.get(est.id)?.get(mat.id) ?? null;
                             const rango = getRangoNota(nota);
+                            const label = getRangoLabel(rango);
                             return (
                               <td key={mat.id} className={`p-1 text-center border-r ${cellBorder}`}>
-                                <span className={`inline-block px-1.5 py-0.5 rounded-md text-[11px] sm:text-xs font-bold ${getRangoColor(rango, darkMode)}`}>
-                                  {nota !== null && nota !== undefined ? nota.toFixed(1) : "—"}
+                                <span className={`inline-block px-1.5 py-0.5 rounded-md text-[10px] sm:text-[11px] font-bold whitespace-nowrap ${getRangoColor(rango, darkMode)}`}>
+                                  {label}
                                 </span>
                               </td>
                             );
