@@ -22,8 +22,8 @@ export async function GET(request: NextRequest) {
     const materiaId = searchParams.get("materiaId");
     const año = searchParams.get("año");
 
-    if (!gradoId || !materiaId) {
-      return NextResponse.json({ error: "Faltan parámetros" }, { status: 400 });
+    if (!gradoId) {
+      return NextResponse.json({ error: "Falta gradoId" }, { status: 400 });
     }
 
     const añoNum = año ? parseInt(año) : new Date().getFullYear();
@@ -35,13 +35,13 @@ export async function GET(request: NextRequest) {
     });
     const estudianteIds = estudiantesGrado.map(e => e.id);
 
-    const recuperaciones = await db.recuperacionAnual.findMany({
-      where: {
-        materiaId,
-        año: añoNum,
-        estudianteId: { in: estudianteIds },
-      },
-    });
+    const where: any = {
+      año: añoNum,
+      estudianteId: { in: estudianteIds },
+    };
+    if (materiaId) where.materiaId = materiaId;
+
+    const recuperaciones = await db.recuperacionAnual.findMany({ where });
 
     return NextResponse.json(recuperaciones);
   } catch (error) {
