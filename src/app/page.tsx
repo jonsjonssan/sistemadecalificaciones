@@ -65,7 +65,7 @@ export default function Home() {
 
   // Selecciones
   const [gradoSeleccionado, setGradoSeleccionado] = useState<string>("");
-  const [trimestreSeleccionado, setTrimestreSeleccionado] = useState<string>("1");
+  const [trimestreSeleccionado, setTrimestreSeleccionado] = useState<string>("");
   const [asignaturaSeleccionada, setAsignaturaSeleccionada] = useState<string>("");
 
   // UI
@@ -759,6 +759,14 @@ useEffect(() => {
   }, []);
 
   const handleSaveCalificacion = useCallback(async (estudianteId: string, materiaId: string, data: { actividadesCotidianas: (number | null)[]; actividadesIntegradoras: (number | null)[]; examenTrimestral: number | null; recuperacion: number | null; }): Promise<Calificacion> => {
+    const est = estudiantes.find(e => e.id === estudianteId);
+    const mat = asignaturas.find(a => a.id === materiaId);
+    if (!est || !mat || est.gradoId !== mat.gradoId) {
+      const nombreEst = est?.nombre ?? estudianteId;
+      const nombreMat = mat?.nombre ?? materiaId;
+      toast({ title: "Inconsistencia de datos", description: `El estudiante "${nombreEst}" no pertenece al grado de la materia "${nombreMat}". Recarga la página o contacta al administrador.`, variant: "destructive" });
+      throw new Error("GRADE_MISMATCH");
+    }
     setAutoSaveStatus("saving");
     setSaving(true);
     const trimestre = parseInt(trimestreRef.current);
@@ -802,7 +810,7 @@ useEffect(() => {
       setAutoSaveStatus("idle");
       throw e;
     } finally { setSaving(false); }
-  }, []);
+  }, [estudiantes, asignaturas, gradoSeleccionado, toast]);
 
   const handleShowHistory = useCallback((calificacionId: string, tipoCampo: string, campoLabel: string, anchorRef: React.RefObject<HTMLElement | null>) => {
     setHistorialPopup({ calificacionId, tipoCampo, campoLabel, anchorRef });
@@ -820,6 +828,14 @@ useEffect(() => {
     setSaving(true);
     const trimestre = parseInt(trimestreSeleccionado);
 
+    // Validar consistencia de grado antes de guardar
+    const mat = asignaturas.find(a => a.id === asignaturaSeleccionada);
+    const estudiantesConsistentes = estudiantes.filter(est => mat && est.gradoId === mat.gradoId);
+    const omitidos = estudiantes.length - estudiantesConsistentes.length;
+    if (omitidos > 0) {
+      toast({ title: `Advertencia: ${omitidos} estudiante${omitidos > 1 ? "s" : ""} omitido${omitidos > 1 ? "s" : ""}`, description: "No pertenecen al grado de la materia seleccionada. Contacta al administrador.", variant: "destructive" });
+    }
+
     // Paso 1: Forzar guardado inmediato de todas las filas con datos sucios (datos vivos de los inputs)
     const forceSaveFns = Array.from(forceSaveRefs.current.values());
     const forceSaves = forceSaveFns.map(saveFn => saveFn().catch(() => {}));
@@ -828,7 +844,7 @@ useEffect(() => {
 
     // Paso 2: Respaldo adicional - guardar desde el estado sincronizado para filas que ya tenían datos
     const califsSnapshot = calificaciones;
-    const saves = estudiantes.map(async (est) => {
+    const saves = estudiantesConsistentes.map(async (est) => {
       const calif = califsSnapshot.find(c => c.estudianteId === est.id && c.materiaId === asignaturaSeleccionada && c.trimestre === trimestre);
       if (!calif) return null;
       return fetch("/api/calificaciones", {
@@ -2000,8 +2016,8 @@ useEffect(() => {
                   <div className="flex flex-wrap items-end gap-2 sm:gap-3">
                     <div className="flex-1 min-w-[120px] sm:min-w-[140px]"><Label className={`text-sm font-medium mb-1 block ${darkMode ? 'text-slate-300' : ''}`}>Grado</Label><Select value={gradoSeleccionado || ""} onValueChange={(val) => { setGradoSeleccionado(val); saveUserState({ gradoSeleccionado: val }); }}><SelectTrigger className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue placeholder="Seleccionar grado" /></SelectTrigger><SelectContent>{gradosFiltrados && gradosFiltrados.length > 0 ? gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}" - {g.año}</SelectItem>) : <SelectItem value="no-grados" disabled>No hay grados</SelectItem>}</SelectContent></Select></div>
 
-                    <div className="flex-1 min-w-[140px] sm:min-w-[180px]"><Label className={`text-sm font-medium mb-1 block ${darkMode ? 'text-slate-300' : ''}`}>Asignatura</Label><Select value={asignaturaSeleccionada || ""} onValueChange={(val) => { setAsignaturaSeleccionada(val); saveUserState({ asignaturaSeleccionada: val }); }}><SelectTrigger className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue placeholder="Seleccionar asignatura" /></SelectTrigger><SelectContent>{asignaturasFiltradas && asignaturasFiltradas.length > 0 ? asignaturasFiltradas.map(m => <SelectItem key={m.id} value={m.id} className="text-sm">{m.nombre}</SelectItem>) : <SelectItem value="no-materias" disabled>No hay materias</SelectItem>}</SelectContent></Select></div>
-                    <div className="w-20 sm:w-28"><Label className={`text-sm font-medium mb-1 block ${darkMode ? 'text-slate-300' : ''}`}>Trimestre</Label><Select value={trimestreSeleccionado} onValueChange={setTrimestreSeleccionado}><SelectTrigger className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue placeholder="Seleccionar trimestre" /></SelectTrigger><SelectContent><SelectItem value="1" className="text-sm">I</SelectItem><SelectItem value="2" className="text-sm">II</SelectItem><SelectItem value="3" className="text-sm">III</SelectItem></SelectContent></Select></div>
+                    <div className="flex-1 min-w-[140px] sm:min-w-[180px]"><Label className={`text-sm font-medium mb-1 block ${darkMode ? 'text-slate-300' : ''}`}>Asignatura</Label><Select value={asignaturaSeleccionada || undefined} onValueChange={(val) => { setAsignaturaSeleccionada(val); saveUserState({ asignaturaSeleccionada: val }); }}><SelectTrigger className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue placeholder="Seleccionar asignatura" /></SelectTrigger><SelectContent>{asignaturasFiltradas && asignaturasFiltradas.length > 0 ? asignaturasFiltradas.map(m => <SelectItem key={m.id} value={m.id} className="text-sm">{m.nombre}</SelectItem>) : <SelectItem value="no-materias" disabled>No hay materias</SelectItem>}</SelectContent></Select></div>
+                    <div className="w-20 sm:w-28"><Label className={`text-sm font-medium mb-1 block ${darkMode ? 'text-slate-300' : ''}`}>Trimestre</Label><Select value={trimestreSeleccionado || undefined} onValueChange={setTrimestreSeleccionado}><SelectTrigger className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue placeholder="Seleccionar trimestre" /></SelectTrigger><SelectContent><SelectItem value="1" className="text-sm">I</SelectItem><SelectItem value="2" className="text-sm">II</SelectItem><SelectItem value="3" className="text-sm">III</SelectItem></SelectContent></Select></div>
                     {configActual && <div className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded ${darkMode ? 'text-slate-400 bg-slate-800' : 'text-slate-500 bg-slate-50'}`}><span>{configActual.numActividadesCotidianas} AC ({configActual.porcentajeAC}%)</span><span>•</span><span>{configActual.numActividadesIntegradoras} AI ({configActual.porcentajeAI}%)</span>{configActual.tieneExamen && <><span>•</span><span>Ex ({configActual.porcentajeExamen}%)</span></>}</div>}
                     <Button size="sm" aria-label={saving ? "Guardando calificaciones" : "Guardar todas las calificaciones"} className={`h-11 sm:h-12 font-semibold text-sm ${darkMode ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white'} mobile-button`} onClick={handleGuardarTodo} disabled={saving}><Save className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">{saving ? 'Guardando...' : 'Guardar Todo'}</span><span className="sm:hidden">{saving ? '...' : 'Guardar'}</span></Button>
                     <Button size="sm" variant="outline" className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''} mobile-button`} onClick={handleRefrescar} disabled={refreshing} title="Refrescar calificaciones"><RefreshCw className={`h-4 w-4 sm:h-5 sm:w-5 sm:mr-1 ${refreshing ? 'animate-spin' : ''}`} /><span className="hidden sm:inline">{refreshing ? 'Refrescando...' : 'Refrescar'}</span></Button>
@@ -2016,7 +2032,7 @@ useEffect(() => {
               </Card>
 
             )}
-            {gradoSeleccionado && asignaturaSeleccionada && (
+            {gradoSeleccionado && asignaturaSeleccionada && trimestreSeleccionado && (
               <>
                 {/* Barra de estado de digitación */}
                 <div className={`flex items-center gap-3 px-4 py-2.5 rounded-lg border text-sm ${
@@ -2354,7 +2370,7 @@ useEffect(() => {
               <CardContent className="pt-0 space-y-3">
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                   <div className="flex-1"><Label className="text-sm sm:text-base font-medium">Grado</Label><Select value={gradoSeleccionado} onValueChange={setGradoSeleccionado}><SelectTrigger className={`h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue /></SelectTrigger><SelectContent>{gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}"</SelectItem>)}</SelectContent></Select></div>
-                  <div className="w-full sm:w-32"><Label className="text-sm sm:text-base font-medium">Trimestre</Label><Select value={trimestreSeleccionado} onValueChange={setTrimestreSeleccionado}><SelectTrigger className={`h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue placeholder="Seleccionar trimestre" /></SelectTrigger><SelectContent><SelectItem value="1">I</SelectItem><SelectItem value="2">II</SelectItem><SelectItem value="3">III</SelectItem></SelectContent></Select></div>
+                  <div className="w-full sm:w-32"><Label className="text-sm sm:text-base font-medium">Trimestre</Label><Select value={trimestreSeleccionado || undefined} onValueChange={setTrimestreSeleccionado}><SelectTrigger className={`h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue placeholder="Seleccionar trimestre" /></SelectTrigger><SelectContent><SelectItem value="1">I</SelectItem><SelectItem value="2">II</SelectItem><SelectItem value="3">III</SelectItem></SelectContent></Select></div>
                 </div>
                 {gradoSeleccionado && estudiantes.length > 0 && (
                   <>
@@ -2429,7 +2445,7 @@ useEffect(() => {
                         <Label htmlFor="incluir-asistencia" className="text-xs cursor-pointer">Incluir asistencia en boleta</Label>
                       </div>
                     </div>
-                    <BoletaList estudiantes={estudiantes} calificaciones={calificaciones} materias={materiasEnBoleta.length > 0 ? asignaturasFiltradas.filter(m => materiasEnBoleta.includes(m.id)) : asignaturasFiltradas} grado={gradosFiltrados.find(g => g.id === gradoSeleccionado)} trimestre={parseInt(trimestreSeleccionado)} expandedBoleta={expandedBoleta} setExpandedBoleta={setExpandedBoleta} darkMode={darkMode} configuracion={configuracion ? { nombreDirectora: configuracion.nombreDirectora } : undefined} paperSize={paperSize} incluirAsistencia={incluirAsistenciaBoleta} />
+                    <BoletaList estudiantes={estudiantes} calificaciones={calificaciones} materias={materiasEnBoleta.length > 0 ? asignaturasFiltradas.filter(m => materiasEnBoleta.includes(m.id)) : asignaturasFiltradas} grado={gradosFiltrados.find(g => g.id === gradoSeleccionado)} trimestre={trimestreSeleccionado ? parseInt(trimestreSeleccionado) : 1} expandedBoleta={expandedBoleta} setExpandedBoleta={setExpandedBoleta} darkMode={darkMode} configuracion={configuracion ? { nombreDirectora: configuracion.nombreDirectora } : undefined} paperSize={paperSize} incluirAsistencia={incluirAsistenciaBoleta} />
                   </>
                 )}
               </CardContent>
