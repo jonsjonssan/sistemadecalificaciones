@@ -1,0 +1,91 @@
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/lib/db";
+import { cookies } from "next/headers";
+import { verifySession } from "@/lib/session";
+
+async function getUsuarioSession() {
+  const cookieStore = await cookies();
+  const session = cookieStore.get("session");
+  if (!session) return null;
+  return verifySession(session.value);
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const session = await getUsuarioSession();
+    if (!session) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const gradoId = searchParams.get("gradoId");
+    const materiaId = searchParams.get("materiaId");
+    const año = searchParams.get("año");
+
+    if (!gradoId || !materiaId) {
+      return NextResponse.json({ error: "Faltan parámetros" }, { status: 400 });
+    }
+
+    const añoNum = año ? parseInt(año) : new Date().getFullYear();
+
+    // Obtener IDs de estudiantes del grado para filtrar
+    const estudiantesGrado = await db.estudiante.findMany({
+      where: { gradoId },
+      select: { id: true },
+    });
+    const estudianteIds = estudiantesGrado.map(e => e.id);
+
+    const recuperaciones = await db.recuperacionAnual.findMany({
+      where: {
+        materiaId,
+        año: añoNum,
+        estudianteId: { in: estudianteIds },
+      },
+    });
+
+    return NextResponse.json(recuperaciones);
+  } catch (error) {
+    console.error("[recuperacion-anual/GET] Error:", error);
+    return NextResponse.json({ error: "Error al cargar recuperaciones anuales" }, { status: 500 });
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const session = await getUsuarioSession();
+    if (!session) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    const data = await request.json();
+    const { estudianteId, materiaId, nota, año } = data;
+
+    if (!estudianteId || !materiaId || nota === undefined || nota === null) {
+      return NextResponse.json({ error: "Datos incompletos" }, { status: 400 });
+    }
+
+    const añoNum = año || new Date().getFullYear();
+
+    const result = await db.recuperacionAnual.upsert({
+      where: {
+        estudianteId_materiaId_año: {
+          estudianteId,
+          materiaId,
+          año: añoNum,
+        },
+      },
+      update: { nota: parseFloat(nota) },
+      create: {
+        estudianteId,
+        materiaId,
+        nota: parseFloat(nota),
+        año: añoNum,
+      },
+    });
+
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error("[recuperacion-anual/POST] Error:", error);
+    return NextResponse.json({ error: "Error al guardar recuperación anual" }, { status: 500 });
+  }
+}

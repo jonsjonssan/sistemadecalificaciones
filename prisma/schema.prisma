@@ -145,6 +145,20 @@ model ConfiguracionSistema {
   updatedAt    DateTime @updatedAt
 }
 
+// Recuperación Anual por estudiante y materia
+model RecuperacionAnual {
+  id           String   @id @default(cuid())
+  estudianteId String
+  materiaId    String
+  nota         Float
+  año          Int      @default(2026)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([estudianteId, materiaId, año])
+  @@index([materiaId, año])
+}
+
 // Calificaciones por estudiante, materia y trimestre
 model Calificacion {
   id           String   @id @default(cuid())

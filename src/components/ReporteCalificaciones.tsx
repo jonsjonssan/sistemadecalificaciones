@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import { Grado, Estudiante, Asignatura } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -82,6 +82,8 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [asignaturaCuadroId, setAsignaturaCuadroId] = useState("");
+  const [recuperacionesAnuales, setRecuperacionesAnuales] = useState<Map<string, number>>(new Map());
+  const [guardandoRecup, setGuardandoRecup] = useState<string | null>(null);
 
   const grado = useMemo(() => grados.find(g => g.id === gradoId), [grados, gradoId]);
 
@@ -191,8 +193,20 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
     URL.revokeObjectURL(url);
   }, [grado, estudiantes, materiasFiltradas, matriz, trimestre]);
 
-  // ========== Cuadro de Promedios por Período (3 trimestres + PF) ==========
+  // ========== Cuadro de Promedios por Período (3 trimestres + PF + Recuperación Anual editable) ==========
   const asignaturaCuadro = useMemo(() => materias.find(m => m.id === asignaturaCuadroId), [materias, asignaturaCuadroId]);
+
+  useEffect(() => {
+    if (!gradoId || !asignaturaCuadroId) return;
+    fetch(`/api/recuperacion-anual?gradoId=${gradoId}&materiaId=${asignaturaCuadroId}&año=${grado?.año || new Date().getFullYear()}`, { credentials: "include" })
+      .then(res => res.ok ? res.json() : [])
+      .then((data: Array<{ estudianteId: string; nota: number }>) => {
+        const map = new Map<string, number>();
+        for (const r of data) map.set(r.estudianteId, r.nota);
+        setRecuperacionesAnuales(map);
+      })
+      .catch(() => setRecuperacionesAnuales(new Map()));
+  }, [gradoId, asignaturaCuadroId, grado?.año]);
 
   const datosCuadroTrimestres = useMemo(() => {
     if (!asignaturaCuadro) return [];
@@ -205,10 +219,38 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
       const n3 = c3?.promedioFinal ?? null;
       const notasValidas = [n1, n2, n3].filter((n): n is number => n !== null && n !== undefined);
       const pf = notasValidas.length > 0 ? notasValidas.reduce((a, b) => a + b, 0) / notasValidas.length : null;
-      const recup = c3?.recuperacion ?? c2?.recuperacion ?? c1?.recuperacion ?? null;
+      const recup = recuperacionesAnuales.get(est.id) ?? null;
       return { estudiante: est, n1, n2, n3, pf, recup };
     });
-  }, [estudiantes, calificaciones, asignaturaCuadro]);
+  }, [estudiantes, calificaciones, asignaturaCuadro, recuperacionesAnuales]);
+
+  const guardarRecuperacion = useCallback(async (estudianteId: string, nota: string) => {
+    if (!asignaturaCuadro) return;
+    const val = parseFloat(nota);
+    if (isNaN(val) || val < 0 || val > 10) return;
+    setGuardandoRecup(estudianteId);
+    try {
+      const res = await fetch("/api/recuperacion-anual", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          estudianteId,
+          materiaId: asignaturaCuadro.id,
+          nota: val,
+          año: grado?.año || new Date().getFullYear(),
+        }),
+      });
+      if (res.ok) {
+        setRecuperacionesAnuales(prev => {
+          const next = new Map(prev);
+          next.set(estudianteId, val);
+          return next;
+        });
+      }
+    } catch (e) { console.error(e); }
+    finally { setGuardandoRecup(null); }
+  }, [asignaturaCuadro, grado]);
 
   const exportarCuadroCSV = useCallback(() => {
     if (!grado || !asignaturaCuadro) return;
@@ -657,7 +699,32 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
                               <td className={`p-2 text-center border-r ${cellBorder} ${colorNota(d.n2)}`}>{d.n2 !== null ? d.n2.toFixed(1) : "—"}</td>
                               <td className={`p-2 text-center border-r ${cellBorder} ${colorNota(d.n3)}`}>{d.n3 !== null ? d.n3.toFixed(1) : "—"}</td>
                               <td className={`p-2 text-center border-r ${cellBorder} ${colorNota(d.pf)}`}>{d.pf !== null ? d.pf.toFixed(1) : "—"}</td>
-                              <td className={`p-2 text-center ${cellBorder} ${colorNota(d.recup)}`}>{d.recup !== null ? d.recup.toFixed(1) : "—"}</td>
+                              <td className={`p-1 text-center ${cellBorder} ${colorNota(d.recup)}`}>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max="10"
+                                  step="0.1"
+                                  defaultValue={d.recup !== null ? d.recup.toFixed(1) : ""}
+                                  disabled={guardandoRecup === d.estudiante.id}
+                                  onBlur={(e) => {
+                                    const val = e.target.value;
+                                    const current = d.recup !== null ? d.recup.toFixed(1) : "";
+                                    if (val !== current) guardarRecuperacion(d.estudiante.id, val);
+                                  }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                      (e.target as HTMLInputElement).blur();
+                                    }
+                                  }}
+                                  className={`w-16 text-center text-xs sm:text-sm rounded border px-1 py-0.5 outline-none focus:ring-2 focus:ring-teal-500 ${
+                                    darkMode
+                                      ? "bg-slate-800 border-slate-600 text-white placeholder-slate-500"
+                                      : "bg-white border-slate-300 text-slate-800 placeholder-slate-400"
+                                  }`}
+                                  placeholder="—"
+                                />
+                              </td>
                             </tr>
                           );
                         })}

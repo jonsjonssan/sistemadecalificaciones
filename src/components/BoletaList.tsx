@@ -13,6 +13,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
   const [resumenAsistencia, setResumenAsistencia] = useState<any[]>([]);
   const [todasCalificaciones, setTodasCalificaciones] = useState<Calificacion[]>([]);
   const [resumenAsistenciaAnual, setResumenAsistenciaAnual] = useState<any[]>([]);
+  const [recuperacionesAnuales, setRecuperacionesAnuales] = useState<Map<string, number>>(new Map());
   const [loadingAsistencia, setLoadingAsistencia] = useState(true);
   const [loadingAnual, setLoadingAnual] = useState(true);
 
@@ -43,11 +44,19 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
 
         const resAsist = await fetch(`/api/asistencia/resumen?gradoId=${grado.id}&anual=true`, { credentials: "include" });
         if (resAsist.ok) setResumenAsistenciaAnual(await resAsist.json());
+
+        const resRec = await fetch(`/api/recuperacion-anual?gradoId=${grado.id}&año=${grado.año || new Date().getFullYear()}`, { credentials: "include" });
+        if (resRec.ok) {
+          const data: Array<{ estudianteId: string; materiaId: string; nota: number }> = await resRec.json();
+          const map = new Map<string, number>();
+          for (const r of data) map.set(`${r.estudianteId}-${r.materiaId}`, r.nota);
+          setRecuperacionesAnuales(map);
+        }
       } catch (e) { console.error(e); }
       finally { setLoadingAnual(false); }
     };
     fetchDatosAnuales();
-  }, [grado?.id]);
+  }, [grado?.id, grado?.año]);
 
   const getCalifs = (id: string) => todasCalificaciones.length > 0
     ? todasCalificaciones.filter(c => c.estudianteId === id && c.trimestre === trimestre)
@@ -768,6 +777,275 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     if (w) { w.document.write(html); w.document.close(); setTimeout(() => w.print(), 500); }
   };
 
+  const imprimirAnualConRecuperacion = async (id: string) => {
+    const est = estudiantes.find(e => e.id === id);
+    if (!est) return;
+
+    const año = grado?.año || new Date().getFullYear();
+    const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
+    const asistAnual = resumenAsistenciaAnual.find(r => r.id === id) || { asistencias: 0, ausencias: 0, tardanzas: 0, total: 0 };
+
+    const docenteOrientador = escapeHtml(grado?.docente?.nombre || '_______________________________');
+    const nombreDirectora = escapeHtml(configuracion?.nombreDirectora || '_______________________________');
+
+    const califsEst = todasCalificaciones.filter(c => c.estudianteId === id);
+
+    let tablaAsignaturas = materias.map(m => {
+      const c1 = califsEst.find(c => c.materiaId === m.id && c.trimestre === 1);
+      const c2 = califsEst.find(c => c.materiaId === m.id && c.trimestre === 2);
+      const c3 = califsEst.find(c => c.materiaId === m.id && c.trimestre === 3);
+
+      const n1 = c1?.promedioFinal;
+      const n2 = c2?.promedioFinal;
+      const n3 = c3?.promedioFinal;
+
+      const notasValidas = [n1, n2, n3].filter((n): n is number => n !== null && n !== undefined);
+      const promAnual = notasValidas.length ? notasValidas.reduce((a, b) => a + b, 0) / notasValidas.length : null;
+      const recupAnual = recuperacionesAnuales.get(`${id}-${m.id}`) ?? null;
+      const promFinalConRecup = promAnual !== null && recupAnual !== null ? Math.min(10, promAnual + recupAnual) : promAnual;
+      const promFinalRedondeado = promFinalConRecup !== null ? Math.round(promFinalConRecup).toString() : '-';
+      const estado = promFinalConRecup !== null ? (Math.round(promFinalConRecup) >= 5 ? 'APROBADO' : 'REPROBADO') : '-';
+
+      return `<tr>
+        <td style="text-align:left;padding:6px 8px">${escapeHtml(m.nombre)}</td>
+        <td>${n1 != null ? Math.round(n1).toString() : '-'}</td>
+        <td>${n2 != null ? Math.round(n2).toString() : '-'}</td>
+        <td>${n3 != null ? Math.round(n3).toString() : '-'}</td>
+        <td style="font-weight:bold">${promAnual !== null ? promAnual.toFixed(1) : '-'}</td>
+        <td>${recupAnual !== null ? recupAnual.toFixed(1) : '-'}</td>
+        <td style="font-weight:bold">${promFinalRedondeado}</td>
+        <td style="font-weight:bold;color:${estado === 'APROBADO' ? '#059669' : estado === 'REPROBADO' ? '#dc2626' : '#666'}">${estado}</td>
+      </tr>`;
+    }).join('');
+
+    const notasFinales = materias.map(m => {
+      const califs = califsEst.filter(c => c.materiaId === m.id);
+      const sums = califs.map(c => c.promedioFinal).filter((n): n is number => n !== null && n !== undefined);
+      const promAnual = sums.length ? sums.reduce((a, b) => a + b, 0) / sums.length : null;
+      const recupAnual = recuperacionesAnuales.get(`${id}-${m.id}`) ?? null;
+      return promAnual !== null && recupAnual !== null ? Math.min(10, promAnual + recupAnual) : promAnual;
+    }).filter((n): n is number => n !== null);
+    const pFinal = notasFinales.length ? notasFinales.reduce((a, b) => a + b, 0) / notasFinales.length : null;
+
+    const bloqueAsistenciaAnual = incluirAsistencia ? `
+    <div class="seccion-asistencia">
+      <div class="seccion-asistencia-header">RESUMEN DE ASISTENCIA ANUAL (TOTAL ACUMULADO)</div>
+      <div class="asistencia-grid">
+        <div class="asistencia-item"><div class="n" style="color:#059669">${asistAnual.asistencias}</div><div class="l">Asistencias</div></div>
+        <div class="asistencia-item"><div class="n" style="color:#dc2626">${asistAnual.ausencias}</div><div class="l">Inasistencias</div></div>
+        <div class="asistencia-item"><div class="n" style="color:#d97706">${asistAnual.tardanzas}</div><div class="l">Tardanzas</div></div>
+        <div class="asistencia-item"><div class="n">${asistAnual.total}</div><div class="l">Total Días</div></div>
+      </div>
+    </div>` : '';
+
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+  <title>Boleta Anual con Recuperación - ${est.nombre}</title>
+  <style>
+    ${paperStyles.pageAt}
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Times New Roman', serif; font-size: ${paperStyles.fontSize}; line-height: 1.4; color: #333; }
+    .boleta { max-width: 190mm; margin: 0 auto; padding: 5mm; }
+    .header { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 15px; }
+    .logo { width: 100px; height: 100px; object-fit: contain; }
+    .header-text { text-align: center; flex: 1; }
+    .header-text h1 { font-size: 13pt; font-weight: bold; margin-bottom: 3px; text-transform: uppercase; }
+    .titulo-boleta { text-align: center; background: #1e293b; color: white; padding: 8px; margin: 15px 0; border: 1px solid #333; }
+    .info-estudiante { display: flex; justify-content: space-between; margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; }
+    .info-estudiante .label { font-weight: bold; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+    th, td { border: 1px solid #333; padding: 5px; text-align: center; }
+    th { background: #e5e7eb; font-weight: bold; font-size: 9pt; }
+    .resumen-anual { display: flex; justify-content: space-between; margin: 20px 0; padding: 15px; background: #f8fafc; border: 2px solid #1e293b; }
+    .resumen-item .valor { font-size: 18pt; font-weight: bold; }
+    .seccion-asistencia { margin: 15px 0; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; }
+    .seccion-asistencia-header { background: #f8fafc; padding: 6px 10px; border-bottom: 1px solid #ddd; font-weight: bold; font-size: 9pt; }
+    .asistencia-grid { display: grid; grid-template-columns: repeat(4, 1fr); padding: 10px; text-align: center; }
+    .asistencia-item .n { font-size: 12pt; font-weight: bold; }
+    .asistencia-item .l { font-size: 8pt; color: #666; }
+    .firmas { display: flex; justify-content: space-between; margin-top: 50px; }
+    .firma { text-align: center; width: 45%; border-top: 1px solid #333; padding-top: 5px; }
+  </style>
+</head>
+<body>
+  <div class="boleta">
+    <div class="header">
+      <img src="${window.location.origin}/0.png" alt="Logo" class="logo">
+      <div class="header-text">
+        <h1>Centro Escolar Católico San José de la Montaña</h1>
+        <p>Código: 88125 | San Salvador</p>
+      </div>
+      <img src="${window.location.origin}/0.png" alt="Logo" class="logo">
+    </div>
+    <div class="titulo-boleta">
+      <h3>BOLETA ANUAL CON RECUPERACIÓN</h3>
+    </div>
+    <div class="info-estudiante">
+      <div>
+        <p><span class="label">Estudiante:</span> ${escapeHtml(est.nombre)}</p>
+        ${est.email ? `<p><span class="label">Correo:</span> ${est.email}</p>` : ''}
+        <p><span class="label">Grado:</span> ${grado?.numero}° Grado "${grado?.seccion}"</p>
+      </div>
+      <div style="text-align: right;">
+        <p><span class="label">Año Lectivo:</span> ${año}</p>
+        <p><span class="label">N° Lista:</span> ${est.numero}</p>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 28%">Asignatura</th>
+          <th style="width: 10%">Trim. I</th>
+          <th style="width: 10%">Trim. II</th>
+          <th style="width: 10%">Trim. III</th>
+          <th style="width: 12%">Prom. Anual</th>
+          <th style="width: 10%">Recup.</th>
+          <th style="width: 10%">Prom. Final</th>
+          <th style="width: 10%">Resultado</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${tablaAsignaturas}
+      </tbody>
+    </table>
+    ${bloqueAsistenciaAnual}
+    <div class="resumen-anual">
+      <div class="resumen-item">
+        <div class="valor" style="color:#1e293b">${pFinal !== null ? Math.round(pFinal).toString() : 'N/A'}</div>
+        <div class="etiqueta">PROMEDIO FINAL ANUAL</div>
+      </div>
+      <div class="resumen-item">
+        <div class="valor" style="color:${pFinal && Math.round(pFinal) >= 5 ? '#059669' : '#dc2626'}">${pFinal && Math.round(pFinal) >= 5 ? 'APROBADO' : 'REPROBADO'}</div>
+        <div class="etiqueta">ESTADO FINAL</div>
+      </div>
+    </div>
+    <div class="firmas">
+      <div class="firma">
+        <p>${docenteOrientador}</p>
+        <p>Firma del Docente Orientador</p>
+      </div>
+      <div class="firma">
+        <p>${nombreDirectora}</p>
+        <p>Firma de la Directora</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
+
+    const w = window.open('', '_blank');
+    if (w) { w.document.write(html); w.document.close(); setTimeout(() => w.print(), 500); }
+  };
+
+  const imprimirTodasAnualConRecuperacion = async () => {
+    if (!estudiantes.length) return;
+
+    let allBoletasHtml = '';
+    const año = grado?.año || new Date().getFullYear();
+    const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
+
+    const docenteOrientador = escapeHtml(grado?.docente?.nombre || '_______________________________');
+    const nombreDirectora = escapeHtml(configuracion?.nombreDirectora || '_______________________________');
+
+    for (const est of estudiantes) {
+      const asistAnual = resumenAsistenciaAnual.find(r => r.id === est.id) || { asistencias: 0, ausencias: 0, tardanzas: 0, total: 0 };
+      const califsEst = todasCalificaciones.filter(c => c.estudianteId === est.id);
+
+      let tablaAsignaturas = materias.map(m => {
+        const c1 = califsEst.find(c => c.materiaId === m.id && c.trimestre === 1);
+        const c2 = califsEst.find(c => c.materiaId === m.id && c.trimestre === 2);
+        const c3 = califsEst.find(c => c.materiaId === m.id && c.trimestre === 3);
+        const n1 = c1?.promedioFinal, n2 = c2?.promedioFinal, n3 = c3?.promedioFinal;
+        const notasValidas = [n1, n2, n3].filter((n): n is number => n !== null && n !== undefined);
+        const promAnual = notasValidas.length ? notasValidas.reduce((a, b) => a + b, 0) / notasValidas.length : null;
+        const recupAnual = recuperacionesAnuales.get(`${est.id}-${m.id}`) ?? null;
+        const promFinalConRecup = promAnual !== null && recupAnual !== null ? Math.min(10, promAnual + recupAnual) : promAnual;
+        const promFinalRedondeado = promFinalConRecup !== null ? Math.round(promFinalConRecup).toString() : '-';
+        const estado = promFinalConRecup !== null ? (Math.round(promFinalConRecup) >= 5 ? 'APROBADO' : 'REPROBADO') : '-';
+        return `<tr><td style="text-align:left;padding:6px 8px">${escapeHtml(m.nombre)}</td><td>${n1 != null ? Math.round(n1).toString() : '-'}</td><td>${n2 != null ? Math.round(n2).toString() : '-'}</td><td>${n3 != null ? Math.round(n3).toString() : '-'}</td><td style="font-weight:bold">${promAnual !== null ? promAnual.toFixed(1) : '-'}</td><td>${recupAnual !== null ? recupAnual.toFixed(1) : '-'}</td><td style="font-weight:bold">${promFinalRedondeado}</td><td style="font-weight:bold;color:${estado === 'APROBADO' ? '#059669' : estado === 'REPROBADO' ? '#dc2626' : '#666'}">${estado}</td></tr>`;
+      }).join('');
+
+      const notasFinales = materias.map(m => {
+        const califs = califsEst.filter(c => c.materiaId === m.id);
+        const sums = califs.map(c => c.promedioFinal).filter((n): n is number => n !== null && n !== undefined);
+        const promAnual = sums.length ? sums.reduce((a, b) => a + b, 0) / sums.length : null;
+        const recupAnual = recuperacionesAnuales.get(`${est.id}-${m.id}`) ?? null;
+        return promAnual !== null && recupAnual !== null ? Math.min(10, promAnual + recupAnual) : promAnual;
+      }).filter((n): n is number => n !== null);
+      const pFinal = notasFinales.length ? notasFinales.reduce((a, b) => a + b, 0) / notasFinales.length : null;
+
+      const bloqueAsistenciaTodasAnual = incluirAsistencia ? `
+        <div class="seccion-asistencia">
+          <div class="seccion-asistencia-header">RESUMEN DE ASISTENCIA ANUAL (TOTAL ACUMULADO)</div>
+          <div class="asistencia-grid">
+            <div class="asistencia-item"><div class="n" style="color:#059669">${asistAnual.asistencias}</div><div class="l">Asistencias</div></div>
+            <div class="asistencia-item"><div class="n" style="color:#dc2626">${asistAnual.ausencias}</div><div class="l">Inasistencias</div></div>
+            <div class="asistencia-item"><div class="n" style="color:#d97706">${asistAnual.tardanzas}</div><div class="l">Tardanzas</div></div>
+            <div class="asistencia-item"><div class="n">${asistAnual.total}</div><div class="l">Total Días</div></div>
+          </div>
+        </div>` : '';
+
+      allBoletasHtml += `
+      <div class="boleta" style="page-break-after: always;">
+        <div class="header">
+          <img src="${window.location.origin}/0.png" alt="Logo" class="logo">
+          <div class="header-text"><h1>Centro Escolar Católico San José de la Montaña</h1><p>Código: 88125 | San Salvador</p></div>
+          <img src="${window.location.origin}/0.png" alt="Logo" class="logo">
+        </div>
+        <div class="titulo-boleta"><h3>BOLETA ANUAL CON RECUPERACIÓN</h3></div>
+        <div class="info-estudiante">
+          <div><p><span class="label">Estudiante:</span> ${escapeHtml(est.nombre)}</p>${est.email ? `<p><span class="label">Correo:</span> ${est.email}</p>` : ''}<p><span class="label">Grado:</span> ${grado?.numero}° Grado "${grado?.seccion}"</p></div>
+          <div style="text-align: right;"><p><span class="label">Año Lectivo:</span> ${año}</p><p><span class="label">N° Lista:</span> ${est.numero}</p></div>
+        </div>
+        <table>
+          <thead><tr><th style="width: 28%">Asignatura</th><th style="width: 10%">Trim. I</th><th style="width: 10%">Trim. II</th><th style="width: 10%">Trim. III</th><th style="width: 12%">Prom. Anual</th><th style="width: 10%">Recup.</th><th style="width: 10%">Prom. Final</th><th style="width: 10%">Resultado</th></tr></thead>
+          <tbody>${tablaAsignaturas}</tbody>
+        </table>
+        ${bloqueAsistenciaTodasAnual}
+        <div class="resumen-anual">
+          <div class="resumen-item"><div class="valor" style="color:#1e293b">${pFinal !== null ? Math.round(pFinal).toString() : 'N/A'}</div><div class="etiqueta">PROMEDIO FINAL ANUAL</div></div>
+          <div class="resumen-item"><div class="valor" style="color:${pFinal && Math.round(pFinal) >= 5 ? '#059669' : '#dc2626'}">${pFinal && Math.round(pFinal) >= 5 ? 'APROBADO' : 'REPROBADO'}</div><div class="etiqueta">ESTADO FINAL</div></div>
+        </div>
+        <div class="firmas">
+          <div class="firma"><p>${docenteOrientador}</p><p>Firma del Docente Orientador</p></div>
+          <div class="firma"><p>${nombreDirectora}</p><p>Firma de la Directora</p></div>
+        </div>
+      </div>`;
+    }
+
+    const html = "<!DOCTYPE html><html><head><title>Boletas Anuales con Recuperación - " + (grado?.numero || "") + "° " + (grado?.seccion || "") + "</title>" +
+    "<style>" +
+    "  " + paperStyles.pageAt +
+    "  * { margin: 0; padding: 0; box-sizing: border-box; }" +
+    "  body { font-family: 'Times New Roman', serif; font-size: " + paperStyles.fontSize + "; line-height: 1.4; color: #333; }" +
+    "  .boleta { max-width: 190mm; margin: 0 auto; padding: 5mm; }" +
+    "  .header { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 15px; }" +
+    "  .logo { width: 100px; height: 100px; object-fit: contain; }" +
+    "  .header-text { text-align: center; flex: 1; }" +
+    "  .header-text h1 { font-size: 13pt; font-weight: bold; margin-bottom: 3px; text-transform: uppercase; }" +
+    "  .titulo-boleta { text-align: center; background: #1e293b; color: white; padding: 8px; margin: 15px 0; border: 1px solid #333; }" +
+    "  .info-estudiante { display: flex; justify-content: space-between; margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; }" +
+    "  .info-estudiante .label { font-weight: bold; }" +
+    "  table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }" +
+    "  th, td { border: 1px solid #333; padding: 5px; text-align: center; }" +
+    "  th { background: #e5e7eb; font-weight: bold; font-size: 9pt; }" +
+    "  .resumen-anual { display: flex; justify-content: space-between; margin: 20px 0; padding: 15px; background: #f8fafc; border: 2px solid #1e293b; }" +
+    "  .resumen-item .valor { font-size: 18pt; font-weight: bold; }" +
+    "  .seccion-asistencia { margin: 15px 0; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; }" +
+    "  .seccion-asistencia-header { background: #f8fafc; padding: 6px 10px; border-bottom: 1px solid #ddd; font-weight: bold; font-size: 9pt; }" +
+    "  .asistencia-grid { display: grid; grid-template-columns: repeat(4, 1fr); padding: 10px; text-align: center; }" +
+    "  .asistencia-item .n { font-size: 12pt; font-weight: bold; }" +
+    "  .asistencia-item .l { font-size: 8pt; color: #666; }" +
+    "  .firmas { display: flex; justify-content: space-between; margin-top: 50px; }" +
+    "  .firma { text-align: center; width: 45%; border-top: 1px solid #333; padding-top: 5px; }" +
+    "  @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }" +
+    "  </style></head><body>" + allBoletasHtml + "</body></html>";
+
+    const w = window.open('', '_blank');
+    if (w) { w.document.write(html); w.document.close(); setTimeout(() => w.print(), 500); }
+  };
+
   return (
     <div className="space-y-1.5">
       {(loadingAsistencia || loadingAnual) && (
@@ -797,6 +1075,9 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
             <div className={`p-2.5 flex items-center justify-between cursor-pointer ${darkMode ? 'hover:bg-slate-800' : 'hover:bg-slate-50'}`} onClick={() => setExpandedBoleta(open ? null : est.id)}>
               <div className="flex items-center gap-2"><span className={`text-xs w-5 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>{est.numero}</span><span className={`text-xs sm:text-sm font-medium ${darkMode ? 'text-white' : ''}`}>{est.nombre}</span><Badge variant={prom !== null && Math.round(prom) >= 5 ? "default" : prom !== null ? "destructive" : "secondary"} className={`text-[10px] h-5 ${prom !== null && Math.round(prom) >= 5 ? (darkMode ? 'bg-teal-600' : 'bg-teal-600') : ''}`}>Prom: {prom !== null ? Math.round(prom).toString() : "N/A"}</Badge></div>
               <div className="flex items-center gap-1">
+                <Button size="sm" variant="ghost" title="Anual con Recuperación" className={`h-6 px-2 text-xs ${darkMode ? 'text-amber-400' : 'text-amber-600'}`} onClick={e => { e.stopPropagation(); imprimirAnualConRecuperacion(est.id); }}>
+                  <FileText className="h-3.5 w-3.5 mr-1" />Anual + Recup.
+                </Button>
                 <Button size="sm" variant="ghost" title="Consolidado Anual" className={`h-6 px-2 text-xs ${darkMode ? 'text-teal-400' : 'text-teal-600'}`} onClick={e => { e.stopPropagation(); imprimirAnual(est.id); }}>
                   <FileText className="h-3.5 w-3.5 mr-1" />Anual
                 </Button>
