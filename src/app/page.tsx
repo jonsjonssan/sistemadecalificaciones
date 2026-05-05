@@ -790,6 +790,11 @@ useEffect(() => {
         const err = await res.json();
         console.error("Error API:", err);
         setAutoSaveStatus("idle");
+        if (err.code === "GRADE_MISMATCH") {
+          toast({ title: `Error: ${err.error}`, description: err.message, variant: "destructive" });
+        } else if (err.code === "MATERIA_FORBIDDEN" || err.code === "GRADO_FORBIDDEN") {
+          toast({ title: `Sin permiso`, description: err.message, variant: "destructive" });
+        }
         throw new Error(err.error || "Error al guardar calificación");
       }
     } catch (e) {
@@ -847,7 +852,19 @@ useEffect(() => {
       if (forceSaveFns.length === 0 && saves.length > 0) {
         const results = await Promise.all(saves);
         const ok = results.filter(r => r && r.ok).length;
-        toast({ title: `${ok} calificaciones guardadas en Neon` });
+        const errores = results.filter((r): r is Response => r !== null && !r.ok);
+        if (errores.length > 0) {
+          const firstErr = errores[0];
+          const errData = await firstErr.json().catch(() => ({ error: "Error desconocido" }));
+          if (errData.code === "GRADE_MISMATCH") {
+            toast({ title: `Error de consistencia`, description: `${errData.message} (${errores.length} fallo${errores.length > 1 ? "s" : ""})`, variant: "destructive" });
+          } else {
+            toast({ title: `Error al guardar`, description: errData.message || `${errores.length} calificación${errores.length > 1 ? "es" : ""} no se pudo${errores.length > 1 ? "n" : ""} guardar`, variant: "destructive" });
+          }
+        }
+        if (ok > 0) {
+          toast({ title: `${ok} calificación${ok > 1 ? "es" : ""} guardada${ok > 1 ? "s" : ""}` });
+        }
       } else if (forceSaveFns.length > 0) {
         toast({ title: "Calificaciones guardadas" });
       } else {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import { Clock, User, ArrowRight, X } from "lucide-react";
 
 interface HistorialEntry {
@@ -69,6 +69,23 @@ export function HistorialCalificacionPopup({
   const [historial, setHistorial] = useState<HistorialEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [position, setPosition] = useState<{ top: number | string; left: number | string; transform?: string }>({
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+  });
+
+  useLayoutEffect(() => {
+    if (anchorRef?.current) {
+      const rect = anchorRef.current.getBoundingClientRect();
+      setPosition({
+        top: Math.min(rect.bottom + 8, window.innerHeight - 300),
+        left: Math.min(rect.left, window.innerWidth - 400),
+      });
+    } else {
+      setPosition({ top: "50%", left: "50%", transform: "translate(-50%, -50%)" });
+    }
+  }, [anchorRef]);
 
   useEffect(() => {
     const fetchHistorial = async () => {
@@ -106,19 +123,9 @@ export function HistorialCalificacionPopup({
           : "bg-white border-slate-200 text-slate-900"
       }`}
       style={{
-        top: anchorRef?.current
-          ? Math.min(
-              anchorRef.current.getBoundingClientRect().bottom + 8,
-              window.innerHeight - 300
-            )
-          : "50%",
-        left: anchorRef?.current
-          ? Math.min(
-              anchorRef.current.getBoundingClientRect().left,
-              window.innerWidth - 400
-            )
-          : "50%",
-        transform: !anchorRef?.current ? "translate(-50%, -50%)" : undefined,
+        top: position.top,
+        left: position.left,
+        transform: position.transform,
       }}
     >
       {/* Header */}
@@ -189,6 +196,10 @@ export function HistorialCalificacionPopup({
                   >
                     {formatFechaRelativa(entry.createdAt)}
                   </span>
+                </div>
+                {/* Fecha exacta */}
+                <div className={`text-[10px] mb-1.5 ${darkMode ? "text-slate-500" : "text-slate-400"}`}>
+                  {formatFecha(entry.createdAt)}
                 </div>
 
                 {/* Cambio de valores */}

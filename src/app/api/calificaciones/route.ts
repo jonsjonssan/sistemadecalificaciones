@@ -329,7 +329,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Ejecutar todo en una sola transacción interactiva para atomicidad
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const finalResult = await db.$transaction(async (tx: any) => {
       // Obtener calificación existente para comparar valores anteriores
       const existingCal = await tx.calificacion.findUnique({
@@ -595,15 +595,66 @@ export async function DELETE(request: NextRequest) {
           notasActividad: true,
         },
       });
-      // Borrar notas asociadas primero para evitar restricciones de FK
-      if (cal) {
+
+      if (cal && session.id) {
+        // Registrar historial de borrado para cada campo con valor antes de limpiar
+        const historialEntries: any[] = [];
+        const campos = [
+          { key: "calificacionAC", label: "Prom. AC", valor: cal.calificacionAC },
+          { key: "calificacionAI", label: "Prom. AI", valor: cal.calificacionAI },
+          { key: "examenTrimestral", label: "Examen", valor: cal.examenTrimestral },
+          { key: "promedioFinal", label: "Promedio Final", valor: cal.promedioFinal },
+          { key: "recuperacion", label: "Recuperación", valor: cal.recuperacion },
+        ];
+        for (const campo of campos) {
+          if (campo.valor !== null && campo.valor !== undefined) {
+            historialEntries.push({
+              calificacionId: cal.id,
+              usuarioId: session.id,
+              tipoCampo: campo.key,
+              valorAnterior: campo.valor,
+              valorNuevo: null,
+              descripcion: `${campo.label}: ${campo.valor} → borrado`,
+            });
+          }
+        }
+        for (const nota of cal.notasActividad || []) {
+          historialEntries.push({
+            calificacionId: cal.id,
+            usuarioId: session.id,
+            tipoCampo: `${nota.tipo}_${nota.numeroActividad}`,
+            valorAnterior: nota.nota,
+            valorNuevo: null,
+            descripcion: `${nota.tipo === "cotidiana" ? "AC" : "AI"}${nota.numeroActividad}: ${nota.nota} → borrado`,
+          });
+        }
+        if (historialEntries.length > 0) {
+          try {
+            await db.historialCalificacion.createMany({ data: historialEntries });
+          } catch (histError) {
+            console.error("[calificaciones] Historial borrado error:", histError);
+          }
+        }
+
+        // Borrar notas asociadas
         await db.notaActividad.deleteMany({
           where: { calificacionId: cal.id }
         });
+
+        // Soft delete: limpiar todos los campos en vez de borrar el registro
+        // Esto preserva el historial de cambios (onDelete: Cascade del historial
+        // se dispara solo si se borra la calificación físicamente)
+        await db.calificacion.updateMany({
+          where: { id: cal.id },
+          data: {
+            calificacionAC: null,
+            calificacionAI: null,
+            examenTrimestral: null,
+            promedioFinal: null,
+            recuperacion: null,
+          },
+        });
       }
-      const deleted = await db.calificacion.deleteMany({
-        where: { estudianteId, materiaId, trimestre: parseInt(trimestre) }
-      });
 
       try {
         await db.auditLog.create({
@@ -623,34 +674,83 @@ export async function DELETE(request: NextRequest) {
         console.error("[calificaciones] Audit error:", auditError);
       }
 
-      return NextResponse.json({ deleted: deleted.count });
+      return NextResponse.json({ deleted: 1 });
     }
 
     if (gradoId && materiaId && trimestre) {
       const grado = await db.grado.findUnique({ where: { id: gradoId }, select: { numero: true, seccion: true } });
       const materia = await db.materia.findUnique({ where: { id: materiaId }, select: { nombre: true } });
-      // Borrar notas asociadas primero para evitar restricciones de FK
+
+      // Obtener calificaciones del grado para soft delete
       const calificacionesGrado = await db.calificacion.findMany({
         where: {
           estudiante: { gradoId },
           materiaId,
           trimestre: parseInt(trimestre)
         },
-        select: { id: true }
+        include: { notasActividad: true }
       });
-      if (calificacionesGrado.length > 0) {
+
+      if (calificacionesGrado.length > 0 && session.id) {
+        // Registrar historial de borrado para cada calificación
+        const historialEntries: any[] = [];
+        for (const cal of calificacionesGrado) {
+          const campos = [
+            { key: "calificacionAC", label: "Prom. AC", valor: cal.calificacionAC },
+            { key: "calificacionAI", label: "Prom. AI", valor: cal.calificacionAI },
+            { key: "examenTrimestral", label: "Examen", valor: cal.examenTrimestral },
+            { key: "promedioFinal", label: "Promedio Final", valor: cal.promedioFinal },
+            { key: "recuperacion", label: "Recuperación", valor: cal.recuperacion },
+          ];
+          for (const campo of campos) {
+            if (campo.valor !== null && campo.valor !== undefined) {
+              historialEntries.push({
+                calificacionId: cal.id,
+                usuarioId: session.id,
+                tipoCampo: campo.key,
+                valorAnterior: campo.valor,
+                valorNuevo: null,
+                descripcion: `${campo.label}: ${campo.valor} → borrado`,
+              });
+            }
+          }
+          for (const nota of cal.notasActividad || []) {
+            historialEntries.push({
+              calificacionId: cal.id,
+              usuarioId: session.id,
+              tipoCampo: `${nota.tipo}_${nota.numeroActividad}`,
+              valorAnterior: nota.nota,
+              valorNuevo: null,
+              descripcion: `${nota.tipo === "cotidiana" ? "AC" : "AI"}${nota.numeroActividad}: ${nota.nota} → borrado`,
+            });
+          }
+        }
+        if (historialEntries.length > 0) {
+          try {
+            await db.historialCalificacion.createMany({ data: historialEntries });
+          } catch (histError) {
+            console.error("[calificaciones] Historial borrado error:", histError);
+          }
+        }
+
+        // Borrar notas asociadas
         const califIds = calificacionesGrado.map(c => c.id);
         await db.notaActividad.deleteMany({
           where: { calificacionId: { in: califIds } }
         });
+
+        // Soft delete: limpiar campos en vez de borrar físicamente
+        await db.calificacion.updateMany({
+          where: { id: { in: califIds } },
+          data: {
+            calificacionAC: null,
+            calificacionAI: null,
+            examenTrimestral: null,
+            promedioFinal: null,
+            recuperacion: null,
+          },
+        });
       }
-      const deleted = await db.calificacion.deleteMany({
-        where: {
-          estudiante: { gradoId },
-          materiaId,
-          trimestre: parseInt(trimestre)
-        }
-      });
 
       try {
         await db.auditLog.create({
@@ -661,7 +761,7 @@ export async function DELETE(request: NextRequest) {
             detalles: JSON.stringify({
               materia: materia?.nombre,
               trimestre: parseInt(trimestre),
-              cantidad: deleted.count,
+              cantidad: calificacionesGrado.length,
               grado: grado ? `${grado.numero}${grado.seccion}` : null
             }),
           },
@@ -670,7 +770,7 @@ export async function DELETE(request: NextRequest) {
         console.error("[calificaciones] Audit error:", auditError);
       }
 
-      return NextResponse.json({ borradas: deleted.count });
+      return NextResponse.json({ borradas: calificacionesGrado.length });
     }
     return NextResponse.json({ error: "Parámetros insuficientes" }, { status: 400 });
   } catch (error) {
