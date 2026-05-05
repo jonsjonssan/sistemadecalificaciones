@@ -140,6 +140,7 @@ useEffect(() => {
   const [quickActionsOpen, setQuickActionsOpen] = useState(false);
   const [promedioDecimal, setPromedioDecimal] = useState<boolean>(false);
   const [paperSize, setPaperSize] = useState<"letter" | "a4">("letter");
+  const [incluirAsistenciaBoleta, setIncluirAsistenciaBoleta] = useState<boolean>(true);
 
 // Load persisted state from localStorage after hydration
 useEffect(() => {
@@ -151,6 +152,10 @@ useEffect(() => {
     const savedPaperSize = localStorage.getItem("ss_paperSize");
     if (savedPaperSize === "a4" || savedPaperSize === "letter") {
       queueMicrotask(() => setPaperSize(savedPaperSize));
+    }
+    const savedIncluirAsistencia = localStorage.getItem("ss_incluirAsistenciaBoleta");
+    if (savedIncluirAsistencia !== null) {
+      try { queueMicrotask(() => setIncluirAsistenciaBoleta(JSON.parse(savedIncluirAsistencia))); } catch { }
     }
   }
 }, []);
@@ -209,6 +214,7 @@ useEffect(() => {
   useEffect(() => { if (typeof window !== "undefined" && trimestreSeleccionado) localStorage.setItem("ss_trimestre", trimestreSeleccionado); }, [trimestreSeleccionado]);
   useEffect(() => { if (typeof window !== "undefined") localStorage.setItem("ss_promedio_decimal", JSON.stringify(promedioDecimal)); }, [promedioDecimal]);
   useEffect(() => { if (typeof window !== "undefined") localStorage.setItem("ss_paperSize", paperSize); }, [paperSize]);
+  useEffect(() => { if (typeof window !== "undefined") localStorage.setItem("ss_incluirAsistenciaBoleta", JSON.stringify(incluirAsistenciaBoleta)); }, [incluirAsistenciaBoleta]);
 
   // Auth
   const checkAuth = useCallback(async () => {
@@ -2395,8 +2401,18 @@ useEffect(() => {
                       <span className={`text-[10px] ${darkMode ? 'text-slate-600' : 'text-slate-400'}`}>
                         {paperSize === "letter" ? "(215.9 x 279.4 mm)" : "(210 x 297 mm)"}
                       </span>
+                      <div className="flex items-center gap-1.5 ml-auto">
+                        <input
+                          type="checkbox"
+                          id="incluir-asistencia"
+                          checked={incluirAsistenciaBoleta}
+                          onChange={(e) => setIncluirAsistenciaBoleta(e.target.checked)}
+                          className="h-3.5 w-3.5 accent-teal-600"
+                        />
+                        <Label htmlFor="incluir-asistencia" className="text-xs cursor-pointer">Incluir asistencia en boleta</Label>
+                      </div>
                     </div>
-                    <BoletaList estudiantes={estudiantes} calificaciones={calificaciones} materias={materiasEnBoleta.length > 0 ? asignaturasFiltradas.filter(m => materiasEnBoleta.includes(m.id)) : asignaturasFiltradas} grado={gradosFiltrados.find(g => g.id === gradoSeleccionado)} trimestre={parseInt(trimestreSeleccionado)} expandedBoleta={expandedBoleta} setExpandedBoleta={setExpandedBoleta} darkMode={darkMode} configuracion={configuracion ? { nombreDirectora: configuracion.nombreDirectora } : undefined} paperSize={paperSize} />
+                    <BoletaList estudiantes={estudiantes} calificaciones={calificaciones} materias={materiasEnBoleta.length > 0 ? asignaturasFiltradas.filter(m => materiasEnBoleta.includes(m.id)) : asignaturasFiltradas} grado={gradosFiltrados.find(g => g.id === gradoSeleccionado)} trimestre={parseInt(trimestreSeleccionado)} expandedBoleta={expandedBoleta} setExpandedBoleta={setExpandedBoleta} darkMode={darkMode} configuracion={configuracion ? { nombreDirectora: configuracion.nombreDirectora } : undefined} paperSize={paperSize} incluirAsistencia={incluirAsistenciaBoleta} />
                   </>
                 )}
               </CardContent>

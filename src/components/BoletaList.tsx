@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { escapeHtml } from "@/lib/utils/index";
 import type { Estudiante, Asignatura, Grado, Calificacion } from "@/types";
-export default function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, expandedBoleta, setExpandedBoleta, darkMode, configuracion, paperSize }: { estudiantes: Estudiante[]; calificaciones: Calificacion[]; materias: Asignatura[]; grado?: Grado; trimestre: number; expandedBoleta: string | null; setExpandedBoleta: (id: string | null) => void; darkMode: boolean; configuracion?: { nombreDirectora?: string }; paperSize?: "letter" | "a4"; }) {
+export default function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, expandedBoleta, setExpandedBoleta, darkMode, configuracion, paperSize, incluirAsistencia = true }: { estudiantes: Estudiante[]; calificaciones: Calificacion[]; materias: Asignatura[]; grado?: Grado; trimestre: number; expandedBoleta: string | null; setExpandedBoleta: (id: string | null) => void; darkMode: boolean; configuracion?: { nombreDirectora?: string }; paperSize?: "letter" | "a4"; incluirAsistencia?: boolean; }) {
   const [resumenAsistencia, setResumenAsistencia] = useState<any[]>([]);
   const [todasCalificaciones, setTodasCalificaciones] = useState<Calificacion[]>([]);
   const [resumenAsistenciaAnual, setResumenAsistenciaAnual] = useState<any[]>([]);
@@ -107,6 +107,36 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     }).join('');
 
     const asist = getAsistInfo(id);
+
+    const bloqueAsistencia = incluirAsistencia ? `
+    <div class="seccion-asistencia">
+      <div class="seccion-asistencia-header">
+        <span>RESUMEN DE ASISTENCIA</span>
+        <span>Período: Trimestre ${getTrimestreRomano(trimestre)}</span>
+      </div>
+      <div class="asistencia-grid">
+        <div class="asistencia-item">
+          <div class="n asistencia-asist">${asist.asistencias}</div>
+          <div class="l">Asistencias</div>
+        </div>
+        <div class="asistencia-item">
+          <div class="n asistencia-aus">${asist.ausencias}</div>
+          <div class="l">Inasistencias</div>
+        </div>
+        <div class="asistencia-item">
+          <div class="n asistencia-tard">${asist.tardanzas}</div>
+          <div class="l">Tardanzas</div>
+        </div>
+        <div class="asistencia-item">
+          <div class="n">${asist.justificadas || 0}</div>
+          <div class="l">Justificadas</div>
+        </div>
+        <div class="asistencia-item">
+          <div class="n">${asist.total}</div>
+          <div class="l">Total Días</div>
+        </div>
+      </div>
+    </div>` : '';
 
     const html = `<!DOCTYPE html>
 <html>
@@ -212,34 +242,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
       </tbody>
     </table>
 
-    <div class="seccion-asistencia">
-      <div class="seccion-asistencia-header">
-        <span>RESUMEN DE ASISTENCIA</span>
-        <span>Período: Trimestre ${getTrimestreRomano(trimestre)}</span>
-      </div>
-      <div class="asistencia-grid">
-        <div class="asistencia-item">
-          <div class="n asistencia-asist">${asist.asistencias}</div>
-          <div class="l">Asistencias</div>
-        </div>
-        <div class="asistencia-item">
-          <div class="n asistencia-aus">${asist.ausencias}</div>
-          <div class="l">Inasistencias</div>
-        </div>
-        <div class="asistencia-item">
-          <div class="n asistencia-tard">${asist.tardanzas}</div>
-          <div class="l">Tardanzas</div>
-        </div>
-        <div class="asistencia-item">
-          <div class="n">${asist.justificadas || 0}</div>
-          <div class="l">Justificadas</div>
-        </div>
-        <div class="asistencia-item">
-          <div class="n">${asist.total}</div>
-          <div class="l">Total Días</div>
-        </div>
-      </div>
-    </div>
+    ${bloqueAsistencia}
 
     <div class="resumen">
       <div class="resumen-item">
@@ -323,6 +326,36 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
           "</tr>";
       }).join('');
 
+      const bloqueAsistenciaTodas = incluirAsistencia ? `
+        <div class="seccion-asistencia">
+          <div class="seccion-asistencia-header">
+            <span>RESUMEN DE ASISTENCIA</span>
+            <span>Período: Trimestre ${getTrimestreRomano(trimestre)}</span>
+          </div>
+          <div class="asistencia-grid">
+            <div class="asistencia-item">
+              <div class="n asistencia-asist">${asist.asistencias}</div>
+              <div class="l">Asistencias</div>
+            </div>
+            <div class="asistencia-item">
+              <div class="n asistencia-aus">${asist.ausencias}</div>
+              <div class="l">Inasistencias</div>
+            </div>
+            <div class="asistencia-item">
+              <div class="n asistencia-tard">${asist.tardanzas}</div>
+              <div class="l">Tardanzas</div>
+            </div>
+            <div class="asistencia-item">
+              <div class="n">${asist.justificadas || 0}</div>
+              <div class="l">Justificadas</div>
+            </div>
+            <div class="asistencia-item">
+              <div class="n">${asist.total}</div>
+              <div class="l">Total Días</div>
+            </div>
+          </div>
+        </div>` : '';
+
       allBoletasHtml += `
       <div class="boleta" style="page-break-after: always;">
         <div class="header">
@@ -368,34 +401,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
           </tbody>
         </table>
 
-        <div class="seccion-asistencia">
-          <div class="seccion-asistencia-header">
-            <span>RESUMEN DE ASISTENCIA</span>
-            <span>Período: Trimestre ${getTrimestreRomano(trimestre)}</span>
-          </div>
-          <div class="asistencia-grid">
-            <div class="asistencia-item">
-              <div class="n asistencia-asist">${asist.asistencias}</div>
-              <div class="l">Asistencias</div>
-            </div>
-            <div class="asistencia-item">
-              <div class="n asistencia-aus">${asist.ausencias}</div>
-              <div class="l">Inasistencias</div>
-            </div>
-            <div class="asistencia-item">
-              <div class="n asistencia-tard">${asist.tardanzas}</div>
-              <div class="l">Tardanzas</div>
-            </div>
-            <div class="asistencia-item">
-              <div class="n">${asist.justificadas || 0}</div>
-              <div class="l">Justificadas</div>
-            </div>
-            <div class="asistencia-item">
-              <div class="n">${asist.total}</div>
-              <div class="l">Total Días</div>
-            </div>
-          </div>
-        </div>
+        ${bloqueAsistenciaTodas}
 
         <div class="resumen">
           <div class="resumen-item">
@@ -548,6 +554,17 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
 
     const pFinal = promGralAnual();
 
+    const bloqueAsistenciaAnual = incluirAsistencia ? `
+    <div class="seccion-asistencia">
+      <div class="seccion-asistencia-header">RESUMEN DE ASISTENCIA ANUAL (TOTAL ACUMULADO)</div>
+      <div class="asistencia-grid">
+        <div class="asistencia-item"><div class="n" style="color:#059669">${asistAnual.asistencias}</div><div class="l">Asistencias</div></div>
+        <div class="asistencia-item"><div class="n" style="color:#dc2626">${asistAnual.ausencias}</div><div class="l">Inasistencias</div></div>
+        <div class="asistencia-item"><div class="n" style="color:#d97706">${asistAnual.tardanzas}</div><div class="l">Tardanzas</div></div>
+        <div class="asistencia-item"><div class="n">${asistAnual.total}</div><div class="l">Total Días</div></div>
+      </div>
+    </div>` : '';
+
     const html = `<!DOCTYPE html>
 <html>
 <head>
@@ -617,15 +634,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
         ${tablaAsignaturas}
       </tbody>
     </table>
-    <div class="seccion-asistencia">
-      <div class="seccion-asistencia-header">RESUMEN DE ASISTENCIA ANUAL (TOTAL ACUMULADO)</div>
-      <div class="asistencia-grid">
-        <div class="asistencia-item"><div class="n" style="color:#059669">${asistAnual.asistencias}</div><div class="l">Asistencias</div></div>
-        <div class="asistencia-item"><div class="n" style="color:#dc2626">${asistAnual.ausencias}</div><div class="l">Inasistencias</div></div>
-        <div class="asistencia-item"><div class="n" style="color:#d97706">${asistAnual.tardanzas}</div><div class="l">Tardanzas</div></div>
-        <div class="asistencia-item"><div class="n">${asistAnual.total}</div><div class="l">Total Días</div></div>
-      </div>
-    </div>
+    ${bloqueAsistenciaAnual}
     <div class="resumen-anual">
       <div class="resumen-item">
         <div class="valor" style="color:#1e293b">${pFinal !== null ? Math.round(pFinal).toString() : 'N/A'}</div>
@@ -688,6 +697,17 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
       }).filter((n): n is number => n !== null);
       const pFinal = notasFinales.length ? notasFinales.reduce((a, b) => a + b, 0) / notasFinales.length : null;
 
+      const bloqueAsistenciaTodasAnual = incluirAsistencia ? `
+        <div class="seccion-asistencia">
+          <div class="seccion-asistencia-header">RESUMEN DE ASISTENCIA ANUAL (TOTAL ACUMULADO)</div>
+          <div class="asistencia-grid">
+            <div class="asistencia-item"><div class="n" style="color:#059669">${asistAnual.asistencias}</div><div class="l">Asistencias</div></div>
+            <div class="asistencia-item"><div class="n" style="color:#dc2626">${asistAnual.ausencias}</div><div class="l">Inasistencias</div></div>
+            <div class="asistencia-item"><div class="n" style="color:#d97706">${asistAnual.tardanzas}</div><div class="l">Tardanzas</div></div>
+            <div class="asistencia-item"><div class="n">${asistAnual.total}</div><div class="l">Total Días</div></div>
+          </div>
+        </div>` : '';
+
       allBoletasHtml += `
       <div class="boleta" style="page-break-after: always;">
         <div class="header">
@@ -704,15 +724,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
           <thead><tr><th style="width: 35%">Asignatura</th><th style="width: 12%">Trim. I</th><th style="width: 12%">Trim. II</th><th style="width: 12%">Trim. III</th><th style="width: 14%">Promedio Anual</th><th style="width: 15%">Resultado</th></tr></thead>
           <tbody>${tablaAsignaturas}</tbody>
         </table>
-        <div class="seccion-asistencia">
-          <div class="seccion-asistencia-header">RESUMEN DE ASISTENCIA ANUAL (TOTAL ACUMULADO)</div>
-          <div class="asistencia-grid">
-            <div class="asistencia-item"><div class="n" style="color:#059669">${asistAnual.asistencias}</div><div class="l">Asistencias</div></div>
-            <div class="asistencia-item"><div class="n" style="color:#dc2626">${asistAnual.ausencias}</div><div class="l">Inasistencias</div></div>
-            <div class="asistencia-item"><div class="n" style="color:#d97706">${asistAnual.tardanzas}</div><div class="l">Tardanzas</div></div>
-            <div class="asistencia-item"><div class="n">${asistAnual.total}</div><div class="l">Total Días</div></div>
-          </div>
-        </div>
+        ${bloqueAsistenciaTodasAnual}
         <div class="resumen-anual">
           <div class="resumen-item"><div class="valor" style="color:#1e293b">${pFinal !== null ? Math.round(pFinal).toString() : 'N/A'}</div><div class="etiqueta">PROMEDIO FINAL ANUAL</div></div>
           <div class="resumen-item"><div class="valor" style="color:${pFinal && Math.round(pFinal) >= 5 ? '#059669' : '#dc2626'}">${pFinal && Math.round(pFinal) >= 5 ? 'APROBADO' : 'REPROBADO'}</div><div class="etiqueta">ESTADO FINAL</div></div>
