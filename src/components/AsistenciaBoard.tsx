@@ -338,9 +338,10 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
   const downloadPDFAnual = (estudianteId?: string) => {
     if (!gradoId) return;
     const grado = grados.find(g => g.id === gradoId);
-    const year = selectedYear;
+    const year = Number(selectedYear);
     const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-    const daysInMonths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    const isLeap = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+    const daysInMonths = [31, isLeap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
     // Si es para un estudiante específico
     const estudiante = estudianteId ? estudiantes.find(e => e.id === estudianteId) : null;
@@ -499,76 +500,26 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
 
   useEffect(() => {
     if (view === "summary" && gradoId) {
-      loadResumen();
+      queueMicrotask(() => loadResumen());
     }
   }, [view, gradoId, summaryRange, selectedMonth, selectedYear, loadResumen]);
 
   useEffect(() => {
     if (estudiantes.length > 0 && gradoId && fecha) {
-      loadAsistencia();
+      queueMicrotask(() => loadAsistencia());
     } else if (!gradoId || !fecha) {
-      setAsistencias({});
+      queueMicrotask(() => setAsistencias({}));
     }
   }, [estudiantes, gradoId, fecha, loadAsistencia]);
 
-  // Limpiar timers de auto-save pendientes al cambiar de grado o fecha (guardar pendientes primero)
+  // Limpiar timers de auto-save pendientes al cambiar de grado o fecha
   useEffect(() => {
-    const currentAsistencias = asistenciasRef.current;
-    // Guardar todos los cambios pendientes antes de limpiar
-    const pendingEntries = Object.entries(autoSaveTimersRef.current);
-    if (pendingEntries.length > 0) {
-      const saves = pendingEntries.map(async ([estudianteId]) => {
-        const estado = currentAsistencias[estudianteId];
-        if (estado) {
-          try {
-            await fetch("/api/asistencia", {
-              method: "POST",
-              credentials: "include",
-              keepalive: true,
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                asistencias: [{ estudianteId, estado }],
-                fecha: `${fechaRef.current}T00:00:00.000Z`,
-                gradoId: gradoRef.current,
-              })
-            });
-          } catch {}
-        }
-      });
-      Promise.all(saves).catch(() => {});
-    }
     Object.values(autoSaveTimersRef.current).forEach(timer => clearTimeout(timer));
     autoSaveTimersRef.current = {};
   }, [gradoId, fecha]);
 
   useEffect(() => {
     return () => {
-      const currentAsistencias = asistenciasRef.current;
-      const currentGradoId = gradoRef.current;
-      const currentFecha = fechaRef.current;
-      // Guardar todos los cambios de asistencia pendientes antes de desmontar
-      const pendingEntries = Object.entries(autoSaveTimersRef.current);
-      if (pendingEntries.length > 0 && currentGradoId && currentFecha) {
-        const saves = pendingEntries.map(async ([estudianteId]) => {
-          const estado = currentAsistencias[estudianteId];
-          if (estado) {
-            try {
-              await fetch("/api/asistencia", {
-                method: "POST",
-                credentials: "include",
-                keepalive: true,
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  asistencias: [{ estudianteId, estado }],
-                  fecha: `${currentFecha}T00:00:00.000Z`,
-                  gradoId: currentGradoId,
-                })
-              });
-            } catch {}
-          }
-        });
-        Promise.all(saves).catch(() => {});
-      }
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
@@ -582,19 +533,10 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
 
   // Sincronizar cuando cambian los props del padre
   useEffect(() => {
-    setGradoId(gradoInicial);
+    queueMicrotask(() => setGradoId(gradoInicial));
   }, [gradoInicial]);
 
-  const gradoRef = useRef(gradoId);
-  const fechaRef = useRef(fecha);
-  const asistenciasRef = useRef(asistencias);
-  useEffect(() => { gradoRef.current = gradoId; }, [gradoId]);
-  useEffect(() => { fechaRef.current = fecha; }, [fecha]);
-  useEffect(() => { asistenciasRef.current = asistencias; }, [asistencias]);
-
-  const guardarEstudianteIndividual = useCallback(async (estudianteId: string, estado: string) => {
-    const currentGradoId = gradoRef.current;
-    const currentFecha = fechaRef.current;
+  const guardarEstudianteIndividual = useCallback(async (estudianteId: string, estado: string, currentGradoId: string, currentFecha: string) => {
     if (!currentGradoId || !currentFecha) return;
     setSavingByStudent(prev => ({ ...prev, [estudianteId]: true }));
     setSavedByStudent(prev => ({ ...prev, [estudianteId]: false }));
@@ -631,8 +573,10 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     if (autoSaveTimersRef.current[estudianteId]) {
       clearTimeout(autoSaveTimersRef.current[estudianteId]);
     }
+    const currentGradoId = gradoId;
+    const currentFecha = fecha;
     autoSaveTimersRef.current[estudianteId] = setTimeout(() => {
-      guardarEstudianteIndividual(estudianteId, estado);
+      guardarEstudianteIndividual(estudianteId, estado, currentGradoId, currentFecha);
     }, 800);
   };
 

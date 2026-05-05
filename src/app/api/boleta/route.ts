@@ -1,12 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/neon";
 import { cookies } from "next/headers";
+import { verifySession } from "@/lib/session";
+
+async function getUsuarioSession() {
+  const cookieStore = await cookies();
+  const session = cookieStore.get("session");
+  if (!session) return null;
+  return verifySession(session.value);
+}
+
+function canAccessGrado(session: any, gradoId: string): boolean {
+  if (["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) return true;
+  return session.asignaturasAsignadas?.some((m: any) => m.gradoId === gradoId) ?? false;
+}
 
 export async function GET(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const session = cookieStore.get("session");
-
+    const session = await getUsuarioSession();
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
@@ -21,6 +32,20 @@ export async function GET(request: NextRequest) {
         { error: "Se requiere estudianteId o gradoId" },
         { status: 400 }
       );
+    }
+
+    if (gradoId && !canAccessGrado(session, gradoId)) {
+      return NextResponse.json({ error: "No tiene acceso a este grado" }, { status: 403 });
+    }
+
+    if (estudianteId) {
+      const est = await sql`SELECT "gradoId" FROM "Estudiante" WHERE id = ${estudianteId}`;
+      if (est.length === 0) {
+        return NextResponse.json({ error: "Estudiante no encontrado" }, { status: 404 });
+      }
+      if (!canAccessGrado(session, est[0].gradoId)) {
+        return NextResponse.json({ error: "No tiene acceso a este estudiante" }, { status: 403 });
+      }
     }
 
     if (estudianteId) {

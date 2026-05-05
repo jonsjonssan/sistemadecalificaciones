@@ -147,6 +147,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
+    if (!["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 403 });
+    }
+
     const data = await request.json();
     const { nombre, gradoId } = data;
 
@@ -174,6 +178,10 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
+    if (!["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 403 });
+    }
+
     const data = await request.json();
     const { id, nombre } = data;
 
@@ -198,6 +206,10 @@ export async function DELETE(request: NextRequest) {
     const session = await getUsuarioSession();
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    if (!["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 
     const { searchParams } = new URL(request.url);

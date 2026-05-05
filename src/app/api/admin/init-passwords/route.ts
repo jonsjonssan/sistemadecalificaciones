@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     const sessionData = verifySession(session.value);
-    if (sessionData.rol !== "admin") {
+    if (!["admin", "admin-directora", "admin-codirectora"].includes(sessionData.rol)) {
       return NextResponse.json({ error: "Solo administradores pueden ejecutar esta acción" }, { status: 403 });
     }
 
@@ -32,8 +32,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ 
       message: "Contraseñas actualizadas correctamente",
       resumen: {
-        passwordAdmin: adminPassword,
-        passwordDocente: docentePassword
+        adminActualizado: true,
+        docenteActualizado: true
       }
     });
   } catch (error) {

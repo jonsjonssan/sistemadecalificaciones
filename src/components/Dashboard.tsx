@@ -278,7 +278,7 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
         const url = gradoAsignado
           ? `/api/stats/dashboard?gradoId=${gradoAsignado}`
           : "/api/stats/dashboard";
-        const res = await fetch(url);
+        const res = await fetch(url, { credentials: "include" });
         if (res.ok) {
           const data = await res.json();
           setStats(data);

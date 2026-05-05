@@ -64,6 +64,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Datos incompletos" }, { status: 400 });
     }
 
+    const notaNum = parseFloat(nota);
+    if (isNaN(notaNum) || notaNum < 0 || notaNum > 10) {
+      return NextResponse.json({ error: "La nota debe estar entre 0 y 10" }, { status: 400 });
+    }
+
     const añoNum = año || new Date().getFullYear();
 
     const result = await db.recuperacionAnual.upsert({
@@ -74,11 +79,11 @@ export async function POST(request: NextRequest) {
           año: añoNum,
         },
       },
-      update: { nota: parseFloat(nota) },
+      update: { nota: notaNum },
       create: {
         estudianteId,
         materiaId,
-        nota: parseFloat(nota),
+        nota: notaNum,
         año: añoNum,
       },
     });

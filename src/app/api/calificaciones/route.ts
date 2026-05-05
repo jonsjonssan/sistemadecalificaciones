@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
       if (session.rol === "docente" || session.rol === "docente-orientador") {
         const gradosByMaterias = session.asignaturasAsignadas?.map((m: any) => m.gradoId) || [];
         const todosGradosIds = [...new Set([...gradosByMaterias])];
-        if (todosGradosIds.length > 0 && !todosGradosIds.includes(gradoId)) {
+        if (!todosGradosIds.includes(gradoId)) {
           return NextResponse.json({
             error: "Grado no asignado",
             code: "GRADO_FORBIDDEN",
@@ -123,19 +123,19 @@ export async function GET(request: NextRequest) {
       }, { status: 400 });
     }
 
-    if (session.rol === "docente" || session.rol === "docente-orientador") {
-      const materiasAsignadasIds = session.asignaturasAsignadas?.map((m: any) => m.id) || [];
-      const gradosByMaterias = session.asignaturasAsignadas?.map((m: any) => m.gradoId) || [];
-      const todosGradosIds = [...new Set([...gradosByMaterias])];
+    const materiasAsignadasIds = session.asignaturasAsignadas?.map((m: any) => m.id) || [];
+    const gradosByMaterias = session.asignaturasAsignadas?.map((m: any) => m.gradoId) || [];
+    const todosGradosIds = [...new Set([...gradosByMaterias])];
 
-      if (materiaId && materiasAsignadasIds.length > 0 && !materiasAsignadasIds.includes(materiaId)) {
+    if (session.rol === "docente" || session.rol === "docente-orientador") {
+      if (materiaId && !materiasAsignadasIds.includes(materiaId)) {
         return NextResponse.json({
           error: "Materia no asignada",
           code: "MATERIA_FORBIDDEN",
           message: "No tienes permiso para ver las calificaciones de esta materia."
         }, { status: 403 });
       }
-      if (gradoId && todosGradosIds.length > 0 && !todosGradosIds.includes(gradoId)) {
+      if (gradoId && !todosGradosIds.includes(gradoId)) {
         return NextResponse.json({
           error: "Grado no asignado",
           code: "GRADO_FORBIDDEN",
@@ -160,6 +160,16 @@ export async function GET(request: NextRequest) {
         orderBy: { estudiante: { numero: "asc" } },
       });
     } else if (estudianteId) {
+      if (session.rol === "docente" || session.rol === "docente-orientador") {
+        const estudiante = await db.estudiante.findUnique({ where: { id: estudianteId }, select: { gradoId: true } });
+        if (!estudiante || !todosGradosIds.includes(estudiante.gradoId)) {
+          return NextResponse.json({
+            error: "Estudiante no asignado",
+            code: "ESTUDIANTE_FORBIDDEN",
+            message: "No tienes permiso para ver las calificaciones de este estudiante."
+          }, { status: 403 });
+        }
+      }
       calificaciones = await db.calificacion.findMany({
         where: { estudianteId },
         include: {
@@ -254,6 +264,8 @@ export async function POST(request: NextRequest) {
         acNotas = typeof actividadesCotidianas === 'string'
           ? JSON.parse(actividadesCotidianas)
           : actividadesCotidianas;
+        if (!Array.isArray(acNotas)) acNotas = [];
+        acNotas = acNotas.map(n => (typeof n === 'number' && !isNaN(n) && n >= 0 && n <= 10) ? n : null);
       } catch { acNotas = []; }
     }
 
@@ -262,6 +274,8 @@ export async function POST(request: NextRequest) {
         aiNotas = typeof actividadesIntegradoras === 'string'
           ? JSON.parse(actividadesIntegradoras)
           : actividadesIntegradoras;
+        if (!Array.isArray(aiNotas)) aiNotas = [];
+        aiNotas = aiNotas.map(n => (typeof n === 'number' && !isNaN(n) && n >= 0 && n <= 10) ? n : null);
       } catch { aiNotas = []; }
     }
 

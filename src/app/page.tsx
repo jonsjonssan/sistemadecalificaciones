@@ -315,8 +315,13 @@ useEffect(() => {
   const loadTodasAsignaturas = useCallback(async () => {
     try {
       const res = await fetch("/api/materias?todas=true", { cache: "no-store", credentials: "include" });
-      setTodasAsignaturas(await res.json());
-    } catch { /* ignore */ }
+      if (res.ok) {
+        const data = await res.json();
+        setTodasAsignaturas(Array.isArray(data) ? data : []);
+      } else {
+        setTodasAsignaturas([]);
+      }
+    } catch { setTodasAsignaturas([]); }
   }, []);
 
   const loadConfig = useCallback(async () => {
@@ -838,8 +843,8 @@ useEffect(() => {
 
     // Paso 1: Forzar guardado inmediato de todas las filas con datos sucios (datos vivos de los inputs)
     const forceSaveFns = Array.from(forceSaveRefs.current.values());
-    const forceSaves = forceSaveFns.map(saveFn => saveFn().catch(() => {}));
-    await Promise.all(forceSaves);
+    const forceResults = await Promise.allSettled(forceSaveFns.map(saveFn => saveFn()));
+    const forceErrors = forceResults.filter((r): r is PromiseRejectedResult => r.status === 'rejected');
     forceSaveRefs.current.clear();
 
     // Paso 2: Respaldo adicional - guardar desde el estado sincronizado para filas que ya tenían datos
@@ -882,7 +887,11 @@ useEffect(() => {
           toast({ title: `${ok} calificación${ok > 1 ? "es" : ""} guardada${ok > 1 ? "s" : ""}` });
         }
       } else if (forceSaveFns.length > 0) {
-        toast({ title: "Calificaciones guardadas" });
+        if (forceErrors.length > 0) {
+          toast({ title: `${forceErrors.length} calificación${forceErrors.length > 1 ? 'es' : ''} no se pudo${forceErrors.length > 1 ? 'n' : ''} guardar`, variant: "destructive" });
+        } else {
+          toast({ title: "Calificaciones guardadas" });
+        }
       } else {
         toast({ title: "No hay calificaciones para guardar" });
       }
@@ -1015,6 +1024,12 @@ useEffect(() => {
     let importados = 0;
     let errores = 0;
 
+    const trimestreNum = parseInt(trimestreSeleccionado);
+    if (isNaN(trimestreNum) || trimestreNum < 1 || trimestreNum > 3) {
+      toast({ title: "Selecciona un trimestre válido antes de importar", variant: "destructive" });
+      return;
+    }
+
     for (let i = 1; i < lines.length; i++) {
       const cols = lines[i].split(/[,;\t]/).map(c => c.trim());
       if (nombreIdx < 0 || nombreIdx >= cols.length) continue;
@@ -1042,7 +1057,7 @@ useEffect(() => {
         body: JSON.stringify({
           estudianteId: est.id,
           materiaId: asignaturaSeleccionada,
-          trimestre: parseInt(trimestreSeleccionado),
+          trimestre: trimestreNum,
           actividadesCotidianas: acNotas,
           actividadesIntegradoras: aiNotas,
           examenTrimestral: examenVal,
@@ -1086,7 +1101,7 @@ useEffect(() => {
 
   const getPromedioACForStudent = useCallback((estudianteId: string) => {
     const calif = calificaciones.find(c => c.estudianteId === estudianteId);
-    if (!calif?.calificacionAC) return null;
+    if (calif?.calificacionAC === null || calif?.calificacionAC === undefined) return null;
     const config = configActual;
     if (!config) return calif.calificacionAC;
     return calif.calificacionAC * (config.porcentajeAC / 100);
@@ -1094,7 +1109,7 @@ useEffect(() => {
 
   const getPromedioAIForStudent = useCallback((estudianteId: string) => {
     const calif = calificaciones.find(c => c.estudianteId === estudianteId);
-    if (!calif?.calificacionAI) return null;
+    if (calif?.calificacionAI === null || calif?.calificacionAI === undefined) return null;
     const config = configActual;
     if (!config) return calif.calificacionAI;
     return calif.calificacionAI * (config.porcentajeAI / 100);
@@ -1221,11 +1236,11 @@ useEffect(() => {
 
     const rows = filtered.map((est, idx) => {
       const calif = calificaciones.find(c => c.estudianteId === est.id);
-      const notasAC = calif?.actividadesCotidianas ? JSON.parse(calif.actividadesCotidianas) : [];
-      const notasAI = calif?.actividadesIntegradoras ? JSON.parse(calif.actividadesIntegradoras) : [];
-      const promAC = calif?.calificacionAC ? calif.calificacionAC * (configActual.porcentajeAC / 100) : null;
-      const promAI = calif?.calificacionAI ? calif.calificacionAI * (configActual.porcentajeAI / 100) : null;
-      const promEx = calif?.examenTrimestral ? calif.examenTrimestral * (configActual.porcentajeExamen / 100) : null;
+      const notasAC = calif?.actividadesCotidianas ? parseNotas(calif.actividadesCotidianas, configActual.numActividadesCotidianas) : [];
+      const notasAI = calif?.actividadesIntegradoras ? parseNotas(calif.actividadesIntegradoras, configActual.numActividadesIntegradoras) : [];
+      const promAC = calif?.calificacionAC !== null && calif?.calificacionAC !== undefined ? calif.calificacionAC * (configActual.porcentajeAC / 100) : null;
+      const promAI = calif?.calificacionAI !== null && calif?.calificacionAI !== undefined ? calif.calificacionAI * (configActual.porcentajeAI / 100) : null;
+      const promEx = calif?.examenTrimestral !== null && calif?.examenTrimestral !== undefined ? calif.examenTrimestral * (configActual.porcentajeExamen / 100) : null;
 
       return [
         est.numero.toString(),
@@ -1313,11 +1328,11 @@ useEffect(() => {
     // Filas de datos
     filtered.forEach(est => {
       const calif = calificaciones.find(c => c.estudianteId === est.id);
-      const notasAC = calif?.actividadesCotidianas ? JSON.parse(calif.actividadesCotidianas) : [];
-      const notasAI = calif?.actividadesIntegradoras ? JSON.parse(calif.actividadesIntegradoras) : [];
-      const promAC = calif?.calificacionAC ? calif.calificacionAC * (configActual.porcentajeAC / 100) : null;
-      const promAI = calif?.calificacionAI ? calif.calificacionAI * (configActual.porcentajeAI / 100) : null;
-      const promEx = calif?.examenTrimestral ? calif.examenTrimestral * (configActual.porcentajeExamen / 100) : null;
+      const notasAC = calif?.actividadesCotidianas ? parseNotas(calif.actividadesCotidianas, configActual.numActividadesCotidianas) : [];
+      const notasAI = calif?.actividadesIntegradoras ? parseNotas(calif.actividadesIntegradoras, configActual.numActividadesIntegradoras) : [];
+      const promAC = calif?.calificacionAC !== null && calif?.calificacionAC !== undefined ? calif.calificacionAC * (configActual.porcentajeAC / 100) : null;
+      const promAI = calif?.calificacionAI !== null && calif?.calificacionAI !== undefined ? calif.calificacionAI * (configActual.porcentajeAI / 100) : null;
+      const promEx = calif?.examenTrimestral !== null && calif?.examenTrimestral !== undefined ? calif.examenTrimestral * (configActual.porcentajeExamen / 100) : null;
 
       const row: string[] = [
         est.numero.toString(),
@@ -1431,12 +1446,17 @@ useEffect(() => {
 
   const handleToggleUsuario = async (id: string, activo: boolean) => {
     try {
-      await fetch("/api/usuarios", {
+      const res = await fetch("/api/usuarios", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ id, activo: !activo }),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: "Error desconocido" }));
+        toast({ title: data.error || "Error al cambiar estado", variant: "destructive" });
+        return;
+      }
       loadUsuarios(); toast({ title: `Usuario ${!activo ? 'activado' : 'desactivado'}` });
     } catch { toast({ title: "Error", variant: "destructive" }); }
   };
@@ -1663,31 +1683,22 @@ useEffect(() => {
 
   // Guardar estado antes de cerrar la pestaña - intentar guardar datos primero
   useEffect(() => {
-    const handleBeforeUnload = async (e: BeforeUnloadEvent) => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (usuario) {
-        // Guardar todas las calificaciones sucias antes de cerrar
-        const forceSaves: Promise<void>[] = [];
+        // Trigger saves without awaiting (browser may not wait for async)
         forceSaveRefs.current.forEach((saveFn) => {
-          forceSaves.push(saveFn().catch(() => {}));
+          saveFn().catch(() => {});
         });
         forceSaveRefs.current.clear();
-        if (forceSaves.length > 0) {
-          try { await Promise.all(forceSaves); } catch { }
-        }
 
         if (saving) {
           e.preventDefault();
-          try {
-            await fetch("/api/auth/logout", {
-              method: "POST",
-              credentials: "include",
-              keepalive: true
-            });
-          } catch { }
+          e.returnValue = "";
+          fetch("/api/auth/logout", { method: "POST", credentials: "include", keepalive: true }).catch(() => {});
         }
       }
 
-      // Guardar estado en localStorage
+      // Guardar estado en localStorage (synchronous)
       if (usuario) {
         saveUserState({ gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado, activeTab });
         localStorage.setItem(`sis_last_session_${usuario.id}`, new Date().toISOString());
@@ -2259,7 +2270,7 @@ useEffect(() => {
                               const calif = calificaciones.find(c => c.estudianteId === est.id && c.materiaId === asignaturaSeleccionada);
                               const califId = calif?.id ?? `new-${est.id}`;
                               return <CalificacionRow
-                                key={`${califId}-${asignaturaSeleccionada}-${trimestreSeleccionado}-${configActual?.numActividadesCotidianas ?? 4}-${configActual?.numActividadesIntegradoras ?? 1}`}
+                                key={`${est.id}-${asignaturaSeleccionada}-${trimestreSeleccionado}-${configActual?.numActividadesCotidianas ?? 4}-${configActual?.numActividadesIntegradoras ?? 1}`}
                                 estudiante={est}
                                 materiaId={asignaturaSeleccionada}
                                 trimestre={trimestreSeleccionado}
@@ -2460,7 +2471,7 @@ useEffect(() => {
           {/* Reportes */}
           <TabsContent value="reportes" className="mt-3">
             <ReporteCalificaciones
-              grados={gradosFiltrados.length > 0 ? gradosFiltrados : grados}
+              grados={gradosFiltrados}
               darkMode={darkMode}
               todasAsignaturas={todasAsignaturas}
             />

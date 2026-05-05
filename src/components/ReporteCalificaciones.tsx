@@ -84,6 +84,7 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
   const [asignaturaCuadroId, setAsignaturaCuadroId] = useState("");
   const [recuperacionesAnuales, setRecuperacionesAnuales] = useState<Map<string, number>>(new Map());
   const [guardandoRecup, setGuardandoRecup] = useState<string | null>(null);
+  const [inputRecups, setInputRecups] = useState<Map<string, string>>(new Map());
 
   const grado = useMemo(() => grados.find(g => g.id === gradoId), [grados, gradoId]);
 
@@ -243,6 +244,11 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
             next.delete(estudianteId);
             return next;
           });
+          setInputRecups(prev => {
+            const next = new Map(prev);
+            next.delete(estudianteId);
+            return next;
+          });
         }
       } catch (e) { console.error(e); }
       finally { setGuardandoRecup(null); }
@@ -270,6 +276,11 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
           next.set(estudianteId, val);
           return next;
         });
+        setInputRecups(prev => {
+          const next = new Map(prev);
+          next.delete(estudianteId);
+          return next;
+        });
       }
     } catch (e) { console.error(e); }
     finally { setGuardandoRecup(null); }
@@ -292,7 +303,7 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `cuadro_promedios_${grado.numero}${grado.seccion}_${asignaturaCuadro.nombre.replace(/\s+/g, "_")}_2025.csv`;
+    a.download = `cuadro_promedios_${grado.numero}${grado.seccion}_${asignaturaCuadro.nombre.replace(/\s+/g, "_")}_${grado?.año || new Date().getFullYear()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   }, [grado, asignaturaCuadro, datosCuadroTrimestres]);
@@ -728,8 +739,15 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
                                   min="0"
                                   max="10"
                                   step="0.1"
-                                  defaultValue={d.recup !== null ? d.recup.toFixed(1) : ""}
+                                  value={inputRecups.get(d.estudiante.id) ?? (d.recup !== null ? d.recup.toFixed(1) : "")}
                                   disabled={guardandoRecup === d.estudiante.id}
+                                  onChange={(e) => {
+                                    setInputRecups(prev => {
+                                      const next = new Map(prev);
+                                      next.set(d.estudiante.id, e.target.value);
+                                      return next;
+                                    });
+                                  }}
                                   onBlur={(e) => {
                                     const val = e.target.value;
                                     const current = d.recup !== null ? d.recup.toFixed(1) : "";

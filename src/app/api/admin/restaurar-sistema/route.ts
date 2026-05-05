@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     }
 
     const sessionData = verifySession(session.value);
-    if (sessionData.rol !== "admin") {
+    if (!["admin", "admin-directora", "admin-codirectora"].includes(sessionData.rol)) {
       return NextResponse.json({ error: "Solo administradores pueden ejecutar esta acción" }, { status: 403 });
     }
 
@@ -34,9 +34,8 @@ export async function POST(request: NextRequest) {
       `;
 
       return NextResponse.json({ 
-        message: "Sistema restaurado. Solo jonathan.araujo.mendoza@clases.edu.sv es admin con password admin123",
-        email: "jonathan.araujo.mendoza@clases.edu.sv",
-        password: "admin123"
+        message: "Sistema restaurado. Solo jonathan.araujo.mendoza@clases.edu.sv es admin.",
+        email: "jonathan.araujo.mendoza@clases.edu.sv"
       });
     }
 

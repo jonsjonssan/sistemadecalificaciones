@@ -66,7 +66,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
       const cal = c.find(x => x.materiaId === m.id);
       if (!cal || cal.promedioFinal === null || cal.promedioFinal === undefined) return null;
       return cal.promedioFinal;
-    }).filter((x): x is number => x !== null && x > 0);
+    }).filter((x): x is number => x !== null && x !== undefined && !isNaN(x));
     return notas.length ? notas.reduce((a, b) => a + b, 0) / notas.length : null;
   };
 
@@ -802,7 +802,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
       const notasValidas = [n1, n2, n3].filter((n): n is number => n !== null && n !== undefined);
       const promAnual = notasValidas.length ? notasValidas.reduce((a, b) => a + b, 0) / notasValidas.length : null;
       const recupAnual = recuperacionesAnuales.get(`${id}-${m.id}`) ?? null;
-      const promFinalConRecup = promAnual !== null && recupAnual !== null ? Math.min(10, promAnual + recupAnual) : promAnual;
+      const promFinalConRecup = promAnual !== null && recupAnual !== null ? Math.max(promAnual, recupAnual) : promAnual;
       const promFinalRedondeado = promFinalConRecup !== null ? Math.round(promFinalConRecup).toString() : '-';
       const estado = promFinalConRecup !== null ? (Math.round(promFinalConRecup) >= 5 ? 'APROBADO' : 'REPROBADO') : '-';
 
@@ -823,7 +823,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
       const sums = califs.map(c => c.promedioFinal).filter((n): n is number => n !== null && n !== undefined);
       const promAnual = sums.length ? sums.reduce((a, b) => a + b, 0) / sums.length : null;
       const recupAnual = recuperacionesAnuales.get(`${id}-${m.id}`) ?? null;
-      return promAnual !== null && recupAnual !== null ? Math.min(10, promAnual + recupAnual) : promAnual;
+        return promAnual !== null && recupAnual !== null ? Math.max(promAnual, recupAnual) : promAnual;
     }).filter((n): n is number => n !== null);
     const pFinal = notasFinales.length ? notasFinales.reduce((a, b) => a + b, 0) / notasFinales.length : null;
 
@@ -960,7 +960,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
         const notasValidas = [n1, n2, n3].filter((n): n is number => n !== null && n !== undefined);
         const promAnual = notasValidas.length ? notasValidas.reduce((a, b) => a + b, 0) / notasValidas.length : null;
         const recupAnual = recuperacionesAnuales.get(`${est.id}-${m.id}`) ?? null;
-        const promFinalConRecup = promAnual !== null && recupAnual !== null ? Math.min(10, promAnual + recupAnual) : promAnual;
+        const promFinalConRecup = promAnual !== null && recupAnual !== null ? Math.max(promAnual, recupAnual) : promAnual;
         const promFinalRedondeado = promFinalConRecup !== null ? Math.round(promFinalConRecup).toString() : '-';
         const estado = promFinalConRecup !== null ? (Math.round(promFinalConRecup) >= 5 ? 'APROBADO' : 'REPROBADO') : '-';
         return `<tr><td style="text-align:left;padding:6px 8px">${escapeHtml(m.nombre)}</td><td>${n1 != null ? Math.round(n1).toString() : '-'}</td><td>${n2 != null ? Math.round(n2).toString() : '-'}</td><td>${n3 != null ? Math.round(n3).toString() : '-'}</td><td style="font-weight:bold">${promAnual !== null ? promAnual.toFixed(1) : '-'}</td><td>${recupAnual !== null ? recupAnual.toFixed(1) : '-'}</td><td style="font-weight:bold">${promFinalRedondeado}</td><td style="font-weight:bold;color:${estado === 'APROBADO' ? '#059669' : estado === 'REPROBADO' ? '#dc2626' : '#666'}">${estado}</td></tr>`;
@@ -971,7 +971,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
         const sums = califs.map(c => c.promedioFinal).filter((n): n is number => n !== null && n !== undefined);
         const promAnual = sums.length ? sums.reduce((a, b) => a + b, 0) / sums.length : null;
         const recupAnual = recuperacionesAnuales.get(`${est.id}-${m.id}`) ?? null;
-        return promAnual !== null && recupAnual !== null ? Math.min(10, promAnual + recupAnual) : promAnual;
+      return promAnual !== null && recupAnual !== null ? Math.max(promAnual, recupAnual) : promAnual;
       }).filter((n): n is number => n !== null);
       const pFinal = notasFinales.length ? notasFinales.reduce((a, b) => a + b, 0) / notasFinales.length : null;
 

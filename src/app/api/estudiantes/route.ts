@@ -40,6 +40,14 @@ export async function GET(request: NextRequest) {
       }, { status: 400 });
     }
 
+    if (!canAccessGrado(session, gradoId)) {
+      return NextResponse.json({
+        error: "No tiene acceso a este grado",
+        code: "GRADO_FORBIDDEN",
+        message: "No tienes permiso para ver los estudiantes de este grado."
+      }, { status: 403 });
+    }
+
     let where: any = {};
     if (gradoId) where.gradoId = gradoId;
     if (activos === "true") where.activo = true;
@@ -96,7 +104,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    if (session.rol !== "admin" && session.rol !== "docente") {
+    if (!["admin", "admin-directora", "admin-codirectora"].includes(session.rol) && session.rol !== "docente") {
       return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 
@@ -146,7 +154,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    if (session.rol !== "admin" && session.rol !== "docente") {
+    if (!["admin", "admin-directora", "admin-codirectora"].includes(session.rol) && session.rol !== "docente") {
       return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 
@@ -203,7 +211,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    if (session.rol !== "admin" && session.rol !== "docente") {
+    if (!["admin", "admin-directora", "admin-codirectora"].includes(session.rol) && session.rol !== "docente") {
       return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 
@@ -234,7 +242,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    if (session.rol !== "admin") {
+    if (!["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) {
       return NextResponse.json({ error: "Solo administradores pueden reordenar" }, { status: 403 });
     }
 

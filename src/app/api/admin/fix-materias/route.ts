@@ -1,8 +1,20 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { cookies } from "next/headers";
+import { verifySession } from "@/lib/session";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const cookieStore = await cookies();
+    const session = cookieStore.get("session");
+    if (!session) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+    const sessionData = verifySession(session.value);
+    if (!["admin", "admin-directora", "admin-codirectora"].includes(sessionData.rol)) {
+      return NextResponse.json({ error: "Solo administradores pueden ejecutar esta acción" }, { status: 403 });
+    }
+
     const materiasABorrar = await db.materia.findMany({
       where: {
         nombre: "Desarrollo Corporal y Educación Física"
