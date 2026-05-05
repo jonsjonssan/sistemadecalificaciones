@@ -474,7 +474,7 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
               <Label className={`text-sm font-medium mb-1 block ${darkMode ? "text-slate-300" : ""}`}>Trimestre</Label>
               <Select value={trimestre} onValueChange={setTrimestre}>
                 <SelectTrigger className={`h-11 sm:h-12 text-sm ${darkMode ? "bg-slate-800 border-slate-600 text-white" : ""}`}>
-                  <SelectValue />
+                  <SelectValue placeholder="Seleccionar trimestre" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="1" className="text-sm">I</SelectItem>
