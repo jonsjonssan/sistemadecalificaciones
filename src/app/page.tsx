@@ -2023,26 +2023,98 @@ useEffect(() => {
               </Card>
             ) : (
               <Card className={`shadow-lg border ${darkMode ? 'bg-[#1e293b] border-slate-700 text-white' : 'bg-white border-slate-200'}`}>
-                <CardContent className="p-2 sm:p-3">
-                  <div className="space-y-2 sm:space-y-3">
+                <CardContent className="p-4 sm:p-5">
+                  <div className="space-y-4">
                     {/* Fila de selectores */}
-                    <div className="flex flex-wrap items-end gap-2 sm:gap-3">
-                      <div className="flex-1 min-w-[140px] sm:min-w-[160px]"><Label className={`text-sm font-medium mb-1 block ${darkMode ? 'text-slate-300' : ''}`}>Grado</Label><Select value={gradoSeleccionado || ""} onValueChange={(val) => { setGradoSeleccionado(val); saveUserState({ gradoSeleccionado: val }); }}><SelectTrigger className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue placeholder="Seleccionar grado" /></SelectTrigger><SelectContent>{gradosFiltrados && gradosFiltrados.length > 0 ? gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}" - {g.año}</SelectItem>) : <SelectItem value="no-grados" disabled>No hay grados</SelectItem>}</SelectContent></Select></div>
-
-                      <div className="flex-1 min-w-[140px] sm:min-w-[180px]"><Label className={`text-sm font-medium mb-1 block ${darkMode ? 'text-slate-300' : ''}`}>Asignatura</Label><Select value={asignaturaSeleccionada || undefined} onValueChange={(val) => { setAsignaturaSeleccionada(val); saveUserState({ asignaturaSeleccionada: val }); }}><SelectTrigger className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue placeholder="Seleccionar asignatura" /></SelectTrigger><SelectContent>{asignaturasFiltradas && asignaturasFiltradas.length > 0 ? asignaturasFiltradas.map(m => <SelectItem key={m.id} value={m.id} className="text-sm">{m.nombre}</SelectItem>) : <SelectItem value="no-materias" disabled>No hay materias</SelectItem>}</SelectContent></Select></div>
-                      <div className="w-36 sm:w-44"><Label className={`text-sm font-medium mb-1 block ${darkMode ? 'text-slate-300' : ''}`}>Trimestre</Label><Select value={trimestreSeleccionado || undefined} onValueChange={setTrimestreSeleccionado}><SelectTrigger className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue placeholder="Seleccionar trimestre" /></SelectTrigger><SelectContent><SelectItem value="1" className="text-sm">I</SelectItem><SelectItem value="2" className="text-sm">II</SelectItem><SelectItem value="3" className="text-sm">III</SelectItem></SelectContent></Select></div>
-                      {configActual && <div className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded ${darkMode ? 'text-slate-400 bg-slate-800' : 'text-slate-500 bg-slate-50'}`}><span>{configActual.numActividadesCotidianas} AC ({configActual.porcentajeAC}%)</span><span>•</span><span>{configActual.numActividadesIntegradoras} AI ({configActual.porcentajeAI}%)</span>{configActual.tieneExamen && <><span>•</span><span>Ex ({configActual.porcentajeExamen}%)</span></>}</div>}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label className={`text-sm font-medium ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Grado</Label>
+                        <Select value={gradoSeleccionado || ""} onValueChange={(val) => { setGradoSeleccionado(val); saveUserState({ gradoSeleccionado: val }); }}>
+                          <SelectTrigger className={`h-11 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}>
+                            <SelectValue placeholder="Seleccionar grado" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {gradosFiltrados && gradosFiltrados.length > 0 ? gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}" - {g.año}</SelectItem>) : <SelectItem value="no-grados" disabled>No hay grados</SelectItem>}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className={`text-sm font-medium ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Asignatura</Label>
+                        <Select value={asignaturaSeleccionada || undefined} onValueChange={(val) => { setAsignaturaSeleccionada(val); saveUserState({ asignaturaSeleccionada: val }); }}>
+                          <SelectTrigger className={`h-11 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}>
+                            <SelectValue placeholder="Seleccionar asignatura" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {asignaturasFiltradas && asignaturasFiltradas.length > 0 ? asignaturasFiltradas.map(m => <SelectItem key={m.id} value={m.id} className="text-sm">{m.nombre}</SelectItem>) : <SelectItem value="no-materias" disabled>No hay materias</SelectItem>}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className={`text-sm font-medium ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Trimestre</Label>
+                        <Select value={trimestreSeleccionado || undefined} onValueChange={setTrimestreSeleccionado}>
+                          <SelectTrigger className={`h-11 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}>
+                            <SelectValue placeholder="Seleccionar trimestre" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1" className="text-sm">I</SelectItem>
+                            <SelectItem value="2" className="text-sm">II</SelectItem>
+                            <SelectItem value="3" className="text-sm">III</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                    {/* Fila de botones de acción */}
-                    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                      <Button size="sm" aria-label={saving ? "Guardando calificaciones" : "Guardar todas las calificaciones"} className={`h-11 sm:h-12 font-semibold text-sm ${darkMode ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white'} mobile-button`} onClick={handleGuardarTodo} disabled={saving}><Save className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">{saving ? 'Guardando...' : 'Guardar Todo'}</span><span className="sm:hidden">{saving ? '...' : 'Guardar'}</span></Button>
-                      <Button size="sm" variant="outline" className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''} mobile-button`} onClick={handleRefrescar} disabled={refreshing} title="Refrescar calificaciones"><RefreshCw className={`h-4 w-4 sm:h-5 sm:w-5 sm:mr-1 ${refreshing ? 'animate-spin' : ''}`} /><span className="hidden sm:inline">{refreshing ? 'Refrescando...' : 'Refrescar'}</span></Button>
-                      <Button size="sm" variant="outline" className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''} mobile-button`} onClick={() => { setEditConfig(configActual); setConfigDialogOpen(true); }}><Settings className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Config</span></Button>
-                      <Button size="sm" variant="outline" className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''} mobile-button`} onClick={() => setImportDialogOpen(true)}><Upload className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Importar</span></Button>
-                      <Button size="sm" variant={promedioDecimal ? "default" : "outline"} className={`h-11 sm:h-12 text-sm ${promedioDecimal ? (darkMode ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white') : (darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : '')} mobile-button`} onClick={() => setPromedioDecimal(!promedioDecimal)} title={promedioDecimal ? "Mostrar como entero" : "Mostrar con decimales"}><Hash className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">{promedioDecimal ? "0.0" : "#"}</span></Button>
-                      {isAdmin(usuario.rol) && (
-                        <Button size="sm" variant="destructive" className={`h-11 sm:h-12 text-sm ${darkMode ? 'bg-red-700 hover:bg-red-600 border-red-600' : ''} mobile-button`} onClick={() => { setBorrarCalifTipo("grado"); setBorrarCalifDialogOpen(true); }}><Trash2 className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Borrar Todo</span></Button>
+                    
+                    {/* Separador visual */}
+                    <div className={`border-t ${darkMode ? 'border-slate-700' : 'border-slate-200'}`} />
+                    
+                    {/* Fila de config y botones */}
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                      {configActual && (
+                        <div className={`flex items-center gap-3 text-xs font-medium px-3 py-2 rounded-lg ${darkMode ? 'text-slate-400 bg-slate-800/80' : 'text-slate-600 bg-slate-50'}`}>
+                          <span className="flex items-center gap-1.5">
+                            <span className={`w-2 h-2 rounded-full ${darkMode ? 'bg-blue-500' : 'bg-blue-600'}`} />
+                            {configActual.numActividadesCotidianas} AC ({configActual.porcentajeAC}%)
+                          </span>
+                          <span className="flex items-center gap-1.5">
+                            <span className={`w-2 h-2 rounded-full ${darkMode ? 'bg-purple-500' : 'bg-purple-600'}`} />
+                            {configActual.numActividadesIntegradoras} AI ({configActual.porcentajeAI}%)
+                          </span>
+                          {configActual.tieneExamen && (
+                            <span className="flex items-center gap-1.5">
+                              <span className={`w-2 h-2 rounded-full ${darkMode ? 'bg-orange-500' : 'bg-orange-600'}`} />
+                              Ex ({configActual.porcentajeExamen}%)
+                            </span>
+                          )}
+                        </div>
                       )}
+                      <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                        <Button size="sm" aria-label={saving ? "Guardando calificaciones" : "Guardar todas las calificaciones"} className={`h-10 px-4 font-semibold text-sm gap-2 ${darkMode ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white'}`} onClick={handleGuardarTodo} disabled={saving}>
+                          <Save className="h-4 w-4" />
+                          <span>{saving ? 'Guardando...' : 'Guardar Todo'}</span>
+                        </Button>
+                        <Button size="sm" variant="outline" className={`h-10 px-3 text-sm gap-2 ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''}`} onClick={handleRefrescar} disabled={refreshing} title="Refrescar calificaciones">
+                          <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+                          <span className="hidden sm:inline">{refreshing ? 'Refrescando...' : 'Refrescar'}</span>
+                        </Button>
+                        <Button size="sm" variant="outline" className={`h-10 px-3 text-sm gap-2 ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''}`} onClick={() => { setEditConfig(configActual); setConfigDialogOpen(true); }}>
+                          <Settings className="h-4 w-4" />
+                          <span className="hidden sm:inline">Config</span>
+                        </Button>
+                        <Button size="sm" variant="outline" className={`h-10 px-3 text-sm gap-2 ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''}`} onClick={() => setImportDialogOpen(true)}>
+                          <Upload className="h-4 w-4" />
+                          <span className="hidden sm:inline">Importar</span>
+                        </Button>
+                        <Button size="sm" variant={promedioDecimal ? "default" : "outline"} className={`h-10 px-3 text-sm gap-2 ${promedioDecimal ? (darkMode ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white') : (darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : '')}`} onClick={() => setPromedioDecimal(!promedioDecimal)} title={promedioDecimal ? "Mostrar como entero" : "Mostrar con decimales"}>
+                          <Hash className="h-4 w-4" />
+                          <span className="hidden sm:inline">{promedioDecimal ? "0.0" : "#"}</span>
+                        </Button>
+                        {isAdmin(usuario.rol) && (
+                          <Button size="sm" variant="destructive" className={`h-10 px-4 text-sm gap-2 ${darkMode ? 'bg-red-700 hover:bg-red-600 border-red-600' : ''}`} onClick={() => { setBorrarCalifTipo("grado"); setBorrarCalifDialogOpen(true); }}>
+                            <Trash2 className="h-4 w-4" />
+                            <span className="hidden sm:inline">Borrar Todo</span>
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </CardContent>
