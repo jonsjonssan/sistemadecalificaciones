@@ -226,7 +226,30 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
 
   const guardarRecuperacion = useCallback(async (estudianteId: string, nota: string) => {
     if (!asignaturaCuadro) return;
-    const val = parseFloat(nota);
+    const trimmed = nota.trim();
+
+    // Si el usuario borró el valor, eliminar la recuperación anual
+    if (trimmed === "" || trimmed === "-" || trimmed === "—") {
+      setGuardandoRecup(estudianteId);
+      try {
+        const añoNum = grado?.año || new Date().getFullYear();
+        const res = await fetch(
+          `/api/recuperacion-anual?estudianteId=${estudianteId}&materiaId=${asignaturaCuadro.id}&año=${añoNum}`,
+          { method: "DELETE", credentials: "include" }
+        );
+        if (res.ok || res.status === 404) {
+          setRecuperacionesAnuales(prev => {
+            const next = new Map(prev);
+            next.delete(estudianteId);
+            return next;
+          });
+        }
+      } catch (e) { console.error(e); }
+      finally { setGuardandoRecup(null); }
+      return;
+    }
+
+    const val = parseFloat(trimmed);
     if (isNaN(val) || val < 0 || val > 10) return;
     setGuardandoRecup(estudianteId);
     try {

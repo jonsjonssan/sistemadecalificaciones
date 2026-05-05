@@ -89,3 +89,36 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Error al guardar recuperación anual" }, { status: 500 });
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await getUsuarioSession();
+    if (!session) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const estudianteId = searchParams.get("estudianteId");
+    const materiaId = searchParams.get("materiaId");
+    const año = searchParams.get("año");
+
+    if (!estudianteId || !materiaId || !año) {
+      return NextResponse.json({ error: "Faltan parámetros" }, { status: 400 });
+    }
+
+    const añoNum = parseInt(año);
+
+    await db.recuperacionAnual.deleteMany({
+      where: {
+        estudianteId,
+        materiaId,
+        año: añoNum,
+      },
+    });
+
+    return NextResponse.json({ deleted: true });
+  } catch (error) {
+    console.error("[recuperacion-anual/DELETE] Error:", error);
+    return NextResponse.json({ error: "Error al eliminar recuperación anual" }, { status: 500 });
+  }
+}
