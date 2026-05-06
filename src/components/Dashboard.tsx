@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTheme } from "next-themes";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -66,13 +66,8 @@ function getCicloDark(ciclo: CicloAsignaturas) {
   return map[ciclo.nombre] || { bg: "bg-slate-800", border: "border-slate-700", icon: "text-slate-400" };
 }
 
-function CiclosSection({ asignaturas, stats, grados, darkMode }: { asignaturas: MateriaConGrado[]; stats: GradeStats[]; grados: Grado[]; darkMode: boolean }) {
+function CiclosSection({ asignaturas, stats, grados, darkMode, selectedMaterias, setSelectedMaterias }: { asignaturas: MateriaConGrado[]; stats: GradeStats[]; grados: Grado[]; darkMode: boolean; selectedMaterias: Set<string>; setSelectedMaterias: React.Dispatch<React.SetStateAction<Set<string>>> }) {
   const [expandedCiclo, setExpandedCiclo] = useState<string | null>(null);
-  const [selectedMaterias, setSelectedMaterias] = useState<Set<string>>(() => {
-    const all = new Set<string>();
-    asignaturas.forEach(m => all.add(m.id));
-    return all;
-  });
 
   const toggleCiclo = (nombre: string) => {
     setExpandedCiclo(expandedCiclo === nombre ? null : nombre);
@@ -326,6 +321,7 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
   const [selectedGradoId, setSelectedGradoId] = useState<string>("all");
   const [loading, setLoading] = useState(true);
   const [informeOpen, setInformeOpen] = useState(false);
+  const [selectedMaterias, setSelectedMaterias] = useState<Set<string>>(new Set());
 
   const esDirectiva = ["admin", "admin-directora", "admin-codirectora"].includes(usuario.rol);
   const esDocente = ["docente", "docente-orientador"].includes(usuario.rol);
@@ -378,30 +374,42 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
     { name: "Exámenes", valor: selectedStats.promedios.examen, color: "#4f46e5" }
   ] : [];
 
-  // Promedio institucional - solo promediar grados con datos
-  const gradosConDatos = stats.filter(s =>
-    s.promedios?.cotidiana != null || s.promedios?.integradora != null || s.promedios?.examen != null
-  );
-  const promInstitucional = gradosConDatos.length > 0
-    ? Math.round((gradosConDatos.reduce((a, s) => a + (((s.promedios?.cotidiana ?? 0) + (s.promedios?.integradora ?? 0) + (s.promedios?.examen ?? 0)) / 3), 0) / gradosConDatos.length) * 100) / 100
-    : null;
-
-  // Promedio por ciclo para la tarjeta institucional
+  // Promedio por ciclo para la tarjeta institucional — basado en materias seleccionadas
   const promPorCiclo = CICLOS.map(ciclo => {
-    const statsDelCiclo = stats.filter(s => {
-      const num = parseInt(s.nombre?.match(/\d+/)?.[0] || "0");
-      return ciclo.grados.includes(num);
-    });
-    const statsConDatos = statsDelCiclo.filter(s =>
-      s.promedios?.cotidiana != null || s.promedios?.integradora != null || s.promedios?.examen != null
-    );
-    const prom = statsConDatos.length > 0
-      ? Math.round((statsConDatos.reduce((a, s) => a + (((s.promedios?.cotidiana ?? 0) + (s.promedios?.integradora ?? 0) + (s.promedios?.examen ?? 0)) / 3), 0) / statsConDatos.length) * 100) / 100
+    const gradosDelCiclo = grados.filter(g => ciclo.grados.includes(g.numero));
+    const promsGrado = gradosDelCiclo.map(g => {
+      const stat = stats.find(s => s.gradoId === g.id);
+      const mats = stat?.materias?.filter(m => selectedMaterias.has(m.id)) || [];
+      return mats.length > 0
+        ? Math.round((mats.reduce((a, m) => a + (m.promedio ?? 0), 0) / mats.length) * 100) / 100
+        : null;
+    }).filter((p): p is number => p !== null);
+
+    const prom = promsGrado.length > 0
+      ? Math.round((promsGrado.reduce((a, b) => a + b, 0) / promsGrado.length) * 100) / 100
       : null;
+
     return { nombre: ciclo.nombre, prom, color: ciclo.ringColor };
   });
 
+  // Promedio institucional: promedio de los promedios de ciclo validos
+  const promsCicloValidos = promPorCiclo.map(c => c.prom).filter((p): p is number => p !== null);
+  const promInstitucional = promsCicloValidos.length > 0
+    ? Math.round((promsCicloValidos.reduce((a, b) => a + b, 0) / promsCicloValidos.length) * 100) / 100
+    : null;
+
   const todasAsignaturasList = asignaturasAsignadas || [];
+
+  // Inicializar seleccion de materias con todas las disponibles
+  // Nota: usamos useEffect con ref de guarda para evitar cascadas innecesarias.
+  const materiasInitRef = useRef(false);
+  useEffect(() => {
+    if (!materiasInitRef.current && todasAsignaturasList.length > 0) {
+      materiasInitRef.current = true;
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSelectedMaterias(new Set(todasAsignaturasList.map(m => m.id)));
+    }
+  }, [todasAsignaturasList]);
 
   // Datos para gráfico de evolución por trimestre - solo contar datos no nulos
   const statsConAC = stats.filter(s => s.promedios?.cotidiana != null);
@@ -557,7 +565,7 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
             <BookOpen className="h-5 w-5 inline mr-2 text-teal-600" />
             Asignaturas por Ciclo
           </h3>
-          <CiclosSection asignaturas={todasAsignaturasList} stats={stats} grados={grados} darkMode={darkMode} />
+          <CiclosSection asignaturas={todasAsignaturasList} stats={stats} grados={grados} darkMode={darkMode} selectedMaterias={selectedMaterias} setSelectedMaterias={setSelectedMaterias} />
           {esDirectiva && (
             <div className="mt-4">
               <Button
