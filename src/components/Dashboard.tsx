@@ -66,6 +66,56 @@ function getCicloDark(ciclo: CicloAsignaturas) {
   return map[ciclo.nombre] || { bg: "bg-slate-800", border: "border-slate-700", icon: "text-slate-400" };
 }
 
+/**
+ * Calcula el promedio de un grado respetando la formula original (categorias)
+ * pero permitiendo filtrar por materias seleccionadas.
+ * Cuando todas las materias con datos estan seleccionadas, devuelve exactamente
+ * el mismo resultado que el calculo historico por categorias.
+ */
+function calcularPromedioGradoAjustado(
+  stat: GradeStats | undefined,
+  selectedMaterias: Set<string>
+): number | null {
+  if (!stat) return null;
+
+  // Promedio original por categorias (metodo historico)
+  const tieneDatos =
+    stat.promedios?.cotidiana != null ||
+    stat.promedios?.integradora != null ||
+    stat.promedios?.examen != null;
+  if (!tieneDatos) return null;
+
+  const promOriginal =
+    ((stat.promedios.cotidiana ?? 0) +
+      (stat.promedios.integradora ?? 0) +
+      (stat.promedios.examen ?? 0)) /
+    3;
+
+  const allMaterias = stat.materias || [];
+  const materiasConDatos = allMaterias.filter(m => m.promedio != null);
+  const selectedConDatos = materiasConDatos.filter(m => selectedMaterias.has(m.id));
+
+  if (selectedConDatos.length === 0) return null;
+
+  // Si todas las materias con datos estan seleccionadas, devolver el original
+  if (selectedConDatos.length === materiasConDatos.length) {
+    return Math.round(promOriginal * 100) / 100;
+  }
+
+  // Ajuste proporcional segun las materias seleccionadas
+  const promTodas =
+    materiasConDatos.reduce((a, m) => a + (m.promedio ?? 0), 0) /
+    materiasConDatos.length;
+
+  const promSeleccionadas =
+    selectedConDatos.reduce((a, m) => a + (m.promedio ?? 0), 0) /
+    selectedConDatos.length;
+
+  if (promTodas === 0) return null;
+
+  return Math.round(promOriginal * (promSeleccionadas / promTodas) * 100) / 100;
+}
+
 function CiclosSection({ asignaturas, stats, grados, darkMode, selectedMaterias, setSelectedMaterias }: { asignaturas: MateriaConGrado[]; stats: GradeStats[]; grados: Grado[]; darkMode: boolean; selectedMaterias: Set<string>; setSelectedMaterias: React.Dispatch<React.SetStateAction<Set<string>>> }) {
   const [expandedCiclo, setExpandedCiclo] = useState<string | null>(null);
 
@@ -132,15 +182,14 @@ function CiclosSection({ asignaturas, stats, grados, darkMode, selectedMaterias,
         const allSelected = allMateriaIds.every(id => selectedMaterias.has(id));
         const someSelected = allMateriaIds.some(id => selectedMaterias.has(id)) && !allSelected;
 
-        // Promedios dinamicos por grado (solo materias seleccionadas)
-        const promPorGrado = porGrado.map(g => {
-          const stat = stats.find(s => s.gradoId === g.gradoId);
-          const mats = stat?.materias?.filter(m => selectedMaterias.has(m.id)) || [];
-          const prom = mats.length > 0
-            ? Math.round((mats.reduce((a, m) => a + (m.promedio ?? 0), 0) / mats.length) * 100) / 100
-            : null;
-          return { ...g, promedio: prom };
-        });
+        // Promedios dinamicos por grado (ajustado segun seleccion de materias)
+        const promPorGrado = porGrado.map(g => ({
+          ...g,
+          promedio: calcularPromedioGradoAjustado(
+            stats.find(s => s.gradoId === g.gradoId),
+            selectedMaterias
+          ),
+        }));
 
         // Promedio del ciclo: promedio de los promedios de grado que tengan datos
         const promsValidos = promPorGrado.map(g => g.promedio).filter((p): p is number => p !== null);
@@ -377,13 +426,9 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
   // Promedio por ciclo para la tarjeta institucional — basado en materias seleccionadas
   const promPorCiclo = CICLOS.map(ciclo => {
     const gradosDelCiclo = grados.filter(g => ciclo.grados.includes(g.numero));
-    const promsGrado = gradosDelCiclo.map(g => {
-      const stat = stats.find(s => s.gradoId === g.id);
-      const mats = stat?.materias?.filter(m => selectedMaterias.has(m.id)) || [];
-      return mats.length > 0
-        ? Math.round((mats.reduce((a, m) => a + (m.promedio ?? 0), 0) / mats.length) * 100) / 100
-        : null;
-    }).filter((p): p is number => p !== null);
+    const promsGrado = gradosDelCiclo
+      .map(g => calcularPromedioGradoAjustado(stats.find(s => s.gradoId === g.id), selectedMaterias))
+      .filter((p): p is number => p !== null);
 
     const prom = promsGrado.length > 0
       ? Math.round((promsGrado.reduce((a, b) => a + b, 0) / promsGrado.length) * 100) / 100
@@ -406,7 +451,7 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
   useEffect(() => {
     if (!materiasInitRef.current && todasAsignaturasList.length > 0) {
       materiasInitRef.current = true;
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+       
       setSelectedMaterias(new Set(todasAsignaturasList.map(m => m.id)));
     }
   }, [todasAsignaturasList]);
