@@ -1098,30 +1098,30 @@ useEffect(() => {
   };
 
   const getPromedioFinalForStudent = useCallback((estudianteId: string) => {
-    const calif = calificaciones.find(c => c.estudianteId === estudianteId);
+    const calif = calificaciones.find(c => c.estudianteId === estudianteId && c.materiaId === asignaturaSeleccionada && c.trimestre === parseInt(trimestreSeleccionado));
     return calif?.promedioFinal ?? null;
-  }, [calificaciones]);
+  }, [calificaciones, asignaturaSeleccionada, trimestreSeleccionado]);
 
   const getPromedioACForStudent = useCallback((estudianteId: string) => {
-    const calif = calificaciones.find(c => c.estudianteId === estudianteId);
+    const calif = calificaciones.find(c => c.estudianteId === estudianteId && c.materiaId === asignaturaSeleccionada && c.trimestre === parseInt(trimestreSeleccionado));
     if (calif?.calificacionAC === null || calif?.calificacionAC === undefined) return null;
     const config = configActual;
     if (!config) return calif.calificacionAC;
     return calif.calificacionAC * (config.porcentajeAC / 100);
-  }, [calificaciones, configActual]);
+  }, [calificaciones, configActual, asignaturaSeleccionada, trimestreSeleccionado]);
 
   const getPromedioAIForStudent = useCallback((estudianteId: string) => {
-    const calif = calificaciones.find(c => c.estudianteId === estudianteId);
+    const calif = calificaciones.find(c => c.estudianteId === estudianteId && c.materiaId === asignaturaSeleccionada && c.trimestre === parseInt(trimestreSeleccionado));
     if (calif?.calificacionAI === null || calif?.calificacionAI === undefined) return null;
     const config = configActual;
     if (!config) return calif.calificacionAI;
     return calif.calificacionAI * (config.porcentajeAI / 100);
-  }, [calificaciones, configActual]);
+  }, [calificaciones, configActual, asignaturaSeleccionada, trimestreSeleccionado]);
 
   const getExamenForStudent = useCallback((estudianteId: string) => {
-    const calif = calificaciones.find(c => c.estudianteId === estudianteId);
+    const calif = calificaciones.find(c => c.estudianteId === estudianteId && c.materiaId === asignaturaSeleccionada && c.trimestre === parseInt(trimestreSeleccionado));
     return calif?.examenTrimestral ?? null;
-  }, [calificaciones]);
+  }, [calificaciones, asignaturaSeleccionada, trimestreSeleccionado]);
 
   // Filtrar y ordenar estudiantes (memoizado para evitar O(n²) cada render)
   const filteredAndSortedStudents = useMemo(() => {
@@ -1177,8 +1177,8 @@ useEffect(() => {
   }, [estudiantes, calificaciones, configActual, busquedaEstudiante, filtroEstado, sortColumn, sortDirection, getPromedioFinalForStudent, getPromedioACForStudent, getPromedioAIForStudent, getExamenForStudent]);
 
   const estadosCompletitud = useMemo(() =>
-    contarEstados(estudiantes, calificaciones, asignaturaSeleccionada, configActual),
-    [estudiantes, calificaciones, asignaturaSeleccionada, configActual]
+    contarEstados(estudiantes, calificaciones, asignaturaSeleccionada, parseInt(trimestreSeleccionado), configActual),
+    [estudiantes, calificaciones, asignaturaSeleccionada, trimestreSeleccionado, configActual]
   );
 
   // Navegación por teclado en tabla de calificaciones
@@ -1238,7 +1238,7 @@ useEffect(() => {
       ...(configActual.tieneExamen ? ["Examen", "Prom Ex"] : []), "Rec.", "Prom. Final"];
 
     const rows = filtered.map((est, idx) => {
-      const calif = calificaciones.find(c => c.estudianteId === est.id);
+      const calif = calificaciones.find(c => c.estudianteId === est.id && c.materiaId === asignaturaSeleccionada && c.trimestre === parseInt(trimestreSeleccionado));
       const notasAC = calif?.actividadesCotidianas ? parseNotas(calif.actividadesCotidianas, configActual.numActividadesCotidianas) : [];
       const notasAI = calif?.actividadesIntegradoras ? parseNotas(calif.actividadesIntegradoras, configActual.numActividadesIntegradoras) : [];
       const promAC = calif?.calificacionAC !== null && calif?.calificacionAC !== undefined ? calif.calificacionAC * (configActual.porcentajeAC / 100) : null;
@@ -1330,7 +1330,7 @@ useEffect(() => {
 
     // Filas de datos
     filtered.forEach(est => {
-      const calif = calificaciones.find(c => c.estudianteId === est.id);
+      const calif = calificaciones.find(c => c.estudianteId === est.id && c.materiaId === asignaturaSeleccionada && c.trimestre === parseInt(trimestreSeleccionado));
       const notasAC = calif?.actividadesCotidianas ? parseNotas(calif.actividadesCotidianas, configActual.numActividadesCotidianas) : [];
       const notasAI = calif?.actividadesIntegradoras ? parseNotas(calif.actividadesIntegradoras, configActual.numActividadesIntegradoras) : [];
       const promAC = calif?.calificacionAC !== null && calif?.calificacionAC !== undefined ? calif.calificacionAC * (configActual.porcentajeAC / 100) : null;
@@ -1540,7 +1540,7 @@ useEffect(() => {
     }
   };
 
-  const getCalificacion = (estudianteId: string) => calificaciones.find(c => c.estudianteId === estudianteId && c.materiaId === asignaturaSeleccionada);
+  const getCalificacion = (estudianteId: string) => calificaciones.find(c => c.estudianteId === estudianteId && c.materiaId === asignaturaSeleccionada && c.trimestre === parseInt(trimestreSeleccionado));
 
   // Agrupar asignaturas por grado para el selector
   const asignaturasPorGrado = todasAsignaturas.reduce((acc, m) => {
@@ -2348,7 +2348,7 @@ useEffect(() => {
                             ))
                           ) : (
                             filteredAndSortedStudents.map((est, idx, arr) => {
-                              const calif = calificaciones.find(c => c.estudianteId === est.id && c.materiaId === asignaturaSeleccionada);
+                               const calif = calificaciones.find(c => c.estudianteId === est.id && c.materiaId === asignaturaSeleccionada && c.trimestre === parseInt(trimestreSeleccionado));
                               const califId = calif?.id ?? `new-${est.id}`;
                               return <CalificacionRow
                                 key={`${est.id}-${asignaturaSeleccionada}-${trimestreSeleccionado}-${configActual?.numActividadesCotidianas ?? 4}-${configActual?.numActividadesIntegradoras ?? 1}`}

@@ -26,11 +26,12 @@ export const contarEstados = (
   estudiantes: Array<{ id: string }>,
   calificaciones: Calificacion[],
   materiaId: string,
+  trimestre: number,
   config: ConfigActividadPartial | null
 ): { completo: number; parcial: number; vacio: number; total: number } => {
   const result = { completo: 0, parcial: 0, vacio: 0, total: estudiantes.length };
   for (const est of estudiantes) {
-    const calif = calificaciones.find(c => c.estudianteId === est.id && c.materiaId === materiaId);
+    const calif = calificaciones.find(c => c.estudianteId === est.id && c.materiaId === materiaId && c.trimestre === trimestre);
     result[getEstadoCompletitud(calif, config)]++;
   }
   return result;
