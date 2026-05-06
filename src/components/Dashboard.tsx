@@ -38,6 +38,7 @@ interface GradeStats {
   };
   topEstudiantes: { id: string, nombre: string, numero: number, promedio: number }[];
   alertas: { id: string, nombre: string, numero: number, promedio: number }[];
+  materias?: { id: string; nombre: string; promedio: number | null }[];
 }
 
 interface CicloAsignaturas {
@@ -67,9 +68,39 @@ function getCicloDark(ciclo: CicloAsignaturas) {
 
 function CiclosSection({ asignaturas, stats, grados, darkMode }: { asignaturas: MateriaConGrado[]; stats: GradeStats[]; grados: Grado[]; darkMode: boolean }) {
   const [expandedCiclo, setExpandedCiclo] = useState<string | null>(null);
+  const [selectedMaterias, setSelectedMaterias] = useState<Set<string>>(() => {
+    const all = new Set<string>();
+    asignaturas.forEach(m => all.add(m.id));
+    return all;
+  });
 
   const toggleCiclo = (nombre: string) => {
     setExpandedCiclo(expandedCiclo === nombre ? null : nombre);
+  };
+
+  const toggleMateria = (id: string) => {
+    setSelectedMaterias(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const selectAllMaterias = (ids: string[]) => {
+    setSelectedMaterias(prev => {
+      const next = new Set(prev);
+      ids.forEach(id => next.add(id));
+      return next;
+    });
+  };
+
+  const deselectAllMaterias = (ids: string[]) => {
+    setSelectedMaterias(prev => {
+      const next = new Set(prev);
+      ids.forEach(id => next.delete(id));
+      return next;
+    });
   };
 
   return (
@@ -82,11 +113,17 @@ function CiclosSection({ asignaturas, stats, grados, darkMode }: { asignaturas: 
 
         // Agrupar materias por grado
         const porGrado = ciclo.grados.map(num => {
-          const gradoMaterias = materiasDelCiclo.filter(m => m.grado?.numero === num).map(m => m.nombre);
-          const mat = materiasDelCiclo.find(m => m.grado?.numero === num);
+          const gradoMaterias = materiasDelCiclo.filter(m => m.grado?.numero === num);
+          const mat = gradoMaterias[0];
           const seccion = mat?.grado?.seccion ?? "A";
           const gradoInfo = grados.find(g => g.numero === num);
-          return { grado: num, seccion, materias: gradoMaterias, estudianteCount: gradoInfo?._count?.estudiantes ?? 0 };
+          return {
+            grado: num,
+            gradoId: gradoInfo?.id ?? "",
+            seccion,
+            materias: gradoMaterias.map(m => ({ id: m.id, nombre: m.nombre })),
+            estudianteCount: gradoInfo?._count?.estudiantes ?? 0
+          };
         }).filter(g => g.materias.length > 0);
 
         if (porGrado.length === 0) return null;
@@ -95,29 +132,26 @@ function CiclosSection({ asignaturas, stats, grados, darkMode }: { asignaturas: 
         const totalEstudiantesCiclo = porGrado.reduce((a, g) => a + g.estudianteCount, 0);
         const isOpen = expandedCiclo === ciclo.nombre;
 
-        // Stats de este ciclo
-        const statsDelCiclo = stats.filter(s => {
-          const num = parseInt(s.nombre?.match(/\d+/)?.[0] || "0");
-          return ciclo.grados.includes(num);
-        });
+        // IDs de todas las materias de este ciclo
+        const allMateriaIds = porGrado.flatMap(g => g.materias.map(m => m.id));
+        const allSelected = allMateriaIds.every(id => selectedMaterias.has(id));
+        const someSelected = allMateriaIds.some(id => selectedMaterias.has(id)) && !allSelected;
 
-        // Promedio del ciclo - solo promediar grados que tengan al menos un tipo con datos
-        const statsConDatos = statsDelCiclo.filter(s =>
-          s.promedios?.cotidiana != null || s.promedios?.integradora != null || s.promedios?.examen != null
-        );
-        const promCiclo = statsConDatos.length > 0
-          ? Math.round((statsConDatos.reduce((a, s) => a + (((s.promedios?.cotidiana ?? 0) + (s.promedios?.integradora ?? 0) + (s.promedios?.examen ?? 0)) / 3), 0) / statsConDatos.length) * 100) / 100
-          : null;
-
-        // Promedio por grado - null sin datos
+        // Promedios dinamicos por grado (solo materias seleccionadas)
         const promPorGrado = porGrado.map(g => {
-          const stat = stats.find(s => s.nombre?.includes(`${g.grado}°`));
-          const tieneDatos = stat && (stat.promedios?.cotidiana != null || stat.promedios?.integradora != null || stat.promedios?.examen != null);
-          const prom = tieneDatos && stat
-            ? Math.round(((stat.promedios?.cotidiana ?? 0) + (stat.promedios?.integradora ?? 0) + (stat.promedios?.examen ?? 0)) / 3 * 100) / 100
+          const stat = stats.find(s => s.gradoId === g.gradoId);
+          const mats = stat?.materias?.filter(m => selectedMaterias.has(m.id)) || [];
+          const prom = mats.length > 0
+            ? Math.round((mats.reduce((a, m) => a + (m.promedio ?? 0), 0) / mats.length) * 100) / 100
             : null;
           return { ...g, promedio: prom };
         });
+
+        // Promedio del ciclo: promedio de los promedios de grado que tengan datos
+        const promsValidos = promPorGrado.map(g => g.promedio).filter((p): p is number => p !== null);
+        const promCiclo = promsValidos.length > 0
+          ? Math.round((promsValidos.reduce((a, b) => a + b, 0) / promsValidos.length) * 100) / 100
+          : null;
 
         return (
           <Card key={ciclo.nombre} className={`shadow-sm overflow-hidden ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-slate-100'}`}>
@@ -162,32 +196,69 @@ function CiclosSection({ asignaturas, stats, grados, darkMode }: { asignaturas: 
                   </div>
                 </div>
 
+                {/* Selector global del ciclo */}
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id={`select-all-${ciclo.nombre}`}
+                    checked={allSelected}
+                    ref={el => { if (el) el.indeterminate = someSelected; }}
+                    onChange={(e) => {
+                      if (e.target.checked) selectAllMaterias(allMateriaIds);
+                      else deselectAllMaterias(allMateriaIds);
+                    }}
+                    className="rounded border-slate-300 text-teal-600 focus:ring-teal-500 h-4 w-4"
+                  />
+                  <label htmlFor={`select-all-${ciclo.nombre}`} className={`text-xs font-semibold cursor-pointer ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
+                    {allSelected ? "Deseleccionar todas" : someSelected ? "Seleccionar restantes" : "Seleccionar todas"} las asignaturas
+                  </label>
+                </div>
+
                 {/* Detalle por grado */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {promPorGrado.map(grupo => (
-                    <div key={grupo.grado} className={`rounded-lg border p-3 ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                          {grupo.grado}° "{grupo.seccion}"
-                        </h4>
-                        <Badge variant={grupo.promedio != null && Math.round(grupo.promedio) >= 5 ? "default" : "destructive"} className={`text-[10px] h-5 ${grupo.promedio != null && Math.round(grupo.promedio) >= 5 ? (darkMode ? 'bg-teal-600' : 'bg-teal-600') : ''}`}>
-                          {grupo.promedio != null ? grupo.promedio.toFixed(1) : "N/A"}
-                        </Badge>
+                  {promPorGrado.map(grupo => {
+                    const stat = stats.find(s => s.gradoId === grupo.gradoId);
+                    return (
+                      <div key={grupo.grado} className={`rounded-lg border p-3 ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                            {grupo.grado}° "{grupo.seccion}"
+                          </h4>
+                          <Badge variant={grupo.promedio != null && Math.round(grupo.promedio) >= 5 ? "default" : "destructive"} className={`text-[10px] h-5 ${grupo.promedio != null && Math.round(grupo.promedio) >= 5 ? (darkMode ? 'bg-teal-600' : 'bg-teal-600') : ''}`}>
+                            {grupo.promedio != null ? grupo.promedio.toFixed(1) : "N/A"}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-1 mb-2">
+                          <Users className={`h-3 w-3 ${darkMode ? 'text-slate-600' : 'text-slate-400'}`} />
+                          <span className={`text-[10px] ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>{grupo.estudianteCount} estudiantes</span>
+                        </div>
+                        <ul className="space-y-1.5">
+                          {grupo.materias.sort((a, b) => a.nombre.localeCompare(b.nombre)).map((mat) => {
+                            const statMateria = stat?.materias?.find(m => m.id === mat.id);
+                            const isSelected = selectedMaterias.has(mat.id);
+                            return (
+                              <li key={mat.id} className="text-xs flex items-center gap-2">
+                                <input
+                                  type="checkbox"
+                                  checked={isSelected}
+                                  onChange={() => toggleMateria(mat.id)}
+                                  className="rounded border-slate-300 text-teal-600 focus:ring-teal-500 h-3 w-3 shrink-0"
+                                />
+                                <span className={`flex-1 truncate ${isSelected ? (darkMode ? 'text-slate-200' : 'text-slate-800') : (darkMode ? 'text-slate-500 line-through' : 'text-slate-400 line-through')}`} title={mat.nombre}>
+                                  {mat.nombre}
+                                </span>
+                                {statMateria?.promedio != null && (
+                                  <Badge variant="secondary" className={`shrink-0 text-[10px] h-4 px-1 ${darkMode ? 'bg-slate-700 text-slate-300' : ''}`}>
+                                    {statMateria.promedio.toFixed(1)}
+                                  </Badge>
+                                )}
+                              </li>
+                            );
+                          })}
+                        </ul>
                       </div>
-                      <div className="flex items-center gap-1 mb-2">
-                        <Users className={`h-3 w-3 ${darkMode ? 'text-slate-600' : 'text-slate-400'}`} />
-                        <span className={`text-[10px] ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>{grupo.estudianteCount} estudiantes</span>
-                      </div>
-                      <ul className="space-y-1">
-                        {grupo.materias.sort().map((mat, i) => (
-                          <li key={i} className={`text-xs flex items-center gap-2 ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                            <span className={`h-1.5 w-1.5 rounded-full shrink-0 ${darkMode ? 'bg-slate-600' : 'bg-slate-300'}`} />
-                            {mat}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </CardContent>
             )}
@@ -581,9 +652,9 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
                     </h4>
                     <div className="space-y-2">
                       {selectedStats.topEstudiantes.length > 0 ? selectedStats.topEstudiantes.map((est, i) => (
-                        <div key={est.id} className="flex items-center justify-between text-xs sm:text-sm">
-                          <span className={`truncate max-w-[100px] sm:max-w-[150px] ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>{i + 1}. {est.nombre}</span>
-                          <Badge variant="outline" className={`py-0 h-5 text-xs ${darkMode ? 'bg-slate-800 text-teal-400 border-teal-700' : 'bg-white text-teal-700 border-teal-200'}`}>
+                        <div key={est.id} className="flex items-center justify-between text-xs sm:text-sm gap-2">
+                          <span className={`flex-1 truncate ${darkMode ? 'text-slate-300' : 'text-slate-700'}`} title={`${i + 1}. ${est.nombre}`}>{i + 1}. {est.nombre}</span>
+                          <Badge variant="outline" className={`shrink-0 py-0 h-5 text-xs ${darkMode ? 'bg-slate-800 text-teal-400 border-teal-700' : 'bg-white text-teal-700 border-teal-200'}`}>
                             {est.promedio.toFixed(1)}
                           </Badge>
                         </div>
@@ -596,9 +667,9 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
                     </h4>
                     <div className="space-y-2">
                       {selectedStats.alertas.length > 0 ? selectedStats.alertas.map((est, i) => (
-                        <div key={est.id} className="flex items-center justify-between text-xs sm:text-sm">
-                          <span className={`truncate max-w-[100px] sm:max-w-[150px] ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>{est.nombre}</span>
-                          <Badge variant="destructive" className="bg-red-500 text-white font-bold py-0 h-5 text-xs">
+                        <div key={est.id} className="flex items-center justify-between text-xs sm:text-sm gap-2">
+                          <span className={`flex-1 truncate ${darkMode ? 'text-slate-300' : 'text-slate-700'}`} title={est.nombre}>{est.nombre}</span>
+                          <Badge variant="destructive" className="shrink-0 bg-red-500 text-white font-bold py-0 h-5 text-xs">
                             {est.promedio.toFixed(1)}
                           </Badge>
                         </div>

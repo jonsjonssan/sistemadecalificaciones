@@ -41,9 +41,10 @@ export async function GET(req: Request) {
 
     const statsPorGrado = await Promise.all(gradosFiltrados.map(async (grado: any) => {
       const calificaciones = await sql`
-        SELECT c.*, e.nombre as estudiante_nombre, e.numero as estudiante_numero
+        SELECT c.*, e.nombre as estudiante_nombre, e.numero as estudiante_numero, m.id as materia_id, m.nombre as materia_nombre
         FROM "Calificacion" c
         JOIN "Estudiante" e ON c."estudianteId" = e.id
+        JOIN "Materia" m ON c."materiaId" = m.id
         WHERE c.trimestre = ${trimestre} AND e."gradoId" = ${grado.id}
       `;
 
@@ -52,6 +53,7 @@ export async function GET(req: Request) {
       let sumEx = 0, countEx = 0;
 
       const studentAverages: Record<string, { id: string, nombre: string, numero: number, suma: number, cuenta: number }> = {};
+      const materiaAverages: Record<string, { id: string, nombre: string, suma: number, cuenta: number }> = {};
 
       calificaciones.forEach((c: any) => {
         if (c.calificacionAC !== null) { sumAC += Number(c.calificacionAC); countAC++; }
@@ -71,6 +73,14 @@ export async function GET(req: Request) {
         if (c.promedioFinal !== null) {
           studentAverages[c.estudianteId].suma += Number(c.promedioFinal);
           studentAverages[c.estudianteId].cuenta++;
+        }
+
+        if (c.materia_id && c.promedioFinal !== null) {
+          if (!materiaAverages[c.materia_id]) {
+            materiaAverages[c.materia_id] = { id: c.materia_id, nombre: c.materia_nombre, suma: 0, cuenta: 0 };
+          }
+          materiaAverages[c.materia_id].suma += Number(c.promedioFinal);
+          materiaAverages[c.materia_id].cuenta++;
         }
       });
 
@@ -95,7 +105,12 @@ export async function GET(req: Request) {
           examen: countEx > 0 ? sumEx / countEx : null
         },
         topEstudiantes: ranking.slice(0, 3),
-        alertas: ranking.slice(-3).reverse()
+        alertas: ranking.slice(-3).reverse(),
+        materias: Object.values(materiaAverages).map((m: any) => ({
+          id: m.id,
+          nombre: m.nombre,
+          promedio: m.cuenta > 0 ? Math.round((m.suma / m.cuenta) * 100) / 100 : null
+        }))
       };
     }));
 

@@ -235,6 +235,7 @@ export const CalificacionRow = React.memo(function CalificacionRow({
   const retryCountRef = useRef(0);
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scheduleRetryRef = useRef<(() => void) | null>(null);
+  const lastSavedAtRef = useRef<number>(0);
 
 // Detectar cuando calificacion es eliminada (cambia de tener valor a undefined)
 const wasDeleted = useRef(false);
@@ -271,6 +272,17 @@ useEffect(() => {
       const newAI = parseNotas(calificacion?.actividadesIntegradoras ?? null, numAI);
       const newEx = calificacion?.examenTrimestral ?? null;
       const newRc = calificacion?.recuperacion ?? null;
+
+      // Proteccion contra lag de replica de BD: si acabamos de guardar exitosamente
+      // y la prop entrante viene vacia mientras el estado local tiene datos,
+      // ignoramos la sincronizacion durante 5 segundos para evitar que el polling
+      // sobrescriba el valor recien guardado antes de que se replique.
+      const localHasData = acNotas.some(n => n !== null) || aiNotas.some(n => n !== null) || examen !== null || recup !== null;
+      const incomingHasData = newAC.some(n => n !== null) || newAI.some(n => n !== null) || newEx !== null || newRc !== null;
+      if (localHasData && !incomingHasData && Date.now() - lastSavedAtRef.current < 5000) {
+        return;
+      }
+
       setAcNotas(newAC);
       setAiNotas(newAI);
       setExamen(newEx);
@@ -450,6 +462,7 @@ useEffect(() => {
       setDirty(false);
       setSaveError(false);
       retryCountRef.current = 0;
+      lastSavedAtRef.current = Date.now();
       if (retryTimerRef.current) {
         clearTimeout(retryTimerRef.current);
         retryTimerRef.current = null;
