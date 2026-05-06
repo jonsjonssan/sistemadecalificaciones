@@ -247,7 +247,11 @@ export async function POST(request: NextRequest) {
       where: { id: estudianteId },
       select: { gradoId: true, nombre: true },
     });
-    if (materiaGrado && estudianteGrado && materiaGrado.gradoId !== estudianteGrado.gradoId) {
+    // Comparar por numero/seccion para tolerar duplicados de grado en la BD
+    const gradoMateria = materiaGrado ? await db.grado.findUnique({ where: { id: materiaGrado.gradoId }, select: { numero: true, seccion: true } }) : null;
+    const gradoEstudiante = estudianteGrado ? await db.grado.findUnique({ where: { id: estudianteGrado.gradoId }, select: { numero: true, seccion: true } }) : null;
+    const mismoGrado = gradoMateria && gradoEstudiante && gradoMateria.numero === gradoEstudiante.numero && gradoMateria.seccion === gradoEstudiante.seccion;
+    if (materiaGrado && estudianteGrado && !mismoGrado) {
       return NextResponse.json({
         error: "Inconsistencia de grado",
         code: "GRADE_MISMATCH",

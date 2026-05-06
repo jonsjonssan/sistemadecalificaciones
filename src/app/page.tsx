@@ -766,7 +766,10 @@ useEffect(() => {
   const handleSaveCalificacion = useCallback(async (estudianteId: string, materiaId: string, data: { actividadesCotidianas: (number | null)[]; actividadesIntegradoras: (number | null)[]; examenTrimestral: number | null; recuperacion: number | null; }): Promise<Calificacion> => {
     const est = estudiantes.find(e => e.id === estudianteId);
     const mat = asignaturas.find(a => a.id === materiaId);
-    if (!est || !mat || est.gradoId !== mat.gradoId) {
+    const estGrado = grados.find(g => g.id === est?.gradoId);
+    const matGrado = grados.find(g => g.id === mat?.gradoId);
+    const mismoGrado = estGrado && matGrado && estGrado.numero === matGrado.numero && estGrado.seccion === matGrado.seccion;
+    if (!est || !mat || !mismoGrado) {
       const nombreEst = est?.nombre ?? estudianteId;
       const nombreMat = mat?.nombre ?? materiaId;
       toast({ title: "Inconsistencia de datos", description: `El estudiante "${nombreEst}" no pertenece al grado de la materia "${nombreMat}". Recarga la página o contacta al administrador.`, variant: "destructive" });
@@ -2029,7 +2032,7 @@ useEffect(() => {
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div className="space-y-2">
                         <Label className={`text-sm font-medium ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Grado</Label>
-                        <Select value={gradoSeleccionado || ""} onValueChange={(val) => { setGradoSeleccionado(val); saveUserState({ gradoSeleccionado: val }); }}>
+                        <Select value={gradoSeleccionado || ""} onValueChange={(val) => { setGradoSeleccionado(val); setAsignaturaSeleccionada(""); saveUserState({ gradoSeleccionado: val }); }}>
                           <SelectTrigger className={`h-11 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}>
                             <SelectValue placeholder="Seleccionar grado" />
                           </SelectTrigger>
@@ -2436,7 +2439,7 @@ useEffect(() => {
                 )}
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="mb-3"><Select value={gradoSeleccionado} onValueChange={setGradoSeleccionado}><SelectTrigger className={`w-full md:w-[250px] h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue /></SelectTrigger><SelectContent>{gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}" ({g._count?.estudiantes || 0})</SelectItem>)}</SelectContent></Select></div>
+                <div className="mb-3"><Select value={gradoSeleccionado} onValueChange={(val) => { setGradoSeleccionado(val); setAsignaturaSeleccionada(""); }}><SelectTrigger className={`w-full md:w-[250px] h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue /></SelectTrigger><SelectContent>{gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}" ({g._count?.estudiantes || 0})</SelectItem>)}</SelectContent></Select></div>
                 <div className={`rounded border ${darkMode ? 'border-slate-700' : ''}`}>
                   <EstudiantesTable
                     estudiantes={estudiantes}
@@ -2458,7 +2461,7 @@ useEffect(() => {
               <CardHeader className={`py-3 px-4 ${darkMode ? 'border-slate-700' : ''}`}><CardTitle className="text-base">Generación de Boletas</CardTitle></CardHeader>
               <CardContent className="pt-0 space-y-3">
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                  <div className="flex-1"><Label className="text-sm sm:text-base font-medium">Grado</Label><Select value={gradoSeleccionado} onValueChange={setGradoSeleccionado}><SelectTrigger className={`h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue /></SelectTrigger><SelectContent>{gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}"</SelectItem>)}</SelectContent></Select></div>
+                  <div className="flex-1"><Label className="text-sm sm:text-base font-medium">Grado</Label><Select value={gradoSeleccionado} onValueChange={(val) => { setGradoSeleccionado(val); setAsignaturaSeleccionada(""); }}><SelectTrigger className={`h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue /></SelectTrigger><SelectContent>{gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}"</SelectItem>)}</SelectContent></Select></div>
                   <div className="w-full sm:w-32"><Label className="text-sm sm:text-base font-medium">Trimestre</Label><Select value={trimestreSeleccionado || undefined} onValueChange={setTrimestreSeleccionado}><SelectTrigger className={`h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue placeholder="Seleccionar trimestre" /></SelectTrigger><SelectContent><SelectItem value="1">I</SelectItem><SelectItem value="2">II</SelectItem><SelectItem value="3">III</SelectItem></SelectContent></Select></div>
                 </div>
                 {gradoSeleccionado && estudiantes.length > 0 && (
