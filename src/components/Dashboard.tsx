@@ -456,19 +456,19 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
     }
   }, [todasAsignaturasList]);
 
-  // Datos para gráfico de evolución por trimestre - solo contar datos no nulos
+  // Datos para gráfico de evolución por categoría - solo contar datos no nulos
   const statsConAC = stats.filter(s => s.promedios?.cotidiana != null);
   const statsConAI = stats.filter(s => s.promedios?.integradora != null);
   const statsConEx = stats.filter(s => s.promedios?.examen != null);
-  const trimesterChartData: Array<{ name: string; value: number; target: number }> = [];
+  const evolutionChartData: Array<{ name: string; value: number; target: number }> = [];
   if (statsConAC.length > 0) {
-    trimesterChartData.push({ name: "T1", value: Math.round(statsConAC.reduce((a, s) => a + (s.promedios?.cotidiana ?? 0), 0) / statsConAC.length * 100) / 100, target: 6.0 });
+    evolutionChartData.push({ name: "Cotidianas", value: Math.round(statsConAC.reduce((a, s) => a + (s.promedios?.cotidiana ?? 0), 0) / statsConAC.length * 100) / 100, target: 6.0 });
   }
   if (statsConAI.length > 0) {
-    trimesterChartData.push({ name: "T2", value: Math.round(statsConAI.reduce((a, s) => a + (s.promedios?.integradora ?? 0), 0) / statsConAI.length * 100) / 100, target: 7.0 });
+    evolutionChartData.push({ name: "Integradoras", value: Math.round(statsConAI.reduce((a, s) => a + (s.promedios?.integradora ?? 0), 0) / statsConAI.length * 100) / 100, target: 7.0 });
   }
   if (statsConEx.length > 0) {
-    trimesterChartData.push({ name: "T3", value: Math.round(statsConEx.reduce((a, s) => a + (s.promedios?.examen ?? 0), 0) / statsConEx.length * 100) / 100, target: 7.0 });
+    evolutionChartData.push({ name: "Exámenes", value: Math.round(statsConEx.reduce((a, s) => a + (s.promedios?.examen ?? 0), 0) / statsConEx.length * 100) / 100, target: 7.0 });
   }
 
   return (
@@ -589,12 +589,12 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
         </Card>
       )}
 
-      {/* Evolución por Trimestre */}
-      {esDirectiva && trimesterChartData.length > 0 && (
+      {/* Promedio por Categoría */}
+      {esDirectiva && evolutionChartData.length > 0 && (
         <GradeChart
-          data={trimesterChartData}
-          title="Evolución por Trimestres"
-          description="Promedio institucional en cada período"
+          data={evolutionChartData}
+          title="Promedio por Categoría"
+          description="Promedio institucional por tipo de actividad"
           icon={TrendingUp}
           showArea
           showTarget

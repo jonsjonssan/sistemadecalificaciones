@@ -71,10 +71,13 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
   const [dateToDelete, setDateToDelete] = useState<string>("");
   const [deletingDate, setDeletingDate] = useState<string | null>(null);
 
+  const activeStudents = estudiantes.filter(e => e.activo);
+
   // Auto-save individual por estudiante
   const [savingByStudent, setSavingByStudent] = useState<Record<string, boolean>>({});
   const [savedByStudent, setSavedByStudent] = useState<Record<string, boolean>>({});
   const autoSaveTimersRef = useRef<Record<string, NodeJS.Timeout>>({});
+  const savedIndicatorTimersRef = useRef<Record<string, NodeJS.Timeout>>({});
 
   const initializeAttendance = useCallback(() => {
     // No asumir presente por defecto; el docente debe marcar explícitamente
@@ -106,12 +109,14 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
       if (res.ok) {
         const data = await res.json();
         console.log("loadAsistencia - data:", data);
+        if (abortController.signal.aborted) return;
         const loadedAsistencias: Record<string, string> = { ...initializeAttendance() };
         data.forEach((a: any) => {
           loadedAsistencias[a.estudianteId] = a.estado;
         });
         setAsistencias(loadedAsistencias);
       } else {
+        if (abortController.signal.aborted) return;
         setAsistencias(initializeAttendance());
       }
     } catch (error: any) {
@@ -203,7 +208,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
     // Obtener todos los estudiantes del grado
-    const estudiantesList = estudiantes.sort((a, b) => a.numero - b.numero);
+    const estudiantesList = [...estudiantes].sort((a, b) => a.numero - b.numero);
 
     // Obtener asistencia de todos los estudiantes
     const asistenciaTodos: Record<string, Record<string, string>> = {};
@@ -337,23 +342,18 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
 
   const downloadPDFAnual = (estudianteId?: string) => {
     if (!gradoId) return;
+    if (!estudianteId) {
+      toast({ title: "Selecciona un estudiante para generar el PDF anual", variant: "destructive" });
+      return;
+    }
     const grado = grados.find(g => g.id === gradoId);
     const year = Number(selectedYear);
     const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
     const isLeap = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
     const daysInMonths = [31, isLeap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
-    // Si es para un estudiante específico
-    const estudiante = estudianteId ? estudiantes.find(e => e.id === estudianteId) : null;
-    let asistenciaEst: Record<string, string> = {};
-    
-    if (estudianteId) {
-      asistenciaEst = asistenciaDetallada[estudianteId] || {};
-    } else {
-      Object.values(asistenciaDetallada).forEach((estData) => {
-        Object.assign(asistenciaEst, estData);
-      });
-    }
+    const estudiante = estudiantes.find(e => e.id === estudianteId);
+    const asistenciaEst = asistenciaDetallada[estudianteId] || {};
 
     // Calcular resumen por mes
     const resumenPorMes = monthNames.map((_, m) => {
@@ -516,6 +516,8 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
   useEffect(() => {
     Object.values(autoSaveTimersRef.current).forEach(timer => clearTimeout(timer));
     autoSaveTimersRef.current = {};
+    Object.values(savedIndicatorTimersRef.current).forEach(timer => clearTimeout(timer));
+    savedIndicatorTimersRef.current = {};
   }, [gradoId, fecha]);
 
   useEffect(() => {
@@ -528,6 +530,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
       }
       // Limpiar timers de auto-save
       Object.values(autoSaveTimersRef.current).forEach(timer => clearTimeout(timer));
+      Object.values(savedIndicatorTimersRef.current).forEach(timer => clearTimeout(timer));
     };
   }, []);
 
@@ -554,7 +557,10 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
       if (res.ok) {
         setSavedByStudent(prev => ({ ...prev, [estudianteId]: true }));
         // Limpiar el indicador de guardado después de 2 segundos
-        setTimeout(() => {
+        if (savedIndicatorTimersRef.current[estudianteId]) {
+          clearTimeout(savedIndicatorTimersRef.current[estudianteId]);
+        }
+        savedIndicatorTimersRef.current[estudianteId] = setTimeout(() => {
           setSavedByStudent(prev => ({ ...prev, [estudianteId]: false }));
         }, 2000);
       } else {
@@ -576,7 +582,8 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     const currentGradoId = gradoId;
     const currentFecha = fecha;
     autoSaveTimersRef.current[estudianteId] = setTimeout(() => {
-      guardarEstudianteIndividual(estudianteId, estado, currentGradoId, currentFecha);
+      // Leer el estado actual al momento de ejecutar, no del closure
+      guardarEstudianteIndividual(estudianteId, asistencias[estudianteId] || estado, currentGradoId, currentFecha);
     }, 800);
   };
 
@@ -734,7 +741,6 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     }
   };
 
-  const activeStudents = estudiantes.filter(e => e.activo);
   const presentCount = Object.values(asistencias).filter(e => e === "presente").length;
   const absentCount = Object.values(asistencias).filter(e => e === "ausente").length;
   const justifiedCount = Object.values(asistencias).filter(e => e === "justificada").length;
@@ -1042,7 +1048,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                 <Button size="sm" variant="outline" className={`h-9 text-xs font-bold flex-1 sm:flex-initial ${darkMode ? 'border-blue-700 text-blue-400 hover:bg-blue-900/30' : 'border-blue-200 text-blue-700 hover:bg-blue-50'}`} onClick={() => downloadPDFMensual()} disabled={!gradoId}>
                   <Download className="h-4 w-4 mr-2" /> PDF Mes
                 </Button>
-                <Button size="sm" variant="outline" className={`h-9 text-xs font-bold flex-1 sm:flex-initial ${darkMode ? 'border-purple-700 text-purple-400 hover:bg-purple-900/30' : 'border-purple-200 text-purple-700 hover:bg-purple-50'}`} onClick={() => downloadPDFAnual()} disabled={!gradoId}>
+                <Button size="sm" variant="outline" className={`h-9 text-xs font-bold flex-1 sm:flex-initial ${darkMode ? 'border-purple-700 text-purple-400 hover:bg-purple-900/30' : 'border-purple-200 text-purple-700 hover:bg-purple-50'}`} onClick={() => downloadPDFAnual()} disabled={true} title="Selecciona un estudiante de la tabla para generar su PDF anual">
                   <Download className="h-4 w-4 mr-2" /> PDF Año
                 </Button>
                 <Button size="sm" variant="outline" className={`h-9 text-xs font-bold flex-1 sm:flex-initial ${darkMode ? 'border-teal-700 text-teal-400 hover:bg-teal-900/30' : 'border-teal-200 text-teal-700 hover:bg-teal-50'}`} onClick={exportCSV} disabled={!gradoId}>

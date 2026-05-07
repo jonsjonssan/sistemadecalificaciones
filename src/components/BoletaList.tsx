@@ -77,7 +77,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
 
   const getEstadoFinal = (promedio: number | null) => {
     if (promedio === null) return 'PENDIENTE';
-    return Math.round(promedio) >= 5 ? 'APROBADO' : 'REPROBADO';
+    return promedio >= 5 ? 'APROBADO' : 'REPROBADO';
   };
 
   const getAsistInfo = (id: string) => resumenAsistencia.find(r => r.id === id) || { asistencias: 0, ausencias: 0, tardanzas: 0, total: 0 };
@@ -225,7 +225,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     <div class="info-estudiante">
       <div>
         <p><span class="label">Estudiante:</span> ${escapeHtml(est.nombre)}</p>
-        ${est.email ? `<p><span class="label">Correo:</span> ${est.email}</p>` : ''}
+        ${est.email ? `<p><span class="label">Correo:</span> ${escapeHtml(est.email)}</p>` : ''}
         <p><span class="label">Grado:</span> ${grado?.numero}° Grado "${grado?.seccion}"</p>
       </div>
       <div style="text-align: right;">
@@ -620,7 +620,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     <div class="info-estudiante">
       <div>
         <p><span class="label">Estudiante:</span> ${escapeHtml(est.nombre)}</p>
-        ${est.email ? `<p><span class="label">Correo:</span> ${est.email}</p>` : ''}
+        ${est.email ? `<p><span class="label">Correo:</span> ${escapeHtml(est.email)}</p>` : ''}
         <p><span class="label">Grado:</span> ${grado?.numero}° Grado "${grado?.seccion}"</p>
       </div>
       <div style="text-align: right;">
@@ -726,7 +726,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
         </div>
         <div class="titulo-boleta"><h3>BOLETA DE CALIFICACIONES CONSOLIDADA - ANUAL</h3></div>
         <div class="info-estudiante">
-          <div><p><span class="label">Estudiante:</span> ${escapeHtml(est.nombre)}</p>${est.email ? `<p><span class="label">Correo:</span> ${est.email}</p>` : ''}<p><span class="label">Grado:</span> ${grado?.numero}° Grado "${grado?.seccion}"</p></div>
+          <div><p><span class="label">Estudiante:</span> ${escapeHtml(est.nombre)}</p>${est.email ? `<p><span class="label">Correo:</span> ${escapeHtml(est.email)}</p>` : ''}<p><span class="label">Grado:</span> ${grado?.numero}° Grado "${grado?.seccion}"</p></div>
           <div style="text-align: right;"><p><span class="label">Año Lectivo:</span> ${año}</p><p><span class="label">N° Lista:</span> ${est.numero}</p></div>
         </div>
         <table>
@@ -884,7 +884,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     <div class="info-estudiante">
       <div>
         <p><span class="label">Estudiante:</span> ${escapeHtml(est.nombre)}</p>
-        ${est.email ? `<p><span class="label">Correo:</span> ${est.email}</p>` : ''}
+        ${est.email ? `<p><span class="label">Correo:</span> ${escapeHtml(est.email)}</p>` : ''}
         <p><span class="label">Grado:</span> ${grado?.numero}° Grado "${grado?.seccion}"</p>
       </div>
       <div style="text-align: right;">
@@ -995,7 +995,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
         </div>
         <div class="titulo-boleta"><h3>BOLETA ANUAL CON RECUPERACIÓN</h3></div>
         <div class="info-estudiante">
-          <div><p><span class="label">Estudiante:</span> ${escapeHtml(est.nombre)}</p>${est.email ? `<p><span class="label">Correo:</span> ${est.email}</p>` : ''}<p><span class="label">Grado:</span> ${grado?.numero}° Grado "${grado?.seccion}"</p></div>
+          <div><p><span class="label">Estudiante:</span> ${escapeHtml(est.nombre)}</p>${est.email ? `<p><span class="label">Correo:</span> ${escapeHtml(est.email)}</p>` : ''}<p><span class="label">Grado:</span> ${grado?.numero}° Grado "${grado?.seccion}"</p></div>
           <div style="text-align: right;"><p><span class="label">Año Lectivo:</span> ${año}</p><p><span class="label">N° Lista:</span> ${est.numero}</p></div>
         </div>
         <table>

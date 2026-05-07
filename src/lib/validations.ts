@@ -11,7 +11,7 @@ export const nombreSchema = z
   .string()
   .min(2, "El nombre debe tener al menos 2 caracteres")
   .max(255)
-  .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, "El nombre solo puede contener letras y espacios");
+  .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s.\-']+$/, "El nombre solo puede contener letras, espacios, puntos, guiones y apóstrofes");
 
 export const rolSchema = z.enum(["admin", "admin-directora", "admin-codirectora", "docente", "docente-orientador"]);
 

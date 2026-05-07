@@ -384,24 +384,28 @@ useEffect(() => {
   const handleExamen = useCallback(
     (v: string) => {
       const newVal = parseVal(v);
-      if (examen !== newVal) {
-        setExamen(newVal);
-        setDirty(true);
-      }
+      setExamen(prev => {
+        if (prev !== newVal) {
+          setDirty(true);
+        }
+        return newVal;
+      });
       if (v !== "") setExamenError(false);
     },
-    [parseVal, examen]
+    [parseVal]
   );
   const handleRecup = useCallback(
     (v: string) => {
       const newVal = parseVal(v);
-      if (recup !== newVal) {
-        setRecup(newVal);
-        setDirty(true);
-      }
+      setRecup(prev => {
+        if (prev !== newVal) {
+          setDirty(true);
+        }
+        return newVal;
+      });
       if (v !== "") setRecupError(false);
     },
-    [parseVal, recup]
+    [parseVal]
   );
   const blurAC = useCallback((i: number, v: string | number | null) => {
     setAcErrors(prev => {
