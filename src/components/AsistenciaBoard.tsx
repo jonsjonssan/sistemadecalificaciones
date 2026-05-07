@@ -863,12 +863,46 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
               </div>
             ) : (
               <div className={`rounded-md border overflow-hidden table-scroll-container relative ${darkMode ? 'border-slate-700' : ''}`}>
+                <div className={`flex items-center justify-between px-4 py-3 border-b ${darkMode ? 'bg-gradient-to-r from-slate-800 to-slate-750 border-slate-700' : 'bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200'}`}>
+                  <div className="flex items-center gap-3">
+                    <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                      Estudiantes
+                    </span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${darkMode ? 'bg-teal-900/60 text-teal-300' : 'bg-teal-100 text-teal-700'}`}>
+                      {activeStudents.length}
+                    </span>
+                  </div>
+                  <Button
+                    size="sm"
+                    className={`h-9 text-xs font-semibold px-4 shadow-md transition-all duration-200 hover:shadow-lg hover:scale-[1.02] ${darkMode ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white' : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white'}`}
+                    onClick={() => {
+                      const newAsistencias: Record<string, string> = {};
+                      activeStudents.forEach(est => {
+                        newAsistencias[est.id] = "presente";
+                      });
+                      setAsistencias(newAsistencias);
+                      activeStudents.forEach(est => {
+                        if (autoSaveTimersRef.current[est.id]) {
+                          clearTimeout(autoSaveTimersRef.current[est.id]);
+                        }
+                        const currentGradoId = gradoId;
+                        const currentFecha = fecha;
+                        autoSaveTimersRef.current[est.id] = setTimeout(() => {
+                          guardarEstudianteIndividual(est.id, "presente", currentGradoId, currentFecha);
+                        }, 800);
+                      });
+                    }}
+                  >
+                    <CheckCircle2 className="h-4 w-4 mr-1.5" />
+                    Marcar Todos Presentes
+                  </Button>
+                </div>
                 <Table className="text-xs sm:text-sm font-medium">
-                  <TableHeader className={darkMode ? 'bg-slate-800' : 'bg-slate-50'}>
+                  <TableHeader className={darkMode ? 'bg-gradient-to-r from-slate-800 to-slate-750' : 'bg-gradient-to-r from-slate-100 to-slate-50'}>
                     <TableRow>
-                      <TableHead className="w-10 text-center sticky-col left-0 z-20 shadow-right">N°</TableHead>
-                      <TableHead className="sticky-col left-10 z-20 shadow-right min-w-[120px] sm:min-w-[150px]">Estudiante</TableHead>
-                      <TableHead className="w-[160px] sm:w-[300px] text-center">Estado</TableHead>
+                      <TableHead className="w-12 text-center sticky-col left-0 z-20 shadow-right font-bold text-xs uppercase tracking-wider">N°</TableHead>
+                      <TableHead className="sticky-col left-12 z-20 shadow-right min-w-[140px] sm:min-w-[180px] font-bold text-xs uppercase tracking-wider">Estudiante</TableHead>
+                      <TableHead className="w-36 sm:w-44 text-center font-bold text-xs uppercase tracking-wider">Estado</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -878,12 +912,39 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                       const rowBg = evenRow ? (darkMode ? 'bg-[#1e293b]' : '') : (darkMode ? 'bg-slate-800/50' : 'bg-slate-50/50');
                       const stickyBg = evenRow ? (darkMode ? 'bg-[#1e293b]' : 'bg-white') : (darkMode ? 'bg-slate-800/50' : 'bg-slate-50/50');
 
+                      const getEstadoBadgeClass = (e: string) => {
+                        if (!e) return darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-400';
+                        switch (e) {
+                          case 'presente':
+                            return darkMode ? 'bg-green-900/60 text-green-200 ring-1 ring-green-600' : 'bg-green-100 text-green-800 ring-1 ring-green-300';
+                          case 'ausente':
+                            return darkMode ? 'bg-red-900/60 text-red-200 ring-1 ring-red-600' : 'bg-red-100 text-red-800 ring-1 ring-red-300';
+                          case 'justificada':
+                            return darkMode ? 'bg-blue-900/60 text-blue-200 ring-1 ring-blue-600' : 'bg-blue-100 text-blue-800 ring-1 ring-blue-300';
+                          case 'tarde':
+                            return darkMode ? 'bg-amber-900/60 text-amber-200 ring-1 ring-amber-600' : 'bg-amber-100 text-amber-800 ring-1 ring-amber-300';
+                          default:
+                            return darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-400';
+                        }
+                      };
+
+                      const getEstadoLabel = (e: string) => {
+                        if (!e) return 'Sin marcar';
+                        switch (e) {
+                          case 'presente': return 'Presente';
+                          case 'ausente': return 'Ausente';
+                          case 'justificada': return 'Justificada';
+                          case 'tarde': return 'Tardanza';
+                          default: return e;
+                        }
+                      };
+
                       return (
                         <TableRow key={est.id} className={`${rowBg} ${darkMode ? 'hover:bg-slate-700/50' : 'hover:bg-slate-100/50'} transition-colors`}>
                           <TableCell className={`text-center font-bold sticky-col left-0 z-10 shadow-right ${darkMode ? 'text-slate-500' : 'text-slate-400'}`} style={{ backgroundColor: stickyBg }}>
                             {est.numero}
                           </TableCell>
-                          <TableCell className={`font-semibold sticky-col left-10 z-10 shadow-right whitespace-nowrap ${darkMode ? 'text-white' : ''}`} style={{ backgroundColor: stickyBg }}>
+                          <TableCell className={`font-semibold sticky-col left-12 z-10 shadow-right whitespace-nowrap ${darkMode ? 'text-white' : ''}`} style={{ backgroundColor: stickyBg }}>
                             <div className="flex items-center gap-2">
                               {est.nombre}
                               {savingByStudent[est.id] && (
@@ -894,184 +955,38 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                               )}
                             </div>
                           </TableCell>
-                          <TableCell>
-                            <div className="w-full">
-                              {/* Desktop/Tablet: Horizontal button group */}
-                              <div className={`hidden sm:flex items-center gap-2 p-2 rounded-xl border transition-all duration-200 ${darkMode
-                                ? 'bg-slate-800/80 border-slate-700/50'
-                                : 'bg-white/80 border-slate-200/60 shadow-sm'
-                                }`}>
-                                {/* Presente Button */}
-                                <button
-                                  onClick={() => handleEstadoChange(est.id, "presente")}
-                                  className={`flex-1 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2.5 sm:py-2 px-3 rounded-lg transition-all duration-200 font-semibold text-xs sm:text-sm ${estado === "presente"
-                                    ? (darkMode
-                                      ? "bg-gradient-to-br from-green-600 to-green-700 text-white shadow-lg shadow-green-900/50 ring-2 ring-green-500/50 scale-[1.02]"
-                                      : "bg-gradient-to-br from-green-500 to-green-600 text-white shadow-lg shadow-green-200 ring-2 ring-green-400/50 scale-[1.02]"
-                                    )
-                                    : (darkMode
-                                      ? "bg-slate-700/50 text-slate-400 hover:bg-slate-700 hover:text-green-400 hover:shadow-md"
-                                      : "bg-slate-50 text-slate-500 hover:bg-green-50 hover:text-green-600 hover:shadow-md"
-                                    )
-                                    }`}
-                                >
-                                  <CheckCircle2 className={`h-5 w-5 transition-transform duration-200 ${estado === "presente" ? "scale-110" : ""
-                                    }`} />
-                                  <span>Presente</span>
-                                </button>
-
-                                {/* Ausente Button */}
-                                <button
-                                  onClick={() => handleEstadoChange(est.id, "ausente")}
-                                  className={`flex-1 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2.5 sm:py-2 px-3 rounded-lg transition-all duration-200 font-semibold text-xs sm:text-sm ${estado === "ausente"
-                                    ? (darkMode
-                                      ? "bg-gradient-to-br from-red-600 to-red-700 text-white shadow-lg shadow-red-900/50 ring-2 ring-red-500/50 scale-[1.02]"
-                                      : "bg-gradient-to-br from-red-500 to-red-600 text-white shadow-lg shadow-red-200 ring-2 ring-red-400/50 scale-[1.02]"
-                                    )
-                                    : (darkMode
-                                      ? "bg-slate-700/50 text-slate-400 hover:bg-slate-700 hover:text-red-400 hover:shadow-md"
-                                      : "bg-slate-50 text-slate-500 hover:bg-red-50 hover:text-red-600 hover:shadow-md"
-                                    )
-                                    }`}
-                                >
-                                  <XCircle className={`h-5 w-5 transition-transform duration-200 ${estado === "ausente" ? "scale-110" : ""
-                                    }`} />
-                                  <span>Ausente</span>
-                                </button>
-
-                                {/* Justificada Button */}
-                                <button
-                                  onClick={() => handleEstadoChange(est.id, "justificada")}
-                                  className={`flex-1 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2.5 sm:py-2 px-3 rounded-lg transition-all duration-200 font-semibold text-xs sm:text-sm ${estado === "justificada"
-                                    ? (darkMode
-                                      ? "bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-900/50 ring-2 ring-blue-500/50 scale-[1.02]"
-                                      : "bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-200 ring-2 ring-blue-400/50 scale-[1.02]"
-                                    )
-                                    : (darkMode
-                                      ? "bg-slate-700/50 text-slate-400 hover:bg-slate-700 hover:text-blue-400 hover:shadow-md"
-                                      : "bg-slate-50 text-slate-500 hover:bg-blue-50 hover:text-blue-600 hover:shadow-md"
-                                    )
-                                    }`}
-                                >
-                                  <FileCheck className={`h-5 w-5 transition-transform duration-200 ${estado === "justificada" ? "scale-110" : ""
-                                    }`} />
-                                  <span>Justificada</span>
-                                </button>
-
-                                {/* Tarde Button */}
-                                <button
-                                  onClick={() => handleEstadoChange(est.id, "tarde")}
-                                  className={`flex-1 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-2.5 sm:py-2 px-3 rounded-lg transition-all duration-200 font-semibold text-xs sm:text-sm ${estado === "tarde"
-                                    ? (darkMode
-                                      ? "bg-gradient-to-br from-amber-600 to-amber-700 text-white shadow-lg shadow-amber-900/50 ring-2 ring-amber-500/50 scale-[1.02]"
-                                      : "bg-gradient-to-br from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-200 ring-2 ring-amber-400/50 scale-[1.02]"
-                                    )
-                                    : (darkMode
-                                      ? "bg-slate-700/50 text-slate-400 hover:bg-slate-700 hover:text-amber-400 hover:shadow-md"
-                                      : "bg-slate-50 text-slate-500 hover:bg-amber-50 hover:text-amber-600 hover:shadow-md"
-                                    )
-                                    }`}
-                                >
-                                  <Clock className={`h-5 w-5 transition-transform duration-200 ${estado === "tarde" ? "scale-110" : ""
-                                    }`} />
-                                  <span>Tardanza</span>
-                                </button>
-                              </div>
-
-                              {/* Mobile: Vertical stacked buttons for better touch targets */}
-                              <div className={`sm:hidden flex flex-col gap-1.5 p-2 rounded-xl border transition-all duration-200 ${darkMode
-                                ? 'bg-slate-800/80 border-slate-700/50'
-                                : 'bg-white/80 border-slate-200/60 shadow-sm'
-                                }`}>
-                                <button
-                                  onClick={() => handleEstadoChange(est.id, "presente")}
-                                  className={`flex items-center justify-between px-3 py-2.5 rounded-lg transition-all duration-200 font-semibold text-sm ${estado === "presente"
-                                    ? (darkMode
-                                      ? "bg-gradient-to-r from-green-600 to-green-700 text-white shadow-md shadow-green-900/50 ring-2 ring-green-500/50"
-                                      : "bg-gradient-to-r from-green-500 to-green-600 text-white shadow-md shadow-green-200 ring-2 ring-green-400/50"
-                                    )
-                                    : (darkMode
-                                      ? "bg-slate-700/50 text-slate-300 active:bg-green-900/30 active:text-green-400"
-                                      : "bg-slate-50 text-slate-600 active:bg-green-100 active:text-green-700"
-                                    )
-                                    }`}
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <CheckCircle2 className="h-5 w-5" />
-                                    <span>Presente</span>
-                                  </div>
-                                  {estado === "presente" && (
-                                    <div className="h-2 w-2 rounded-full bg-white animate-pulse" />
-                                  )}
-                                </button>
-
-                                <button
-                                  onClick={() => handleEstadoChange(est.id, "ausente")}
-                                  className={`flex items-center justify-between px-3 py-2.5 rounded-lg transition-all duration-200 font-semibold text-sm ${estado === "ausente"
-                                    ? (darkMode
-                                      ? "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-md shadow-red-900/50 ring-2 ring-red-500/50"
-                                      : "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-md shadow-red-200 ring-2 ring-red-400/50"
-                                    )
-                                    : (darkMode
-                                      ? "bg-slate-700/50 text-slate-300 active:bg-red-900/30 active:text-red-400"
-                                      : "bg-slate-50 text-slate-600 active:bg-red-100 active:text-red-700"
-                                    )
-                                    }`}
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <XCircle className="h-5 w-5" />
-                                    <span>Ausente</span>
-                                  </div>
-                                  {estado === "ausente" && (
-                                    <div className="h-2 w-2 rounded-full bg-white animate-pulse" />
-                                  )}
-                                </button>
-
-                                <button
-                                  onClick={() => handleEstadoChange(est.id, "justificada")}
-                                  className={`flex items-center justify-between px-3 py-2.5 rounded-lg transition-all duration-200 font-semibold text-sm ${estado === "justificada"
-                                    ? (darkMode
-                                      ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md shadow-blue-900/50 ring-2 ring-blue-500/50"
-                                      : "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md shadow-blue-200 ring-2 ring-blue-400/50"
-                                    )
-                                    : (darkMode
-                                      ? "bg-slate-700/50 text-slate-300 active:bg-blue-900/30 active:text-blue-400"
-                                      : "bg-slate-50 text-slate-600 active:bg-blue-100 active:text-blue-700"
-                                    )
-                                    }`}
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <FileCheck className="h-5 w-5" />
-                                    <span>Justificada</span>
-                                  </div>
-                                  {estado === "justificada" && (
-                                    <div className="h-2 w-2 rounded-full bg-white animate-pulse" />
-                                  )}
-                                </button>
-
-                                <button
-                                  onClick={() => handleEstadoChange(est.id, "tarde")}
-                                  className={`flex items-center justify-between px-3 py-2.5 rounded-lg transition-all duration-200 font-semibold text-sm ${estado === "tarde"
-                                    ? (darkMode
-                                      ? "bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-md shadow-amber-900/50 ring-2 ring-amber-500/50"
-                                      : "bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-md shadow-amber-200 ring-2 ring-amber-400/50"
-                                    )
-                                    : (darkMode
-                                      ? "bg-slate-700/50 text-slate-300 active:bg-amber-900/30 active:text-amber-400"
-                                      : "bg-slate-50 text-slate-600 active:bg-amber-100 active:text-amber-700"
-                                    )
-                                    }`}
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <Clock className="h-5 w-5" />
-                                    <span>Tardanza</span>
-                                  </div>
-                                  {estado === "tarde" && (
-                                    <div className="h-2 w-2 rounded-full bg-white animate-pulse" />
-                                  )}
-                                </button>
-                              </div>
-                            </div>
+                          <TableCell className="text-center">
+                            <Select value={estado || ""} onValueChange={(val) => handleEstadoChange(est.id, val)}>
+                              <SelectTrigger className={`h-9 w-36 sm:w-44 text-xs font-medium ${getEstadoBadgeClass(estado || "")} ${darkMode ? 'bg-slate-800 border-slate-600' : 'bg-white border-slate-200'}`}>
+                                <SelectValue placeholder="Seleccionar..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="presente" className="text-xs font-medium">
+                                  <span className="flex items-center gap-2">
+                                    <span className={`w-2 h-2 rounded-full ${darkMode ? 'bg-green-500' : 'bg-green-600'}`} />
+                                    Presente
+                                  </span>
+                                </SelectItem>
+                                <SelectItem value="ausente" className="text-xs font-medium">
+                                  <span className="flex items-center gap-2">
+                                    <span className={`w-2 h-2 rounded-full ${darkMode ? 'bg-red-500' : 'bg-red-600'}`} />
+                                    Ausente
+                                  </span>
+                                </SelectItem>
+                                <SelectItem value="justificada" className="text-xs font-medium">
+                                  <span className="flex items-center gap-2">
+                                    <span className={`w-2 h-2 rounded-full ${darkMode ? 'bg-blue-500' : 'bg-blue-600'}`} />
+                                    Justificada
+                                  </span>
+                                </SelectItem>
+                                <SelectItem value="tarde" className="text-xs font-medium">
+                                  <span className="flex items-center gap-2">
+                                    <span className={`w-2 h-2 rounded-full ${darkMode ? 'bg-amber-500' : 'bg-amber-600'}`} />
+                                    Tardanza
+                                  </span>
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
                           </TableCell>
                         </TableRow>
                       );

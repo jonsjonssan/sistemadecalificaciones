@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Estudiante, Calificacion, ConfigActividadPartial } from "@/types";
 import { calcularPromedio, calcularPromedioFinal, parseNotas, getEstadoCompletitud } from "@/utils/gradeCalculations";
-import { RefreshCw, History } from "lucide-react";
+import { RefreshCw, History, AlertTriangle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { HistorialCalificacionPopup } from "./HistorialCalificacionPopup";
 
@@ -565,17 +565,21 @@ useEffect(() => {
       <span className={darkMode ? "text-slate-600" : "text-slate-300"}>-</span>
     );
   const finalBadgeClass =
-    promFinal !== null && Math.round(promFinal) >= 5
-      ? darkMode
-        ? "bg-emerald-700/80 text-emerald-100 ring-1 ring-emerald-500"
-        : "bg-emerald-100 text-emerald-800 ring-1 ring-emerald-200"
-      : promFinal !== null
+    promFinal !== null
+      ? promFinal >= 6.5
         ? darkMode
-          ? "bg-rose-700/80 text-rose-100 ring-1 ring-rose-500"
-          : "bg-rose-100 text-rose-800 ring-1 ring-rose-200"
-        : darkMode
-          ? "bg-slate-700 text-slate-400"
-          : "bg-slate-100 text-slate-400";
+          ? "bg-emerald-900/60 text-emerald-200 ring-1 ring-emerald-600"
+          : "bg-emerald-100 text-emerald-800 ring-1 ring-emerald-300"
+        : promFinal >= 5
+          ? darkMode
+            ? "bg-amber-900/60 text-amber-200 ring-1 ring-amber-600"
+            : "bg-amber-100 text-amber-800 ring-1 ring-amber-300"
+          : darkMode
+            ? "bg-red-900/60 text-red-200 ring-1 ring-red-600"
+            : "bg-red-100 text-red-800 ring-1 ring-red-300"
+      : darkMode
+        ? "bg-slate-700 text-slate-400"
+        : "bg-slate-100 text-slate-400";
 
   if (!config) {
     return (

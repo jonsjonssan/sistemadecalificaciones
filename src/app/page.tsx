@@ -18,7 +18,7 @@ import {
   LogOut, Users, User, ClipboardList, FileText, Plus, RefreshCw,
   School, Save, Printer, ChevronDown, ChevronUp,   Settings, Upload,
   Download, Trash2, ListPlus, UserPlus, Key, Calendar, LayoutDashboard, CalendarDays, Lightbulb, Hash,
-  Search, ArrowUpDown, Globe, BarChart3
+  Search, ArrowUpDown, Globe, BarChart3, AlertTriangle
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import Dashboard from "@/components/Dashboard";
@@ -2173,6 +2173,28 @@ useEffect(() => {
                       {estadosCompletitud.total > 0 ? Math.round((estadosCompletitud.completo / estadosCompletitud.total) * 100) : 0}%
                     </span>
                   </div>
+                </div>
+
+                {/* Marco Normativo Legend */}
+                <div className={`flex flex-wrap items-center gap-3 px-4 py-2.5 rounded-lg border text-xs ${
+                  darkMode ? 'bg-slate-800/80 border-slate-700 text-slate-300' : 'bg-white border-slate-200 text-slate-600'
+                }`}>
+                  <span className="font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Marco Normativo</span>
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-semibold ${
+                    darkMode ? 'bg-red-900/60 text-red-200 ring-1 ring-red-600' : 'bg-red-100 text-red-800 ring-1 ring-red-300'
+                  }`}>
+                    <AlertTriangle className="h-3 w-3" /> 0 - 4.99 Reprobado (MINED + CE)
+                  </span>
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-semibold ${
+                    darkMode ? 'bg-amber-900/60 text-amber-200 ring-1 ring-amber-600' : 'bg-amber-100 text-amber-800 ring-1 ring-amber-300'
+                  }`}>
+                    5.00 - 6.49 Aprueba MINED / Reprueba CE
+                  </span>
+                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-semibold ${
+                    darkMode ? 'bg-emerald-900/60 text-emerald-200 ring-1 ring-emerald-600' : 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-300'
+                  }`}>
+                    ≥ 6.50 Aprobado (MINED + CE)
+                  </span>
                 </div>
 
                 {/* Barra de herramientas: Búsqueda, Filtro, Exportar */}
