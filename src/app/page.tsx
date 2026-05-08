@@ -1136,8 +1136,8 @@ useEffect(() => {
       filtered = filtered.filter(e => {
         const promFinal = getPromedioFinalForStudent(e.id);
         if (promFinal === null) return false;
-        if (filtroEstado === "aprobados") return promFinal >= 5;
-        if (filtroEstado === "riesgo") return promFinal < 5;
+        if (filtroEstado === "aprobados") return promFinal >= 6.5;
+        if (filtroEstado === "riesgo") return promFinal < 4.5;
         if (filtroEstado === "honor") return promFinal >= 7;
         return true;
       });

@@ -30,7 +30,7 @@ type RangoNota = "reprobado" | "condicionado" | "aprobado" | "sin_datos";
 
 function getRangoNota(promedio: number | null): RangoNota {
   if (promedio === null || promedio === undefined) return "sin_datos";
-  if (promedio < 5.0) return "reprobado";
+  if (promedio < 4.5) return "reprobado";
   if (promedio < 6.5) return "condicionado";
   return "aprobado";
 }
@@ -155,7 +155,7 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
         sinDatos++;
       } else {
         const avg = promedioEstudiante.reduce((a, b) => a + b, 0) / promedioEstudiante.length;
-        if (avg < 5.0) reprobado++;
+        if (avg < 4.5) reprobado++;
         else if (avg < 6.5) condicionado++;
         else aprobado++;
       }
@@ -178,8 +178,8 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
     const leyenda = [
       [],
       ["MARCO NORMATIVO"],
-      ["0 - 4.99", "Reprobado (MINED + C.E.)"],
-      ["5.00 - 6.49", "Aprueba MINED / Reprueba C.E."],
+      ["0 - 4.49", "Reprobado (MINED + C.E.)"],
+      ["4.50 - 6.49", "Condicionado (Aprueba MINED / Reprueba C.E.)"],
       [">= 6.50", "Aprobado (MINED + C.E.)"],
       [],
       ["Segun el marco normativo del Ministerio de Educacion (MINED), todo estudiante con calificacion de 5.00 en adelante aprueba el grado. El Centro Escolar establece un estandar de excelencia de 6.50."],
@@ -343,7 +343,7 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
         if (data.column.index >= 2 && data.column.index <= 5 && data.row.section === "body") {
           const val = parseFloat(String(data.cell.raw).replace("—", ""));
           if (!isNaN(val)) {
-            if (val < 5.0) data.cell.styles.textColor = [220, 38, 38];
+            if (val < 4.5) data.cell.styles.textColor = [220, 38, 38];
             else if (val < 6.5) data.cell.styles.textColor = [217, 119, 6];
             else data.cell.styles.textColor = [5, 150, 105];
           }
@@ -409,9 +409,9 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
     doc.text("MARCO NORMATIVO", 14, leyendaY);
     doc.setFontSize(8);
     doc.setTextColor(220, 38, 38);
-    doc.text("0 - 4.99  Reprobado (MINED + C.E.)", 14, leyendaY + 5);
+    doc.text("0 - 4.49  Reprobado (MINED + C.E.)", 14, leyendaY + 5);
     doc.setTextColor(217, 119, 6);
-    doc.text("5.00 - 6.49  Aprueba MINED / Reprueba C.E.", 14, leyendaY + 10);
+    doc.text("4.50 - 6.49  Condicionado (Aprueba MINED / Reprueba C.E.)", 14, leyendaY + 10);
     doc.setTextColor(5, 150, 105);
     doc.text(">= 6.50  Aprobado (MINED + C.E.)", 14, leyendaY + 15);
     doc.setTextColor(100, 100, 100);
@@ -439,16 +439,16 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
             <span className="font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 text-[10px]">Marco Normativo</span>
             <div className="flex items-center gap-1.5">
               <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold ${getRangoColor("reprobado", darkMode)}`}>
-                <AlertTriangle className="h-3 w-3" /> 0 – 4.99
+                <AlertTriangle className="h-3 w-3" /> 0 – 4.49
               </span>
               <span className="text-slate-500 dark:text-slate-400">Reprobado (MINED + C.E.)</span>
             </div>
             <div className={`h-4 w-px ${darkMode ? "bg-slate-600" : "bg-slate-300"}`} />
             <div className="flex items-center gap-1.5">
               <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold ${getRangoColor("condicionado", darkMode)}`}>
-                <HelpCircle className="h-3 w-3" /> 5.00 – 6.49
+                <HelpCircle className="h-3 w-3" /> 4.50 – 6.49
               </span>
-              <span className="text-slate-500 dark:text-slate-400">Aprueba MINED / Reprueba C.E.</span>
+              <span className="text-slate-500 dark:text-slate-400">Condicionado (Aprueba MINED / Reprueba C.E.)</span>
             </div>
             <div className={`h-4 w-px ${darkMode ? "bg-slate-600" : "bg-slate-300"}`} />
             <div className="flex items-center gap-1.5">
@@ -459,7 +459,7 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
             </div>
           </div>
           <div className={`mt-2 pt-2 border-t text-[10px] leading-relaxed ${darkMode ? "border-slate-700 text-slate-500" : "border-slate-100 text-slate-400"}`}>
-            Según el marco normativo del Ministerio de Educación (MINED), todo estudiante con calificación de <strong>5.00 en adelante aprueba</strong> el grado. El Centro Escolar Católico San José de la Montaña establece un estándar de excelencia de <strong>6.50</strong>. Los estudiantes entre <strong>5.00 y 6.49</strong> aprueban según el MINED pero se consideran <em>condicionados</em> por el Centro Escolar.
+            Según el marco normativo del Ministerio de Educación (MINED), todo estudiante con calificación de <strong>5.00 en adelante aprueba</strong> el grado. El Centro Escolar Católico San José de la Montaña establece un estándar de excelencia de <strong>6.50</strong>. Los estudiantes entre <strong>4.50 y 6.49</strong> aprueban según el MINED pero se consideran <em>condicionados</em> por el Centro Escolar. Los estudiantes con calificación menor a <strong>4.50</strong> se consideran <em>reprobados</em>.
           </div>
         </CardContent>
       </Card>
@@ -721,7 +721,7 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
                           const cellBorder = darkMode ? "border-slate-700" : "border-slate-200";
                           const colorNota = (n: number | null) => {
                             if (n === null) return darkMode ? "text-slate-500" : "text-slate-400";
-                            if (n < 5.0) return "text-red-600 dark:text-red-400 font-bold";
+                            if (n < 4.5) return "text-red-600 dark:text-red-400 font-bold";
                             if (n < 6.5) return "text-amber-600 dark:text-amber-400 font-bold";
                             return "text-emerald-600 dark:text-emerald-400 font-bold";
                           };
