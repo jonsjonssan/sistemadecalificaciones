@@ -36,6 +36,7 @@ import { escapeHtml } from "@/lib/utils/index";
 import PresenceIndicator from "@/components/PresenceIndicator";
 import BoletaList from "@/components/BoletaList";
 import ReporteCalificaciones from "@/components/ReporteCalificaciones";
+import CuadroTrimestres from "@/components/CuadroTrimestres";
 import EnlacesInstitucionales from "@/components/EnlacesInstitucionales";
 
 export default function Home() {
@@ -2430,6 +2431,22 @@ useEffect(() => {
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Cuadro de Trimestres */}
+                {gradoSeleccionado && (() => {
+                  const grado = gradosFiltrados.find(g => g.id === gradoSeleccionado);
+                  return grado ? (
+                    <CuadroTrimestres
+                      gradoId={gradoSeleccionado}
+                      gradoNumero={grado.numero}
+                      gradoSeccion={grado.seccion}
+                      gradoAño={grado.año}
+                      asignaturas={asignaturasFiltradas}
+                      estudiantes={estudiantes}
+                      darkMode={darkMode}
+                    />
+                  ) : null;
+                })()}
               </>
             )}
           </TabsContent>

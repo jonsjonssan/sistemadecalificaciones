@@ -902,6 +902,22 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                     <CheckCircle2 className="h-4 w-4 mr-1.5" />
                     Marcar Todos Presentes
                   </Button>
+                  <Button
+                    size="sm"
+                    className={`h-9 text-xs font-semibold px-4 shadow-md transition-all duration-200 hover:shadow-lg hover:scale-[1.02] ${darkMode ? 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white' : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white'}`}
+                    onClick={() => {
+                      setAsistencias({});
+                      activeStudents.forEach(est => {
+                        if (autoSaveTimersRef.current[est.id]) {
+                          clearTimeout(autoSaveTimersRef.current[est.id]);
+                          delete autoSaveTimersRef.current[est.id];
+                        }
+                      });
+                    }}
+                  >
+                    <XCircle className="h-4 w-4 mr-1.5" />
+                    Desmarcar Todo
+                  </Button>
                 </div>
                 <Table className="text-xs sm:text-sm font-medium">
                   <TableHeader className={darkMode ? 'bg-gradient-to-r from-slate-800 to-slate-750' : 'bg-gradient-to-r from-slate-100 to-slate-50'}>
