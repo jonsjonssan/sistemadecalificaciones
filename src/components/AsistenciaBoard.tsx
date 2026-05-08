@@ -582,8 +582,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     const currentGradoId = gradoId;
     const currentFecha = fecha;
     autoSaveTimersRef.current[estudianteId] = setTimeout(() => {
-      // Leer el estado actual al momento de ejecutar, no del closure
-      guardarEstudianteIndividual(estudianteId, asistencias[estudianteId] || estado, currentGradoId, currentFecha);
+      guardarEstudianteIndividual(estudianteId, estado, currentGradoId, currentFecha);
     }, 800);
   };
 

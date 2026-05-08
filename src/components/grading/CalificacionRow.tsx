@@ -574,7 +574,7 @@ useEffect(() => {
         ? darkMode
           ? "bg-emerald-900/60 text-emerald-200 ring-1 ring-emerald-600"
           : "bg-emerald-100 text-emerald-800 ring-1 ring-emerald-300"
-        : promFinal >= 5
+        : promFinal >= 4.5
           ? darkMode
             ? "bg-amber-900/60 text-amber-200 ring-1 ring-amber-600"
             : "bg-amber-100 text-amber-800 ring-1 ring-amber-300"
