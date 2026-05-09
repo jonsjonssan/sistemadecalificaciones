@@ -819,7 +819,7 @@ useEffect(() => {
       setAutoSaveStatus("idle");
       throw e;
     } finally { setSaving(false); }
-  }, [estudiantes, asignaturas, gradoSeleccionado, toast]);
+  }, [estudiantes, asignaturas, grados, gradoSeleccionado, toast]);
 
   const handleShowHistory = useCallback((calificacionId: string, tipoCampo: string, campoLabel: string, anchorRef: React.RefObject<HTMLElement | null>) => {
     setHistorialPopup({ calificacionId, tipoCampo, campoLabel, anchorRef });
@@ -1651,17 +1651,20 @@ useEffect(() => {
 
   // Auto-selección de asignatura restaurada o primera disponible
   useEffect(() => {
-    if (asignaturasFiltradas && asignaturasFiltradas.length > 0 && !asignaturaSeleccionada) {
-      const savedState = loadUserState();
-      queueMicrotask(() => {
-        if (savedState?.asignaturaSeleccionada && asignaturasFiltradas.some(m => m.id === savedState.asignaturaSeleccionada)) {
-          setAsignaturaSeleccionada(savedState.asignaturaSeleccionada);
-          saveUserState({ asignaturaSeleccionada: savedState.asignaturaSeleccionada });
-        } else {
-          setAsignaturaSeleccionada(asignaturasFiltradas[0].id);
-          saveUserState({ asignaturaSeleccionada: asignaturasFiltradas[0].id });
-        }
-      });
+    if (asignaturasFiltradas && asignaturasFiltradas.length > 0) {
+      const esValida = asignaturasFiltradas.some(m => m.id === asignaturaSeleccionada);
+      if (!asignaturaSeleccionada || !esValida) {
+        const savedState = loadUserState();
+        queueMicrotask(() => {
+          if (savedState?.asignaturaSeleccionada && asignaturasFiltradas.some(m => m.id === savedState.asignaturaSeleccionada)) {
+            setAsignaturaSeleccionada(savedState.asignaturaSeleccionada);
+            saveUserState({ asignaturaSeleccionada: savedState.asignaturaSeleccionada });
+          } else {
+            setAsignaturaSeleccionada(asignaturasFiltradas[0].id);
+            saveUserState({ asignaturaSeleccionada: asignaturasFiltradas[0].id });
+          }
+        });
+      }
     }
   }, [asignaturasFiltradas, asignaturaSeleccionada, loadUserState, saveUserState]);
 
@@ -2044,7 +2047,7 @@ useEffect(() => {
                       </div>
                       <div className="space-y-2">
                         <Label className={`text-sm font-medium ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Asignatura</Label>
-                        <Select value={asignaturaSeleccionada || undefined} onValueChange={(val) => { setAsignaturaSeleccionada(val); saveUserState({ asignaturaSeleccionada: val }); }}>
+                        <Select value={asignaturaSeleccionada || ""} onValueChange={(val) => { setAsignaturaSeleccionada(val); saveUserState({ asignaturaSeleccionada: val }); }}>
                           <SelectTrigger className={`h-11 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}>
                             <SelectValue placeholder="Seleccionar asignatura" />
                           </SelectTrigger>
@@ -2055,7 +2058,7 @@ useEffect(() => {
                       </div>
                       <div className="space-y-2">
                         <Label className={`text-sm font-medium ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Trimestre</Label>
-                        <Select value={trimestreSeleccionado || undefined} onValueChange={setTrimestreSeleccionado}>
+                        <Select value={trimestreSeleccionado || ""} onValueChange={setTrimestreSeleccionado}>
                           <SelectTrigger className={`h-11 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}>
                             <SelectValue placeholder="Seleccionar trimestre" />
                           </SelectTrigger>
@@ -2184,12 +2187,12 @@ useEffect(() => {
                   <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-semibold ${
                     darkMode ? 'bg-red-900/60 text-red-200 ring-1 ring-red-600' : 'bg-red-100 text-red-800 ring-1 ring-red-300'
                   }`}>
-                    <AlertTriangle className="h-3 w-3" /> 0 - 4.99 Reprobado (MINED + CE)
+                    <AlertTriangle className="h-3 w-3" /> 0 - 4.49 Reprobado (MINED + CE)
                   </span>
                   <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-semibold ${
                     darkMode ? 'bg-amber-900/60 text-amber-200 ring-1 ring-amber-600' : 'bg-amber-100 text-amber-800 ring-1 ring-amber-300'
                   }`}>
-                    5.00 - 6.49 Aprueba MINED / Reprueba CE
+                    4.50 - 6.49 Condicionado (MINED + CE)
                   </span>
                   <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-semibold ${
                     darkMode ? 'bg-emerald-900/60 text-emerald-200 ring-1 ring-emerald-600' : 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-300'
@@ -2501,7 +2504,7 @@ useEffect(() => {
               <CardContent className="pt-0 space-y-3">
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                   <div className="flex-1"><Label className="text-sm sm:text-base font-medium">Grado</Label><Select value={gradoSeleccionado} onValueChange={(val) => { setGradoSeleccionado(val); setAsignaturaSeleccionada(""); }}><SelectTrigger className={`h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue /></SelectTrigger><SelectContent>{gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}"</SelectItem>)}</SelectContent></Select></div>
-                  <div className="w-full sm:w-32"><Label className="text-sm sm:text-base font-medium">Trimestre</Label><Select value={trimestreSeleccionado || undefined} onValueChange={setTrimestreSeleccionado}><SelectTrigger className={`h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue placeholder="Seleccionar trimestre" /></SelectTrigger><SelectContent><SelectItem value="1">I</SelectItem><SelectItem value="2">II</SelectItem><SelectItem value="3">III</SelectItem></SelectContent></Select></div>
+                  <div className="w-full sm:w-32"><Label className="text-sm sm:text-base font-medium">Trimestre</Label><Select value={trimestreSeleccionado || ""} onValueChange={setTrimestreSeleccionado}><SelectTrigger className={`h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue placeholder="Seleccionar trimestre" /></SelectTrigger><SelectContent><SelectItem value="1">I</SelectItem><SelectItem value="2">II</SelectItem><SelectItem value="3">III</SelectItem></SelectContent></Select></div>
                 </div>
                 {gradoSeleccionado && estudiantes.length > 0 && (
                   <>
