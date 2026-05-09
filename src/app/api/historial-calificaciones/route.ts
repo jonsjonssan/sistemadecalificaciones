@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: { createdAt: "desc" },
-      take: 100,
+      take: 10,
     });
 
     const formatted = historial.map((h: any) => ({

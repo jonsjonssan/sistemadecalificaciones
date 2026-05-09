@@ -524,6 +524,22 @@ export async function POST(request: NextRequest) {
             await tx.historialCalificacion.createMany({
               data: historialEntries,
             });
+
+            // Mantener solo los ultimos 10 registros por calificacionId + tipoCampo (ventana deslizante)
+            const tiposUnicos = [...new Set(historialEntries.map(h => h.tipoCampo))];
+            for (const tipoCampo of tiposUnicos) {
+              const todas = await tx.historialCalificacion.findMany({
+                where: { calificacionId: result.id, tipoCampo },
+                orderBy: { createdAt: "desc" },
+                select: { id: true },
+              });
+              if (todas.length > 10) {
+                const idsAEliminar = todas.slice(10).map((h: any) => h.id);
+                await tx.historialCalificacion.deleteMany({
+                  where: { id: { in: idsAEliminar } },
+                });
+              }
+            }
           }
         } catch (historialError) {
           console.error("[calificaciones] Historial error dentro de tx:", historialError);
