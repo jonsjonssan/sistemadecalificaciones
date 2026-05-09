@@ -180,13 +180,16 @@ useEffect(() => {
   const [auditTotalPages, setAuditTotalPages] = useState(1);
   const [auditTotal, setAuditTotal] = useState(0);
 
-  // Historial de calificaciones (popup estilo Google Sheets)
+  // Historial de calificaciones (popup estilo contextual anclado a celda)
   const [historialPopup, setHistorialPopup] = useState<{
     calificacionId: string;
     tipoCampo: string;
     campoLabel: string;
     anchorRef: React.RefObject<HTMLElement | null>;
   } | null>(null);
+  const activeHistoryCell = historialPopup
+    ? { calificacionId: historialPopup.calificacionId, tipoCampo: historialPopup.tipoCampo }
+    : null;
 
   // Persistence: Cargar de localStorage/sessionStorage
   useEffect(() => {
@@ -2396,6 +2399,7 @@ useEffect(() => {
                                 onNavigate={handleNavigate}
                                 inputRefs={inputRefs}
                                 onShowHistory={handleShowHistory}
+                                activeHistoryCell={activeHistoryCell}
                               />
                             })
                           )}

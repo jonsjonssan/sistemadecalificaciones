@@ -31,9 +31,10 @@ interface CalificacionRowProps {
   onNavigate?: (fromRow: number, fromCol: number, direction: 'up' | 'down' | 'left' | 'right') => void;
   inputRefs?: React.MutableRefObject<Map<string, HTMLInputElement>>;
   onShowHistory?: (calificacionId: string, tipoCampo: string, campoLabel: string, anchorRef: React.RefObject<HTMLElement | null>) => void;
+  activeHistoryCell?: { calificacionId: string; tipoCampo: string } | null;
 }
 
-function NotaInput({ value, onChange, darkMode, hasError, onBlur, onNavigate, inputKey, inputRefs, onShowHistory, calificacionId, tipoCampo, campoLabel }: {
+function NotaInput({ value, onChange, darkMode, hasError, onBlur, onNavigate, inputKey, inputRefs, onShowHistory, calificacionId, tipoCampo, campoLabel, activeHistoryCell }: {
   value: string | number | null;
   onChange: (v: string) => void;
   darkMode: boolean;
@@ -46,6 +47,7 @@ function NotaInput({ value, onChange, darkMode, hasError, onBlur, onNavigate, in
   calificacionId?: string;
   tipoCampo?: string;
   campoLabel?: string;
+  activeHistoryCell?: { calificacionId: string; tipoCampo: string } | null;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const cellRef = useRef<HTMLDivElement>(null);
@@ -163,8 +165,18 @@ function NotaInput({ value, onChange, darkMode, hasError, onBlur, onNavigate, in
     }
   };
 
+  const isActive = activeHistoryCell
+    ? activeHistoryCell.calificacionId === calificacionId && activeHistoryCell.tipoCampo === tipoCampo
+    : false;
+
   return (
-    <div ref={cellRef} suppressHydrationWarning onContextMenu={handleContextMenu} className="relative group">
+    <div
+      ref={cellRef}
+      suppressHydrationWarning
+      onContextMenu={handleContextMenu}
+      className={`relative group ${onShowHistory ? "cursor-pointer" : ""}`}
+      title={onShowHistory ? "Clic derecho para ver historial" : undefined}
+    >
       <input
         ref={inputRef}
         type="text"
@@ -173,20 +185,35 @@ function NotaInput({ value, onChange, darkMode, hasError, onBlur, onNavigate, in
         onChange={handleChange}
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
-        className={`w-full h-7 sm:h-8 text-center text-xs sm:text-sm border rounded px-0.5 transition-colors ${darkMode
+        className={`w-full h-7 sm:h-8 text-center text-xs sm:text-sm border rounded px-0.5 transition-all ${darkMode
           ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400"
           : "bg-white border-slate-300 text-slate-900"
-          } ${hasError ? "border-red-500 bg-red-50 dark:bg-red-900/20" : ""} focus:ring-1 focus:ring-teal-500 focus:border-teal-500`}
+          } ${hasError ? "border-red-500 bg-red-50 dark:bg-red-900/20" : ""} focus:ring-1 focus:ring-teal-500 focus:border-teal-500 ${
+            isActive
+              ? darkMode
+                ? "ring-2 ring-teal-500 border-teal-500 shadow-[0_0_8px_rgba(20,184,166,0.4)]"
+                : "ring-2 ring-teal-500 border-teal-500 shadow-[0_0_8px_rgba(20,184,166,0.3)]"
+              : ""
+          }`}
         placeholder="-"
         maxLength={6}
         suppressHydrationWarning
       />
-      {onShowHistory && (
-        <div className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <div className={`p-0.5 rounded-full cursor-pointer ${darkMode ? "bg-slate-600 hover:bg-slate-500" : "bg-slate-200 hover:bg-slate-300"}`} title="Ver historial de cambios">
-            <History className="h-2.5 w-2.5 text-teal-500" />
+      {/* Indicador de historial — punto sutil permanente, mas visible en hover */}
+      {onShowHistory && calificacionId && (
+        <>
+          <div className={`absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full transition-opacity duration-200 ${
+            isActive
+              ? "bg-teal-400 opacity-100"
+              : "bg-teal-500 opacity-40 group-hover:opacity-100"
+          }`} />
+          {/* Tooltip mini al hacer hover */}
+          <div className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+            <div className={`px-1 py-0.5 rounded text-[9px] font-medium whitespace-nowrap ${darkMode ? "bg-slate-600 text-teal-300" : "bg-white text-teal-700 border border-teal-200 shadow-sm"}`}>
+              Historial
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );
@@ -211,6 +238,7 @@ export const CalificacionRow = React.memo(function CalificacionRow({
   onNavigate,
   inputRefs,
   onShowHistory,
+  activeHistoryCell,
 }: CalificacionRowProps) {
   const numAC = config?.numActividadesCotidianas ?? 4;
   const numAI = config?.numActividadesIntegradoras ?? 1;
@@ -616,6 +644,7 @@ useEffect(() => {
               calificacionId={calificacion?.id}
               tipoCampo={`cotidiana_${i + 1}`}
               campoLabel={`AC${i + 1}`}
+              activeHistoryCell={activeHistoryCell}
             />
           </td>
         ))}
@@ -637,6 +666,7 @@ useEffect(() => {
               calificacionId={calificacion?.id}
               tipoCampo={`integradora_${i + 1}`}
               campoLabel={`AI${i + 1}`}
+              activeHistoryCell={activeHistoryCell}
             />
           </td>
         ))}
@@ -658,6 +688,7 @@ useEffect(() => {
               calificacionId={calificacion?.id}
               tipoCampo="examenTrimestral"
               campoLabel="Examen"
+              activeHistoryCell={activeHistoryCell}
             />
           </td>
         )}
@@ -679,8 +710,9 @@ useEffect(() => {
             onShowHistory={onShowHistory}
             calificacionId={calificacion?.id}
             tipoCampo="recuperacion"
-            campoLabel="Recuperación"
-          />
+              campoLabel="Recuperación"
+              activeHistoryCell={activeHistoryCell}
+            />
         </td>
         <td className={`p-2 text-center border-l ${cellBorder} ${finalBg}`}>
           <span className={`inline-block px-2 py-0.5 rounded-md text-xs sm:text-sm font-bold shadow ${finalBadgeClass}`}>
@@ -733,6 +765,7 @@ useEffect(() => {
             calificacionId={calificacion?.id}
             tipoCampo={`cotidiana_${i + 1}`}
             campoLabel={`AC${i + 1}`}
+            activeHistoryCell={activeHistoryCell}
           />
         </td>
       ))}
@@ -754,6 +787,7 @@ useEffect(() => {
             calificacionId={calificacion?.id}
             tipoCampo={`integradora_${i + 1}`}
             campoLabel={`AI${i + 1}`}
+            activeHistoryCell={activeHistoryCell}
           />
         </td>
       ))}
@@ -775,6 +809,7 @@ useEffect(() => {
             calificacionId={calificacion?.id}
             tipoCampo="examenTrimestral"
             campoLabel="Examen"
+            activeHistoryCell={activeHistoryCell}
           />
         </td>
       )}
@@ -797,6 +832,7 @@ useEffect(() => {
           calificacionId={calificacion?.id}
           tipoCampo="recuperacion"
           campoLabel="Recuperación"
+          activeHistoryCell={activeHistoryCell}
         />
       </td>
       <td className={`p-2 text-center border-l ${cellBorder} ${finalBg}`}>

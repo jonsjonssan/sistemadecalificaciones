@@ -93,15 +93,20 @@ export function HistorialCalificacionPopup({
   useLayoutEffect(() => {
     if (anchorRef?.current) {
       const rect = anchorRef.current.getBoundingClientRect();
-      const popupWidth = 380;
-      const popupHeight = 420;
-      let left = rect.left + rect.width / 2 - popupWidth / 2;
-      let top = rect.bottom + 8;
-      if (left < 8) left = 8;
-      if (left + popupWidth > window.innerWidth - 8) left = window.innerWidth - popupWidth - 8;
-      if (top + popupHeight > window.innerHeight - 8) {
-        top = rect.top - popupHeight - 8;
+      const popupWidth = 300;
+      const popupHeight = 400;
+      // Posicionar a la derecha de la celda (menu contextual)
+      let left = rect.right + 8;
+      let top = rect.top;
+      // Si no cabe a la derecha, mostrar a la izquierda
+      if (left + popupWidth > window.innerWidth - 8) {
+        left = rect.left - popupWidth - 8;
       }
+      // Ajustar verticalmente si se sale de la pantalla
+      if (top + popupHeight > window.innerHeight - 8) {
+        top = window.innerHeight - popupHeight - 8;
+      }
+      if (top < 8) top = 8;
       setPosition({ top, left });
     } else {
       setPosition({ top: "50%", left: "50%", transform: "translate(-50%, -50%)" });
@@ -155,8 +160,8 @@ export function HistorialCalificacionPopup({
           : "bg-white border-slate-200 text-slate-900"
       }`}
       style={{
-        width: 380,
-        maxHeight: "min(420px, calc(100vh - 32px))",
+        width: 300,
+        maxHeight: "min(400px, calc(100vh - 32px))",
         top: position.top,
         left: position.left,
         transform: position.transform,
