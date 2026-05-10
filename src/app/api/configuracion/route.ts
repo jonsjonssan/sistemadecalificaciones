@@ -31,13 +31,13 @@ export async function PUT(request: NextRequest) {
     if (authError) return authError;
 
     const body = await request.json();
-    const { añoEscolar, escuela, nombreDirectora, umbralRecuperacion, umbralCondicionado, umbralAprobado, maxHistorialCelda } = body;
+    const { añoEscolar, escuela, nombreDirectora, umbralRecuperacion, umbralCondicionado, umbralAprobado, maxHistorialCelda, usarIntervaloReprobado, usarIntervaloCondicionado, usarIntervaloAprobado } = body;
 
     let config = await sql`SELECT * FROM "ConfiguracionSistema" LIMIT 1`;
 
     if (config.length === 0) {
       const id = randomUUID();
-      await sql`INSERT INTO "ConfiguracionSistema" (id, "añoEscolar", escuela, "nombreDirectora", "umbralRecuperacion", "umbralCondicionado", "umbralAprobado", "maxHistorialCelda") VALUES (${id}, ${añoEscolar || 2026}, ${escuela || 'Centro Escolar'}, ${nombreDirectora || '_______________________________'}, ${umbralRecuperacion ?? 5.0}, ${umbralCondicionado ?? 4.5}, ${umbralAprobado ?? 6.5}, ${maxHistorialCelda ?? 10})`;
+      await sql`INSERT INTO "ConfiguracionSistema" (id, "añoEscolar", escuela, "nombreDirectora", "umbralRecuperacion", "umbralCondicionado", "umbralAprobado", "maxHistorialCelda", "usarIntervaloReprobado", "usarIntervaloCondicionado", "usarIntervaloAprobado") VALUES (${id}, ${añoEscolar || 2026}, ${escuela || 'Centro Escolar'}, ${nombreDirectora || '_______________________________'}, ${umbralRecuperacion ?? 5.0}, ${umbralCondicionado ?? 4.5}, ${umbralAprobado ?? 6.5}, ${maxHistorialCelda ?? 10}, ${usarIntervaloReprobado ?? true}, ${usarIntervaloCondicionado ?? true}, ${usarIntervaloAprobado ?? true})`;
       config = await sql`SELECT * FROM "ConfiguracionSistema" LIMIT 1`;
     } else {
       await sql`UPDATE "ConfiguracionSistema" SET 
@@ -48,6 +48,9 @@ export async function PUT(request: NextRequest) {
         "umbralCondicionado" = ${umbralCondicionado !== undefined ? umbralCondicionado : config[0].umbralCondicionado ?? 4.5},
         "umbralAprobado" = ${umbralAprobado !== undefined ? umbralAprobado : config[0].umbralAprobado ?? 6.5},
         "maxHistorialCelda" = ${maxHistorialCelda !== undefined ? maxHistorialCelda : config[0].maxHistorialCelda ?? 10},
+        "usarIntervaloReprobado" = ${usarIntervaloReprobado !== undefined ? usarIntervaloReprobado : config[0].usarIntervaloReprobado ?? true},
+        "usarIntervaloCondicionado" = ${usarIntervaloCondicionado !== undefined ? usarIntervaloCondicionado : config[0].usarIntervaloCondicionado ?? true},
+        "usarIntervaloAprobado" = ${usarIntervaloAprobado !== undefined ? usarIntervaloAprobado : config[0].usarIntervaloAprobado ?? true},
         "updatedAt" = NOW() 
       WHERE id = ${config[0].id}`;
       config = await sql`SELECT * FROM "ConfiguracionSistema" LIMIT 1`;

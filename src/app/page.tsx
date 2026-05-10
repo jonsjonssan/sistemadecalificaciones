@@ -127,6 +127,9 @@ useEffect(() => {
     umbralCondicionado: 4.5,
     umbralAprobado: 6.5,
     maxHistorialCelda: 10,
+    usarIntervaloReprobado: true,
+    usarIntervaloCondicionado: true,
+    usarIntervaloAprobado: true,
   });
   const [umbralesLoading, setUmbralesLoading] = useState(false);
   const [resetPasswordDialogOpen, setResetPasswordDialogOpen] = useState(false);
@@ -456,6 +459,9 @@ useEffect(() => {
           umbralCondicionado: data.umbralCondicionado ?? 4.5,
           umbralAprobado: data.umbralAprobado ?? 6.5,
           maxHistorialCelda: data.maxHistorialCelda ?? 10,
+          usarIntervaloReprobado: data.usarIntervaloReprobado ?? true,
+          usarIntervaloCondicionado: data.usarIntervaloCondicionado ?? true,
+          usarIntervaloAprobado: data.usarIntervaloAprobado ?? true,
         });
       }
     } catch { /* ignore */ }
@@ -1571,6 +1577,9 @@ useEffect(() => {
           umbralCondicionado: parseFloat(String(umbrales.umbralCondicionado)),
           umbralAprobado: parseFloat(String(umbrales.umbralAprobado)),
           maxHistorialCelda: parseInt(String(umbrales.maxHistorialCelda)),
+          usarIntervaloReprobado: umbrales.usarIntervaloReprobado,
+          usarIntervaloCondicionado: umbrales.usarIntervaloCondicionado,
+          usarIntervaloAprobado: umbrales.usarIntervaloAprobado,
         }),
       });
       if (res.ok) {
@@ -2844,7 +2853,7 @@ useEffect(() => {
                   umbrales={umbrales}
                   setUmbrales={setUmbrales}
                   onSave={handleGuardarUmbrales}
-                  onReset={() => setUmbrales({ umbralRecuperacion: 5.0, umbralCondicionado: 4.5, umbralAprobado: 6.5, maxHistorialCelda: 10 })}
+                  onReset={() => setUmbrales({ umbralRecuperacion: 5.0, umbralCondicionado: 4.5, umbralAprobado: 6.5, maxHistorialCelda: 10, usarIntervaloReprobado: true, usarIntervaloCondicionado: true, usarIntervaloAprobado: true })}
                   loading={umbralesLoading}
                 />
 

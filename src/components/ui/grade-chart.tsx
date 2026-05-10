@@ -36,6 +36,43 @@ interface GradeChartProps {
   action?: React.ReactNode;
 }
 
+function CustomTooltip({ active, payload, darkMode, showTarget }: { active?: boolean; payload?: any[]; darkMode: boolean; showTarget: boolean }) {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <div
+        className={cn(
+          "rounded-lg shadow-lg border p-3",
+          darkMode ? "bg-[#1e293b] border-slate-700" : "bg-white border-slate-200"
+        )}
+      >
+        <p className={cn("text-sm font-semibold mb-1", darkMode ? "text-white" : "text-slate-800")}>
+          {data.name}
+        </p>
+        <div className="space-y-0.5">
+          <p className="text-xs flex items-center gap-1">
+            <span className="h-2 w-2 rounded-full bg-teal-500 inline-block" />
+            <span className={darkMode ? "text-slate-300" : "text-slate-600"}>Promedio:</span>
+            <span className={cn("font-bold", darkMode ? "text-white" : "text-slate-800")}>
+              {data.value.toFixed(2)}
+            </span>
+          </p>
+          {showTarget && data.target && (
+            <p className="text-xs flex items-center gap-1">
+              <span className="h-2 w-2 rounded-full bg-amber-500 inline-block" />
+              <span className={darkMode ? "text-slate-300" : "text-slate-600"}>Meta:</span>
+              <span className={cn("font-bold", darkMode ? "text-white" : "text-slate-800")}>
+                {data.target.toFixed(2)}
+              </span>
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+  return null;
+}
+
 export function GradeChart({
   data,
   title,
@@ -58,45 +95,6 @@ export function GradeChart({
 
   const gridColor = darkMode ? "rgba(148, 163, 184, 0.1)" : "rgba(148, 163, 184, 0.2)";
   const textColor = darkMode ? "#94a3b8" : "#64748b";
-  const tooltipBg = darkMode ? "#1e293b" : "#ffffff";
-  const tooltipBorder = darkMode ? "#334155" : "#e2e8f0";
-
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div
-          className={cn(
-            "rounded-lg shadow-lg border p-3",
-            darkMode ? "bg-[#1e293b] border-slate-700" : "bg-white border-slate-200"
-          )}
-        >
-          <p className={cn("text-sm font-semibold mb-1", darkMode ? "text-white" : "text-slate-800")}>
-            {data.name}
-          </p>
-          <div className="space-y-0.5">
-            <p className="text-xs flex items-center gap-1">
-              <span className="h-2 w-2 rounded-full bg-teal-500 inline-block" />
-              <span className={darkMode ? "text-slate-300" : "text-slate-600"}>Promedio:</span>
-              <span className={cn("font-bold", darkMode ? "text-white" : "text-slate-800")}>
-                {data.value.toFixed(2)}
-              </span>
-            </p>
-            {showTarget && data.target && (
-              <p className="text-xs flex items-center gap-1">
-                <span className="h-2 w-2 rounded-full bg-amber-500 inline-block" />
-                <span className={darkMode ? "text-slate-300" : "text-slate-600"}>Meta:</span>
-                <span className={cn("font-bold", darkMode ? "text-white" : "text-slate-800")}>
-                  {data.target.toFixed(2)}
-                </span>
-              </p>
-            )}
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
 
   const TrendIcon = trend > 0 ? TrendingUp : trend < 0 ? TrendingDown : Minus;
   const trendColor = trend > 0 ? "text-emerald-500" : trend < 0 ? "text-red-500" : darkMode ? "text-slate-400" : "text-slate-500";
@@ -170,7 +168,7 @@ export function GradeChart({
                     tickLine={false}
                     axisLine={{ stroke: gridColor }}
                   />
-                  <Tooltip content={<CustomTooltip />} />
+                  <Tooltip content={<CustomTooltip darkMode={darkMode} showTarget={showTarget} />} />
                   <Legend
                     wrapperStyle={{ fontSize: "12px", paddingTop: "8px" }}
                   />
@@ -210,7 +208,7 @@ export function GradeChart({
                     tickLine={false}
                     axisLine={{ stroke: gridColor }}
                   />
-                  <Tooltip content={<CustomTooltip />} />
+                  <Tooltip content={<CustomTooltip darkMode={darkMode} showTarget={showTarget} />} />
                   <Legend
                     wrapperStyle={{ fontSize: "12px", paddingTop: "8px" }}
                   />

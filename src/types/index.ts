@@ -105,4 +105,7 @@ export interface ConfiguracionSistema {
   umbralCondicionado?: number;
   umbralAprobado?: number;
   maxHistorialCelda?: number;
+  usarIntervaloReprobado?: boolean;
+  usarIntervaloCondicionado?: boolean;
+  usarIntervaloAprobado?: boolean;
 }

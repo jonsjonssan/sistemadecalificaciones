@@ -44,7 +44,7 @@ export default function CuadroTrimestres({ gradoId, gradoNumero, gradoSeccion, g
 
   const asignaturaCuadro = useMemo(() => asignaturas.find(m => m.id === asignaturaCuadroId), [asignaturas, asignaturaCuadroId]);
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
+   
   useEffect(() => {
     if (!gradoId) return;
     let cancelled = false;
