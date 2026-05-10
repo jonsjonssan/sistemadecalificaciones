@@ -137,10 +137,14 @@ model ConfigActividad {
 
 // Configuración del sistema (año escolar actual, etc.)
 model ConfiguracionSistema {
-  id           String   @id @default(cuid())
-  añoEscolar   Int      @default(2026)
-  escuela      String   @default("Centro Escolar")
+  id              String   @id @default(cuid())
+  añoEscolar      Int      @default(2026)
+  escuela         String   @default("Centro Escolar")
   nombreDirectora String?
+  umbralRecuperacion  Float?   @default(5.0)
+  umbralCondicionado  Float?   @default(4.5)
+  umbralAprobado      Float?   @default(6.5)
+  maxHistorialCelda   Int?     @default(10)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }

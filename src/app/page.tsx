@@ -119,6 +119,15 @@ useEffect(() => {
   const [nuevoAño, setNuevoAño] = useState(2026);
   const [añoDialogOpen, setAñoDialogOpen] = useState(false);
   const [añoLoading, setAñoLoading] = useState(false);
+
+  // Umbrales configurables (valores por defecto)
+  const [umbrales, setUmbrales] = useState({
+    umbralRecuperacion: 5.0,
+    umbralCondicionado: 4.5,
+    umbralAprobado: 6.5,
+    maxHistorialCelda: 10,
+  });
+  const [umbralesLoading, setUmbralesLoading] = useState(false);
   const [resetPasswordDialogOpen, setResetPasswordDialogOpen] = useState(false);
   const [resetPasswordUser, setResetPasswordUser] = useState<{ id: string; nombre: string } | null>(null);
   const [resetPasswordForm, setResetPasswordForm] = useState({ password: "docente123" });
@@ -441,6 +450,12 @@ useEffect(() => {
         const data = await res.json();
         setConfiguracion(data);
         setNuevoAño(data.añoEscolar);
+        setUmbrales({
+          umbralRecuperacion: data.umbralRecuperacion ?? 5.0,
+          umbralCondicionado: data.umbralCondicionado ?? 4.5,
+          umbralAprobado: data.umbralAprobado ?? 6.5,
+          maxHistorialCelda: data.maxHistorialCelda ?? 10,
+        });
       }
     } catch { /* ignore */ }
   }, []);
@@ -1544,6 +1559,34 @@ useEffect(() => {
     }
   };
 
+  const handleGuardarUmbrales = async () => {
+    setUmbralesLoading(true);
+    try {
+      const res = await fetch("/api/configuracion", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          umbralRecuperacion: parseFloat(String(umbrales.umbralRecuperacion)),
+          umbralCondicionado: parseFloat(String(umbrales.umbralCondicionado)),
+          umbralAprobado: parseFloat(String(umbrales.umbralAprobado)),
+          maxHistorialCelda: parseInt(String(umbrales.maxHistorialCelda)),
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setConfiguracion(data);
+        toast({ title: "Umbrales actualizados", description: "La configuración del sistema ha sido guardada." });
+      } else {
+        const err = await res.json();
+        toast({ title: err.error || "Error al guardar umbrales", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Error de conexión", variant: "destructive" });
+    } finally {
+      setUmbralesLoading(false);
+    }
+  };
+
   const getCalificacion = (estudianteId: string) => calificaciones.find(c => c.estudianteId === estudianteId && c.materiaId === asignaturaSeleccionada && c.trimestre === parseInt(trimestreSeleccionado));
 
   // Agrupar asignaturas por grado para el selector
@@ -2190,17 +2233,17 @@ useEffect(() => {
                   <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-semibold ${
                     darkMode ? 'bg-red-900/60 text-red-200 ring-1 ring-red-600' : 'bg-red-100 text-red-800 ring-1 ring-red-300'
                   }`}>
-                    <AlertTriangle className="h-3 w-3" /> 0 - 4.49 Reprobado (MINED + CE)
+                    <AlertTriangle className="h-3 w-3" /> 0 - {(configuracion?.umbralCondicionado ?? 4.5) - 0.01} Reprobado (MINED + CE)
                   </span>
                   <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-semibold ${
                     darkMode ? 'bg-amber-900/60 text-amber-200 ring-1 ring-amber-600' : 'bg-amber-100 text-amber-800 ring-1 ring-amber-300'
                   }`}>
-                    4.50 - 6.49 Condicionado (MINED + CE)
+                    {(configuracion?.umbralCondicionado ?? 4.5).toFixed(2)} - {(configuracion?.umbralAprobado ?? 6.5) - 0.01} Condicionado (MINED + CE)
                   </span>
                   <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-semibold ${
                     darkMode ? 'bg-emerald-900/60 text-emerald-200 ring-1 ring-emerald-600' : 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-300'
                   }`}>
-                    ≥ 6.50 Aprobado (MINED + CE)
+                    ≥ {(configuracion?.umbralAprobado ?? 6.5).toFixed(2)} Aprobado (MINED + CE)
                   </span>
                 </div>
 
@@ -2400,6 +2443,8 @@ useEffect(() => {
                                 inputRefs={inputRefs}
                                 onShowHistory={handleShowHistory}
                                 activeHistoryCell={activeHistoryCell}
+                                umbralCondicionado={configuracion?.umbralCondicionado ?? 4.5}
+                                umbralAprobado={configuracion?.umbralAprobado ?? 6.5}
                               />
                             })
                           )}
@@ -2791,6 +2836,78 @@ useEffect(() => {
                       <Trash2 className="h-4 w-4 mr-1" /> Finalizar Año
                     </Button>
                   </CardFooter>
+                </Card>
+
+                {/* Umbrales del Sistema */}
+                <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
+                  <CardHeader className={`py-3 px-4 ${darkMode ? 'border-slate-700' : ''}`}>
+                    <CardTitle className="text-sm sm:text-base">Umbrales del Sistema</CardTitle>
+                    <CardDescription className={`text-xs ${darkMode ? 'text-slate-400' : ''}`}>Configure los límites que regulan la lógica de calificaciones e historial</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+                        <Label className={`text-xs font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Umbral de Recuperación</Label>
+                        <p className={`text-[10px] mb-1.5 ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Nota mínima para acceder a recuperación trimestral</p>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          min={0}
+                          max={10}
+                          value={umbrales.umbralRecuperacion}
+                          onChange={e => setUmbrales(prev => ({ ...prev, umbralRecuperacion: parseFloat(e.target.value) || 0 }))}
+                          className={`h-8 text-sm ${darkMode ? 'bg-slate-900 border-slate-600 text-white' : ''}`}
+                        />
+                      </div>
+                      <div className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+                        <Label className={`text-xs font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Umbral Condicionado</Label>
+                        <p className={`text-[10px] mb-1.5 ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Nota mínima para condicionado (Aprueba MINED / Reprueba CE)</p>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          min={0}
+                          max={10}
+                          value={umbrales.umbralCondicionado}
+                          onChange={e => setUmbrales(prev => ({ ...prev, umbralCondicionado: parseFloat(e.target.value) || 0 }))}
+                          className={`h-8 text-sm ${darkMode ? 'bg-slate-900 border-slate-600 text-white' : ''}`}
+                        />
+                      </div>
+                      <div className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+                        <Label className={`text-xs font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Umbral Aprobado</Label>
+                        <p className={`text-[10px] mb-1.5 ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Nota mínima para aprobado (MINED + CE)</p>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          min={0}
+                          max={10}
+                          value={umbrales.umbralAprobado}
+                          onChange={e => setUmbrales(prev => ({ ...prev, umbralAprobado: parseFloat(e.target.value) || 0 }))}
+                          className={`h-8 text-sm ${darkMode ? 'bg-slate-900 border-slate-600 text-white' : ''}`}
+                        />
+                      </div>
+                      <div className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+                        <Label className={`text-xs font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Límite Historial por Celda</Label>
+                        <p className={`text-[10px] mb-1.5 ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Máximo de registros de cambios por celda</p>
+                        <Input
+                          type="number"
+                          step={1}
+                          min={1}
+                          max={50}
+                          value={umbrales.maxHistorialCelda}
+                          onChange={e => setUmbrales(prev => ({ ...prev, maxHistorialCelda: parseInt(e.target.value) || 1 }))}
+                          className={`h-8 text-sm ${darkMode ? 'bg-slate-900 border-slate-600 text-white' : ''}`}
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-3 flex items-center gap-2">
+                      <Button size="sm" onClick={handleGuardarUmbrales} disabled={umbralesLoading} className="bg-teal-600 hover:bg-teal-700">
+                        {umbralesLoading ? "Guardando..." : "Guardar Umbrales"}
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => setUmbrales({ umbralRecuperacion: 5.0, umbralCondicionado: 4.5, umbralAprobado: 6.5, maxHistorialCelda: 10 })}>
+                        Restablecer
+                      </Button>
+                    </div>
+                  </CardContent>
                 </Card>
 
                 {/* Panel de Auditoría */}

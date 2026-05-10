@@ -32,6 +32,8 @@ interface CalificacionRowProps {
   inputRefs?: React.MutableRefObject<Map<string, HTMLInputElement>>;
   onShowHistory?: (calificacionId: string, tipoCampo: string, campoLabel: string, anchorRef: React.RefObject<HTMLElement | null>) => void;
   activeHistoryCell?: { calificacionId: string; tipoCampo: string } | null;
+  umbralCondicionado?: number;
+  umbralAprobado?: number;
 }
 
 function NotaInput({ value, onChange, darkMode, hasError, onBlur, onNavigate, inputKey, inputRefs, onShowHistory, calificacionId, tipoCampo, campoLabel, activeHistoryCell }: {
@@ -239,6 +241,8 @@ export const CalificacionRow = React.memo(function CalificacionRow({
   inputRefs,
   onShowHistory,
   activeHistoryCell,
+  umbralCondicionado = 4.5,
+  umbralAprobado = 6.5,
 }: CalificacionRowProps) {
   const numAC = config?.numActividadesCotidianas ?? 4;
   const numAI = config?.numActividadesIntegradoras ?? 1;
@@ -598,11 +602,11 @@ useEffect(() => {
     );
   const finalBadgeClass =
     promFinal !== null
-      ? promFinal >= 6.5
+      ? promFinal >= umbralAprobado
         ? darkMode
           ? "bg-emerald-900/60 text-emerald-200 ring-1 ring-emerald-600"
           : "bg-emerald-100 text-emerald-800 ring-1 ring-emerald-300"
-        : promFinal >= 4.5
+        : promFinal >= umbralCondicionado
           ? darkMode
             ? "bg-amber-900/60 text-amber-200 ring-1 ring-amber-600"
             : "bg-amber-100 text-amber-800 ring-1 ring-amber-300"

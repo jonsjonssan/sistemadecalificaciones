@@ -37,6 +37,9 @@ export async function GET(request: NextRequest) {
       where.tipoCampo = tipoCampo;
     }
 
+    const configHist = await db.configuracionSistema.findFirst({ select: { maxHistorialCelda: true } });
+    const maxHist = configHist?.maxHistorialCelda ?? 10;
+
     const historial = await db.historialCalificacion.findMany({
       where,
       include: {
@@ -50,7 +53,7 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: { createdAt: "desc" },
-      take: 10,
+      take: maxHist,
     });
 
     const formatted = historial.map((h: any) => ({

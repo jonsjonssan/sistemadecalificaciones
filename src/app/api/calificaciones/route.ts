@@ -525,7 +525,9 @@ export async function POST(request: NextRequest) {
               data: historialEntries,
             });
 
-            // Mantener solo los ultimos 10 registros por calificacionId + tipoCampo (ventana deslizante)
+            // Mantener solo los ultimos N registros por calificacionId + tipoCampo (ventana deslizante configurable)
+            const configHist = await tx.configuracionSistema.findFirst({ select: { maxHistorialCelda: true } });
+            const maxHist = configHist?.maxHistorialCelda ?? 10;
             const tiposUnicos = [...new Set(historialEntries.map(h => h.tipoCampo))];
             for (const tipoCampo of tiposUnicos) {
               const todas = await tx.historialCalificacion.findMany({
@@ -533,8 +535,8 @@ export async function POST(request: NextRequest) {
                 orderBy: { createdAt: "desc" },
                 select: { id: true },
               });
-              if (todas.length > 10) {
-                const idsAEliminar = todas.slice(10).map((h: any) => h.id);
+              if (todas.length > maxHist) {
+                const idsAEliminar = todas.slice(maxHist).map((h: any) => h.id);
                 await tx.historialCalificacion.deleteMany({
                   where: { id: { in: idsAEliminar } },
                 });

@@ -101,4 +101,8 @@ export interface ConfiguracionSistema {
   añoEscolar: number;
   escuela: string;
   nombreDirectora?: string;
+  umbralRecuperacion?: number;
+  umbralCondicionado?: number;
+  umbralAprobado?: number;
+  maxHistorialCelda?: number;
 }
