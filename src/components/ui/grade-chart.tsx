@@ -33,6 +33,7 @@ interface GradeChartProps {
   targetColor?: string;
   darkMode?: boolean;
   height?: number;
+  action?: React.ReactNode;
 }
 
 export function GradeChart({
@@ -46,6 +47,7 @@ export function GradeChart({
   targetColor = "#f59e0b",
   darkMode: propDarkMode,
   height = 300,
+  action,
 }: GradeChartProps) {
   const { resolvedTheme } = useTheme();
   const darkMode = propDarkMode ?? resolvedTheme === "dark";
@@ -131,9 +133,12 @@ export function GradeChart({
                 )}
               </div>
             </div>
-            <div className={cn("flex items-center gap-1 text-xs font-medium", trendColor)}>
-              <TrendIcon className="h-4 w-4" />
-              <span>{trend > 0 ? "+" : ""}{trend.toFixed(2)}</span>
+            <div className="flex items-center gap-2">
+              {action}
+              <div className={cn("flex items-center gap-1 text-xs font-medium", trendColor)}>
+                <TrendIcon className="h-4 w-4" />
+                <span>{trend > 0 ? "+" : ""}{trend.toFixed(2)}</span>
+              </div>
             </div>
           </div>
         </CardHeader>

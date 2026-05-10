@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
 import { GradeChart } from "@/components/ui/grade-chart";
 import InformeTecnicoDialog from "./InformeTecnicoDialog";
+import { MathInfoButton, mathExplanations } from "./MathInfoButton";
 
 interface UsuarioSesion { id: string; email: string; nombre: string; rol: string; asignaturasAsignadas?: Array<{ gradoId: string }>; }
 interface Grado { id: string; numero: number; seccion: string; _count?: { estudiantes: number; materias: number; }; }
@@ -508,6 +509,7 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
                 accentColor="bg-teal-500"
                 darkMode={darkMode}
                 delay={0}
+                action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.totalEstudiantes} />}
               />
 
               <StatCard
@@ -520,6 +522,7 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
                 accentColor="bg-emerald-500"
                 darkMode={darkMode}
                 delay={0.1}
+                action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.gradosActivos} />}
               />
 
               <StatCard
@@ -532,6 +535,7 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
                 accentColor="bg-blue-500"
                 darkMode={darkMode}
                 delay={0.2}
+                action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.asignaturas} />}
               />
 
               <StatCard
@@ -544,6 +548,7 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
                 accentColor="bg-amber-500"
                 darkMode={darkMode}
                 delay={0.3}
+                action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.docentes} />}
               />
             </>
           )}
@@ -554,11 +559,12 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
       {esDirectiva && (
         <Card className={`shadow-sm overflow-hidden ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-slate-100'}`}>
           <div className="h-1 bg-gradient-to-r from-teal-500 via-blue-500 to-violet-500 w-full" />
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-3 flex flex-row items-center justify-between">
             <CardTitle className={`text-sm sm:text-base flex items-center gap-2 ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>
               <Target className="h-5 w-5 text-teal-600" />
               Rendimiento Institucional
             </CardTitle>
+            <MathInfoButton darkMode={darkMode} explanation={mathExplanations.rendimientoInstitucional} />
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-center">
@@ -600,16 +606,20 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
           showTarget
           darkMode={darkMode}
           height={280}
+          action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.promedioPorCategoria} />}
         />
       )}
 
       {/* Asignaturas por Ciclo */}
       {esDirectiva && todasAsignaturasList.length > 0 && (
         <div>
-          <h3 className={`text-base font-semibold mb-3 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
-            <BookOpen className="h-5 w-5 inline mr-2 text-teal-600" />
-            Asignaturas por Ciclo
-          </h3>
+          <div className="flex items-center gap-2 mb-3">
+            <h3 className={`text-base font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
+              <BookOpen className="h-5 w-5 inline mr-2 text-teal-600" />
+              Asignaturas por Ciclo
+            </h3>
+            <MathInfoButton darkMode={darkMode} explanation={mathExplanations.asignaturasPorCiclo} />
+          </div>
           <CiclosSection asignaturas={todasAsignaturasList} stats={stats} grados={grados} darkMode={darkMode} selectedMaterias={selectedMaterias} setSelectedMaterias={setSelectedMaterias} />
           {esDirectiva && (
             <div className="mt-4">

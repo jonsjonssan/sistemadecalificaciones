@@ -21,6 +21,7 @@ interface StatCardProps {
   loading?: boolean;
   darkMode: boolean;
   delay?: number;
+  action?: React.ReactNode;
 }
 
 export function StatCard({
@@ -35,6 +36,7 @@ export function StatCard({
   loading = false,
   darkMode,
   delay = 0,
+  action,
 }: StatCardProps) {
   if (loading) {
     return (
@@ -75,14 +77,17 @@ export function StatCard({
         <div className={cn("h-1 w-full", accentColor)} />
         <CardContent className="p-4">
           <div className="flex items-center justify-between mb-3">
-            <p
-              className={cn(
-                "text-sm font-medium",
-                darkMode ? "text-slate-300" : "text-slate-600"
-              )}
-            >
-              {title}
-            </p>
+            <div className="flex items-center gap-2">
+              <p
+                className={cn(
+                  "text-sm font-medium",
+                  darkMode ? "text-slate-300" : "text-slate-600"
+                )}
+              >
+                {title}
+              </p>
+              {action}
+            </div>
             <div
               className={cn(
                 "h-10 w-10 rounded-full flex items-center justify-center",
