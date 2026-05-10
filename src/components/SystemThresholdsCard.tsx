@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { AlertTriangle, Minus, Check } from "lucide-react";
 
 interface SystemThresholdsCardProps {
   darkMode: boolean;
@@ -33,147 +34,154 @@ export function SystemThresholdsCard({
   onReset,
   loading,
 }: SystemThresholdsCardProps) {
+  const uc = umbrales.umbralCondicionado;
+  const ua = umbrales.umbralAprobado;
+
   return (
     <Card className={`shadow-sm ${darkMode ? "bg-[#1e293b] border-slate-700" : ""}`}>
       <CardHeader className={`py-3 px-4 ${darkMode ? "border-slate-700" : ""}`}>
         <CardTitle className="text-sm sm:text-base">Umbrales del Sistema</CardTitle>
         <CardDescription className={`text-xs ${darkMode ? "text-slate-400" : ""}`}>
-          Configure los intervalos de calificación y el historial por celda
+          Regule la escala de calificaciones y el historial
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-0 space-y-4">
-        {/* Visual bar de intervalos */}
+        {/* ===== BARRA VISUAL DE INTERVALOS ===== */}
         <div className="space-y-2">
           <p className={`text-[10px] font-semibold uppercase tracking-wider ${darkMode ? "text-slate-500" : "text-slate-400"}`}>
-            Intervalos Activos
+            Escala de Calificaciones
           </p>
-          <div className="flex rounded-xl overflow-hidden border h-10 text-xs font-bold">
+          <div className="flex h-10 rounded-lg overflow-hidden border text-[11px] font-bold">
+            {/* Rojo - Reprobado */}
             <div
-              className={`flex-1 flex items-center justify-center gap-1 ${darkMode ? "bg-red-900/50 text-red-200 border-r border-red-800" : "bg-red-100 text-red-800 border-r border-red-200"}`}
+              className={`flex-1 flex flex-col items-center justify-center gap-0.5 ${darkMode ? "bg-red-900/60 text-red-200" : "bg-red-100 text-red-800"}`}
+              title={`0 - ${(uc - 0.01).toFixed(2)} Reprobado`}
             >
-              <span>0</span>
-              <span>&le;</span>
-              <span>{umbrales.umbralCondicionado.toFixed(2)}</span>
-              <span className="ml-1 opacity-80">Reprobado</span>
+              <div className="flex items-center gap-1">
+                <AlertTriangle className="h-3 w-3" />
+                <span>Reprobado</span>
+              </div>
+              <span className="opacity-80 font-mono">0 ≤ x &lt; {uc.toFixed(2)}</span>
             </div>
+            {/* Ámbar - Condicionado */}
             <div
-              className={`flex-1 flex items-center justify-center gap-1 ${darkMode ? "bg-amber-900/50 text-amber-200 border-r border-amber-800" : "bg-amber-100 text-amber-800 border-r border-amber-200"}`}
+              className={`flex-1 flex flex-col items-center justify-center gap-0.5 ${darkMode ? "bg-amber-900/60 text-amber-200" : "bg-amber-100 text-amber-800"}`}
+              title={`${uc.toFixed(2)} - ${(ua - 0.01).toFixed(2)} Condicionado`}
             >
-              <span>{umbrales.umbralCondicionado.toFixed(2)}</span>
-              <span>&lt;</span>
-              <span>{umbrales.umbralAprobado.toFixed(2)}</span>
-              <span className="ml-1 opacity-80">Condicionado</span>
+              <div className="flex items-center gap-1">
+                <Minus className="h-3 w-3" />
+                <span>Condicionado</span>
+              </div>
+              <span className="opacity-80 font-mono">{uc.toFixed(2)} ≤ x &lt; {ua.toFixed(2)}</span>
             </div>
+            {/* Verde - Aprobado */}
             <div
-              className={`flex-1 flex items-center justify-center gap-1 ${darkMode ? "bg-emerald-900/50 text-emerald-200" : "bg-emerald-100 text-emerald-800"}`}
+              className={`flex-1 flex flex-col items-center justify-center gap-0.5 ${darkMode ? "bg-emerald-900/60 text-emerald-200" : "bg-emerald-100 text-emerald-800"}`}
+              title={`≥ ${ua.toFixed(2)} Aprobado`}
             >
-              <span>&ge;</span>
-              <span>{umbrales.umbralAprobado.toFixed(2)}</span>
-              <span className="ml-1 opacity-80">Aprobado</span>
+              <div className="flex items-center gap-1">
+                <Check className="h-3 w-3" />
+                <span>Aprobado</span>
+              </div>
+              <span className="opacity-80 font-mono">x ≥ {ua.toFixed(2)}</span>
             </div>
           </div>
         </div>
 
-        {/* Inputs con etiquetas de color */}
+        {/* ===== TRES BOTONES / INPUTS ===== */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {/* Reprobado */}
-          <div className={`p-3 rounded-xl border ${darkMode ? "bg-red-900/10 border-red-800/40" : "bg-red-50 border-red-200"}`}>
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
-              <Label className={`text-xs font-bold ${darkMode ? "text-red-300" : "text-red-800"}`}>Reprobado</Label>
+          <div className={`rounded-xl border p-3 space-y-2 ${darkMode ? "bg-red-950/30 border-red-900/50" : "bg-red-50 border-red-200"}`}>
+            <div className="flex items-center gap-2">
+              <div className={`w-3 h-3 rounded-full ${darkMode ? "bg-red-500" : "bg-red-500"}`} />
+              <span className={`text-xs font-bold ${darkMode ? "text-red-300" : "text-red-800"}`}>Reprobado</span>
             </div>
-            <p className={`text-[10px] mb-1.5 ${darkMode ? "text-red-400/70" : "text-red-700/70"}`}>
+            <p className={`text-[10px] leading-relaxed ${darkMode ? "text-red-400/70" : "text-red-700/70"}`}>
               Límite superior del rango reprobado
             </p>
-            <div className="flex items-center gap-2">
-              <span className={`text-xs font-mono ${darkMode ? "text-slate-400" : "text-slate-500"}`}>0 &le;</span>
+            <div className="flex items-center gap-1.5 text-xs">
+              <span className={`font-mono ${darkMode ? "text-slate-500" : "text-slate-500"}`}>0 ≤</span>
               <Input
                 type="number"
                 step="0.1"
                 min={0}
                 max={10}
-                value={umbrales.umbralCondicionado}
-                onChange={(e) =>
-                  setUmbrales((prev) => ({ ...prev, umbralCondicionado: parseFloat(e.target.value) || 0 }))
-                }
-                className={`h-8 text-sm text-center font-bold ${darkMode ? "bg-slate-900 border-slate-600 text-white" : ""}`}
+                value={uc}
+                onChange={(e) => setUmbrales((prev) => ({ ...prev, umbralCondicionado: parseFloat(e.target.value) || 0 }))}
+                className={`h-8 text-sm text-center font-bold ${darkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300"}`}
               />
             </div>
           </div>
 
           {/* Condicionado */}
-          <div className={`p-3 rounded-xl border ${darkMode ? "bg-amber-900/10 border-amber-800/40" : "bg-amber-50 border-amber-200"}`}>
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-              <Label className={`text-xs font-bold ${darkMode ? "text-amber-300" : "text-amber-800"}`}>Condicionado</Label>
+          <div className={`rounded-xl border p-3 space-y-2 ${darkMode ? "bg-amber-950/30 border-amber-900/50" : "bg-amber-50 border-amber-200"}`}>
+            <div className="flex items-center gap-2">
+              <div className={`w-3 h-3 rounded-full ${darkMode ? "bg-amber-500" : "bg-amber-500"}`} />
+              <span className={`text-xs font-bold ${darkMode ? "text-amber-300" : "text-amber-800"}`}>Condicionado</span>
             </div>
-            <p className={`text-[10px] mb-1.5 ${darkMode ? "text-amber-400/70" : "text-amber-700/70"}`}>
+            <p className={`text-[10px] leading-relaxed ${darkMode ? "text-amber-400/70" : "text-amber-700/70"}`}>
               Límite superior del rango condicionado
             </p>
-            <div className="flex items-center gap-2">
-              <span className={`text-xs font-mono ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
-                {umbrales.umbralCondicionado.toFixed(2)} &lt;
-              </span>
+            <div className="flex items-center gap-1.5 text-xs">
+              <span className={`font-mono ${darkMode ? "text-slate-500" : "text-slate-500"}`}>{uc.toFixed(2)} ≤</span>
               <Input
                 type="number"
                 step="0.1"
                 min={0}
                 max={10}
-                value={umbrales.umbralAprobado}
-                onChange={(e) =>
-                  setUmbrales((prev) => ({ ...prev, umbralAprobado: parseFloat(e.target.value) || 0 }))
-                }
-                className={`h-8 text-sm text-center font-bold ${darkMode ? "bg-slate-900 border-slate-600 text-white" : ""}`}
+                value={ua}
+                onChange={(e) => setUmbrales((prev) => ({ ...prev, umbralAprobado: parseFloat(e.target.value) || 0 }))}
+                className={`h-8 text-sm text-center font-bold ${darkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300"}`}
               />
             </div>
           </div>
 
           {/* Aprobado */}
-          <div className={`p-3 rounded-xl border ${darkMode ? "bg-emerald-900/10 border-emerald-800/40" : "bg-emerald-50 border-emerald-200"}`}>
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-              <Label className={`text-xs font-bold ${darkMode ? "text-emerald-300" : "text-emerald-800"}`}>Aprobado</Label>
+          <div className={`rounded-xl border p-3 space-y-2 ${darkMode ? "bg-emerald-950/30 border-emerald-900/50" : "bg-emerald-50 border-emerald-200"}`}>
+            <div className="flex items-center gap-2">
+              <div className={`w-3 h-3 rounded-full ${darkMode ? "bg-emerald-500" : "bg-emerald-500"}`} />
+              <span className={`text-xs font-bold ${darkMode ? "text-emerald-300" : "text-emerald-800"}`}>Aprobado</span>
             </div>
-            <p className={`text-[10px] mb-1.5 ${darkMode ? "text-emerald-400/70" : "text-emerald-700/70"}`}>
+            <p className={`text-[10px] leading-relaxed ${darkMode ? "text-emerald-400/70" : "text-emerald-700/70"}`}>
               Nota mínima para aprobar
             </p>
-            <div className="flex items-center gap-2">
-              <span className={`text-xs font-mono ${darkMode ? "text-slate-400" : "text-slate-500"}`}>&ge;</span>
-              <div
-                className={`flex-1 h-8 flex items-center justify-center rounded-md border text-sm font-bold ${darkMode ? "bg-slate-900 border-slate-600 text-emerald-400" : "bg-white border-slate-200 text-emerald-700"}`}
-              >
-                {umbrales.umbralAprobado.toFixed(2)}
+            <div className="flex items-center gap-1.5 text-xs">
+              <span className={`font-mono ${darkMode ? "text-slate-500" : "text-slate-500"}`}>≥</span>
+              <div className={`flex-1 h-8 flex items-center justify-center rounded-md border text-sm font-bold ${darkMode ? "bg-slate-900 border-slate-700 text-emerald-400" : "bg-white border-slate-300 text-emerald-700"}`}>
+                {ua.toFixed(2)}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Historial */}
-        <div className={`p-3 rounded-xl border ${darkMode ? "bg-slate-800 border-slate-700" : "bg-slate-50 border-slate-200"}`}>
-          <Label className={`text-xs font-semibold ${darkMode ? "text-slate-300" : "text-slate-700"}`}>
-            Límite Historial por Celda
-          </Label>
-          <p className={`text-[10px] mb-1.5 ${darkMode ? "text-slate-500" : "text-slate-500"}`}>
-            Máximo de registros de cambios por celda
-          </p>
-          <div className="flex items-center gap-2">
-            <Input
-              type="number"
-              step={1}
-              min={1}
-              max={50}
-              value={umbrales.maxHistorialCelda}
-              onChange={(e) =>
-                setUmbrales((prev) => ({ ...prev, maxHistorialCelda: parseInt(e.target.value) || 1 }))
-              }
-              className={`h-8 text-sm w-24 text-center font-bold ${darkMode ? "bg-slate-900 border-slate-600 text-white" : ""}`}
-            />
-            <span className={`text-xs ${darkMode ? "text-slate-500" : "text-slate-500"}`}>registros</span>
+        {/* ===== HISTORIAL ===== */}
+        <div className={`rounded-xl border p-3 ${darkMode ? "bg-slate-800 border-slate-700" : "bg-slate-50 border-slate-200"}`}>
+          <div className="flex items-center justify-between">
+            <div>
+              <Label className={`text-xs font-semibold ${darkMode ? "text-slate-300" : "text-slate-700"}`}>
+                Límite Historial por Celda
+              </Label>
+              <p className={`text-[10px] ${darkMode ? "text-slate-500" : "text-slate-500"}`}>
+                Máximo de registros guardados por celda
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Input
+                type="number"
+                step={1}
+                min={1}
+                max={50}
+                value={umbrales.maxHistorialCelda}
+                onChange={(e) => setUmbrales((prev) => ({ ...prev, maxHistorialCelda: parseInt(e.target.value) || 1 }))}
+                className={`h-8 w-20 text-sm text-center font-bold ${darkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300"}`}
+              />
+              <span className={`text-xs ${darkMode ? "text-slate-500" : "text-slate-500"}`}>registros</span>
+            </div>
           </div>
         </div>
 
-        {/* Acciones */}
-        <div className="flex items-center gap-2">
+        {/* ===== ACCIONES ===== */}
+        <div className="flex items-center gap-2 pt-1">
           <Button size="sm" onClick={onSave} disabled={loading} className="bg-teal-600 hover:bg-teal-700">
             {loading ? "Guardando..." : "Guardar Umbrales"}
           </Button>
