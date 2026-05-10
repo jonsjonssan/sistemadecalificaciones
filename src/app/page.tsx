@@ -38,6 +38,7 @@ import BoletaList from "@/components/BoletaList";
 import ReporteCalificaciones from "@/components/ReporteCalificaciones";
 import CuadroTrimestres from "@/components/CuadroTrimestres";
 import EnlacesInstitucionales from "@/components/EnlacesInstitucionales";
+import { SystemThresholdsCard } from "@/components/SystemThresholdsCard";
 
 export default function Home() {
   const { toast } = useToast();
@@ -2838,77 +2839,14 @@ useEffect(() => {
                   </CardFooter>
                 </Card>
 
-                {/* Umbrales del Sistema */}
-                <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
-                  <CardHeader className={`py-3 px-4 ${darkMode ? 'border-slate-700' : ''}`}>
-                    <CardTitle className="text-sm sm:text-base">Umbrales del Sistema</CardTitle>
-                    <CardDescription className={`text-xs ${darkMode ? 'text-slate-400' : ''}`}>Configure los límites que regulan la lógica de calificaciones e historial</CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
-                        <Label className={`text-xs font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Umbral de Recuperación</Label>
-                        <p className={`text-[10px] mb-1.5 ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Nota mínima para acceder a recuperación trimestral</p>
-                        <Input
-                          type="number"
-                          step="0.1"
-                          min={0}
-                          max={10}
-                          value={umbrales.umbralRecuperacion}
-                          onChange={e => setUmbrales(prev => ({ ...prev, umbralRecuperacion: parseFloat(e.target.value) || 0 }))}
-                          className={`h-8 text-sm ${darkMode ? 'bg-slate-900 border-slate-600 text-white' : ''}`}
-                        />
-                      </div>
-                      <div className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
-                        <Label className={`text-xs font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Umbral Condicionado</Label>
-                        <p className={`text-[10px] mb-1.5 ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Nota mínima para condicionado (Aprueba MINED / Reprueba CE)</p>
-                        <Input
-                          type="number"
-                          step="0.1"
-                          min={0}
-                          max={10}
-                          value={umbrales.umbralCondicionado}
-                          onChange={e => setUmbrales(prev => ({ ...prev, umbralCondicionado: parseFloat(e.target.value) || 0 }))}
-                          className={`h-8 text-sm ${darkMode ? 'bg-slate-900 border-slate-600 text-white' : ''}`}
-                        />
-                      </div>
-                      <div className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
-                        <Label className={`text-xs font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Umbral Aprobado</Label>
-                        <p className={`text-[10px] mb-1.5 ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Nota mínima para aprobado (MINED + CE)</p>
-                        <Input
-                          type="number"
-                          step="0.1"
-                          min={0}
-                          max={10}
-                          value={umbrales.umbralAprobado}
-                          onChange={e => setUmbrales(prev => ({ ...prev, umbralAprobado: parseFloat(e.target.value) || 0 }))}
-                          className={`h-8 text-sm ${darkMode ? 'bg-slate-900 border-slate-600 text-white' : ''}`}
-                        />
-                      </div>
-                      <div className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
-                        <Label className={`text-xs font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Límite Historial por Celda</Label>
-                        <p className={`text-[10px] mb-1.5 ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Máximo de registros de cambios por celda</p>
-                        <Input
-                          type="number"
-                          step={1}
-                          min={1}
-                          max={50}
-                          value={umbrales.maxHistorialCelda}
-                          onChange={e => setUmbrales(prev => ({ ...prev, maxHistorialCelda: parseInt(e.target.value) || 1 }))}
-                          className={`h-8 text-sm ${darkMode ? 'bg-slate-900 border-slate-600 text-white' : ''}`}
-                        />
-                      </div>
-                    </div>
-                    <div className="mt-3 flex items-center gap-2">
-                      <Button size="sm" onClick={handleGuardarUmbrales} disabled={umbralesLoading} className="bg-teal-600 hover:bg-teal-700">
-                        {umbralesLoading ? "Guardando..." : "Guardar Umbrales"}
-                      </Button>
-                      <Button size="sm" variant="outline" onClick={() => setUmbrales({ umbralRecuperacion: 5.0, umbralCondicionado: 4.5, umbralAprobado: 6.5, maxHistorialCelda: 10 })}>
-                        Restablecer
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                <SystemThresholdsCard
+                  darkMode={darkMode}
+                  umbrales={umbrales}
+                  setUmbrales={setUmbrales}
+                  onSave={handleGuardarUmbrales}
+                  onReset={() => setUmbrales({ umbralRecuperacion: 5.0, umbralCondicionado: 4.5, umbralAprobado: 6.5, maxHistorialCelda: 10 })}
+                  loading={umbralesLoading}
+                />
 
                 {/* Panel de Auditoría */}
                 <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
