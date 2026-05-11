@@ -50,7 +50,7 @@ export function SystemThresholdsCard({
   const [rawUr, setRawUr] = useState(String(ur));
 
   // Sincronizar cuando cambian los props (reset, carga desde DB)
-  // eslint-disable-next-line react-hooks/set-state-in-effect
+   
   useEffect(() => {
     setRawUc(String(uc));
     setRawUa(String(ua));
