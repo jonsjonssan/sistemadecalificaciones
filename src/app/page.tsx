@@ -2243,12 +2243,12 @@ useEffect(() => {
                   <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-semibold ${
                     darkMode ? 'bg-red-900/60 text-red-200 ring-1 ring-red-600' : 'bg-red-100 text-red-800 ring-1 ring-red-300'
                   }`}>
-                    <AlertTriangle className="h-3 w-3" /> 0 - {(configuracion?.umbralCondicionado ?? 4.5) - 0.01} Reprobado (MINED + CE)
+                    <AlertTriangle className="h-3 w-3" /> 0 – {Math.max(0, (configuracion?.umbralCondicionado ?? 4.5) - 0.01).toFixed(2)} Reprobado (MINED + CE)
                   </span>
                   <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-semibold ${
                     darkMode ? 'bg-amber-900/60 text-amber-200 ring-1 ring-amber-600' : 'bg-amber-100 text-amber-800 ring-1 ring-amber-300'
                   }`}>
-                    {(configuracion?.umbralCondicionado ?? 4.5).toFixed(2)} - {(configuracion?.umbralAprobado ?? 6.5) - 0.01} Condicionado (MINED + CE)
+                    {(configuracion?.umbralCondicionado ?? 4.5).toFixed(2)} – {Math.max((configuracion?.umbralCondicionado ?? 4.5), (configuracion?.umbralAprobado ?? 6.5) - 0.01).toFixed(2)} Condicionado (Aprueba MINED / Reprueba CE)
                   </span>
                   <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-semibold ${
                     darkMode ? 'bg-emerald-900/60 text-emerald-200 ring-1 ring-emerald-600' : 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-300'
