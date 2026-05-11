@@ -1,11 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-
 
 interface SystemThresholdsCardProps {
   darkMode: boolean;
@@ -42,6 +41,21 @@ export function SystemThresholdsCard({
 }: SystemThresholdsCardProps) {
   const uc = umbrales.umbralCondicionado;
   const ua = umbrales.umbralAprobado;
+  const ur = umbrales.umbralRecuperacion;
+
+  // Raw string states para permitir tipear decimales sin que React
+  // reformatee el valor intermedio (ej: "6." → "6.00")
+  const [rawUc, setRawUc] = useState(String(uc));
+  const [rawUa, setRawUa] = useState(String(ua));
+  const [rawUr, setRawUr] = useState(String(ur));
+
+  // Sincronizar cuando cambian los props (reset, carga desde DB)
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => {
+    setRawUc(String(uc));
+    setRawUa(String(ua));
+    setRawUr(String(ur));
+  }, [uc, ua, ur]);
 
   // Proporciones visuales basadas en escala 0–10
   const redWidth = Math.max(0, Math.min(100, (uc / 10) * 100));
@@ -54,6 +68,42 @@ export function SystemThresholdsCard({
 
   const textMuted = darkMode ? "text-slate-500" : "text-slate-400";
   const inputBase = `text-center border-0 border-b rounded-none px-0 focus-visible:ring-0 focus-visible:border-b-2 transition-colors ${darkMode ? "bg-transparent border-slate-600 text-white focus-visible:border-slate-400" : "bg-transparent border-slate-300 text-slate-900 focus-visible:border-slate-500"}`;
+
+  const commitUc = (val: string) => {
+    if (val === "" || val === ".") { setRawUc(String(uc)); return; }
+    const num = parseFloat(val);
+    if (Number.isNaN(num)) { setRawUc(String(uc)); return; }
+    if (num >= ua) {
+      const clamped = Math.max(0, Math.round((ua - 0.01) * 100) / 100);
+      setUmbrales((prev) => ({ ...prev, umbralCondicionado: clamped }));
+      setRawUc(String(clamped));
+    } else {
+      setUmbrales((prev) => ({ ...prev, umbralCondicionado: num }));
+      setRawUc(String(num));
+    }
+  };
+
+  const commitUa = (val: string) => {
+    if (val === "" || val === ".") { setRawUa(String(ua)); return; }
+    const num = parseFloat(val);
+    if (Number.isNaN(num)) { setRawUa(String(ua)); return; }
+    if (num <= uc) {
+      const clamped = Math.min(10, Math.round((uc + 0.01) * 100) / 100);
+      setUmbrales((prev) => ({ ...prev, umbralAprobado: clamped }));
+      setRawUa(String(clamped));
+    } else {
+      setUmbrales((prev) => ({ ...prev, umbralAprobado: num }));
+      setRawUa(String(num));
+    }
+  };
+
+  const commitUr = (val: string) => {
+    if (val === "" || val === ".") { setRawUr(String(ur)); return; }
+    const num = parseFloat(val);
+    if (Number.isNaN(num)) { setRawUr(String(ur)); return; }
+    setUmbrales((prev) => ({ ...prev, umbralRecuperacion: num }));
+    setRawUr(String(num));
+  };
 
   return (
     <Card className={`shadow-sm ${darkMode ? "bg-[#1e293b] border-slate-700" : ""}`}>
@@ -133,18 +183,9 @@ export function SystemThresholdsCard({
                 step="0.01"
                 min={0.01}
                 max={10}
-                value={uc.toFixed(2)}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val === "") return;
-                  const num = parseFloat(val);
-                  if (Number.isNaN(num)) return;
-                  if (num >= ua) {
-                    setUmbrales((prev) => ({ ...prev, umbralCondicionado: Math.max(0, Math.round((ua - 0.01) * 100) / 100) }));
-                  } else {
-                    setUmbrales((prev) => ({ ...prev, umbralCondicionado: num }));
-                  }
-                }}
+                value={rawUc}
+                onChange={(e) => setRawUc(e.target.value)}
+                onBlur={(e) => commitUc(e.target.value)}
                 disabled={!umbrales.usarIntervaloReprobado}
                 className={`w-16 text-lg font-medium ${inputBase}`}
               />
@@ -174,18 +215,9 @@ export function SystemThresholdsCard({
                 step="0.01"
                 min={0.01}
                 max={10}
-                value={ua.toFixed(2)}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val === "") return;
-                  const num = parseFloat(val);
-                  if (Number.isNaN(num)) return;
-                  if (num <= uc) {
-                    setUmbrales((prev) => ({ ...prev, umbralAprobado: Math.min(10, Math.round((uc + 0.01) * 100) / 100) }));
-                  } else {
-                    setUmbrales((prev) => ({ ...prev, umbralAprobado: num }));
-                  }
-                }}
+                value={rawUa}
+                onChange={(e) => setRawUa(e.target.value)}
+                onBlur={(e) => commitUa(e.target.value)}
                 disabled={!umbrales.usarIntervaloCondicionado}
                 className={`w-16 text-lg font-medium ${inputBase}`}
               />
@@ -214,18 +246,9 @@ export function SystemThresholdsCard({
                 step="0.01"
                 min={0.01}
                 max={10}
-                value={ua.toFixed(2)}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val === "") return;
-                  const num = parseFloat(val);
-                  if (Number.isNaN(num)) return;
-                  if (num <= uc) {
-                    setUmbrales((prev) => ({ ...prev, umbralAprobado: Math.min(10, Math.round((uc + 0.01) * 100) / 100) }));
-                  } else {
-                    setUmbrales((prev) => ({ ...prev, umbralAprobado: num }));
-                  }
-                }}
+                value={rawUa}
+                onChange={(e) => setRawUa(e.target.value)}
+                onBlur={(e) => commitUa(e.target.value)}
                 disabled={!umbrales.usarIntervaloAprobado}
                 className={`w-16 text-lg font-medium ${inputBase}`}
               />
@@ -246,14 +269,9 @@ export function SystemThresholdsCard({
               step="0.01"
               min={0}
               max={10}
-              value={umbrales.umbralRecuperacion.toFixed(2)}
-              onChange={(e) => {
-                const val = e.target.value;
-                if (val === "") return;
-                const num = parseFloat(val);
-                if (Number.isNaN(num)) return;
-                setUmbrales((prev) => ({ ...prev, umbralRecuperacion: num }));
-              }}
+              value={rawUr}
+              onChange={(e) => setRawUr(e.target.value)}
+              onBlur={(e) => commitUr(e.target.value)}
               className={`w-20 text-lg font-medium ${inputBase}`}
             />
           </div>
