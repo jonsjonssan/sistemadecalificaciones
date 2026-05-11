@@ -26,7 +26,7 @@ interface DashboardProps {
   totalAsignaturas: number;
   asignaturasAsignadas?: MateriaConGrado[];
   totalDocentes: number;
-  configuracion?: { añoEscolar: number; escuela: string };
+  configuracion?: { añoEscolar: number; escuela: string; umbralAprobado?: number };
 }
 
 interface GradeStats {

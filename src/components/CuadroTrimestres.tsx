@@ -25,9 +25,11 @@ interface CuadroTrimestresProps {
   asignaturas: Asignatura[];
   estudiantes: Estudiante[];
   darkMode: boolean;
+  umbralCondicionado?: number;
+  umbralAprobado?: number;
 }
 
-export default function CuadroTrimestres({ gradoId, gradoNumero, gradoSeccion, gradoAño, asignaturas, estudiantes, darkMode }: CuadroTrimestresProps) {
+export default function CuadroTrimestres({ gradoId, gradoNumero, gradoSeccion, gradoAño, asignaturas, estudiantes, darkMode, umbralCondicionado = 4.5, umbralAprobado = 6.5 }: CuadroTrimestresProps) {
   const [asignaturaCuadroId, setAsignaturaCuadroId] = useState("");
   const [calificaciones, setCalificaciones] = useState<CalificacionRow[]>([]);
   const [recuperacionesAnuales, setRecuperacionesAnuales] = useState<Map<string, number>>(new Map());
@@ -209,8 +211,8 @@ export default function CuadroTrimestres({ gradoId, gradoNumero, gradoSeccion, g
         if (data.column.index >= 2 && data.column.index <= 5 && data.row.section === "body") {
           const val = parseFloat(String(data.cell.raw).replace("—", ""));
           if (!isNaN(val)) {
-            if (val < 4.5) data.cell.styles.textColor = [220, 38, 38];
-            else if (val < 6.5) data.cell.styles.textColor = [217, 119, 6];
+            if (val < umbralCondicionado) data.cell.styles.textColor = [220, 38, 38];
+            else if (val < umbralAprobado) data.cell.styles.textColor = [217, 119, 6];
             else data.cell.styles.textColor = [5, 150, 105];
           }
         }
@@ -285,8 +287,8 @@ export default function CuadroTrimestres({ gradoId, gradoNumero, gradoSeccion, g
                     const cellBorder = darkMode ? "border-slate-700" : "border-slate-200";
                     const colorNota = (n: number | null) => {
                       if (n === null) return darkMode ? "text-slate-500" : "text-slate-400";
-                      if (n < 4.5) return "text-red-600 dark:text-red-400 font-bold";
-                      if (n < 6.5) return "text-amber-600 dark:text-amber-400 font-bold";
+                      if (n < umbralCondicionado) return "text-red-600 dark:text-red-400 font-bold";
+                      if (n < umbralAprobado) return "text-amber-600 dark:text-amber-400 font-bold";
                       return "text-emerald-600 dark:text-emerald-400 font-bold";
                     };
                     return (

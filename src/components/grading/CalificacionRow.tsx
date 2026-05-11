@@ -241,8 +241,8 @@ export const CalificacionRow = React.memo(function CalificacionRow({
   inputRefs,
   onShowHistory,
   activeHistoryCell,
-  umbralCondicionado = 4.5,
-  umbralAprobado = 6.5,
+  umbralCondicionado = 4.50,
+  umbralAprobado = 6.50,
 }: CalificacionRowProps) {
   const numAC = config?.numActividadesCotidianas ?? 4;
   const numAI = config?.numActividadesIntegradoras ?? 1;

@@ -28,10 +28,10 @@ type CalificacionRow = {
 
 type RangoNota = "reprobado" | "condicionado" | "aprobado" | "sin_datos";
 
-function getRangoNota(promedio: number | null): RangoNota {
+function getRangoNota(promedio: number | null, uc = 4.5, ua = 6.5): RangoNota {
   if (promedio === null || promedio === undefined) return "sin_datos";
-  if (promedio < 4.5) return "reprobado";
-  if (promedio < 6.5) return "condicionado";
+  if (promedio < uc) return "reprobado";
+  if (promedio < ua) return "condicionado";
   return "aprobado";
 }
 
@@ -70,9 +70,11 @@ interface ReporteCalificacionesProps {
   grados: Grado[];
   darkMode: boolean;
   todasAsignaturas?: Array<{ id: string; nombre: string; gradoId: string }>;
+  umbralCondicionado?: number;
+  umbralAprobado?: number;
 }
 
-export default function ReporteCalificaciones({ grados, darkMode, todasAsignaturas }: ReporteCalificacionesProps) {
+export default function ReporteCalificaciones({ grados, darkMode, todasAsignaturas, umbralCondicionado = 4.5, umbralAprobado = 6.5 }: ReporteCalificacionesProps) {
   const [gradoId, setGradoId] = useState("");
   const [trimestre, setTrimestre] = useState("1");
   const [estudiantes, setEstudiantes] = useState<Estudiante[]>([]);
@@ -151,8 +153,8 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
         sinDatos++;
       } else {
         const avg = promedioEstudiante.reduce((a, b) => a + b, 0) / promedioEstudiante.length;
-        if (avg < 4.5) reprobado++;
-        else if (avg < 6.5) condicionado++;
+        if (avg < umbralCondicionado) reprobado++;
+        else if (avg < umbralAprobado) condicionado++;
         else aprobado++;
       }
     }
@@ -164,9 +166,9 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
     if (!grado) return;
     const headers = ["N°", "Estudiante", ...materiasFiltradas.map(m => m.nombre)];
     const rows = estudiantes.map(est => {
-      const estadosMaterias = materiasFiltradas.map(mat => {
+        const estadosMaterias = materiasFiltradas.map(mat => {
         const nota = matriz.get(est.id)?.get(mat.id);
-        return getRangoLabel(getRangoNota(nota ?? null));
+        return getRangoLabel(getRangoNota(nota ?? null, umbralCondicionado, umbralAprobado));
       });
       return [est.numero.toString(), est.nombre, ...estadosMaterias];
     });
@@ -174,11 +176,11 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
     const leyenda = [
       [],
       ["MARCO NORMATIVO"],
-      ["0 - 4.49", "Reprobado (MINED + C.E.)"],
-      ["4.50 - 6.49", "Condicionado (Aprueba MINED / Reprueba C.E.)"],
-      [">= 6.50", "Aprobado (MINED + C.E.)"],
+      ["0 - " + (umbralCondicionado - 0.01).toFixed(2), "Reprobado (MINED + C.E.)"],
+      [umbralCondicionado.toFixed(2) + " - " + (umbralAprobado - 0.01).toFixed(2), "Condicionado (Aprueba MINED / Reprueba C.E.)"],
+      [">= " + umbralAprobado.toFixed(2), "Aprobado (MINED + C.E.)"],
       [],
-      ["Segun el marco normativo del Ministerio de Educacion (MINED), todo estudiante con calificacion de 5.00 en adelante aprueba el grado. El Centro Escolar establece un estandar de excelencia de 6.50."],
+      ["Segun el marco normativo del Ministerio de Educacion (MINED), todo estudiante con calificacion de 5.00 en adelante aprueba el grado. El Centro Escolar establece un estandar de excelencia de " + umbralAprobado.toFixed(2) + "."],
     ];
     const csv = [headers, ...rows, ...leyenda].map(row => row.map(cell => `"${cell}"`).join(",")).join("\n");
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
@@ -205,7 +207,7 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
     const rows = estudiantes.map(est => {
       const estados = materiasFiltradas.map(mat => {
         const nota = matriz.get(est.id)?.get(mat.id);
-        return getRangoLabel(getRangoNota(nota ?? null));
+        return getRangoLabel(getRangoNota(nota ?? null, umbralCondicionado, umbralAprobado));
       });
       return [est.numero.toString(), est.nombre, ...estados];
     });
@@ -245,15 +247,15 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
     doc.text("MARCO NORMATIVO", 14, leyendaY);
     doc.setFontSize(8);
     doc.setTextColor(220, 38, 38);
-    doc.text("0 - 4.49  Reprobado (MINED + C.E.)", 14, leyendaY + 5);
+    doc.text("0 - " + (umbralCondicionado - 0.01).toFixed(2) + "  Reprobado (MINED + C.E.)", 14, leyendaY + 5);
     doc.setTextColor(217, 119, 6);
-    doc.text("4.50 - 6.49  Condicionado (Aprueba MINED / Reprueba C.E.)", 14, leyendaY + 10);
+    doc.text(umbralCondicionado.toFixed(2) + " - " + (umbralAprobado - 0.01).toFixed(2) + "  Condicionado (Aprueba MINED / Reprueba C.E.)", 14, leyendaY + 10);
     doc.setTextColor(5, 150, 105);
-    doc.text(">= 6.50  Aprobado (MINED + C.E.)", 14, leyendaY + 15);
+    doc.text(">= " + umbralAprobado.toFixed(2) + "  Aprobado (MINED + C.E.)", 14, leyendaY + 15);
     doc.setTextColor(100, 100, 100);
     doc.setFontSize(7);
     doc.text("Segun el marco normativo del MINED, todo estudiante con calificacion de 5.00 en adelante aprueba el grado.", 14, leyendaY + 22);
-    doc.text("El Centro Escolar establece un estandar de excelencia de 6.50.", 14, leyendaY + 26);
+    doc.text("El Centro Escolar establece un estandar de excelencia de " + umbralAprobado.toFixed(2) + ".", 14, leyendaY + 26);
 
     doc.save(`reporte_estados_${grado.numero}${grado.seccion}_T${trimestre}.pdf`);
   }, [grado, estudiantes, materiasFiltradas, matriz, trimestre]);
@@ -275,27 +277,27 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
             <span className="font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 text-[10px]">Marco Normativo</span>
             <div className="flex items-center gap-1.5">
               <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold ${getRangoColor("reprobado", darkMode)}`}>
-                <AlertTriangle className="h-3 w-3" /> 0 – 4.49
+                <AlertTriangle className="h-3 w-3" /> 0 – {(umbralCondicionado - 0.01).toFixed(2)}
               </span>
               <span className="text-slate-500 dark:text-slate-400">Reprobado (MINED + C.E.)</span>
             </div>
             <div className={`h-4 w-px ${darkMode ? "bg-slate-600" : "bg-slate-300"}`} />
             <div className="flex items-center gap-1.5">
               <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold ${getRangoColor("condicionado", darkMode)}`}>
-                <HelpCircle className="h-3 w-3" /> 4.50 – 6.49
+                <HelpCircle className="h-3 w-3" /> {umbralCondicionado.toFixed(2)} – {(umbralAprobado - 0.01).toFixed(2)}
               </span>
               <span className="text-slate-500 dark:text-slate-400">Condicionado (Aprueba MINED / Reprueba C.E.)</span>
             </div>
             <div className={`h-4 w-px ${darkMode ? "bg-slate-600" : "bg-slate-300"}`} />
             <div className="flex items-center gap-1.5">
               <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold ${getRangoColor("aprobado", darkMode)}`}>
-                <CheckCircle2 className="h-3 w-3" /> ≥ 6.50
+                <CheckCircle2 className="h-3 w-3" /> ≥ {umbralAprobado.toFixed(2)}
               </span>
               <span className="text-slate-500 dark:text-slate-400">Aprobado (MINED + C.E.)</span>
             </div>
           </div>
           <div className={`mt-2 pt-2 border-t text-[10px] leading-relaxed ${darkMode ? "border-slate-700 text-slate-500" : "border-slate-100 text-slate-400"}`}>
-            Según el marco normativo del Ministerio de Educación (MINED), todo estudiante con calificación de <strong>5.00 en adelante aprueba</strong> el grado. El Centro Escolar Católico San José de la Montaña establece un estándar de excelencia de <strong>6.50</strong>. Los estudiantes entre <strong>4.50 y 6.49</strong> aprueban según el MINED pero se consideran <em>condicionados</em> por el Centro Escolar. Los estudiantes con calificación menor a <strong>4.50</strong> se consideran <em>reprobados</em>.
+            Según el marco normativo del Ministerio de Educación (MINED), todo estudiante con calificación de <strong>5.00 en adelante aprueba</strong> el grado. El Centro Escolar Católico San José de la Montaña establece un estándar de excelencia de <strong>{umbralAprobado.toFixed(2)}</strong>. Los estudiantes entre <strong>{umbralCondicionado.toFixed(2)} y {(umbralAprobado - 0.01).toFixed(2)}</strong> aprueban según el MINED pero se consideran <em>condicionados</em> por el Centro Escolar. Los estudiantes con calificación menor a <strong>{umbralCondicionado.toFixed(2)}</strong> se consideran <em>reprobados</em>.
           </div>
         </CardContent>
       </Card>
@@ -460,7 +462,7 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
                           </td>
                           {materiasFiltradas.map(mat => {
                             const nota = matriz.get(est.id)?.get(mat.id) ?? null;
-                            const rango = getRangoNota(nota);
+                            const rango = getRangoNota(nota, umbralCondicionado, umbralAprobado);
                             const label = getRangoLabel(rango);
                             return (
                               <td key={mat.id} className={`p-1 text-center border-r ${cellBorder}`}>
@@ -482,7 +484,7 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
                 {materiasFiltradas.map(mat => {
                   const notas = estudiantes.map(est => matriz.get(est.id)?.get(mat.id) ?? null).filter(n => n !== null) as number[];
                   const promedio = notas.length > 0 ? notas.reduce((a, b) => a + b, 0) / notas.length : null;
-                  const rango = getRangoNota(promedio);
+                  const rango = getRangoNota(promedio, umbralCondicionado, umbralAprobado);
                   return (
                     <div key={mat.id} className={`flex items-center gap-2 px-3 py-2 rounded-lg ${darkMode ? "bg-slate-700/50 border border-slate-600" : "bg-slate-100 border border-slate-200"}`}>
                       <span className={`text-xs font-medium ${darkMode ? "text-slate-300" : "text-slate-600"}`}>

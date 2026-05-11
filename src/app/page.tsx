@@ -1162,8 +1162,8 @@ useEffect(() => {
       filtered = filtered.filter(e => {
         const promFinal = getPromedioFinalForStudent(e.id);
         if (promFinal === null) return false;
-        if (filtroEstado === "aprobados") return promFinal >= 6.5;
-        if (filtroEstado === "riesgo") return promFinal < 4.5;
+        if (filtroEstado === "aprobados") return promFinal >= (configuracion?.umbralAprobado ?? 6.5);
+        if (filtroEstado === "riesgo") return promFinal < (configuracion?.umbralCondicionado ?? 4.5);
         if (filtroEstado === "honor") return promFinal >= 7;
         return true;
       });
@@ -2028,7 +2028,7 @@ useEffect(() => {
               totalEstudiantes={grados.reduce((sum, g) => sum + (g._count?.estudiantes || 0), 0)}
               totalAsignaturas={todasAsignaturas.length}
               totalDocentes={usuarios.filter(u => (u.rol === "docente" || u.rol === "docente-orientador") && u.activo).length}
-              configuracion={configuracion ? { añoEscolar: configuracion.añoEscolar, escuela: configuracion.escuela } : undefined}
+              configuracion={configuracion ? { añoEscolar: configuracion.añoEscolar, escuela: configuracion.escuela, umbralAprobado: configuracion?.umbralAprobado ?? 6.5 } : undefined}
               asignaturasAsignadas={(
                 isAdmin(usuario.rol)
                   ? todasAsignaturas.map((m: any) => ({
@@ -2050,6 +2050,7 @@ useEffect(() => {
                 gradoId={gradoSeleccionado}
                 trimestre={trimestreSeleccionado}
                 darkMode={darkMode}
+                umbralAprobado={configuracion?.umbralAprobado ?? 6.5}
               />
             </div>
           </TabsContent>
@@ -2281,8 +2282,8 @@ useEffect(() => {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="todos">Todos</SelectItem>
-                          <SelectItem value="aprobados">Aprobados (≥5)</SelectItem>
-                          <SelectItem value="riesgo">En riesgo (&lt;5)</SelectItem>
+                          <SelectItem value="aprobados">Aprobados (≥${(configuracion?.umbralAprobado ?? 6.5).toFixed(2)})</SelectItem>
+                          <SelectItem value="riesgo">En riesgo (&lt;${(configuracion?.umbralCondicionado ?? 4.5).toFixed(2)})</SelectItem>
                           <SelectItem value="honor">Cuadro honor (≥7)</SelectItem>
                         </SelectContent>
                       </Select>
@@ -2506,6 +2507,8 @@ useEffect(() => {
                       asignaturas={asignaturasFiltradas}
                       estudiantes={estudiantes}
                       darkMode={darkMode}
+                      umbralCondicionado={configuracion?.umbralCondicionado ?? 4.5}
+                      umbralAprobado={configuracion?.umbralAprobado ?? 6.5}
                     />
                   ) : null;
                 })()}
@@ -2638,7 +2641,7 @@ useEffect(() => {
                         <Label htmlFor="incluir-asistencia" className="text-xs cursor-pointer">Incluir asistencia en boleta</Label>
                       </div>
                     </div>
-                    <BoletaList estudiantes={estudiantes} calificaciones={calificaciones} materias={materiasEnBoleta.length > 0 ? asignaturasFiltradas.filter(m => materiasEnBoleta.includes(m.id)) : asignaturasFiltradas} grado={gradosFiltrados.find(g => g.id === gradoSeleccionado)} trimestre={trimestreSeleccionado ? parseInt(trimestreSeleccionado) : 1} expandedBoleta={expandedBoleta} setExpandedBoleta={setExpandedBoleta} darkMode={darkMode} configuracion={configuracion ? { nombreDirectora: configuracion.nombreDirectora } : undefined} paperSize={paperSize} incluirAsistencia={incluirAsistenciaBoleta} />
+                    <BoletaList estudiantes={estudiantes} calificaciones={calificaciones} materias={materiasEnBoleta.length > 0 ? asignaturasFiltradas.filter(m => materiasEnBoleta.includes(m.id)) : asignaturasFiltradas} grado={gradosFiltrados.find(g => g.id === gradoSeleccionado)} trimestre={trimestreSeleccionado ? parseInt(trimestreSeleccionado) : 1} expandedBoleta={expandedBoleta} setExpandedBoleta={setExpandedBoleta} darkMode={darkMode} configuracion={configuracion ? { nombreDirectora: configuracion.nombreDirectora, umbralCondicionado: configuracion?.umbralCondicionado ?? 4.5, umbralAprobado: configuracion?.umbralAprobado ?? 6.5 } : undefined} paperSize={paperSize} incluirAsistencia={incluirAsistenciaBoleta} />
                   </>
                 )}
               </CardContent>
@@ -2656,6 +2659,8 @@ useEffect(() => {
               grados={gradosFiltrados}
               darkMode={darkMode}
               todasAsignaturas={todasAsignaturas}
+              umbralCondicionado={configuracion?.umbralCondicionado ?? 4.5}
+              umbralAprobado={configuracion?.umbralAprobado ?? 6.5}
             />
           </TabsContent>
 
