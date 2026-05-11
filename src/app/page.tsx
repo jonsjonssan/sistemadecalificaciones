@@ -2853,7 +2853,7 @@ useEffect(() => {
                   umbrales={umbrales}
                   setUmbrales={setUmbrales}
                   onSave={handleGuardarUmbrales}
-                  onReset={() => { loadConfiguracion(); }}
+                  onReset={() => setUmbrales({ umbralRecuperacion: 5.0, umbralCondicionado: 4.5, umbralAprobado: 6.5, maxHistorialCelda: 10, usarIntervaloReprobado: true, usarIntervaloCondicionado: true, usarIntervaloAprobado: true })}
                   loading={umbralesLoading}
                 />
 
