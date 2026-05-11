@@ -526,8 +526,15 @@ export async function POST(request: NextRequest) {
             });
 
             // Mantener solo los ultimos N registros por calificacionId + tipoCampo (ventana deslizante configurable)
-            const configHist = await tx.configuracionSistema.findFirst({ select: { maxHistorialCelda: true } });
-            const maxHist = configHist?.maxHistorialCelda ?? 10;
+            let maxHist = 10;
+            try {
+              const configHist = await tx.$queryRaw<{ maxHistorialCelda: number | null }[]>`
+                SELECT "maxHistorialCelda" FROM "ConfiguracionSistema" LIMIT 1
+              `;
+              maxHist = configHist[0]?.maxHistorialCelda ?? 10;
+            } catch {
+              maxHist = 10;
+            }
             const tiposUnicos = [...new Set(historialEntries.map(h => h.tipoCampo))];
             for (const tipoCampo of tiposUnicos) {
               const todas = await tx.historialCalificacion.findMany({

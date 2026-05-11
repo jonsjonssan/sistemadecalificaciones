@@ -37,8 +37,15 @@ export async function GET(request: NextRequest) {
       where.tipoCampo = tipoCampo;
     }
 
-    const configHist = await db.configuracionSistema.findFirst({ select: { maxHistorialCelda: true } });
-    const maxHist = configHist?.maxHistorialCelda ?? 10;
+    let maxHist = 10;
+    try {
+      const configHist = await db.$queryRaw<{ maxHistorialCelda: number | null }[]>`
+        SELECT "maxHistorialCelda" FROM "ConfiguracionSistema" LIMIT 1
+      `;
+      maxHist = configHist[0]?.maxHistorialCelda ?? 10;
+    } catch {
+      maxHist = 10;
+    }
 
     const historial = await db.historialCalificacion.findMany({
       where,

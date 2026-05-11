@@ -11,6 +11,7 @@ export async function GET() {
     await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "usarIntervaloReprobado" BOOLEAN DEFAULT true`;
     await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "usarIntervaloCondicionado" BOOLEAN DEFAULT true`;
     await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "usarIntervaloAprobado" BOOLEAN DEFAULT true`;
+    await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "maxHistorialCelda" INTEGER DEFAULT 10`;
 
     let config = await sql`SELECT * FROM "ConfiguracionSistema" LIMIT 1`;
 
@@ -62,6 +63,7 @@ export async function PUT(request: NextRequest) {
       await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "usarIntervaloReprobado" BOOLEAN DEFAULT true`;
       await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "usarIntervaloCondicionado" BOOLEAN DEFAULT true`;
       await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "usarIntervaloAprobado" BOOLEAN DEFAULT true`;
+      await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "maxHistorialCelda" INTEGER DEFAULT 10`;
     } catch (alterErr: any) {
       console.error('[configuracion/PUT] ALTER TABLE error:', alterErr);
       // No bloquear si ALTER falla (puede ser por permisos); continuar con la lógica
