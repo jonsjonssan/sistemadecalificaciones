@@ -1,0 +1,126 @@
+{
+  "materias": [
+    {
+      "id": "6d135026-c3d2-4c3a-9872-970768dc0da2",
+      "docenteId": "cmnaupgt5000p84dsenyrqa5i",
+      "materiaId": "cmnlz9s2h001h84zgu91sj9lg",
+      "materia_nombre": "Desarrollo Corporal",
+      "gradoId": "cmnaupc7e000084dsoxq2jlzi",
+      "grado_numero": 2,
+      "grado_seccion": "A"
+    },
+    {
+      "id": "332d1696-d128-4fcc-823e-107985a97a99",
+      "docenteId": "cmnaupgt5000p84dsenyrqa5i",
+      "materiaId": "cmnlz9qs2000b84zg1ohbol8s",
+      "materia_nombre": "Desarrollo Corporal",
+      "gradoId": "cmnaupcy7000184dsxh8ii11a",
+      "grado_numero": 3,
+      "grado_seccion": "A"
+    },
+    {
+      "id": "21302e09-6c7f-4c67-a782-53accc45a2cd",
+      "docenteId": "cmnaupgt5000p84dsenyrqa5i",
+      "materiaId": "cmnlz9r4o000p84zgbd5nnu0s",
+      "materia_nombre": "Desarrollo Corporal",
+      "gradoId": "cmnaupdju000284dssay22tb2",
+      "grado_numero": 4,
+      "grado_seccion": "A"
+    },
+    {
+      "id": "4d4c5a5c-58a4-43dc-a32a-cbe0d1487809",
+      "docenteId": "cmnaupgt5000p84dsenyrqa5i",
+      "materiaId": "cmnlz9rhc001384zgpnoxit5l",
+      "materia_nombre": "Desarrollo Corporal",
+      "gradoId": "cmnaupe0t000384dsacqrw33z",
+      "grado_numero": 5,
+      "grado_seccion": "A"
+    },
+    {
+      "id": "74da3930-57de-4d75-8692-89fda28823a0",
+      "docenteId": "cmnaupgt5000p84dsenyrqa5i",
+      "materiaId": "cmnlz9tc3001v84zgy88xpqz4",
+      "materia_nombre": "Desarrollo Corporal",
+      "gradoId": "cmnaupeb6000484dsvs4490n6",
+      "grado_numero": 6,
+      "grado_seccion": "A"
+    },
+    {
+      "id": "a12b002f-c5c6-48b2-a581-fba8f2a093f6",
+      "docenteId": "cmnaupgt5000p84dsenyrqa5i",
+      "materiaId": "cmnlz9tpv002984zgjloptcze",
+      "materia_nombre": "Educación Física",
+      "gradoId": "cmnaupelj000584ds88thgn7v",
+      "grado_numero": 7,
+      "grado_seccion": "A"
+    },
+    {
+      "id": "6d86b629-9bb5-402e-84de-7469d1ea8908",
+      "docenteId": "cmnaupgt5000p84dsenyrqa5i",
+      "materiaId": "cmnlz9u0x002l84zgmuha37kq",
+      "materia_nombre": "Educación Física",
+      "gradoId": "cmnaupevs000684ds2v5r5vol",
+      "grado_numero": 8,
+      "grado_seccion": "A"
+    },
+    {
+      "id": "0c72d91b-9a06-463d-9a1a-3122ad0ab0e5",
+      "docenteId": "cmnaupgt5000p84dsenyrqa5i",
+      "materiaId": "cmnlz9ubn002x84zg76vva2ko",
+      "materia_nombre": "Educación Física",
+      "gradoId": "cmnaupf5z000784dsg2rgekf3",
+      "grado_numero": 9,
+      "grado_seccion": "A"
+    }
+  ],
+  "grados": [
+    {
+      "id": "cmnaupc7e000084dsoxq2jlzi",
+      "numero": 2,
+      "seccion": "A",
+      "año": 2026
+    },
+    {
+      "id": "cmnaupcy7000184dsxh8ii11a",
+      "numero": 3,
+      "seccion": "A",
+      "año": 2026
+    },
+    {
+      "id": "cmnaupdju000284dssay22tb2",
+      "numero": 4,
+      "seccion": "A",
+      "año": 2026
+    },
+    {
+      "id": "cmnaupe0t000384dsacqrw33z",
+      "numero": 5,
+      "seccion": "A",
+      "año": 2026
+    },
+    {
+      "id": "cmnaupeb6000484dsvs4490n6",
+      "numero": 6,
+      "seccion": "A",
+      "año": 2026
+    },
+    {
+      "id": "cmnaupelj000584ds88thgn7v",
+      "numero": 7,
+      "seccion": "A",
+      "año": 2026
+    },
+    {
+      "id": "cmnaupevs000684ds2v5r5vol",
+      "numero": 8,
+      "seccion": "A",
+      "año": 2026
+    },
+    {
+      "id": "cmnaupf5z000784dsg2rgekf3",
+      "numero": 9,
+      "seccion": "A",
+      "año": 2026
+    }
+  ]
+}

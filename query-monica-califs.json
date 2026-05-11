@@ -1,0 +1,1077 @@
+{
+  "2° A": {
+    "grado": 2,
+    "seccion": "A",
+    "materia": "Desarrollo Corporal",
+    "estudiantes": {
+      "1-Ayala Mercado, Ariana Valentina": {
+        "numero": 1,
+        "nombre": "Ayala Mercado, Ariana Valentina",
+        "califs": {
+          "T1": {
+            "AC": 7.5,
+            "AI": 10,
+            "Examen": 6,
+            "Final": 7.925,
+            "Recuperacion": null
+          }
+        }
+      },
+      "2-Beltrán Espinoza, Erick Maximiliano": {
+        "numero": 2,
+        "nombre": "Beltrán Espinoza, Erick Maximiliano",
+        "califs": {
+          "T1": {
+            "AC": 6.5,
+            "AI": 9,
+            "Examen": 4,
+            "Final": 6.625,
+            "Recuperacion": null
+          }
+        }
+      },
+      "3-Flores Cáceres, Marcela Valentina": {
+        "numero": 3,
+        "nombre": "Flores Cáceres, Marcela Valentina",
+        "califs": {
+          "T1": {
+            "AC": 8,
+            "AI": 10,
+            "Examen": 6,
+            "Final": 8.1,
+            "Recuperacion": null
+          }
+        }
+      },
+      "4-González Hernández, Mía Fernanda": {
+        "numero": 4,
+        "nombre": "González Hernández, Mía Fernanda",
+        "califs": {
+          "T1": {
+            "AC": 8,
+            "AI": 10,
+            "Examen": 6,
+            "Final": 8.1,
+            "Recuperacion": null
+          }
+        }
+      },
+      "5-Luna Ayala, Leonardo Santiago": {
+        "numero": 5,
+        "nombre": "Luna Ayala, Leonardo Santiago",
+        "califs": {
+          "T1": {
+            "AC": 7,
+            "AI": 10,
+            "Examen": 5,
+            "Final": 7.449999999999999,
+            "Recuperacion": null
+          }
+        }
+      },
+      "6-Luna Ayala, Samantha Natalia": {
+        "numero": 6,
+        "nombre": "Luna Ayala, Samantha Natalia",
+        "califs": {
+          "T1": {
+            "AC": 7.5,
+            "AI": 10,
+            "Examen": 7,
+            "Final": 8.225,
+            "Recuperacion": null
+          }
+        }
+      },
+      "7-Martell Campos, Gloria Fátima María": {
+        "numero": 7,
+        "nombre": "Martell Campos, Gloria Fátima María",
+        "califs": {
+          "T1": {
+            "AC": 7.5,
+            "AI": 10,
+            "Examen": 6,
+            "Final": 7.925,
+            "Recuperacion": null
+          }
+        }
+      },
+      "8-Oviedo Cubías, Adriana Marcela": {
+        "numero": 8,
+        "nombre": "Oviedo Cubías, Adriana Marcela",
+        "califs": {
+          "T1": {
+            "AC": 7.5,
+            "AI": 10,
+            "Examen": 6,
+            "Final": 7.925,
+            "Recuperacion": null
+          }
+        }
+      },
+      "9-Peña Baños, Emma Camille": {
+        "numero": 9,
+        "nombre": "Peña Baños, Emma Camille",
+        "califs": {
+          "T1": {
+            "AC": 7.5,
+            "AI": 10,
+            "Examen": 7,
+            "Final": 8.225,
+            "Recuperacion": null
+          }
+        }
+      },
+      "10-Pineda Argueta, Raúl Adrián": {
+        "numero": 10,
+        "nombre": "Pineda Argueta, Raúl Adrián",
+        "califs": {
+          "T1": {
+            "AC": 5.5,
+            "AI": 10,
+            "Examen": 5,
+            "Final": 7.925,
+            "Recuperacion": 1
+          }
+        }
+      },
+      "11-Rivera Alfaro, Kathia Valeria": {
+        "numero": 11,
+        "nombre": "Rivera Alfaro, Kathia Valeria",
+        "califs": {
+          "T1": {
+            "AC": 9,
+            "AI": 10,
+            "Examen": 7,
+            "Final": 8.75,
+            "Recuperacion": null
+          }
+        }
+      },
+      "12-Rodríguez García, Moises Gerardo": {
+        "numero": 12,
+        "nombre": "Rodríguez García, Moises Gerardo",
+        "califs": {
+          "T1": {
+            "AC": 7.5,
+            "AI": 10,
+            "Examen": 7,
+            "Final": 8.225,
+            "Recuperacion": null
+          }
+        }
+      },
+      "13-Serrano Hernández, Santiago Alessandro": {
+        "numero": 13,
+        "nombre": "Serrano Hernández, Santiago Alessandro",
+        "califs": {
+          "T1": {
+            "AC": 9,
+            "AI": 10,
+            "Examen": null,
+            "Final": 6.65,
+            "Recuperacion": null
+          }
+        }
+      },
+      "14-Trejo Prado, Zoe Itzel": {
+        "numero": 14,
+        "nombre": "Trejo Prado, Zoe Itzel",
+        "califs": {
+          "T1": {
+            "AC": 7.5,
+            "AI": 10,
+            "Examen": 7,
+            "Final": 8.225,
+            "Recuperacion": null
+          }
+        }
+      }
+    }
+  },
+  "3° A": {
+    "grado": 3,
+    "seccion": "A",
+    "materia": "Desarrollo Corporal",
+    "estudiantes": {
+      "1-Carrillo Ruiz, Víctor Daniel": {
+        "numero": 1,
+        "nombre": "Carrillo Ruiz, Víctor Daniel",
+        "califs": {
+          "T1": {
+            "AC": 7.5,
+            "AI": 10,
+            "Examen": 7,
+            "Final": 8.225,
+            "Recuperacion": null
+          }
+        }
+      },
+      "2-Chacón Marroquín, Leslie Elizabeth": {
+        "numero": 2,
+        "nombre": "Chacón Marroquín, Leslie Elizabeth",
+        "califs": {
+          "T1": {
+            "AC": 7,
+            "AI": 10,
+            "Examen": 6,
+            "Final": 7.749999999999999,
+            "Recuperacion": null
+          }
+        }
+      },
+      "3-Clímaco Sánchez, Luisa Camila": {
+        "numero": 3,
+        "nombre": "Clímaco Sánchez, Luisa Camila",
+        "califs": {
+          "T1": {
+            "AC": 6.5,
+            "AI": 10,
+            "Examen": 7,
+            "Final": 7.875,
+            "Recuperacion": null
+          }
+        }
+      },
+      "4-Cubías Hernández, Fátima Belén": {
+        "numero": 4,
+        "nombre": "Cubías Hernández, Fátima Belén",
+        "califs": {
+          "T1": {
+            "AC": 7.5,
+            "AI": 10,
+            "Examen": 6,
+            "Final": 7.925,
+            "Recuperacion": null
+          }
+        }
+      },
+      "5-González Barrera, Valentina Abigaíl": {
+        "numero": 5,
+        "nombre": "González Barrera, Valentina Abigaíl",
+        "califs": {
+          "T1": {
+            "AC": 7,
+            "AI": 10,
+            "Examen": 8,
+            "Final": 8.35,
+            "Recuperacion": null
+          }
+        }
+      },
+      "6-Jurado Molina, Mathias Josué": {
+        "numero": 6,
+        "nombre": "Jurado Molina, Mathias Josué",
+        "califs": {
+          "T1": {
+            "AC": 7,
+            "AI": 10,
+            "Examen": 4,
+            "Final": 7.149999999999999,
+            "Recuperacion": null
+          }
+        }
+      },
+      "7-Linares Juarez, Gabriela Sofía": {
+        "numero": 7,
+        "nombre": "Linares Juarez, Gabriela Sofía",
+        "califs": {
+          "T1": {
+            "AC": 7,
+            "AI": 10,
+            "Examen": 5,
+            "Final": 7.449999999999999,
+            "Recuperacion": null
+          }
+        }
+      },
+      "8-Lozano Rivas, Herber Mateo": {
+        "numero": 8,
+        "nombre": "Lozano Rivas, Herber Mateo",
+        "califs": {
+          "T1": {
+            "AC": 5,
+            "AI": 5,
+            "Examen": 8,
+            "Final": 6.9,
+            "Recuperacion": 1
+          }
+        }
+      },
+      "9-Mejía Hernández, Luis Antonio": {
+        "numero": 9,
+        "nombre": "Mejía Hernández, Luis Antonio",
+        "califs": {
+          "T1": {
+            "AC": 7,
+            "AI": 10,
+            "Examen": 7,
+            "Final": 8.049999999999999,
+            "Recuperacion": null
+          }
+        }
+      },
+      "10-Paz Lovos, Brianna Sabrina": {
+        "numero": 10,
+        "nombre": "Paz Lovos, Brianna Sabrina",
+        "califs": {
+          "T1": {
+            "AC": 7.5,
+            "AI": 10,
+            "Examen": 5,
+            "Final": 7.625,
+            "Recuperacion": null
+          }
+        }
+      },
+      "11-Pineda Galindo, Ximena Fernanda": {
+        "numero": 11,
+        "nombre": "Pineda Galindo, Ximena Fernanda",
+        "califs": {
+          "T1": {
+            "AC": 8,
+            "AI": 10,
+            "Examen": 5,
+            "Final": 7.8,
+            "Recuperacion": null
+          }
+        }
+      },
+      "12-Ponce Magaña, Jonás Isaías": {
+        "numero": 12,
+        "nombre": "Ponce Magaña, Jonás Isaías",
+        "califs": {
+          "T1": {
+            "AC": 6.5,
+            "AI": 10,
+            "Examen": 7,
+            "Final": 7.875,
+            "Recuperacion": null
+          }
+        }
+      },
+      "13-Portillo Beltrán, Axel Ernesto": {
+        "numero": 13,
+        "nombre": "Portillo Beltrán, Axel Ernesto",
+        "califs": {
+          "T1": {
+            "AC": 6.5,
+            "AI": 10,
+            "Examen": 8,
+            "Final": 8.175,
+            "Recuperacion": null
+          }
+        }
+      },
+      "14-Quijada Roque, Carlos Daniel": {
+        "numero": 14,
+        "nombre": "Quijada Roque, Carlos Daniel",
+        "califs": {
+          "T1": {
+            "AC": 6.5,
+            "AI": 10,
+            "Examen": 8,
+            "Final": 8.175,
+            "Recuperacion": null
+          }
+        }
+      },
+      "15-Rivas Ramírez, Melanie Margarita": {
+        "numero": 15,
+        "nombre": "Rivas Ramírez, Melanie Margarita",
+        "califs": {
+          "T1": {
+            "AC": 7.5,
+            "AI": 10,
+            "Examen": 7,
+            "Final": 8.225,
+            "Recuperacion": null
+          }
+        }
+      },
+      "16-Sánchez Portillo, Roberto Enmanuel": {
+        "numero": 16,
+        "nombre": "Sánchez Portillo, Roberto Enmanuel",
+        "califs": {
+          "T1": {
+            "AC": 6.5,
+            "AI": 10,
+            "Examen": 8,
+            "Final": 8.175,
+            "Recuperacion": null
+          }
+        }
+      },
+      "17-Santos Marroquín, Oscar Mateo": {
+        "numero": 17,
+        "nombre": "Santos Marroquín, Oscar Mateo",
+        "califs": {
+          "T1": {
+            "AC": 8,
+            "AI": 10,
+            "Examen": 7,
+            "Final": 8.4,
+            "Recuperacion": null
+          }
+        }
+      },
+      "18-Ventura Recinos, Luka Alejandro": {
+        "numero": 18,
+        "nombre": "Ventura Recinos, Luka Alejandro",
+        "califs": {
+          "T1": {
+            "AC": 8,
+            "AI": 10,
+            "Examen": 8,
+            "Final": 8.7,
+            "Recuperacion": null
+          }
+        }
+      }
+    }
+  },
+  "6° A": {
+    "grado": 6,
+    "seccion": "A",
+    "materia": "Desarrollo Corporal",
+    "estudiantes": {
+      "2-Carrillo Ruiz, Josué Emmanuel": {
+        "numero": 2,
+        "nombre": "Carrillo Ruiz, Josué Emmanuel",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "3-Clímaco Sánchez, Sofía Celeste": {
+        "numero": 3,
+        "nombre": "Clímaco Sánchez, Sofía Celeste",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "4-Cortez Hernández, Ana Camila": {
+        "numero": 4,
+        "nombre": "Cortez Hernández, Ana Camila",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "5-Gálvez Carrión, Rocati Yaax": {
+        "numero": 5,
+        "nombre": "Gálvez Carrión, Rocati Yaax",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "6-Marroquín Vásquez, Mónica Ivonne": {
+        "numero": 6,
+        "nombre": "Marroquín Vásquez, Mónica Ivonne",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "7-Mejía Mira, Alicia Camila": {
+        "numero": 7,
+        "nombre": "Mejía Mira, Alicia Camila",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "8-Molina Mata, Allison Valentina": {
+        "numero": 8,
+        "nombre": "Molina Mata, Allison Valentina",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "9-Mulato Sánchez, Raúl Alessandro": {
+        "numero": 9,
+        "nombre": "Mulato Sánchez, Raúl Alessandro",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "10-Oviedo Cubías, Elena Sofía": {
+        "numero": 10,
+        "nombre": "Oviedo Cubías, Elena Sofía",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "11-Rivera Deleón, Mateo Zaid": {
+        "numero": 11,
+        "nombre": "Rivera Deleón, Mateo Zaid",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "12-Rodríguez López, Alejandro Enrique": {
+        "numero": 12,
+        "nombre": "Rodríguez López, Alejandro Enrique",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "13-Serrano Martínez, María José": {
+        "numero": 13,
+        "nombre": "Serrano Martínez, María José",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "14-Ávalos Quijada, Santiago Adalberto": {
+        "numero": 14,
+        "nombre": "Ávalos Quijada, Santiago Adalberto",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      }
+    }
+  },
+  "8° A": {
+    "grado": 8,
+    "seccion": "A",
+    "materia": "Educación Física",
+    "estudiantes": {
+      "1-Aguilar Jovel, Luis Anibal": {
+        "numero": 1,
+        "nombre": "Aguilar Jovel, Luis Anibal",
+        "califs": {
+          "T1": {
+            "AC": 7.5,
+            "AI": 4,
+            "Examen": 8,
+            "Final": 7.425000000000001,
+            "Recuperacion": 1
+          }
+        }
+      },
+      "2-Alvarenga Guevara, Axel Santiago": {
+        "numero": 2,
+        "nombre": "Alvarenga Guevara, Axel Santiago",
+        "califs": {
+          "T1": {
+            "AC": 6.5,
+            "AI": 4,
+            "Examen": 8,
+            "Final": 6.074999999999999,
+            "Recuperacion": null
+          }
+        }
+      },
+      "3-Aragón Santos, Kenedy Ediberto": {
+        "numero": 3,
+        "nombre": "Aragón Santos, Kenedy Ediberto",
+        "califs": {
+          "T1": {
+            "AC": 7,
+            "AI": 8,
+            "Examen": 8,
+            "Final": 7.65,
+            "Recuperacion": null
+          }
+        }
+      },
+      "4-Ávalos Quijada, Mateo Alejandro": {
+        "numero": 4,
+        "nombre": "Ávalos Quijada, Mateo Alejandro",
+        "califs": {
+          "T1": {
+            "AC": 6.5,
+            "AI": 8,
+            "Examen": 9,
+            "Final": 7.774999999999999,
+            "Recuperacion": null
+          }
+        }
+      },
+      "5-Hernández Hernández, Jillian Juliette": {
+        "numero": 5,
+        "nombre": "Hernández Hernández, Jillian Juliette",
+        "califs": {
+          "T1": {
+            "AC": 7.5,
+            "AI": 9,
+            "Examen": 7,
+            "Final": 7.875,
+            "Recuperacion": null
+          }
+        }
+      },
+      "6-Luna Aguilar, Melanie Nicole": {
+        "numero": 6,
+        "nombre": "Luna Aguilar, Melanie Nicole",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": 9,
+            "Examen": 7,
+            "Final": 5.25,
+            "Recuperacion": null
+          }
+        }
+      },
+      "7-Méndez Aquino, Sharon Marisol": {
+        "numero": 7,
+        "nombre": "Méndez Aquino, Sharon Marisol",
+        "califs": {
+          "T1": {
+            "AC": 9,
+            "AI": 9,
+            "Examen": 9,
+            "Final": 9,
+            "Recuperacion": null
+          }
+        }
+      },
+      "8-Méndez Martínez, Michael Stanley": {
+        "numero": 8,
+        "nombre": "Méndez Martínez, Michael Stanley",
+        "califs": {
+          "T1": {
+            "AC": 7.5,
+            "AI": 9,
+            "Examen": 7,
+            "Final": 7.875,
+            "Recuperacion": null
+          }
+        }
+      },
+      "9-Quezada López, Valeria Celeste": {
+        "numero": 9,
+        "nombre": "Quezada López, Valeria Celeste",
+        "califs": {
+          "T1": {
+            "AC": 8,
+            "AI": 9,
+            "Examen": 7,
+            "Final": 8.049999999999999,
+            "Recuperacion": null
+          }
+        }
+      },
+      "10-Rivera Domínguez, Kevin Adonay": {
+        "numero": 10,
+        "nombre": "Rivera Domínguez, Kevin Adonay",
+        "califs": {
+          "T1": {
+            "AC": 7.5,
+            "AI": 8,
+            "Examen": 7,
+            "Final": 7.525,
+            "Recuperacion": null
+          }
+        }
+      },
+      "11-Rivera Guardado, Sofía Nathalia": {
+        "numero": 11,
+        "nombre": "Rivera Guardado, Sofía Nathalia",
+        "califs": {
+          "T1": {
+            "AC": 7.5,
+            "AI": 9,
+            "Examen": 7,
+            "Final": 7.875,
+            "Recuperacion": null
+          }
+        }
+      },
+      "12-Rodríguez Navarrete, Celia Marianela": {
+        "numero": 12,
+        "nombre": "Rodríguez Navarrete, Celia Marianela",
+        "califs": {
+          "T1": {
+            "AC": 7.5,
+            "AI": 4,
+            "Examen": 7,
+            "Final": 6.125,
+            "Recuperacion": null
+          }
+        }
+      },
+      "13-Rojas Flores, Elías Geovanni": {
+        "numero": 13,
+        "nombre": "Rojas Flores, Elías Geovanni",
+        "califs": {
+          "T1": {
+            "AC": 6.5,
+            "AI": 4,
+            "Examen": 8,
+            "Final": 6.074999999999999,
+            "Recuperacion": null
+          }
+        }
+      }
+    }
+  },
+  "9° A": {
+    "grado": 9,
+    "seccion": "A",
+    "materia": "Educación Física",
+    "estudiantes": {
+      "1-Abarca Medina, José Luis": {
+        "numero": 1,
+        "nombre": "Abarca Medina, José Luis",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "2-Alvarado Lemus, Daniela Nicole": {
+        "numero": 2,
+        "nombre": "Alvarado Lemus, Daniela Nicole",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "3-Araujo Beza, Gabriel Ernesto": {
+        "numero": 3,
+        "nombre": "Araujo Beza, Gabriel Ernesto",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "4-Deleón Zavaleta, Melany Guadalupe": {
+        "numero": 4,
+        "nombre": "Deleón Zavaleta, Melany Guadalupe",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "5-Deodanes Jorge, Samanta Elizabeth": {
+        "numero": 5,
+        "nombre": "Deodanes Jorge, Samanta Elizabeth",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "6-Fernández Moreira, Nelson Armando": {
+        "numero": 6,
+        "nombre": "Fernández Moreira, Nelson Armando",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "7-García Palacios, Hazel Abigail": {
+        "numero": 7,
+        "nombre": "García Palacios, Hazel Abigail",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "8-Hernández Martínez, Jennifer Jeannette": {
+        "numero": 8,
+        "nombre": "Hernández Martínez, Jennifer Jeannette",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "9-Leiva Figueroa, Christopher Emilio": {
+        "numero": 9,
+        "nombre": "Leiva Figueroa, Christopher Emilio",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "10-Martell Campos, Christopher Steven": {
+        "numero": 10,
+        "nombre": "Martell Campos, Christopher Steven",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "11-Martínez Pérez, Camila Alessandra": {
+        "numero": 11,
+        "nombre": "Martínez Pérez, Camila Alessandra",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "12-Melara Jorge, Valeria Alejandra": {
+        "numero": 12,
+        "nombre": "Melara Jorge, Valeria Alejandra",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "13-Méndez Ponce, Diego Alejandro": {
+        "numero": 13,
+        "nombre": "Méndez Ponce, Diego Alejandro",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "14-Mercedes López, María José": {
+        "numero": 14,
+        "nombre": "Mercedes López, María José",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "15-Molina Zaldaña, Daniel Aldair": {
+        "numero": 15,
+        "nombre": "Molina Zaldaña, Daniel Aldair",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "16-Ortiz Tobar, Aarón Emmanuel": {
+        "numero": 16,
+        "nombre": "Ortiz Tobar, Aarón Emmanuel",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "17-Pineda Alfaro, Carlos Alberto": {
+        "numero": 17,
+        "nombre": "Pineda Alfaro, Carlos Alberto",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "18-Ramírez García, André Emiliano": {
+        "numero": 18,
+        "nombre": "Ramírez García, André Emiliano",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "19-Reyes Mejía, Mónica Guadalupe": {
+        "numero": 19,
+        "nombre": "Reyes Mejía, Mónica Guadalupe",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "20-Romero Coto, Zoe Tamara": {
+        "numero": 20,
+        "nombre": "Romero Coto, Zoe Tamara",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "21-Vásquez Miranda, Carlos Daniel": {
+        "numero": 21,
+        "nombre": "Vásquez Miranda, Carlos Daniel",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      },
+      "22-Zarco Reyes, Mauricio Elías": {
+        "numero": 22,
+        "nombre": "Zarco Reyes, Mauricio Elías",
+        "califs": {
+          "T1": {
+            "AC": null,
+            "AI": null,
+            "Examen": null,
+            "Final": null,
+            "Recuperacion": null
+          }
+        }
+      }
+    }
+  }
+}

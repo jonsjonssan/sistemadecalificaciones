@@ -1,0 +1,50 @@
+[
+  {
+    "id": "cmnaupkdh002384ds2ro2adg5",
+    "nombre": "Ana del Carmen Romero González",
+    "rol": "docente-orientador",
+    "email": "ana.carmen.romero@clases.edu.sv"
+  },
+  {
+    "id": "cmnauplwm002n84dsgvxknfbv",
+    "nombre": "Deysi Elizabeth Umanzor Cruz",
+    "rol": "docente-orientador",
+    "email": "deysi.elizabeth.umanzor@clases.edu.sv"
+  },
+  {
+    "id": "cmnauplll002m84dse3u3qc31",
+    "nombre": "Emilia Etel Peraza",
+    "rol": "docente-orientador",
+    "email": "emilia.peraza.publicos698@clases.edu.sv"
+  },
+  {
+    "id": "91029012-7bd9-4b6b-892c-692432ff05b9",
+    "nombre": "Jaqueline Lissette Landaverde de Gómez",
+    "rol": "docente-orientador",
+    "email": "jaqueline.lissette.landaverde@clases.edu.sv"
+  },
+  {
+    "id": "cmnaupgt5000p84dsenyrqa5i",
+    "nombre": "Mónica Gissel Montesino Najarro",
+    "rol": "docente",
+    "email": "monica.montesino.najarro@clases.edu.sv"
+  },
+  {
+    "id": "cmnauplg9002l84dsvzs7e0vq",
+    "nombre": "Silverio Mónico Mulato",
+    "rol": "docente-orientador",
+    "email": "silverio.silverio.monico@clases.edu.sv"
+  },
+  {
+    "id": "cmnauplaz002k84ds8lkh8p5a",
+    "nombre": "Yency Yesenia Mejía Nerio",
+    "rol": "docente-orientador",
+    "email": "04876579-1@clases.edu.sv"
+  },
+  {
+    "id": "cmnaupflb000884dskp2h7r2q",
+    "nombre": "Yessenia del Carmen Villafuerte Mejía",
+    "rol": "docente-orientador",
+    "email": "yessenia.carmen.villafuerte@clases.edu.sv"
+  }
+]
