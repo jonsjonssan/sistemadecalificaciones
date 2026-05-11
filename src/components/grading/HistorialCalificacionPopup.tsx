@@ -114,30 +114,50 @@ export function HistorialCalificacionPopup({
   }, [anchorRef]);
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchHistorial = async () => {
-      setLoading(true);
-      setError(null);
+      if (!calificacionId || calificacionId === "undefined" || calificacionId === "null") {
+        if (!cancelled) {
+          setLoading(false);
+          setError("No hay historial disponible: la calificación aún no ha sido guardada.");
+        }
+        return;
+      }
+
+      if (!cancelled) {
+        setLoading(true);
+        setError(null);
+      }
       try {
         const params = new URLSearchParams({ calificacionId, tipoCampo });
         const res = await fetch(`/api/historial-calificaciones?${params}`, {
           credentials: "include",
         });
+        if (cancelled) return;
         if (res.ok) {
           const data = await res.json();
           const list: HistorialEntry[] = data.historial || [];
           setHistorial(list);
           setIndex(list.length > 0 ? 0 : -1);
         } else {
-          setError("Error al cargar el historial");
+          let errText = "Error al cargar el historial";
+          try {
+            const errData = await res.json();
+            errText = errData.details || errData.error || errText;
+          } catch { /* ignore */ }
+          setError(errText);
         }
       } catch {
-        setError("Error de conexión");
+        if (!cancelled) setError("Error de conexión");
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     fetchHistorial();
+
+    return () => { cancelled = true; };
   }, [calificacionId, tipoCampo]);
 
   const goPrev = useCallback(() => {

@@ -45,10 +45,9 @@ export async function GET(request: NextRequest) {
       include: {
         usuario: { select: { id: true, nombre: true } },
         calificacion: {
-          select: {
+          include: {
             estudiante: { select: { nombre: true } },
             materia: { select: { nombre: true } },
-            trimestre: true,
           },
         },
       },
