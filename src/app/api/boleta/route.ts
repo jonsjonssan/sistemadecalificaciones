@@ -48,6 +48,11 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    const trimestreNum = trimestre ? parseInt(trimestre, 10) : null;
+    if (trimestre && (isNaN(trimestreNum!) || trimestreNum! < 1 || trimestreNum! > 3)) {
+      return NextResponse.json({ error: "Trimestre inválido" }, { status: 400 });
+    }
+
     if (estudianteId) {
       const estudiante = await sql`
         SELECT e.*, g.numero as grado_numero, g.seccion as grado_seccion, g.año as grado_año, g."docenteId",
@@ -59,12 +64,12 @@ export async function GET(request: NextRequest) {
       `;
 
       let calificaciones;
-      if (trimestre) {
+      if (trimestreNum) {
         calificaciones = await sql`
           SELECT c.*, m.nombre as materia_nombre
           FROM "Calificacion" c
           JOIN "Materia" m ON c."materiaId" = m.id
-          WHERE c."estudianteId" = ${estudianteId} AND c.trimestre = ${parseInt(trimestre)}
+          WHERE c."estudianteId" = ${estudianteId} AND c.trimestre = ${trimestreNum}
           ORDER BY m.nombre
         `;
       } else {
@@ -129,13 +134,13 @@ export async function GET(request: NextRequest) {
     const estudianteIds = estudiantes.map((e: any) => e.id);
 
     let calificaciones;
-    if (trimestre) {
+    if (trimestreNum) {
       calificaciones = await sql`
         SELECT c.*, m.nombre as materia_nombre, c."estudianteId"
         FROM "Calificacion" c
         JOIN "Materia" m ON c."materiaId" = m.id
         WHERE c."estudianteId" IN (SELECT id FROM "Estudiante" WHERE "gradoId" = ${gradoId})
-          AND c.trimestre = ${parseInt(trimestre)}
+          AND c.trimestre = ${trimestreNum}
       `;
     } else {
       calificaciones = await sql`

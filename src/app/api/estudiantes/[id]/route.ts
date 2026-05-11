@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { db } from "@/lib/db";
 import { verifySession } from "@/lib/session";
+import { z } from "zod";
+import { isAdmin } from "@/utils/roleHelpers";
 
 async function getUsuarioSession() {
   const cookieStore = await cookies();
@@ -9,6 +11,11 @@ async function getUsuarioSession() {
   if (!session) return null;
   return verifySession(session.value);
 }
+
+const patchSchema = z.object({
+  nombre: z.string().min(2, "El nombre debe tener al menos 2 caracteres").max(255).optional(),
+  email: z.string().email("Email inválido").max(255).optional().or(z.literal("")),
+});
 
 export async function PATCH(
   request: NextRequest,
@@ -20,7 +27,7 @@ export async function PATCH(
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    if (session.rol !== "admin") {
+    if (!isAdmin(session.rol)) {
       return NextResponse.json({ error: "Solo administradores pueden editar estudiantes" }, { status: 403 });
     }
 
@@ -31,7 +38,12 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { nombre, email } = body;
+    const parsed = patchSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Datos inválidos", details: parsed.error.flatten().fieldErrors }, { status: 400 });
+    }
+
+    const { nombre, email } = parsed.data;
 
     const updateData: any = {};
     if (nombre !== undefined) updateData.nombre = nombre;

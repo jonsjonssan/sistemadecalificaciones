@@ -24,7 +24,7 @@ export const usuarioCreateSchema = z.object({
 });
 
 export const usuarioUpdateSchema = z.object({
-  id: z.string().cuid("ID de usuario inválido"),
+  id: z.string().uuid("ID de usuario inválido"),
   email: emailSchema.optional(),
   nombre: nombreSchema.optional(),
   rol: rolSchema.optional(),
@@ -44,7 +44,7 @@ export const gradoCreateSchema = z.object({
 });
 
 export const gradoUpdateSchema = z.object({
-  id: z.string().cuid("ID de grado inválido"),
+  id: z.string().uuid("ID de grado inválido"),
   numero: gradoNumeroSchema.optional(),
   seccion: gradoSeccionSchema.optional(),
   año: gradoAnioSchema.optional(),
@@ -59,7 +59,7 @@ export const estudianteNombreSchema = z
 export const estudianteCreateSchema = z.object({
   nombre: estudianteNombreSchema,
   email: z.string().email("Email inválido").max(255).optional().or(z.literal("")),
-  gradoId: z.string().cuid("ID de grado inválido"),
+  gradoId: z.string().uuid("ID de grado inválido"),
 });
 
 export const estudiantesBulkCreateSchema = z.object({
@@ -67,11 +67,11 @@ export const estudiantesBulkCreateSchema = z.object({
     nombre: estudianteNombreSchema,
     email: z.string().email("Email inválido").max(255).optional().or(z.literal("")),
   })).min(1).max(100),
-  gradoId: z.string().cuid("ID de grado inválido"),
+  gradoId: z.string().uuid("ID de grado inválido"),
 });
 
 export const estudianteUpdateSchema = z.object({
-  id: z.string().cuid("ID de estudiante inválido"),
+  id: z.string().uuid("ID de estudiante inválido"),
   nombre: estudianteNombreSchema.optional(),
   email: z.string().email("Email inválido").max(255).optional().or(z.literal("")),
   numero: z.number().int().positive().optional(),
@@ -85,40 +85,40 @@ export const materiaNombreSchema = z
 
 export const materiaCreateSchema = z.object({
   nombre: materiaNombreSchema,
-  gradoId: z.string().cuid("ID de grado inválido"),
+  gradoId: z.string().uuid("ID de grado inválido"),
 });
 
 export const materiaUpdateSchema = z.object({
-  id: z.string().cuid("ID de materia inválido"),
+  id: z.string().uuid("ID de materia inválido"),
   nombre: materiaNombreSchema.optional(),
 });
 
 export const asistenciaEstadoSchema = z.enum(["presente", "ausente", "justificada", "tarde"]);
 
 export const asistenciaCreateSchema = z.object({
-  estudianteId: z.string().cuid("ID de estudiante inválido"),
+  estudianteId: z.string().uuid("ID de estudiante inválido"),
   fecha: z.string().datetime({ message: "Fecha inválida" }),
   estado: asistenciaEstadoSchema,
-  gradoId: z.string().cuid("ID de grado inválido").optional(),
-  materiaId: z.string().cuid("ID de materia inválido").optional(),
+  gradoId: z.string().uuid("ID de grado inválido").optional(),
+  materiaId: z.string().uuid("ID de materia inválido").optional(),
 });
 
 export const asistenciaBulkCreateSchema = z.object({
   registros: z.array(z.object({
-    estudianteId: z.string().cuid("ID de estudiante inválido"),
+    estudianteId: z.string().uuid("ID de estudiante inválido"),
     fecha: z.string().datetime({ message: "Fecha inválida" }),
     estado: asistenciaEstadoSchema,
   })).min(1).max(500),
-  gradoId: z.string().cuid("ID de grado inválido").optional(),
-  materiaId: z.string().cuid("ID de materia inválido").optional(),
+  gradoId: z.string().uuid("ID de grado inválido").optional(),
+  materiaId: z.string().uuid("ID de materia inválido").optional(),
 });
 
 const notaSchema = z.number().min(0).max(10).optional();
 const actividadesSchema = z.array(z.number().min(0).max(10)).max(20);
 
 export const calificacionCreateSchema = z.object({
-  estudianteId: z.string().cuid("ID de estudiante inválido"),
-  materiaId: z.string().cuid("ID de materia inválido"),
+  estudianteId: z.string().uuid("ID de estudiante inválido"),
+  materiaId: z.string().uuid("ID de materia inválido"),
   trimestre: z.number().int().min(1).max(3),
   actividadesCotidianas: actividadesSchema.optional(),
   calificacionAC: notaSchema,
@@ -130,7 +130,7 @@ export const calificacionCreateSchema = z.object({
 });
 
 export const calificacionUpdateSchema = z.object({
-  id: z.string().cuid("ID de calificación inválido"),
+  id: z.string().uuid("ID de calificación inválido"),
   actividadesCotidianas: actividadesSchema.optional(),
   calificacionAC: notaSchema,
   actividadesIntegradoras: actividadesSchema.optional(),
@@ -141,7 +141,7 @@ export const calificacionUpdateSchema = z.object({
 });
 
 export const configActividadCreateSchema = z.object({
-  materiaId: z.string().cuid("ID de materia inválido"),
+  materiaId: z.string().uuid("ID de materia inválido"),
   trimestre: z.number().int().min(1).max(3),
   numActividadesCotidianas: z.number().int().min(1).max(20).default(4),
   numActividadesIntegradoras: z.number().int().min(0).max(10).default(1),
@@ -168,7 +168,7 @@ export const cambiarPasswordSchema = z.object({
 });
 
 export const idParamSchema = z.object({
-  id: z.string().cuid("ID inválido"),
+  id: z.string().uuid("ID inválido"),
 });
 
 export const paginacionSchema = z.object({
@@ -177,15 +177,15 @@ export const paginacionSchema = z.object({
 });
 
 export const filtroEstudiantesSchema = paginacionSchema.extend({
-  gradoId: z.string().cuid("ID de grado inválido").optional(),
+  gradoId: z.string().uuid("ID de grado inválido").optional(),
   activos: z.enum(["true", "false"]).optional(),
   busqueda: z.string().max(100).optional(),
 });
 
 export const filtroCalificacionesSchema = z.object({
-  estudianteId: z.string().cuid("ID de estudiante inválido").optional(),
-  materiaId: z.string().cuid("ID de materia inválido").optional(),
-  gradoId: z.string().cuid("ID de grado inválido").optional(),
+  estudianteId: z.string().uuid("ID de estudiante inválido").optional(),
+  materiaId: z.string().uuid("ID de materia inválido").optional(),
+  gradoId: z.string().uuid("ID de grado inválido").optional(),
   trimestre: z.coerce.number().int().min(1).max(3).optional(),
 });
 

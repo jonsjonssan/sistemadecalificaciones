@@ -2,11 +2,11 @@ import { createHmac, timingSafeEqual } from "crypto";
 
 const SESSION_SECRET = process.env.SESSION_SECRET || process.env.NEXTAUTH_SECRET;
 
-if (!SESSION_SECRET && process.env.NODE_ENV === "production") {
-  throw new Error("SESSION_SECRET or NEXTAUTH_SECRET environment variable is required in production");
+if (!SESSION_SECRET) {
+  throw new Error("SESSION_SECRET or NEXTAUTH_SECRET environment variable is required");
 }
 
-const SECRET = SESSION_SECRET || "dev-fallback-secret-do-not-use-in-production";
+const SECRET = SESSION_SECRET;
 
 function getHmac(data: string): string {
   return createHmac("sha256", SECRET).update(data).digest("hex");

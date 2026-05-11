@@ -13,6 +13,11 @@ async function getUsuarioSession() {
   return verifySession(session.value);
 }
 
+function canAccessGrado(session: any, gradoId: string): boolean {
+  if (["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) return true;
+  return session.asignaturasAsignadas?.some((m: any) => m.gradoId === gradoId) ?? false;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getUsuarioSession();
@@ -26,6 +31,10 @@ export async function GET(request: NextRequest) {
     const gradoId = searchParams.get("gradoId");
     const materiaId = searchParams.get("materiaId");
     const trimestre = searchParams.get("trimestre");
+
+    if (gradoId && !canAccessGrado(session, gradoId)) {
+      return NextResponse.json({ error: "No tiene acceso a este grado" }, { status: 403 });
+    }
 
     if (tipo === "estudiantes" && gradoId) {
       const estudiantes = await sql`
@@ -74,8 +83,6 @@ export async function GET(request: NextRequest) {
         SELECT 
           e.nombre as estudiante,
           e.numero,
-          a.fecha,
-          a.estado,
           COUNT(*) FILTER (WHERE a.estado = 'presente') as total_presentes,
           COUNT(*) FILTER (WHERE a.estado = 'ausente') as total_ausentes,
           COUNT(*) FILTER (WHERE a.estado = 'justificada') as total_justificadas,
@@ -83,7 +90,7 @@ export async function GET(request: NextRequest) {
         FROM "Asistencia" a
         JOIN "Estudiante" e ON a."estudianteId" = e.id
         WHERE e."gradoId" = ${gradoId}
-        GROUP BY e.id, e.nombre, e.numero, a.fecha, a.estado
+        GROUP BY e.id, e.nombre, e.numero
         ORDER BY e.numero
       `;
 
@@ -316,11 +323,11 @@ function exportBoletaPDF(data: any, format: "letter" | "a4" = "letter") {
         (c: any) => c.materiaId === materia.id && c.trimestre === 3
       );
 
-      const prom1 = trim1?.recuperacion && trim1.recuperacion > (trim1.promedioFinal || 0)
+      const prom1 = trim1?.recuperacion != null && trim1.recuperacion > (trim1.promedioFinal || 0)
         ? trim1.recuperacion : trim1?.promedioFinal;
-      const prom2 = trim2?.recuperacion && trim2.recuperacion > (trim2.promedioFinal || 0)
+      const prom2 = trim2?.recuperacion != null && trim2.recuperacion > (trim2.promedioFinal || 0)
         ? trim2.recuperacion : trim2?.promedioFinal;
-      const prom3 = trim3?.recuperacion && trim3.recuperacion > (trim3.promedioFinal || 0)
+      const prom3 = trim3?.recuperacion != null && trim3.recuperacion > (trim3.promedioFinal || 0)
         ? trim3.recuperacion : trim3?.promedioFinal;
 
       const promFinal = prom1 != null && prom2 != null && prom3 != null

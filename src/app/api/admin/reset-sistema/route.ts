@@ -5,6 +5,11 @@ import { verifySession } from "@/lib/session";
 
 export async function DELETE(request: NextRequest) {
   try {
+    const confirm = request.headers.get("x-confirm-reset");
+    if (confirm !== "true") {
+      return NextResponse.json({ error: "Se requiere confirmación. Envía el header X-Confirm-Reset: true" }, { status: 400 });
+    }
+
     const cookieStore = await cookies();
     const session = cookieStore.get("session");
 

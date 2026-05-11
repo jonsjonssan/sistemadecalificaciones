@@ -110,7 +110,7 @@ export function withAuth(handler: (req: NextRequest, session: any) => Promise<Ne
     if (!session) {
       return NextResponse.json({ error: "No autorizado. Inicia sesión primero." }, { status: 401 });
     }
-    if (options?.requireAdmin && session.rol !== "admin") {
+    if (options?.requireAdmin && !["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) {
       return NextResponse.json({ error: "Acceso denegado. Se requiere rol de administrador." }, { status: 403 });
     }
     return handler(req, session);

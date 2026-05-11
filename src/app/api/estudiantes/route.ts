@@ -211,8 +211,8 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    if (!["admin", "admin-directora", "admin-codirectora"].includes(session.rol) && session.rol !== "docente") {
-      return NextResponse.json({ error: "No autorizado" }, { status: 403 });
+    if (!["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) {
+      return NextResponse.json({ error: "Solo administradores pueden eliminar estudiantes" }, { status: 403 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -220,6 +220,15 @@ export async function DELETE(request: NextRequest) {
 
     if (!id) {
       return NextResponse.json({ error: "ID requerido" }, { status: 400 });
+    }
+
+    // Validar que el estudiante pertenece a un grado al que el admin tiene acceso (si es docente-admin, aunque aquí solo admins)
+    const estudiante = await db.estudiante.findUnique({ where: { id }, select: { gradoId: true } });
+    if (!estudiante) {
+      return NextResponse.json({ error: "Estudiante no encontrado" }, { status: 404 });
+    }
+    if (!canAccessGrado(session, estudiante.gradoId)) {
+      return NextResponse.json({ error: "No tiene acceso a este grado" }, { status: 403 });
     }
 
     await db.$transaction([

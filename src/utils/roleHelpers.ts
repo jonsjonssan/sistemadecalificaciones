@@ -5,7 +5,7 @@ export const isAdmin = (rol: string): boolean => {
 };
 
 export const canDeleteUsers = (user: UsuarioSesion | null): boolean => {
-  return user?.email === "jonathan.araujo.mendoza@clases.edu.sv";
+  return ["admin", "admin-directora", "admin-codirectora"].includes(user?.rol || "");
 };
 
 export const getDocentesDelGrado = (usuarios: Usuario[], gradoId: string): string[] => {

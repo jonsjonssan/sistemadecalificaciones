@@ -129,13 +129,23 @@ export function useGrading(): UseGradingReturn {
     async (
       tipo: "alumno" | "grado",
       estudianteId?: string,
-      gradoId?: string
+      gradoId?: string,
+      materiaId?: string,
+      trimestre?: number
     ) => {
       setSaving(true);
       try {
         const params = new URLSearchParams();
-        if (tipo === "alumno" && estudianteId) params.set("estudianteId", estudianteId);
-        if (tipo === "grado" && gradoId) params.set("gradoId", gradoId);
+        if (tipo === "alumno" && estudianteId) {
+          params.set("estudianteId", estudianteId);
+          if (materiaId) params.set("materiaId", materiaId);
+          if (trimestre) params.set("trimestre", String(trimestre));
+        }
+        if (tipo === "grado" && gradoId) {
+          params.set("gradoId", gradoId);
+          if (materiaId) params.set("materiaId", materiaId);
+          if (trimestre) params.set("trimestre", String(trimestre));
+        }
 
         const res = await fetch(`/api/calificaciones?${params}`, {
           method: "DELETE",

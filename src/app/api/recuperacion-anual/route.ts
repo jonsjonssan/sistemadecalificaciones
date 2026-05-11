@@ -10,6 +10,16 @@ async function getUsuarioSession() {
   return verifySession(session.value);
 }
 
+function canAccessGrado(session: any, gradoId: string): boolean {
+  if (["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) return true;
+  return session.asignaturasAsignadas?.some((m: any) => m.gradoId === gradoId) ?? false;
+}
+
+function canAccessMateria(session: any, materiaId: string): boolean {
+  if (["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) return true;
+  return session.asignaturasAsignadas?.some((m: any) => m.id === materiaId) ?? false;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getUsuarioSession();
@@ -24,6 +34,14 @@ export async function GET(request: NextRequest) {
 
     if (!gradoId) {
       return NextResponse.json({ error: "Falta gradoId" }, { status: 400 });
+    }
+
+    if (!canAccessGrado(session, gradoId)) {
+      return NextResponse.json({ error: "No tiene acceso a este grado" }, { status: 403 });
+    }
+
+    if (materiaId && !canAccessMateria(session, materiaId)) {
+      return NextResponse.json({ error: "No tiene acceso a esta materia" }, { status: 403 });
     }
 
     const añoNum = año ? parseInt(año) : new Date().getFullYear();
@@ -71,6 +89,18 @@ export async function POST(request: NextRequest) {
 
     const añoNum = año || new Date().getFullYear();
 
+    // Verificar que el estudiante pertenece a un grado accesible
+    const estudiante = await db.estudiante.findUnique({ where: { id: estudianteId }, select: { gradoId: true } });
+    if (!estudiante) {
+      return NextResponse.json({ error: "Estudiante no encontrado" }, { status: 404 });
+    }
+    if (!canAccessGrado(session, estudiante.gradoId)) {
+      return NextResponse.json({ error: "No tiene acceso a este estudiante" }, { status: 403 });
+    }
+    if (!canAccessMateria(session, materiaId)) {
+      return NextResponse.json({ error: "No tiene acceso a esta materia" }, { status: 403 });
+    }
+
     const result = await db.recuperacionAnual.upsert({
       where: {
         estudianteId_materiaId_año: {
@@ -109,6 +139,17 @@ export async function DELETE(request: NextRequest) {
 
     if (!estudianteId || !materiaId || !año) {
       return NextResponse.json({ error: "Faltan parámetros" }, { status: 400 });
+    }
+
+    const estudiante = await db.estudiante.findUnique({ where: { id: estudianteId }, select: { gradoId: true } });
+    if (!estudiante) {
+      return NextResponse.json({ error: "Estudiante no encontrado" }, { status: 404 });
+    }
+    if (!canAccessGrado(session, estudiante.gradoId)) {
+      return NextResponse.json({ error: "No tiene acceso a este estudiante" }, { status: 403 });
+    }
+    if (!canAccessMateria(session, materiaId)) {
+      return NextResponse.json({ error: "No tiene acceso a esta materia" }, { status: 403 });
     }
 
     const añoNum = parseInt(año);

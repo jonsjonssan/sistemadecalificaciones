@@ -26,10 +26,10 @@ function isAdmin(rol: string): boolean {
 
 /**
  * Verifica si el usuario puede eliminar otros usuarios
- * Solo el admin principal (jonathan.araujo.mendoza@clases.edu.sv) puede eliminar
+ * Cualquier administrador puede eliminar usuarios
  */
 function canDeleteUsers(session: any): boolean {
-  return session.email === "jonathan.araujo.mendoza@clases.edu.sv";
+  return ["admin", "admin-directora", "admin-codirectora"].includes(session.rol);
 }
 
 /**
@@ -248,8 +248,10 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "No puedes eliminarte a ti mismo" }, { status: 400 });
     }
 
-    await sql`DELETE FROM "DocenteMateria" WHERE "docenteId" = ${id}`;
-    await sql`DELETE FROM "Usuario" WHERE id = ${id}`;
+    await db.$transaction([
+      db.docenteMateria.deleteMany({ where: { docenteId: id } }),
+      db.usuario.delete({ where: { id } }),
+    ]);
 
     return NextResponse.json({ message: "Usuario eliminado" });
   } catch (error: any) {

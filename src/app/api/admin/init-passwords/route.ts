@@ -20,11 +20,17 @@ export async function POST(request: NextRequest) {
 
     const { passwordAdmin, passwordDocente } = await request.json();
 
-    const adminPassword = passwordAdmin || "admin123";
-    const docentePassword = passwordDocente || "docente123";
+    if (!passwordAdmin || !passwordDocente) {
+      return NextResponse.json({ error: "Se requieren passwordAdmin y passwordDocente" }, { status: 400 });
+    }
 
-    const hashedAdmin = await bcrypt.hash(adminPassword, 10);
-    const hashedDocente = await bcrypt.hash(docentePassword, 10);
+    const minLen = 8;
+    if (passwordAdmin.length < minLen || passwordDocente.length < minLen) {
+      return NextResponse.json({ error: `Las contraseñas deben tener al menos ${minLen} caracteres` }, { status: 400 });
+    }
+
+    const hashedAdmin = await bcrypt.hash(passwordAdmin, 10);
+    const hashedDocente = await bcrypt.hash(passwordDocente, 10);
 
     await sql`UPDATE "Usuario" SET password = ${hashedAdmin}, "updatedAt" = NOW() WHERE rol = 'admin'`;
     await sql`UPDATE "Usuario" SET password = ${hashedDocente}, "updatedAt" = NOW() WHERE rol = 'docente'`;

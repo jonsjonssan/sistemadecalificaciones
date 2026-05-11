@@ -66,27 +66,23 @@ export async function POST(request: NextRequest) {
     }
 
     const usuario = await sql`
-      SELECT * FROM "Usuario" WHERE LOWER(email) = LOWER(${email})
+      SELECT id, email, nombre, rol, activo, password FROM "Usuario" WHERE LOWER(email) = LOWER(${email})
     `;
 
     if (usuario.length === 0) {
+      // Timing-safe: comparar contra un hash dummy para evitar enumeración por tiempo
+      await bcrypt.compare(password, "$2a$10$timing.safe.dummy.hash.for.constant.time.compare");
       return NextResponse.json({ error: "Credenciales inválidas" }, { status: 401 });
     }
 
     const hashMatch = await bcrypt.compare(password, usuario[0].password);
-    const plaintextMatch = password === usuario[0].password;
 
-    if (!hashMatch && !plaintextMatch) {
+    if (!hashMatch) {
       return NextResponse.json({ error: "Credenciales inválidas" }, { status: 401 });
     }
 
-    if (plaintextMatch && !hashMatch) {
-      const hashed = await bcrypt.hash(password, 10);
-      await sql`UPDATE "Usuario" SET password = ${hashed} WHERE id = ${usuario[0].id}`;
-    }
-
     if (!usuario[0].activo) {
-      return NextResponse.json({ error: "Usuario inactivo" }, { status: 403 });
+      return NextResponse.json({ error: "Credenciales inválidas" }, { status: 401 });
     }
 
     // Obtener las materias asignadas
@@ -117,9 +113,10 @@ export async function POST(request: NextRequest) {
 
     console.log("[auth/login] User data to save in session:", JSON.stringify(userData));
 
+    const isSecure = request.headers.get("x-forwarded-proto") === "https" || process.env.NODE_ENV === "production";
     cookieStore.set("session", signSession(userData), {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: isSecure,
       sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 8, // 8 horas - sesión más corta

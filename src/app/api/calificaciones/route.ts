@@ -37,14 +37,17 @@ function transformCalificacion(cal: any) {
   let maxCotidiana = 0;
   let maxIntegradora = 0;
 
-  // Primero pasamos: construir mapa y encontrar el máximo
+  // Primero pasamos: construir mapa y encontrar el máximo (limitado para evitar DoS)
+  const MAX_ACTIVIDADES = 50;
   for (const nota of (cal.notasActividad || [])) {
     if (nota.tipo === "cotidiana") {
-      notasCotidianasMap.set(nota.numeroActividad, nota.nota);
-      if (nota.numeroActividad > maxCotidiana) maxCotidiana = nota.numeroActividad;
+      const num = Math.min(nota.numeroActividad, MAX_ACTIVIDADES);
+      notasCotidianasMap.set(num, nota.nota);
+      if (num > maxCotidiana) maxCotidiana = num;
     } else if (nota.tipo === "integradora") {
-      notasIntegradorasMap.set(nota.numeroActividad, nota.nota);
-      if (nota.numeroActividad > maxIntegradora) maxIntegradora = nota.numeroActividad;
+      const num = Math.min(nota.numeroActividad, MAX_ACTIVIDADES);
+      notasIntegradorasMap.set(num, nota.nota);
+      if (num > maxIntegradora) maxIntegradora = num;
     }
   }
 
@@ -85,12 +88,14 @@ export async function GET(request: NextRequest) {
     const trimestre = searchParams.get("trimestre");
     const estudianteId = searchParams.get("estudianteId");
 
+    const materiasAsignadasIds = session.asignaturasAsignadas?.map((m: any) => m.id) || [];
+    const gradosByMaterias = session.asignaturasAsignadas?.map((m: any) => m.gradoId) || [];
+    const todosGradosIds = [...new Set([...gradosByMaterias])];
+
     // Para Boletas: si solo se pasa gradoId, retornar todas las calificaciones del grado
     if (gradoId && !materiaId && !trimestre && !estudianteId) {
       // Authorization check
       if (session.rol === "docente" || session.rol === "docente-orientador") {
-        const gradosByMaterias = session.asignaturasAsignadas?.map((m: any) => m.gradoId) || [];
-        const todosGradosIds = [...new Set([...gradosByMaterias])];
         if (!todosGradosIds.includes(gradoId)) {
           return NextResponse.json({
             error: "Grado no asignado",
@@ -100,10 +105,13 @@ export async function GET(request: NextRequest) {
         }
       }
 
+      const where: any = { estudiante: { gradoId } };
+      if (session.rol === "docente" || session.rol === "docente-orientador") {
+        where.materiaId = { in: materiasAsignadasIds };
+      }
+
       const calificaciones = await db.calificacion.findMany({
-        where: {
-          estudiante: { gradoId },
-        },
+        where,
         include: {
           estudiante: { select: { id: true, numero: true, nombre: true, gradoId: true } },
           materia: { select: { id: true, nombre: true } },
@@ -123,10 +131,6 @@ export async function GET(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const materiasAsignadasIds = session.asignaturasAsignadas?.map((m: any) => m.id) || [];
-    const gradosByMaterias = session.asignaturasAsignadas?.map((m: any) => m.gradoId) || [];
-    const todosGradosIds = [...new Set([...gradosByMaterias])];
-
     if (session.rol === "docente" || session.rol === "docente-orientador") {
       if (materiaId && !materiasAsignadasIds.includes(materiaId)) {
         return NextResponse.json({
@@ -144,13 +148,22 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    const trimestreNum = parseInt(trimestre, 10);
+    if (isNaN(trimestreNum) || trimestreNum < 1 || trimestreNum > 3) {
+      return NextResponse.json({
+        error: "Trimestre inválido",
+        code: "INVALID_TRIMESTRE",
+        message: "El trimestre debe ser 1, 2 o 3."
+      }, { status: 400 });
+    }
+
     let calificaciones: any[] = [];
     if (materiaId && trimestre && gradoId) {
       calificaciones = await db.calificacion.findMany({
         where: {
           estudiante: { gradoId },
           materiaId,
-          trimestre: parseInt(trimestre),
+          trimestre: trimestreNum,
         },
         include: {
           estudiante: { select: { id: true, numero: true, nombre: true, gradoId: true } },
@@ -170,8 +183,12 @@ export async function GET(request: NextRequest) {
           }, { status: 403 });
         }
       }
+      const where: any = { estudianteId };
+      if (session.rol === "docente" || session.rol === "docente-orientador") {
+        where.materiaId = { in: materiasAsignadasIds };
+      }
       calificaciones = await db.calificacion.findMany({
-        where: { estudianteId },
+        where,
         include: {
           estudiante: { select: { id: true, numero: true, nombre: true, gradoId: true } },
           materia: { select: { id: true, nombre: true } },
@@ -179,18 +196,12 @@ export async function GET(request: NextRequest) {
         },
         orderBy: { estudiante: { numero: "asc" } },
       });
-    } else if (gradoId) {
-      calificaciones = await db.calificacion.findMany({
-        where: {
-          estudiante: { gradoId },
-        },
-        include: {
-          estudiante: { select: { id: true, numero: true, nombre: true, gradoId: true } },
-          materia: { select: { id: true, nombre: true } },
-          notasActividad: true,
-        },
-        orderBy: { estudiante: { numero: "asc" } },
-      });
+    } else {
+      return NextResponse.json({
+        error: "Parámetros incompletos",
+        code: "MISSING_PARAMS",
+        message: "Se requiere gradoId o estudianteId junto con materiaId y trimestre."
+      }, { status: 400 });
     }
     // Transformar para compatibilidad con frontend
     return NextResponse.json(calificaciones.map(transformCalificacion));
@@ -629,9 +640,14 @@ export async function DELETE(request: NextRequest) {
     const trimestre = searchParams.get("trimestre");
     const gradoId = searchParams.get("gradoId");
 
-    if (estudianteId && materiaId && trimestre) {
+    const trimestreNum = trimestre ? parseInt(trimestre, 10) : null;
+    if (trimestre && (trimestreNum === null || isNaN(trimestreNum) || trimestreNum < 1 || trimestreNum > 3)) {
+      return NextResponse.json({ error: "Trimestre inválido" }, { status: 400 });
+    }
+
+    if (estudianteId && materiaId && trimestreNum) {
       const cal = await db.calificacion.findFirst({
-        where: { estudianteId, materiaId, trimestre: parseInt(trimestre) },
+        where: { estudianteId, materiaId, trimestre: trimestreNum },
         include: {
           estudiante: { include: { grado: true } },
           materia: true,
@@ -708,7 +724,7 @@ export async function DELETE(request: NextRequest) {
             detalles: JSON.stringify({
               estudiante: cal?.estudiante?.nombre,
               materia: cal?.materia?.nombre,
-              trimestre: parseInt(trimestre),
+              trimestre: trimestreNum,
               grado: cal?.estudiante?.grado ? `${cal.estudiante.grado.numero}${cal.estudiante.grado.seccion}` : null
             }),
           },
@@ -720,7 +736,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ deleted: 1 });
     }
 
-    if (gradoId && materiaId && trimestre) {
+    if (gradoId && materiaId && trimestreNum) {
       const grado = await db.grado.findUnique({ where: { id: gradoId }, select: { numero: true, seccion: true } });
       const materia = await db.materia.findUnique({ where: { id: materiaId }, select: { nombre: true } });
 
@@ -729,7 +745,7 @@ export async function DELETE(request: NextRequest) {
         where: {
           estudiante: { gradoId },
           materiaId,
-          trimestre: parseInt(trimestre)
+          trimestre: trimestreNum
         },
         include: { notasActividad: true }
       });
@@ -803,7 +819,7 @@ export async function DELETE(request: NextRequest) {
             entidad: "Calificacion",
             detalles: JSON.stringify({
               materia: materia?.nombre,
-              trimestre: parseInt(trimestre),
+              trimestre: trimestreNum,
               cantidad: calificacionesGrado.length,
               grado: grado ? `${grado.numero}${grado.seccion}` : null
             }),
