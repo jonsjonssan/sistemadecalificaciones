@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-// import { Eye, EyeOff } from "lucide-react";
+
 
 interface SystemThresholdsCardProps {
   darkMode: boolean;
@@ -117,15 +117,34 @@ export function SystemThresholdsCard({
           {/* FIN REPROBADO */}
           <div className={`text-center space-y-2 ${!umbrales.usarIntervaloReprobado ? "opacity-40" : ""}`}>
             <div className={`text-[10px] font-semibold uppercase tracking-wider ${textMuted}`}>FIN REPROBADO</div>
+            <label className="flex items-center justify-center gap-1 cursor-pointer text-[10px]">
+              <input
+                type="checkbox"
+                checked={umbrales.usarIntervaloReprobado}
+                onChange={(e) => setUmbrales((prev) => ({ ...prev, usarIntervaloReprobado: e.target.checked }))}
+                className="rounded"
+              />
+              <span className={textMuted}>Activo</span>
+            </label>
             <div className="flex items-center justify-center gap-1">
               <span className={`text-sm ${darkMode ? "text-slate-500" : "text-slate-400"}`}>&lt;</span>
               <Input
                 type="number"
                 step="0.01"
-                min={0}
+                min={0.01}
                 max={10}
-                value={uc}
-                onChange={(e) => setUmbrales((prev) => ({ ...prev, umbralCondicionado: parseFloat(e.target.value) || 0 }))}
+                value={uc.toFixed(2)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === "") return;
+                  const num = parseFloat(val);
+                  if (Number.isNaN(num)) return;
+                  if (num >= ua) {
+                    setUmbrales((prev) => ({ ...prev, umbralCondicionado: Math.max(0, Math.round((ua - 0.01) * 100) / 100) }));
+                  } else {
+                    setUmbrales((prev) => ({ ...prev, umbralCondicionado: num }));
+                  }
+                }}
                 disabled={!umbrales.usarIntervaloReprobado}
                 className={`w-16 text-lg font-medium ${inputBase}`}
               />
@@ -138,16 +157,35 @@ export function SystemThresholdsCard({
           {/* RANGO CONDICIONADO */}
           <div className={`text-center space-y-2 ${!umbrales.usarIntervaloCondicionado ? "opacity-40" : ""}`}>
             <div className={`text-[10px] font-semibold uppercase tracking-wider ${textMuted}`}>RANGO CONDICIONADO</div>
+            <label className="flex items-center justify-center gap-1 cursor-pointer text-[10px]">
+              <input
+                type="checkbox"
+                checked={umbrales.usarIntervaloCondicionado}
+                onChange={(e) => setUmbrales((prev) => ({ ...prev, usarIntervaloCondicionado: e.target.checked }))}
+                className="rounded"
+              />
+              <span className={textMuted}>Activo</span>
+            </label>
             <div className="flex items-center justify-center gap-2">
               <span className={`text-sm font-medium ${darkMode ? "text-slate-500" : "text-slate-400"}`}>{uc.toFixed(2)}</span>
               <span className={`text-sm ${darkMode ? "text-slate-600" : "text-slate-300"}`}>—</span>
               <Input
                 type="number"
                 step="0.01"
-                min={0}
+                min={0.01}
                 max={10}
-                value={ua}
-                onChange={(e) => setUmbrales((prev) => ({ ...prev, umbralAprobado: parseFloat(e.target.value) || 0 }))}
+                value={ua.toFixed(2)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === "") return;
+                  const num = parseFloat(val);
+                  if (Number.isNaN(num)) return;
+                  if (num <= uc) {
+                    setUmbrales((prev) => ({ ...prev, umbralAprobado: Math.min(10, Math.round((uc + 0.01) * 100) / 100) }));
+                  } else {
+                    setUmbrales((prev) => ({ ...prev, umbralAprobado: num }));
+                  }
+                }}
                 disabled={!umbrales.usarIntervaloCondicionado}
                 className={`w-16 text-lg font-medium ${inputBase}`}
               />
@@ -160,15 +198,34 @@ export function SystemThresholdsCard({
           {/* INICIO APROBADO */}
           <div className={`text-center space-y-2 ${!umbrales.usarIntervaloAprobado ? "opacity-40" : ""}`}>
             <div className={`text-[10px] font-semibold uppercase tracking-wider ${textMuted}`}>INICIO APROBADO</div>
+            <label className="flex items-center justify-center gap-1 cursor-pointer text-[10px]">
+              <input
+                type="checkbox"
+                checked={umbrales.usarIntervaloAprobado}
+                onChange={(e) => setUmbrales((prev) => ({ ...prev, usarIntervaloAprobado: e.target.checked }))}
+                className="rounded"
+              />
+              <span className={textMuted}>Activo</span>
+            </label>
             <div className="flex items-center justify-center gap-1">
               <span className={`text-sm ${darkMode ? "text-slate-500" : "text-slate-400"}`}>≥</span>
               <Input
                 type="number"
                 step="0.01"
-                min={0}
+                min={0.01}
                 max={10}
-                value={ua}
-                onChange={(e) => setUmbrales((prev) => ({ ...prev, umbralAprobado: parseFloat(e.target.value) || 0 }))}
+                value={ua.toFixed(2)}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === "") return;
+                  const num = parseFloat(val);
+                  if (Number.isNaN(num)) return;
+                  if (num <= uc) {
+                    setUmbrales((prev) => ({ ...prev, umbralAprobado: Math.min(10, Math.round((uc + 0.01) * 100) / 100) }));
+                  } else {
+                    setUmbrales((prev) => ({ ...prev, umbralAprobado: num }));
+                  }
+                }}
                 disabled={!umbrales.usarIntervaloAprobado}
                 className={`w-16 text-lg font-medium ${inputBase}`}
               />
@@ -176,6 +233,29 @@ export function SystemThresholdsCard({
             <div className="flex justify-center">
               <div className={`w-2 h-2 rounded-full ${umbrales.usarIntervaloAprobado ? "bg-[#10b981]" : "bg-slate-300 dark:bg-slate-600"}`} />
             </div>
+          </div>
+        </div>
+
+        {/* ===== UMBRAL RECUPERACIÓN ===== */}
+        <div className={`rounded-xl border p-3 text-center ${darkMode ? "bg-slate-800/60 border-slate-700" : "bg-slate-50 border-slate-200"}`}>
+          <div className={`text-[10px] font-semibold uppercase tracking-wider ${textMuted}`}>UMBRAL RECUPERACIÓN (RECUPERACIÓN ANUAL)</div>
+          <div className="flex items-center justify-center gap-1 mt-2">
+            <span className={`text-sm ${darkMode ? "text-slate-500" : "text-slate-400"}`}>≥</span>
+            <Input
+              type="number"
+              step="0.01"
+              min={0}
+              max={10}
+              value={umbrales.umbralRecuperacion.toFixed(2)}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === "") return;
+                const num = parseFloat(val);
+                if (Number.isNaN(num)) return;
+                setUmbrales((prev) => ({ ...prev, umbralRecuperacion: num }));
+              }}
+              className={`w-20 text-lg font-medium ${inputBase}`}
+            />
           </div>
         </div>
 
