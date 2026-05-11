@@ -852,8 +852,13 @@ useEffect(() => {
   }, [estudiantes, asignaturas, grados, gradoSeleccionado, toast]);
 
   const handleShowHistory = useCallback((calificacionId: string, tipoCampo: string, campoLabel: string, anchorRef: React.RefObject<HTMLElement | null>) => {
+    // No abrir historial si el ID es inválido o la calificación aún no existe en BD
+    if (!calificacionId || calificacionId === "undefined" || calificacionId === "null") {
+      toast({ title: "Sin historial", description: "La calificación aún no ha sido guardada.", variant: "destructive" });
+      return;
+    }
     setHistorialPopup({ calificacionId, tipoCampo, campoLabel, anchorRef });
-  }, []);
+  }, [toast]);
 
   const handleCloseHistory = useCallback(() => {
     setHistorialPopup(null);
