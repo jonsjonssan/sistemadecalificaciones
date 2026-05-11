@@ -11,11 +11,11 @@ interface NetworkStatus {
  * Detecta cambios entre online/offline y tipo de conexión
  */
 export function useNetworkStatus() {
-  const [networkStatus, setNetworkStatus] = useState<NetworkStatus>({
+  const [networkStatus, setNetworkStatus] = useState<NetworkStatus>(() => ({
     isOnline: typeof navigator !== "undefined" ? navigator.onLine : true,
     lastChecked: new Date(),
-    connectionType: undefined,
-  });
+    connectionType: getConnectionType(),
+  }));
 
   const handleOnline = useCallback(() => {
     setNetworkStatus({
@@ -39,14 +39,6 @@ export function useNetworkStatus() {
     // Event listeners para cambios de conexión
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
-
-    // Detectar tipo de conexión si está disponible
-    const connectionType = getConnectionType();
-
-    setNetworkStatus((prev) => ({
-      ...prev,
-      connectionType,
-    }));
 
     return () => {
       window.removeEventListener("online", handleOnline);

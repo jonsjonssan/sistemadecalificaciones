@@ -2,7 +2,7 @@
 
 import { Wifi, WifiOff, Loader2 } from "lucide-react";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { syncOfflineQueue } from "@/lib/resilient-fetch";
 
 /**
@@ -15,27 +15,7 @@ export function NetworkStatusIndicator() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [prevStatus, setPrevStatus] = useState(isOnline);
 
-  // Mostrar notificación temporal cuando cambia el estado
-  useEffect(() => {
-    if (isOnline !== prevStatus) {
-      setShowNotification(true);
-      setPrevStatus(isOnline);
-
-      // Auto-ocultar después de 3 segundos
-      const timer = setTimeout(() => {
-        setShowNotification(false);
-      }, 3000);
-
-      // Si volvió online, intentar sincronizar
-      if (isOnline) {
-        handleSync();
-      }
-
-      return () => clearTimeout(timer);
-    }
-  }, [isOnline, prevStatus]);
-
-  const handleSync = async () => {
+  const handleSync = useCallback(async () => {
     setIsSyncing(true);
     try {
       const result = await syncOfflineQueue((completed, total) => {
@@ -47,7 +27,29 @@ export function NetworkStatusIndicator() {
     } finally {
       setIsSyncing(false);
     }
-  };
+  }, []);
+
+  // Mostrar notificación temporal cuando cambia el estado
+  useEffect(() => {
+    if (isOnline !== prevStatus) {
+      queueMicrotask(() => {
+        setShowNotification(true);
+        setPrevStatus(isOnline);
+      });
+
+      // Auto-ocultar después de 3 segundos
+      const timer = setTimeout(() => {
+        setShowNotification(false);
+      }, 3000);
+
+      // Si volvió online, intentar sincronizar
+      if (isOnline) {
+        queueMicrotask(() => handleSync());
+      }
+
+      return () => clearTimeout(timer);
+    }
+  }, [isOnline, prevStatus, handleSync]);
 
   // No mostrar nada si está online y no hay notificación pendiente
   if (isOnline && !showNotification) {

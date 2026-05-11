@@ -768,6 +768,78 @@ useEffect(() => {
     }
   };
 
+  const imprimirListadoEstudiantesPDF = useCallback(async () => {
+    const grado = gradosFiltrados.find(g => g.id === gradoSeleccionado);
+    if (!grado || estudiantes.length === 0) {
+      toast({ title: "No hay estudiantes para imprimir", variant: "destructive" });
+      return;
+    }
+
+    const { default: jsPDF } = await import("jspdf");
+    const autoTable = (await import("jspdf-autotable")).default;
+
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: paperSize,
+    });
+
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 15;
+
+    // Encabezado institucional
+    doc.setFontSize(14);
+    doc.setTextColor(15, 118, 110);
+    doc.text("Listado de Estudiantes", margin, 20);
+
+    doc.setFontSize(11);
+    doc.setTextColor(60, 60, 60);
+    doc.text(`${grado.numero}° "${grado.seccion}" — Año ${new Date().getFullYear()}`, margin, 27);
+
+    const headers = [["N°", "Nombre Completo", "Correo Electrónico", "Estado"]];
+    const rows = estudiantes.map((est) => [
+      est.numero.toString(),
+      est.nombre,
+      est.email || "—",
+      est.activo ? "Activo" : "Inactivo",
+    ]);
+
+    autoTable(doc, {
+      head: headers,
+      body: rows,
+      startY: 32,
+      margin: { top: 15, right: margin, bottom: 20, left: margin },
+      styles: {
+        fontSize: 10,
+        cellPadding: 2,
+        overflow: "linebreak",
+      },
+      headStyles: {
+        fillColor: [15, 118, 110],
+        textColor: 255,
+        fontStyle: "bold",
+        halign: "center",
+      },
+      columnStyles: {
+        0: { cellWidth: 12, halign: "center" },
+        1: { cellWidth: "auto" },
+        2: { cellWidth: "auto" },
+        3: { cellWidth: 25, halign: "center" },
+      },
+      alternateRowStyles: {
+        fillColor: [248, 250, 252],
+      },
+      didDrawPage: (data: any) => {
+        const str = `Página ${data.pageNumber}`;
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.text(str, pageWidth - margin - doc.getTextWidth(str), doc.internal.pageSize.getHeight() - 10);
+      },
+    });
+
+    doc.save(`listado_estudiantes_${grado.numero}${grado.seccion}_${new Date().getFullYear()}.pdf`);
+  }, [estudiantes, gradosFiltrados, gradoSeleccionado, paperSize, toast]);
+
   const moverEstudiante = (index: number, direccion: 'arriba' | 'abajo') => {
     if (!usuario || usuario.rol !== "admin") return;
     const nuevos = [...estudiantes];
@@ -2561,7 +2633,15 @@ useEffect(() => {
                 )}
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="mb-3"><Select value={gradoSeleccionado} onValueChange={(val) => { setGradoSeleccionado(val); setAsignaturaSeleccionada(""); }}><SelectTrigger className={`w-full md:w-[250px] h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue /></SelectTrigger><SelectContent>{gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}" ({g._count?.estudiantes || 0})</SelectItem>)}</SelectContent></Select></div>
+                <div className="mb-3 flex flex-col sm:flex-row gap-2 items-start sm:items-center justify-between">
+                  <Select value={gradoSeleccionado} onValueChange={(val) => { setGradoSeleccionado(val); setAsignaturaSeleccionada(""); }}>
+                    <SelectTrigger className={`w-full md:w-[250px] h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue /></SelectTrigger>
+                    <SelectContent>{gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}" ({g._count?.estudiantes || 0})</SelectItem>)}</SelectContent>
+                  </Select>
+                  <Button size="sm" variant="outline" onClick={imprimirListadoEstudiantesPDF} className={`h-10 text-xs sm:text-sm ${darkMode ? 'border-slate-600 text-slate-300 hover:bg-slate-700' : ''}`}>
+                    <Printer className="h-4 w-4 mr-1" />Imprimir PDF
+                  </Button>
+                </div>
                 <div className={`rounded border ${darkMode ? 'border-slate-700' : ''}`}>
                   <EstudiantesTable
                     estudiantes={estudiantes}

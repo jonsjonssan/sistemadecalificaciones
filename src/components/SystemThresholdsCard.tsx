@@ -50,11 +50,12 @@ export function SystemThresholdsCard({
   const [rawUr, setRawUr] = useState(String(ur));
 
   // Sincronizar cuando cambian los props (reset, carga desde DB)
-   
   useEffect(() => {
-    setRawUc(String(uc));
-    setRawUa(String(ua));
-    setRawUr(String(ur));
+    queueMicrotask(() => {
+      setRawUc(String(uc));
+      setRawUa(String(ua));
+      setRawUr(String(ur));
+    });
   }, [uc, ua, ur]);
 
   // Proporciones visuales basadas en escala 0–10
