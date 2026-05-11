@@ -7,6 +7,11 @@ export const revalidate = 300;
 
 export async function GET() {
   try {
+    // Asegurar que las columnas nuevas existen (migración segura idempotente)
+    await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "usarIntervaloReprobado" BOOLEAN DEFAULT true`;
+    await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "usarIntervaloCondicionado" BOOLEAN DEFAULT true`;
+    await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "usarIntervaloAprobado" BOOLEAN DEFAULT true`;
+
     let config = await sql`SELECT * FROM "ConfiguracionSistema" LIMIT 1`;
 
     if (config.length === 0) {
@@ -29,6 +34,11 @@ export async function PUT(request: NextRequest) {
   try {
     const { error: authError } = await requireAdmin();
     if (authError) return authError;
+
+    // Asegurar que las columnas nuevas existen (migración segura idempotente)
+    await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "usarIntervaloReprobado" BOOLEAN DEFAULT true`;
+    await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "usarIntervaloCondicionado" BOOLEAN DEFAULT true`;
+    await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "usarIntervaloAprobado" BOOLEAN DEFAULT true`;
 
     const body = await request.json();
     const { añoEscolar, escuela, nombreDirectora, umbralRecuperacion, umbralCondicionado, umbralAprobado, maxHistorialCelda, usarIntervaloReprobado, usarIntervaloCondicionado, usarIntervaloAprobado } = body;
