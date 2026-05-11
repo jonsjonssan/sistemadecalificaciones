@@ -48,6 +48,10 @@ export function SystemThresholdsCard({
   const yellowWidth = Math.max(0, Math.min(100, ((ua - uc) / 10) * 100));
   const greenWidth = Math.max(0, Math.min(100, ((10 - ua) / 10) * 100));
 
+  // Límites superiores inclusivos para mostrar en formato Marco Normativo
+  const reprobadoMax = Math.max(0, uc - 0.01).toFixed(2);
+  const condicionadoMax = Math.max(uc, ua - 0.01).toFixed(2);
+
   const textMuted = darkMode ? "text-slate-500" : "text-slate-400";
   const inputBase = `text-center border-0 border-b rounded-none px-0 focus-visible:ring-0 focus-visible:border-b-2 transition-colors ${darkMode ? "bg-transparent border-slate-600 text-white focus-visible:border-slate-400" : "bg-transparent border-slate-300 text-slate-900 focus-visible:border-slate-500"}`;
 
@@ -82,25 +86,25 @@ export function SystemThresholdsCard({
             <div style={{ width: `${greenWidth}%` }} className={umbrales.usarIntervaloAprobado ? "bg-[#10b981]" : "bg-slate-300 dark:bg-slate-700"} />
           </div>
 
-          {/* Expresiones matemáticas */}
+          {/* Intervalos en formato Marco Normativo */}
           <div className="flex text-xs font-mono">
             <div className="flex-1 text-left">
               {umbrales.usarIntervaloReprobado ? (
-                <span className="text-[#f43f5e]">0 ≤ x &lt; {uc.toFixed(2)}</span>
+                <span className="text-[#f43f5e]">0 – {reprobadoMax}</span>
               ) : (
                 <span className={textMuted}>—</span>
               )}
             </div>
             <div className="flex-1 text-center">
               {umbrales.usarIntervaloCondicionado ? (
-                <span className="text-[#f59e0b]">{uc.toFixed(2)} ≤ x &lt; {ua.toFixed(2)}</span>
+                <span className="text-[#f59e0b]">{uc.toFixed(2)} – {condicionadoMax}</span>
               ) : (
                 <span className={textMuted}>—</span>
               )}
             </div>
             <div className="flex-1 text-right">
               {umbrales.usarIntervaloAprobado ? (
-                <span className="text-[#10b981]">x ≥ {ua.toFixed(2)}</span>
+                <span className="text-[#10b981]">≥ {ua.toFixed(2)}</span>
               ) : (
                 <span className={textMuted}>—</span>
               )}
