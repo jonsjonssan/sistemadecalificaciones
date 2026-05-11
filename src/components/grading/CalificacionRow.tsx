@@ -842,6 +842,9 @@ useEffect(() => {
       <td className={`p-2 text-center border-l ${cellBorder} ${finalBg}`}>
         <span className={`inline-block px-2 py-0.5 rounded-md text-xs sm:text-sm font-bold shadow ${finalBadgeClass}`}>
           {promFinal !== null ? (promedioDecimal ? formatNumber(promFinal, true) : Math.round(promFinal).toString()) : "-"}
+          {promFinal !== null && recup !== null && (
+            <span className="ml-0.5 text-[10px] opacity-70" title={`Recuperación: ${formatNumber(recup)}`}>†</span>
+          )}
         </span>
       </td>
       <td className={`p-2 border-l ${cellBorder} text-center`}>{statusIcon}</td>

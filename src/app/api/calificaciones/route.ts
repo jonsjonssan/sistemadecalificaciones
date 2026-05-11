@@ -8,7 +8,7 @@ import { isAdmin } from "@/utils/roleHelpers";
 const calificacionSchema = z.object({
   estudianteId: z.string().min(1, "ID de estudiante requerido"),
   materiaId: z.string().min(1, "ID de materia requerido"),
-  trimestre: z.number().int().min(1).max(4, "Trimestre inválido"),
+  trimestre: z.number().int().min(1).max(3, "Trimestre inválido"),
   actividadesCotidianas: z.union([z.string(), z.array(z.number().min(0).max(10).nullable())]).optional(),
   actividadesIntegradoras: z.union([z.string(), z.array(z.number().min(0).max(10).nullable())]).optional(),
   examenTrimestral: z.number().min(0).max(10).nullable().optional(),
@@ -305,7 +305,7 @@ export async function POST(request: NextRequest) {
         const suma = (calificacionAC ?? 0) * porcAC + (calificacionAI ?? 0) * porcAI + ((examenTrimestral ?? 0)) * porcExam;
         promedioFinal = isNaN(suma) ? null : suma;
         if (recuperacion !== null && recuperacion !== undefined) {
-          promedioFinal = Math.min(10, (promedioFinal ?? 0) + recuperacion);
+          promedioFinal = Math.min(10, Math.max((promedioFinal ?? 0), recuperacion));
         }
       }
     } else {
@@ -314,7 +314,7 @@ export async function POST(request: NextRequest) {
         const suma = (calificacionAC ?? 0) * 0.35 + (calificacionAI ?? 0) * 0.35 + ((examenTrimestral ?? 0)) * 0.30;
         promedioFinal = isNaN(suma) ? null : suma;
         if (recuperacion !== null && recuperacion !== undefined) {
-          promedioFinal = Math.min(10, (promedioFinal ?? 0) + recuperacion);
+          promedioFinal = Math.min(10, Math.max((promedioFinal ?? 0), recuperacion));
         }
       }
     }

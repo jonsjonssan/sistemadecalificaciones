@@ -21,14 +21,14 @@ export const GRADOS = [2, 3, 4, 5, 6, 7, 8, 9] as const;
 export const SECCIONES = ["A", "B", "C", "D"] as const;
 
 export const MATERIAS_POR_GRADO: Record<number, string[]> = {
-  2: ["Comunicación", "Matemática", "Descubrimiento del Medio", "Educación Artística"],
-  3: ["Comunicación", "Matemática", "Ciencias Naturales", "Ciencias Sociales"],
-  4: ["Comunicación y Literatura", "Matemática", "Ciencias Naturales", "Ciencias Sociales"],
-  5: ["Comunicación y Literatura", "Matemática", "Ciencias Naturales", "Ciencias Sociales"],
-  6: ["Comunicación y Literatura", "Matemática", "Ciencias Naturales", "Ciencias Sociales", "Educación Física"],
-  7: ["Lengua y Literatura", "Matemática", "Ciencias Naturales", "Ciencias Sociales", "Educación Física"],
-  8: ["Lengua y Literatura", "Matemática", "Física", "Química", "Historia", "Educación Física"],
-  9: ["Lengua y Literatura", "Matemática", "Física", "Química", "Historia", "Educación Física"],
+  2: ["Comunicación", "Números y Formas", "Ciudadanía y Valores", "Ciencia y Tecnología", "Desarrollo Corporal", "Educación en la Fe", "Artes"],
+  3: ["Comunicación", "Números y Formas", "Ciudadanía y Valores", "Ciencia y Tecnología", "Desarrollo Corporal", "Educación en la Fe", "Artes"],
+  4: ["Comunicación y Literatura", "Aritmética y Finanzas", "Ciudadanía y Valores", "Ciencia y Tecnología", "Desarrollo Corporal", "Educación en la Fe"],
+  5: ["Comunicación y Literatura", "Aritmética y Finanzas", "Ciudadanía y Valores", "Ciencia y Tecnología", "Desarrollo Corporal", "Educación en la Fe"],
+  6: ["Comunicación y Literatura", "Aritmética y Finanzas", "Ciencia y Tecnología", "Ciudadanía y Valores", "Desarrollo Corporal", "Educación en la Fe"],
+  7: ["Lengua y Literatura", "Matemática y Datos", "Ciencia y Tecnología", "Ciudadanía y Valores", "Educación Física y Deportes", "Educación en la Fe", "Inglés"],
+  8: ["Lengua y Literatura", "Matemática y Datos", "Ciencia y Tecnología", "Ciudadanía y Valores", "Educación Física y Deportes", "Educación en la Fe", "Inglés"],
+  9: ["Lengua y Literatura", "Matemática y Datos", "Ciencia y Tecnología", "Ciudadanía y Valores", "Educación Física y Deportes", "Educación en la Fe", "Inglés"],
 };
 
 export const ESTANDARES_PORCENTAJES = {

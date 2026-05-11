@@ -119,7 +119,7 @@ const actividadesSchema = z.array(z.number().min(0).max(10)).max(20);
 export const calificacionCreateSchema = z.object({
   estudianteId: z.string().cuid("ID de estudiante inválido"),
   materiaId: z.string().cuid("ID de materia inválido"),
-  trimestre: z.number().int().min(1).max(4),
+  trimestre: z.number().int().min(1).max(3),
   actividadesCotidianas: actividadesSchema.optional(),
   calificacionAC: notaSchema,
   actividadesIntegradoras: actividadesSchema.optional(),
@@ -142,7 +142,7 @@ export const calificacionUpdateSchema = z.object({
 
 export const configActividadCreateSchema = z.object({
   materiaId: z.string().cuid("ID de materia inválido"),
-  trimestre: z.number().int().min(1).max(4),
+  trimestre: z.number().int().min(1).max(3),
   numActividadesCotidianas: z.number().int().min(1).max(20).default(4),
   numActividadesIntegradoras: z.number().int().min(0).max(10).default(1),
   tieneExamen: z.boolean().default(true),
@@ -186,7 +186,7 @@ export const filtroCalificacionesSchema = z.object({
   estudianteId: z.string().cuid("ID de estudiante inválido").optional(),
   materiaId: z.string().cuid("ID de materia inválido").optional(),
   gradoId: z.string().cuid("ID de grado inválido").optional(),
-  trimestre: z.coerce.number().int().min(1).max(4).optional(),
+  trimestre: z.coerce.number().int().min(1).max(3).optional(),
 });
 
 export function sanitizeInput(input: unknown): string {

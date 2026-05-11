@@ -9,7 +9,7 @@ import { z } from 'zod';
 const calificacionSchema = z.object({
   estudianteId: z.string().min(1, 'ID de estudiante requerido'),
   materiaId: z.string().min(1, 'ID de materia requerido'),
-  trimestre: z.number().int().min(1).max(4, 'Trimestre inválido'),
+  trimestre: z.number().int().min(1).max(3, 'Trimestre inválido'),
   actividadesCotidianas: z
     .union([z.string(), z.array(z.number().min(0).max(10).nullable())])
     .optional(),
@@ -57,7 +57,7 @@ function calcularPromedioFinal(
   let promedio = isNaN(suma) ? null : suma;
 
   if (recuperacion !== null && recuperacion !== undefined) {
-    promedio = Math.min(10, (promedio ?? 0) + recuperacion);
+    promedio = Math.min(10, Math.max((promedio ?? 0), recuperacion));
   }
 
   return promedio;
@@ -412,14 +412,14 @@ describe('calcularPromedioFinal - Cálculo de promedio final', () => {
       expect(calcularPromedioFinal(null, null, null, null, null)).toBe(null);
     });
 
-    it('recuperacion suma al promedio', () => {
-      // base = 8.05, + 1.5 = 9.55
-      expect(calcularPromedioFinal(8, 9, 7, 1.5, null)).toBeCloseTo(9.55, 2);
+    it('recuperacion reemplaza al promedio si es mayor', () => {
+      // base = 8.05, recup = 1.5 -> max(8.05, 1.5) = 8.05
+      expect(calcularPromedioFinal(8, 9, 7, 1.5, null)).toBeCloseTo(8.05, 2);
     });
 
-    it('recuperacion cap en 10', () => {
-      // base = 8.05, + 3 = 11.05 -> cap a 10
-      expect(calcularPromedioFinal(8, 9, 7, 3, null)).toBe(10);
+    it('recuperacion reemplaza promedio con nota mayor', () => {
+      // base = 4.0, recup = 7.5 -> max(4, 7.5) = 7.5, cap a 10
+      expect(calcularPromedioFinal(4, 4, 4, 7.5, null)).toBe(7.5);
     });
 
     it('recuperacion con promedio nulo retorna null', () => {
@@ -486,9 +486,9 @@ describe('calcularPromedioFinal - Cálculo de promedio final', () => {
       expect(result).toBe(null);
     });
 
-    it('con recuperacion negativa', () => {
+    it('con recuperacion negativa (ignora, toma el promedio base)', () => {
       const result = calcularPromedioFinal(8, 9, 7, -2, null);
-      expect(result).toBeCloseTo(6.05, 2);
+      expect(result).toBeCloseTo(8.05, 2);
     });
 
     it('con config null usa defaults 35/35/30', () => {
@@ -544,7 +544,7 @@ describe('Flujo completo: desde notas individuales hasta promedio final', () => 
     expect(promAI).toBe(10);
 
     const promFinal = calcularPromedioFinal(promAC, promAI, examen, recuperacion, null);
-    // base = 10, + 1 = 11, cap = 10
+    // base = 10, recup = 1 -> max(10, 1) = 10
     expect(promFinal).toBe(10);
   });
 
@@ -586,13 +586,14 @@ describe('Reglas de negocio - casos de borde', () => {
   });
 
   it('recuperacion puede hacer que un estudiante apruebe', () => {
-    // base = 4.0, + recuperacion 1.5 = 5.5
-    const result = calcularPromedioFinal(4, 4, 4, 1.5, null);
-    expect(result).toBe(5.5);
+    // base = 4.0, recup = 6.0 -> max(4, 6) = 6.0 (aprueba)
+    const result = calcularPromedioFinal(4, 4, 4, 6.0, null);
+    expect(result).toBe(6);
   });
 
   it('recuperacion no puede exceder 10', () => {
-    const result = calcularPromedioFinal(10, 10, 10, 5, null);
+    // base = 10, recup = 12 -> max(10, 12) = 12, cap a 10
+    const result = calcularPromedioFinal(10, 10, 10, 12, null);
     expect(result).toBe(10);
   });
 

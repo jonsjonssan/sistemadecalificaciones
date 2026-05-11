@@ -204,6 +204,11 @@ export async function POST(request: NextRequest) {
     const porcAI = porcentajeAI !== undefined && porcentajeAI !== null ? parseFloat(String(porcentajeAI)) : 35.0;
     const porcEx = porcentajeExamen !== undefined && porcentajeExamen !== null ? parseFloat(String(porcentajeExamen)) : 30.0;
 
+    const totalPorcentaje = porcAC + porcAI + (tieneEx ? porcEx : 0);
+    if (Math.abs(totalPorcentaje - 100) > 0.01) {
+      return NextResponse.json({ error: `Los porcentajes deben sumar 100%. Actual: AC=${porcAC}% + AI=${porcAI}% + Examen=${tieneEx ? porcEx + '%' : '0% (sin examen)'} = ${totalPorcentaje}%` }, { status: 400 });
+    }
+
     if (aplicarATodasLasMateriasDelGrado && gradoId) {
       const materias = await db.materia.findMany({
         where: { gradoId }

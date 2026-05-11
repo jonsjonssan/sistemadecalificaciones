@@ -77,6 +77,16 @@ export async function GET(request: NextRequest) {
         `;
       }
 
+      const recuperacionesAnuales = await sql`
+        SELECT * FROM "RecuperacionAnual"
+        WHERE "estudianteId" = ${estudianteId}
+          AND año = ${estudiante[0]?.grado_año || new Date().getFullYear()}
+      `;
+      const recuperacionPorMateria = new Map<string, number>();
+      for (const r of recuperacionesAnuales) {
+        recuperacionPorMateria.set(r.materiaId, r.nota);
+      }
+
       const promediosValidos = calificaciones
         .map((c: any) => c.promedioFinal)
         .filter((p: number | null): p is number => p !== null);
@@ -98,6 +108,10 @@ export async function GET(request: NextRequest) {
           examenTrimestral: c.examenTrimestral,
           recuperacion: c.recuperacion,
         })),
+        recuperacionesAnuales: recuperacionesAnuales.map((r: any) => ({
+          materiaId: r.materiaId,
+          nota: r.nota,
+        })),
         promedioGeneral,
       });
     }
@@ -111,6 +125,8 @@ export async function GET(request: NextRequest) {
       WHERE e."gradoId" = ${gradoId}
       ORDER BY e.numero
     `;
+
+    const estudianteIds = estudiantes.map((e: any) => e.id);
 
     let calificaciones;
     if (trimestre) {
@@ -128,6 +144,17 @@ export async function GET(request: NextRequest) {
         JOIN "Materia" m ON c."materiaId" = m.id
         WHERE c."estudianteId" IN (SELECT id FROM "Estudiante" WHERE "gradoId" = ${gradoId})
       `;
+    }
+
+    const año = estudiantes[0]?.grado_año || new Date().getFullYear();
+    const recuperacionesAnuales = await sql`
+      SELECT * FROM "RecuperacionAnual"
+      WHERE "estudianteId" = ANY(${estudianteIds}::text[])
+        AND año = ${año}
+    `;
+    const recuperacionPorEstudianteMateria = new Map<string, number>();
+    for (const r of recuperacionesAnuales) {
+      recuperacionPorEstudianteMateria.set(`${r.estudianteId}-${r.materiaId}`, r.nota);
     }
 
     const boletasPorEstudiante = estudiantes.map((est: any) => {
@@ -149,6 +176,7 @@ export async function GET(request: NextRequest) {
           materia: c.materia_nombre,
           trimestre: c.trimestre,
           promedioFinal: c.promedioFinal,
+          recuperacionAnual: recuperacionPorEstudianteMateria.get(`${est.id}-${c.materiaId}`) ?? null,
         })),
         promedioGeneral,
       };

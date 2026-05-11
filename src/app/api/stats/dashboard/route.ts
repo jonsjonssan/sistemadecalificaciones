@@ -1,25 +1,38 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/neon";
 import { cookies } from "next/headers";
+import { verifySession } from "@/lib/session";
 
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const trimestre = parseInt(searchParams.get("trimestre") || "1");
-    const gradoId = searchParams.get("gradoId"); // Nuevo parámetro para filtrar por grado
+    const gradoId = searchParams.get("gradoId");
 
-    // Verificar sesión y rol del usuario
     const cookieStore = await cookies();
-    const session = cookieStore.get("session");
+    const sessionCookie = cookieStore.get("session");
 
-    let gradosFiltrados;
+    if (!sessionCookie) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
 
+    const session = verifySession(sessionCookie.value);
     if (!session) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    // Si se pasa un gradoId específico, filtrar solo ese grado
+    const isAdminRole = ["admin", "admin-directora", "admin-codirectora"].includes(session.rol);
+
+    let gradosFiltrados;
+
     if (gradoId) {
+      if (!isAdminRole) {
+        const gradosAsignados = session.asignaturasAsignadas?.map((m: any) => m.gradoId) || [];
+        if (!gradosAsignados.includes(gradoId)) {
+          return NextResponse.json({ error: "No tiene acceso a este grado" }, { status: 403 });
+        }
+      }
+
       gradosFiltrados = await sql`
         SELECT g.*,
           (SELECT COUNT(*) FROM "Estudiante" e WHERE e."gradoId" = g.id) as estudiantes_count,
@@ -29,14 +42,29 @@ export async function GET(req: Request) {
         ORDER BY g.numero, g.seccion
       `;
     } else {
-      // Si no se pasa gradoId, obtener todos (para admins)
-      gradosFiltrados = await sql`
-        SELECT g.*,
-          (SELECT COUNT(*) FROM "Estudiante" e WHERE e."gradoId" = g.id) as estudiantes_count,
-          (SELECT COUNT(*) FROM "Materia" m WHERE m."gradoId" = g.id) as materias_count
-        FROM "Grado" g
-        ORDER BY g.numero, g.seccion
-      `;
+      if (!isAdminRole) {
+        const gradosAsignados = session.asignaturasAsignadas?.map((m: any) => m.gradoId) || [];
+        const gradosUnicos = [...new Set(gradosAsignados)];
+        if (gradosUnicos.length === 0) {
+          return NextResponse.json([]);
+        }
+        gradosFiltrados = await sql`
+          SELECT g.*,
+            (SELECT COUNT(*) FROM "Estudiante" e WHERE e."gradoId" = g.id) as estudiantes_count,
+            (SELECT COUNT(*) FROM "Materia" m WHERE m."gradoId" = g.id) as materias_count
+          FROM "Grado" g
+          WHERE g.id = ANY(${gradosUnicos}::text[])
+          ORDER BY g.numero, g.seccion
+        `;
+      } else {
+        gradosFiltrados = await sql`
+          SELECT g.*,
+            (SELECT COUNT(*) FROM "Estudiante" e WHERE e."gradoId" = g.id) as estudiantes_count,
+            (SELECT COUNT(*) FROM "Materia" m WHERE m."gradoId" = g.id) as materias_count
+          FROM "Grado" g
+          ORDER BY g.numero, g.seccion
+        `;
+      }
     }
 
     const statsPorGrado = await Promise.all(gradosFiltrados.map(async (grado: any) => {
