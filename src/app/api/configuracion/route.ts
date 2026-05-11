@@ -16,7 +16,20 @@ export async function GET() {
 
     if (config.length === 0) {
       const id = randomUUID();
-      await sql`INSERT INTO "ConfiguracionSistema" (id, "añoEscolar", escuela, "nombreDirectora") VALUES (${id}, 2026, 'Centro Escolar', '_______________________________')`;
+      await sql`INSERT INTO "ConfiguracionSistema" (id, "añoEscolar", escuela, "nombreDirectora", "umbralCondicionado", "umbralAprobado") VALUES (${id}, 2026, 'Centro Escolar', '_______________________________', 4.50, 6.50)`;
+      config = await sql`SELECT * FROM "ConfiguracionSistema" LIMIT 1`;
+    }
+
+    // Auto-corregir umbrales desfasados en BD (4.49/6.49 → 4.50/6.50)
+    const row = config[0];
+    const ucRaw = row?.umbralCondicionado;
+    const uaRaw = row?.umbralAprobado;
+    const ucNeedsFix = typeof ucRaw === 'number' && Math.abs(ucRaw - 4.49) < 0.001;
+    const uaNeedsFix = typeof uaRaw === 'number' && Math.abs(uaRaw - 6.49) < 0.001;
+    if (ucNeedsFix || uaNeedsFix) {
+      const fixedUc = ucNeedsFix ? 4.50 : (typeof ucRaw === 'number' ? ucRaw : 4.50);
+      const fixedUa = uaNeedsFix ? 6.50 : (typeof uaRaw === 'number' ? uaRaw : 6.50);
+      await sql`UPDATE "ConfiguracionSistema" SET "umbralCondicionado" = ${fixedUc}, "umbralAprobado" = ${fixedUa}, "updatedAt" = NOW() WHERE id = ${row.id}`;
       config = await sql`SELECT * FROM "ConfiguracionSistema" LIMIT 1`;
     }
 
@@ -85,8 +98,19 @@ export async function PUT(request: NextRequest) {
     const valEscuela = typeof escuela === 'string' ? escuela : (config[0]?.escuela ?? 'Centro Escolar');
     const valDirectora = typeof nombreDirectora === 'string' ? nombreDirectora : (config[0]?.nombreDirectora ?? '_______________________________');
     const valUmbralRec = typeof umbralRecuperacion === 'number' && !isNaN(umbralRecuperacion) ? umbralRecuperacion : (config[0]?.umbralRecuperacion ?? 5.0);
-    const valUmbralCond = typeof umbralCondicionado === 'number' && !isNaN(umbralCondicionado) ? umbralCondicionado : (config[0]?.umbralCondicionado ?? 4.5);
-    const valUmbralApr = typeof umbralAprobado === 'number' && !isNaN(umbralAprobado) ? umbralAprobado : (config[0]?.umbralAprobado ?? 6.5);
+
+    // Normalizar umbrales: auto-corregir desfase 4.49/6.49 → 4.50/6.50 y asegurar uc < ua
+    let rawUmbralCond = typeof umbralCondicionado === 'number' && !isNaN(umbralCondicionado) ? umbralCondicionado : (config[0]?.umbralCondicionado ?? 4.50);
+    let rawUmbralApr = typeof umbralAprobado === 'number' && !isNaN(umbralAprobado) ? umbralAprobado : (config[0]?.umbralAprobado ?? 6.50);
+    if (Math.abs(rawUmbralCond - 4.49) < 0.001) rawUmbralCond = 4.50;
+    if (Math.abs(rawUmbralApr - 6.49) < 0.001) rawUmbralApr = 6.50;
+    if (rawUmbralCond >= rawUmbralApr) {
+      rawUmbralCond = 4.50;
+      rawUmbralApr = 6.50;
+    }
+    const valUmbralCond = Math.round(rawUmbralCond * 100) / 100;
+    const valUmbralApr = Math.round(rawUmbralApr * 100) / 100;
+
     const valMaxHist = typeof maxHistorialCelda === 'number' && !isNaN(maxHistorialCelda) ? maxHistorialCelda : (config[0]?.maxHistorialCelda ?? 10);
     const valUsarReprobado = typeof usarIntervaloReprobado === 'boolean' ? usarIntervaloReprobado : (config[0]?.usarIntervaloReprobado ?? true);
     const valUsarCondicionado = typeof usarIntervaloCondicionado === 'boolean' ? usarIntervaloCondicionado : (config[0]?.usarIntervaloCondicionado ?? true);
