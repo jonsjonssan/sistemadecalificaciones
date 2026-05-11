@@ -12,6 +12,8 @@ interface SystemThresholdsCardProps {
     umbralRecuperacion: number;
     umbralCondicionado: number;
     umbralAprobado: number;
+    notaMinima: number;
+    notaMaxima: number;
     maxHistorialCelda: number;
     usarIntervaloReprobado: boolean;
     usarIntervaloCondicionado: boolean;
@@ -21,6 +23,8 @@ interface SystemThresholdsCardProps {
     umbralRecuperacion: number;
     umbralCondicionado: number;
     umbralAprobado: number;
+    notaMinima: number;
+    notaMaxima: number;
     maxHistorialCelda: number;
     usarIntervaloReprobado: boolean;
     usarIntervaloCondicionado: boolean;
@@ -42,12 +46,16 @@ export function SystemThresholdsCard({
   const uc = umbrales.umbralCondicionado;
   const ua = umbrales.umbralAprobado;
   const ur = umbrales.umbralRecuperacion;
+  const min = umbrales.notaMinima;
+  const max = umbrales.notaMaxima;
 
   // Raw string states para permitir tipear decimales sin que React
   // reformatee el valor intermedio (ej: "6." → "6.00")
   const [rawUc, setRawUc] = useState(String(uc));
   const [rawUa, setRawUa] = useState(String(ua));
   const [rawUr, setRawUr] = useState(String(ur));
+  const [rawMin, setRawMin] = useState(String(min));
+  const [rawMax, setRawMax] = useState(String(max));
 
   // Sincronizar cuando cambian los props (reset, carga desde DB)
   useEffect(() => {
@@ -55,20 +63,33 @@ export function SystemThresholdsCard({
       setRawUc(String(uc));
       setRawUa(String(ua));
       setRawUr(String(ur));
+      setRawMin(String(min));
+      setRawMax(String(max));
     });
-  }, [uc, ua, ur]);
+  }, [uc, ua, ur, min, max]);
 
-  // Proporciones visuales basadas en escala 0–10
-  const redWidth = Math.max(0, Math.min(100, (uc / 10) * 100));
-  const yellowWidth = Math.max(0, Math.min(100, ((ua - uc) / 10) * 100));
-  const greenWidth = Math.max(0, Math.min(100, ((10 - ua) / 10) * 100));
+  // Rango total para la escala visual
+  const rangeTotal = max - min;
 
-  // Límites superiores inclusivos para mostrar en formato Marco Normativo
-  const reprobadoMax = Math.max(0, uc - 0.01).toFixed(2);
-  const condicionadoMax = Math.max(uc, ua - 0.01).toFixed(2);
+  // Proporciones visuales basadas en el rango configurado
+  const redWidth = rangeTotal > 0 ? Math.max(0, Math.min(100, ((uc - min) / rangeTotal) * 100)) : 0;
+  const yellowWidth = rangeTotal > 0 ? Math.max(0, Math.min(100, ((ua - uc) / rangeTotal) * 100)) : 0;
+  const greenWidth = rangeTotal > 0 ? Math.max(0, Math.min(100, ((max - ua) / rangeTotal) * 100)) : 0;
 
   const textMuted = darkMode ? "text-slate-500" : "text-slate-400";
   const inputBase = `text-center border-0 border-b rounded-none px-0 focus-visible:ring-0 focus-visible:border-b-2 transition-colors ${darkMode ? "bg-transparent border-slate-600 text-white focus-visible:border-slate-400" : "bg-transparent border-slate-300 text-slate-900 focus-visible:border-slate-500"}`;
+  const inputSmall = `text-center border-0 border-b rounded-none px-0 focus-visible:ring-0 focus-visible:border-b-2 transition-colors text-sm ${darkMode ? "bg-transparent border-slate-600 text-white focus-visible:border-slate-400" : "bg-transparent border-slate-300 text-slate-900 focus-visible:border-slate-500"}`;
+
+  const commitMin = (val: string) => {
+    if (val === "" || val === ".") { setRawMin(String(min)); return; }
+    let num = parseFloat(val);
+    if (Number.isNaN(num)) { setRawMin(String(min)); return; }
+    if (num < 0) num = 0;
+    if (num >= uc) num = Math.max(0, Math.round((uc - 0.01) * 100) / 100);
+    const rounded = Math.round(num * 100) / 100;
+    setUmbrales((prev) => ({ ...prev, notaMinima: rounded }));
+    setRawMin(String(rounded));
+  };
 
   const commitUc = (val: string) => {
     if (val === "" || val === ".") { setRawUc(String(uc)); return; }
@@ -77,15 +98,12 @@ export function SystemThresholdsCard({
     // Auto-corregir valor desfasado 4.49 → 4.50
     if (Math.abs(num - 4.49) < 0.001) num = 4.50;
     const safeUa = typeof ua === 'number' ? ua : parseFloat(String(ua)) || 6.5;
-    if (num >= safeUa) {
-      const clamped = Math.max(0, Math.round((safeUa - 0.01) * 100) / 100);
-      setUmbrales((prev) => ({ ...prev, umbralCondicionado: clamped }));
-      setRawUc(String(clamped));
-    } else {
-      const rounded = Math.round(num * 100) / 100;
-      setUmbrales((prev) => ({ ...prev, umbralCondicionado: rounded }));
-      setRawUc(String(rounded));
-    }
+    const safeMin = typeof min === 'number' ? min : parseFloat(String(min)) || 0;
+    if (num <= safeMin) num = Math.min(safeUa, Math.round((safeMin + 0.01) * 100) / 100);
+    if (num >= safeUa) num = Math.max(safeMin, Math.round((safeUa - 0.01) * 100) / 100);
+    const rounded = Math.round(num * 100) / 100;
+    setUmbrales((prev) => ({ ...prev, umbralCondicionado: rounded }));
+    setRawUc(String(rounded));
   };
 
   const commitUa = (val: string) => {
@@ -95,15 +113,23 @@ export function SystemThresholdsCard({
     // Auto-corregir valor desfasado 6.49 → 6.50
     if (Math.abs(num - 6.49) < 0.001) num = 6.50;
     const safeUc = typeof uc === 'number' ? uc : parseFloat(String(uc)) || 4.5;
-    if (num <= safeUc) {
-      const clamped = Math.min(10, Math.round((safeUc + 0.01) * 100) / 100);
-      setUmbrales((prev) => ({ ...prev, umbralAprobado: clamped }));
-      setRawUa(String(clamped));
-    } else {
-      const rounded = Math.round(num * 100) / 100;
-      setUmbrales((prev) => ({ ...prev, umbralAprobado: rounded }));
-      setRawUa(String(rounded));
-    }
+    const safeMax = typeof max === 'number' ? max : parseFloat(String(max)) || 10;
+    if (num <= safeUc) num = Math.max(safeUc, Math.round((safeUc + 0.01) * 100) / 100);
+    if (num >= safeMax) num = Math.min(safeMax, Math.round((safeMax - 0.01) * 100) / 100);
+    const rounded = Math.round(num * 100) / 100;
+    setUmbrales((prev) => ({ ...prev, umbralAprobado: rounded }));
+    setRawUa(String(rounded));
+  };
+
+  const commitMax = (val: string) => {
+    if (val === "" || val === ".") { setRawMax(String(max)); return; }
+    let num = parseFloat(val);
+    if (Number.isNaN(num)) { setRawMax(String(max)); return; }
+    if (num > 10) num = 10;
+    if (num <= ua) num = Math.min(10, Math.round((ua + 0.01) * 100) / 100);
+    const rounded = Math.round(num * 100) / 100;
+    setUmbrales((prev) => ({ ...prev, notaMaxima: rounded }));
+    setRawMax(String(rounded));
   };
 
   const commitUr = (val: string) => {
@@ -149,21 +175,21 @@ export function SystemThresholdsCard({
           <div className="flex text-xs font-mono">
             <div className="flex-1 text-left">
               {umbrales.usarIntervaloReprobado ? (
-                <span className="text-[#f43f5e]">0 – {reprobadoMax}</span>
+                <span className="text-[#f43f5e]">{min.toFixed(2)} – {Math.max(min, uc - 0.01).toFixed(2)}</span>
               ) : (
                 <span className={textMuted}>—</span>
               )}
             </div>
             <div className="flex-1 text-center">
               {umbrales.usarIntervaloCondicionado ? (
-                <span className="text-[#f59e0b]">{uc.toFixed(2)} – {condicionadoMax}</span>
+                <span className="text-[#f59e0b]">{uc.toFixed(2)} – {Math.max(uc, ua - 0.01).toFixed(2)}</span>
               ) : (
                 <span className={textMuted}>—</span>
               )}
             </div>
             <div className="flex-1 text-right">
               {umbrales.usarIntervaloAprobado ? (
-                <span className="text-[#10b981]">≥ {ua.toFixed(2)}</span>
+                <span className="text-[#10b981]">{ua.toFixed(2)} – {max.toFixed(2)}</span>
               ) : (
                 <span className={textMuted}>—</span>
               )}
@@ -171,99 +197,155 @@ export function SystemThresholdsCard({
           </div>
         </div>
 
-        {/* ===== ENTRADAS ===== */}
-        <div className="grid grid-cols-3 gap-4">
-          {/* FIN REPROBADO */}
-          <div className={`text-center space-y-2 ${!umbrales.usarIntervaloReprobado ? "opacity-40" : ""}`}>
-            <div className={`text-[10px] font-semibold uppercase tracking-wider ${textMuted}`}>FIN REPROBADO</div>
-            <label className="flex items-center justify-center gap-1 cursor-pointer text-[10px]">
-              <input
-                type="checkbox"
-                checked={umbrales.usarIntervaloReprobado}
-                onChange={(e) => setUmbrales((prev) => ({ ...prev, usarIntervaloReprobado: e.target.checked }))}
-                className="rounded"
-              />
-              <span className={textMuted}>Activo</span>
-            </label>
-            <div className="flex items-center justify-center gap-1">
-              <span className={`text-sm ${darkMode ? "text-slate-500" : "text-slate-400"}`}>&lt;</span>
-              <Input
-                type="number"
-                step="0.01"
-                min={0.01}
-                max={10}
-                value={rawUc}
-                onChange={(e) => setRawUc(e.target.value)}
-                onBlur={(e) => commitUc(e.target.value)}
-                disabled={!umbrales.usarIntervaloReprobado}
-                className={`w-16 text-lg font-medium ${inputBase}`}
-              />
+        {/* ===== RANGOS EDITABLES ===== */}
+        <div className="space-y-4">
+          {/* REPROBADO */}
+          <div className={`rounded-xl border p-3 ${darkMode ? "bg-slate-800/60 border-slate-700" : "bg-slate-50 border-slate-200"} ${!umbrales.usarIntervaloReprobado ? "opacity-50" : ""}`}>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-[#f43f5e]" />
+                <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-300" : "text-slate-700"}`}>Reprobado</span>
+              </div>
+              <label className="flex items-center gap-1 cursor-pointer text-[10px]">
+                <input
+                  type="checkbox"
+                  checked={umbrales.usarIntervaloReprobado}
+                  onChange={(e) => setUmbrales((prev) => ({ ...prev, usarIntervaloReprobado: e.target.checked }))}
+                  className="rounded"
+                />
+                <span className={textMuted}>Activo</span>
+              </label>
             </div>
-            <div className="flex justify-center">
-              <div className={`w-2 h-2 rounded-full ${umbrales.usarIntervaloReprobado ? "bg-[#f43f5e]" : "bg-slate-300 dark:bg-slate-600"}`} />
-            </div>
-          </div>
-
-          {/* RANGO CONDICIONADO */}
-          <div className={`text-center space-y-2 ${!umbrales.usarIntervaloCondicionado ? "opacity-40" : ""}`}>
-            <div className={`text-[10px] font-semibold uppercase tracking-wider ${textMuted}`}>RANGO CONDICIONADO</div>
-            <label className="flex items-center justify-center gap-1 cursor-pointer text-[10px]">
-              <input
-                type="checkbox"
-                checked={umbrales.usarIntervaloCondicionado}
-                onChange={(e) => setUmbrales((prev) => ({ ...prev, usarIntervaloCondicionado: e.target.checked }))}
-                className="rounded"
-              />
-              <span className={textMuted}>Activo</span>
-            </label>
-            <div className="flex items-center justify-center gap-2">
-              <span className={`text-sm font-medium ${darkMode ? "text-slate-500" : "text-slate-400"}`}>{uc.toFixed(2)}</span>
-              <span className={`text-sm ${darkMode ? "text-slate-600" : "text-slate-300"}`}>—</span>
-              <Input
-                type="number"
-                step="0.01"
-                min={0.01}
-                max={10}
-                value={rawUa}
-                onChange={(e) => setRawUa(e.target.value)}
-                onBlur={(e) => commitUa(e.target.value)}
-                disabled={!umbrales.usarIntervaloCondicionado}
-                className={`w-16 text-lg font-medium ${inputBase}`}
-              />
-            </div>
-            <div className="flex justify-center">
-              <div className={`w-2 h-2 rounded-full ${umbrales.usarIntervaloCondicionado ? "bg-[#f59e0b]" : "bg-slate-300 dark:bg-slate-600"}`} />
+            <div className="flex items-center justify-center gap-3">
+              <div className="flex flex-col items-center gap-1">
+                <span className={`text-[10px] uppercase ${textMuted}`}>Desde</span>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min={0}
+                  max={10}
+                  value={rawMin}
+                  onChange={(e) => setRawMin(e.target.value)}
+                  onBlur={(e) => commitMin(e.target.value)}
+                  disabled={!umbrales.usarIntervaloReprobado}
+                  className={`w-16 text-base font-medium ${inputSmall}`}
+                />
+              </div>
+              <span className={`text-lg ${textMuted}`}>→</span>
+              <div className="flex flex-col items-center gap-1">
+                <span className={`text-[10px] uppercase ${textMuted}`}>Hasta</span>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min={0.01}
+                  max={10}
+                  value={rawUc}
+                  onChange={(e) => setRawUc(e.target.value)}
+                  onBlur={(e) => commitUc(e.target.value)}
+                  disabled={!umbrales.usarIntervaloReprobado}
+                  className={`w-16 text-base font-medium ${inputSmall}`}
+                />
+              </div>
             </div>
           </div>
 
-          {/* INICIO APROBADO */}
-          <div className={`text-center space-y-2 ${!umbrales.usarIntervaloAprobado ? "opacity-40" : ""}`}>
-            <div className={`text-[10px] font-semibold uppercase tracking-wider ${textMuted}`}>INICIO APROBADO</div>
-            <label className="flex items-center justify-center gap-1 cursor-pointer text-[10px]">
-              <input
-                type="checkbox"
-                checked={umbrales.usarIntervaloAprobado}
-                onChange={(e) => setUmbrales((prev) => ({ ...prev, usarIntervaloAprobado: e.target.checked }))}
-                className="rounded"
-              />
-              <span className={textMuted}>Activo</span>
-            </label>
-            <div className="flex items-center justify-center gap-1">
-              <span className={`text-sm ${darkMode ? "text-slate-500" : "text-slate-400"}`}>≥</span>
-              <Input
-                type="number"
-                step="0.01"
-                min={0.01}
-                max={10}
-                value={rawUa}
-                onChange={(e) => setRawUa(e.target.value)}
-                onBlur={(e) => commitUa(e.target.value)}
-                disabled={!umbrales.usarIntervaloAprobado}
-                className={`w-16 text-lg font-medium ${inputBase}`}
-              />
+          {/* CONDICIONADO */}
+          <div className={`rounded-xl border p-3 ${darkMode ? "bg-slate-800/60 border-slate-700" : "bg-slate-50 border-slate-200"} ${!umbrales.usarIntervaloCondicionado ? "opacity-50" : ""}`}>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-[#f59e0b]" />
+                <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-300" : "text-slate-700"}`}>Condicionado</span>
+              </div>
+              <label className="flex items-center gap-1 cursor-pointer text-[10px]">
+                <input
+                  type="checkbox"
+                  checked={umbrales.usarIntervaloCondicionado}
+                  onChange={(e) => setUmbrales((prev) => ({ ...prev, usarIntervaloCondicionado: e.target.checked }))}
+                  className="rounded"
+                />
+                <span className={textMuted}>Activo</span>
+              </label>
             </div>
-            <div className="flex justify-center">
-              <div className={`w-2 h-2 rounded-full ${umbrales.usarIntervaloAprobado ? "bg-[#10b981]" : "bg-slate-300 dark:bg-slate-600"}`} />
+            <div className="flex items-center justify-center gap-3">
+              <div className="flex flex-col items-center gap-1">
+                <span className={`text-[10px] uppercase ${textMuted}`}>Desde</span>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min={0.01}
+                  max={10}
+                  value={rawUc}
+                  onChange={(e) => setRawUc(e.target.value)}
+                  onBlur={(e) => commitUc(e.target.value)}
+                  disabled={!umbrales.usarIntervaloCondicionado}
+                  className={`w-16 text-base font-medium ${inputSmall}`}
+                />
+              </div>
+              <span className={`text-lg ${textMuted}`}>→</span>
+              <div className="flex flex-col items-center gap-1">
+                <span className={`text-[10px] uppercase ${textMuted}`}>Hasta</span>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min={0.01}
+                  max={10}
+                  value={rawUa}
+                  onChange={(e) => setRawUa(e.target.value)}
+                  onBlur={(e) => commitUa(e.target.value)}
+                  disabled={!umbrales.usarIntervaloCondicionado}
+                  className={`w-16 text-base font-medium ${inputSmall}`}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* APROBADO */}
+          <div className={`rounded-xl border p-3 ${darkMode ? "bg-slate-800/60 border-slate-700" : "bg-slate-50 border-slate-200"} ${!umbrales.usarIntervaloAprobado ? "opacity-50" : ""}`}>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-[#10b981]" />
+                <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-300" : "text-slate-700"}`}>Aprobado</span>
+              </div>
+              <label className="flex items-center gap-1 cursor-pointer text-[10px]">
+                <input
+                  type="checkbox"
+                  checked={umbrales.usarIntervaloAprobado}
+                  onChange={(e) => setUmbrales((prev) => ({ ...prev, usarIntervaloAprobado: e.target.checked }))}
+                  className="rounded"
+                />
+                <span className={textMuted}>Activo</span>
+              </label>
+            </div>
+            <div className="flex items-center justify-center gap-3">
+              <div className="flex flex-col items-center gap-1">
+                <span className={`text-[10px] uppercase ${textMuted}`}>Desde</span>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min={0.01}
+                  max={10}
+                  value={rawUa}
+                  onChange={(e) => setRawUa(e.target.value)}
+                  onBlur={(e) => commitUa(e.target.value)}
+                  disabled={!umbrales.usarIntervaloAprobado}
+                  className={`w-16 text-base font-medium ${inputSmall}`}
+                />
+              </div>
+              <span className={`text-lg ${textMuted}`}>→</span>
+              <div className="flex flex-col items-center gap-1">
+                <span className={`text-[10px] uppercase ${textMuted}`}>Hasta</span>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min={0.01}
+                  max={10}
+                  value={rawMax}
+                  onChange={(e) => setRawMax(e.target.value)}
+                  onBlur={(e) => commitMax(e.target.value)}
+                  disabled={!umbrales.usarIntervaloAprobado}
+                  className={`w-16 text-base font-medium ${inputSmall}`}
+                />
+              </div>
             </div>
           </div>
         </div>

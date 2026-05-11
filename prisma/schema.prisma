@@ -144,6 +144,8 @@ model ConfiguracionSistema {
   umbralRecuperacion  Float?   @default(5.0)
   umbralCondicionado  Float?   @default(4.5)
   umbralAprobado      Float?   @default(6.5)
+  notaMinima          Float?   @default(0.0)
+  notaMaxima          Float?   @default(10.0)
   maxHistorialCelda   Int?     @default(10)
   usarIntervaloReprobado   Boolean? @default(true)
   usarIntervaloCondicionado Boolean? @default(true)

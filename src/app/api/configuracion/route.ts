@@ -12,6 +12,8 @@ export async function GET() {
     await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "usarIntervaloCondicionado" BOOLEAN DEFAULT true`;
     await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "usarIntervaloAprobado" BOOLEAN DEFAULT true`;
     await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "maxHistorialCelda" INTEGER DEFAULT 10`;
+    await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "notaMinima" FLOAT DEFAULT 0.0`;
+    await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "notaMaxima" FLOAT DEFAULT 10.0`;
 
     let config = await sql`SELECT * FROM "ConfiguracionSistema" LIMIT 1`;
 
@@ -64,6 +66,8 @@ export async function PUT(request: NextRequest) {
       await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "usarIntervaloCondicionado" BOOLEAN DEFAULT true`;
       await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "usarIntervaloAprobado" BOOLEAN DEFAULT true`;
       await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "maxHistorialCelda" INTEGER DEFAULT 10`;
+      await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "notaMinima" FLOAT DEFAULT 0.0`;
+      await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "notaMaxima" FLOAT DEFAULT 10.0`;
     } catch (alterErr: any) {
       console.error('[configuracion/PUT] ALTER TABLE error:', alterErr);
       // No bloquear si ALTER falla (puede ser por permisos); continuar con la lógica
@@ -83,6 +87,8 @@ export async function PUT(request: NextRequest) {
       umbralRecuperacion,
       umbralCondicionado,
       umbralAprobado,
+      notaMinima,
+      notaMaxima,
       maxHistorialCelda,
       usarIntervaloReprobado,
       usarIntervaloCondicionado,
@@ -121,6 +127,21 @@ export async function PUT(request: NextRequest) {
     const valUmbralCond = Math.round(rawUmbralCond * 100) / 100;
     const valUmbralApr = Math.round(rawUmbralApr * 100) / 100;
 
+    const bodyMin = parseFloat(notaMinima ?? 'NaN');
+    const bodyMax = parseFloat(notaMaxima ?? 'NaN');
+    const dbMin = parseFloat(config[0]?.notaMinima ?? 'NaN');
+    const dbMax = parseFloat(config[0]?.notaMaxima ?? 'NaN');
+    let valNotaMinima = !Number.isNaN(bodyMin) ? bodyMin : (!Number.isNaN(dbMin) ? dbMin : 0.0);
+    let valNotaMaxima = !Number.isNaN(bodyMax) ? bodyMax : (!Number.isNaN(dbMax) ? dbMax : 10.0);
+    if (valNotaMinima < 0) valNotaMinima = 0.0;
+    if (valNotaMaxima > 10) valNotaMaxima = 10.0;
+    if (valNotaMinima >= valNotaMaxima) {
+      valNotaMinima = 0.0;
+      valNotaMaxima = 10.0;
+    }
+    if (valNotaMinima >= valUmbralCond) valNotaMinima = Math.max(0, valUmbralCond - 0.5);
+    if (valNotaMaxima <= valUmbralApr) valNotaMaxima = Math.min(10, valUmbralApr + 0.5);
+
     const valMaxHist = typeof maxHistorialCelda === 'number' && !isNaN(maxHistorialCelda) ? maxHistorialCelda : (config[0]?.maxHistorialCelda ?? 10);
     const valUsarReprobado = typeof usarIntervaloReprobado === 'boolean' ? usarIntervaloReprobado : (config[0]?.usarIntervaloReprobado ?? true);
     const valUsarCondicionado = typeof usarIntervaloCondicionado === 'boolean' ? usarIntervaloCondicionado : (config[0]?.usarIntervaloCondicionado ?? true);
@@ -132,11 +153,13 @@ export async function PUT(request: NextRequest) {
         await sql`INSERT INTO "ConfiguracionSistema" (
           id, "añoEscolar", escuela, "nombreDirectora",
           "umbralRecuperacion", "umbralCondicionado", "umbralAprobado",
+          "notaMinima", "notaMaxima",
           "maxHistorialCelda",
           "usarIntervaloReprobado", "usarIntervaloCondicionado", "usarIntervaloAprobado"
         ) VALUES (
           ${id}, ${valAño}, ${valEscuela}, ${valDirectora},
           ${valUmbralRec}, ${valUmbralCond}, ${valUmbralApr},
+          ${valNotaMinima}, ${valNotaMaxima},
           ${valMaxHist},
           ${valUsarReprobado}, ${valUsarCondicionado}, ${valUsarAprobado}
         )`;
@@ -152,6 +175,8 @@ export async function PUT(request: NextRequest) {
           "umbralRecuperacion" = ${valUmbralRec},
           "umbralCondicionado" = ${valUmbralCond},
           "umbralAprobado" = ${valUmbralApr},
+          "notaMinima" = ${valNotaMinima},
+          "notaMaxima" = ${valNotaMaxima},
           "maxHistorialCelda" = ${valMaxHist},
           "usarIntervaloReprobado" = ${valUsarReprobado},
           "usarIntervaloCondicionado" = ${valUsarCondicionado},

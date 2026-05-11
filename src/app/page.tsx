@@ -126,6 +126,8 @@ useEffect(() => {
     umbralRecuperacion: 5.0,
     umbralCondicionado: 4.5,
     umbralAprobado: 6.5,
+    notaMinima: 0.0,
+    notaMaxima: 10.0,
     maxHistorialCelda: 10,
     usarIntervaloReprobado: true,
     usarIntervaloCondicionado: true,
@@ -463,6 +465,8 @@ useEffect(() => {
           umbralRecuperacion: parseFloat(data.umbralRecuperacion ?? '5.0') || 5.0,
           umbralCondicionado: fixedUc,
           umbralAprobado: fixedUa,
+          notaMinima: parseFloat(data.notaMinima ?? '0.0') || 0.0,
+          notaMaxima: parseFloat(data.notaMaxima ?? '10.0') || 10.0,
           maxHistorialCelda: parseInt(data.maxHistorialCelda ?? '10', 10) || 10,
           usarIntervaloReprobado: data.usarIntervaloReprobado ?? true,
           usarIntervaloCondicionado: data.usarIntervaloCondicionado ?? true,
@@ -1658,6 +1662,8 @@ useEffect(() => {
           umbralRecuperacion: parseFloat(String(umbrales.umbralRecuperacion)),
           umbralCondicionado: parseFloat(String(umbrales.umbralCondicionado)),
           umbralAprobado: parseFloat(String(umbrales.umbralAprobado)),
+          notaMinima: parseFloat(String(umbrales.notaMinima)),
+          notaMaxima: parseFloat(String(umbrales.notaMaxima)),
           maxHistorialCelda: parseInt(String(umbrales.maxHistorialCelda)),
           usarIntervaloReprobado: umbrales.usarIntervaloReprobado,
           usarIntervaloCondicionado: umbrales.usarIntervaloCondicionado,
@@ -1672,6 +1678,8 @@ useEffect(() => {
           umbralCondicionado: parseFloat(data.umbralCondicionado ?? 'NaN') || 4.5,
           umbralAprobado: parseFloat(data.umbralAprobado ?? 'NaN') || 6.5,
           umbralRecuperacion: parseFloat(data.umbralRecuperacion ?? 'NaN') || 5.0,
+          notaMinima: parseFloat(data.notaMinima ?? 'NaN') || 0.0,
+          notaMaxima: parseFloat(data.notaMaxima ?? 'NaN') || 10.0,
           maxHistorialCelda: parseInt(data.maxHistorialCelda ?? '10', 10) || 10,
         };
         setConfiguracion(normalizedData);
@@ -2956,7 +2964,7 @@ useEffect(() => {
                   umbrales={umbrales}
                   setUmbrales={setUmbrales}
                   onSave={handleGuardarUmbrales}
-                  onReset={() => setUmbrales({ umbralRecuperacion: 5.0, umbralCondicionado: 4.5, umbralAprobado: 6.5, maxHistorialCelda: 10, usarIntervaloReprobado: true, usarIntervaloCondicionado: true, usarIntervaloAprobado: true })}
+                  onReset={() => setUmbrales({ umbralRecuperacion: 5.0, umbralCondicionado: 4.5, umbralAprobado: 6.5, notaMinima: 0.0, notaMaxima: 10.0, maxHistorialCelda: 10, usarIntervaloReprobado: true, usarIntervaloCondicionado: true, usarIntervaloAprobado: true })}
                   loading={umbralesLoading}
                 />
 
