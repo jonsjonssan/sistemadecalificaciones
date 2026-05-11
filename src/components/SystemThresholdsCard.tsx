@@ -71,29 +71,37 @@ export function SystemThresholdsCard({
 
   const commitUc = (val: string) => {
     if (val === "" || val === ".") { setRawUc(String(uc)); return; }
-    const num = parseFloat(val);
+    let num = parseFloat(val);
     if (Number.isNaN(num)) { setRawUc(String(uc)); return; }
-    if (num >= ua) {
-      const clamped = Math.max(0, Math.round((ua - 0.01) * 100) / 100);
+    // Auto-corregir valor desfasado 4.49 → 4.50
+    if (Math.abs(num - 4.49) < 0.001) num = 4.50;
+    const safeUa = typeof ua === 'number' ? ua : parseFloat(String(ua)) || 6.5;
+    if (num >= safeUa) {
+      const clamped = Math.max(0, Math.round((safeUa - 0.01) * 100) / 100);
       setUmbrales((prev) => ({ ...prev, umbralCondicionado: clamped }));
       setRawUc(String(clamped));
     } else {
-      setUmbrales((prev) => ({ ...prev, umbralCondicionado: num }));
-      setRawUc(String(num));
+      const rounded = Math.round(num * 100) / 100;
+      setUmbrales((prev) => ({ ...prev, umbralCondicionado: rounded }));
+      setRawUc(String(rounded));
     }
   };
 
   const commitUa = (val: string) => {
     if (val === "" || val === ".") { setRawUa(String(ua)); return; }
-    const num = parseFloat(val);
+    let num = parseFloat(val);
     if (Number.isNaN(num)) { setRawUa(String(ua)); return; }
-    if (num <= uc) {
-      const clamped = Math.min(10, Math.round((uc + 0.01) * 100) / 100);
+    // Auto-corregir valor desfasado 6.49 → 6.50
+    if (Math.abs(num - 6.49) < 0.001) num = 6.50;
+    const safeUc = typeof uc === 'number' ? uc : parseFloat(String(uc)) || 4.5;
+    if (num <= safeUc) {
+      const clamped = Math.min(10, Math.round((safeUc + 0.01) * 100) / 100);
       setUmbrales((prev) => ({ ...prev, umbralAprobado: clamped }));
       setRawUa(String(clamped));
     } else {
-      setUmbrales((prev) => ({ ...prev, umbralAprobado: num }));
-      setRawUa(String(num));
+      const rounded = Math.round(num * 100) / 100;
+      setUmbrales((prev) => ({ ...prev, umbralAprobado: rounded }));
+      setRawUa(String(rounded));
     }
   };
 

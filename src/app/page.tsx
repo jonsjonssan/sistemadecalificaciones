@@ -454,11 +454,16 @@ useEffect(() => {
         const data = await res.json();
         setConfiguracion(data);
         setNuevoAño(data.añoEscolar);
+        // Normalizar umbrales: parsear como float y auto-corregir desfase
+        const loadedUc = parseFloat(data.umbralCondicionado ?? 'NaN');
+        const loadedUa = parseFloat(data.umbralAprobado ?? 'NaN');
+        const fixedUc = Number.isNaN(loadedUc) ? 4.5 : (Math.abs(loadedUc - 4.49) < 0.001 ? 4.5 : loadedUc);
+        const fixedUa = Number.isNaN(loadedUa) ? 6.5 : (Math.abs(loadedUa - 6.49) < 0.001 ? 6.5 : loadedUa);
         setUmbrales({
-          umbralRecuperacion: data.umbralRecuperacion ?? 5.0,
-          umbralCondicionado: data.umbralCondicionado ?? 4.5,
-          umbralAprobado: data.umbralAprobado ?? 6.5,
-          maxHistorialCelda: data.maxHistorialCelda ?? 10,
+          umbralRecuperacion: parseFloat(data.umbralRecuperacion ?? '5.0') || 5.0,
+          umbralCondicionado: fixedUc,
+          umbralAprobado: fixedUa,
+          maxHistorialCelda: parseInt(data.maxHistorialCelda ?? '10', 10) || 10,
           usarIntervaloReprobado: data.usarIntervaloReprobado ?? true,
           usarIntervaloCondicionado: data.usarIntervaloCondicionado ?? true,
           usarIntervaloAprobado: data.usarIntervaloAprobado ?? true,
@@ -1584,7 +1589,15 @@ useEffect(() => {
       });
       if (res.ok) {
         const data = await res.json();
-        setConfiguracion(data);
+        // Normalizar umbrales en la respuesta (la BD puede devolver strings)
+        const normalizedData = {
+          ...data,
+          umbralCondicionado: parseFloat(data.umbralCondicionado ?? 'NaN') || 4.5,
+          umbralAprobado: parseFloat(data.umbralAprobado ?? 'NaN') || 6.5,
+          umbralRecuperacion: parseFloat(data.umbralRecuperacion ?? 'NaN') || 5.0,
+          maxHistorialCelda: parseInt(data.maxHistorialCelda ?? '10', 10) || 10,
+        };
+        setConfiguracion(normalizedData);
         toast({ title: "Umbrales actualizados", description: "La configuración del sistema ha sido guardada." });
       } else {
         const err = await res.json();

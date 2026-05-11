@@ -22,13 +22,15 @@ export async function GET() {
 
     // Auto-corregir umbrales desfasados en BD (4.49/6.49 → 4.50/6.50)
     const row = config[0];
-    const ucRaw = row?.umbralCondicionado;
-    const uaRaw = row?.umbralAprobado;
-    const ucNeedsFix = typeof ucRaw === 'number' && Math.abs(ucRaw - 4.49) < 0.001;
-    const uaNeedsFix = typeof uaRaw === 'number' && Math.abs(uaRaw - 6.49) < 0.001;
-    if (ucNeedsFix || uaNeedsFix) {
-      const fixedUc = ucNeedsFix ? 4.50 : (typeof ucRaw === 'number' ? ucRaw : 4.50);
-      const fixedUa = uaNeedsFix ? 6.50 : (typeof uaRaw === 'number' ? uaRaw : 6.50);
+    const ucRaw = parseFloat(row?.umbralCondicionado ?? 'NaN');
+    const uaRaw = parseFloat(row?.umbralAprobado ?? 'NaN');
+    const ucNeedsFix = !Number.isNaN(ucRaw) && Math.abs(ucRaw - 4.49) < 0.001;
+    const uaNeedsFix = !Number.isNaN(uaRaw) && Math.abs(uaRaw - 6.49) < 0.001;
+    const ucIsInvalid = !Number.isNaN(ucRaw) && ucRaw >= (Number.isNaN(uaRaw) ? 10 : uaRaw);
+    const uaIsInvalid = !Number.isNaN(uaRaw) && uaRaw <= (Number.isNaN(ucRaw) ? 0 : ucRaw);
+    if (ucNeedsFix || uaNeedsFix || ucIsInvalid || uaIsInvalid) {
+      const fixedUc = ucNeedsFix || ucIsInvalid || Number.isNaN(ucRaw) ? 4.50 : ucRaw;
+      const fixedUa = uaNeedsFix || uaIsInvalid || Number.isNaN(uaRaw) ? 6.50 : uaRaw;
       await sql`UPDATE "ConfiguracionSistema" SET "umbralCondicionado" = ${fixedUc}, "umbralAprobado" = ${fixedUa}, "updatedAt" = NOW() WHERE id = ${row.id}`;
       config = await sql`SELECT * FROM "ConfiguracionSistema" LIMIT 1`;
     }
@@ -97,11 +99,17 @@ export async function PUT(request: NextRequest) {
     const valAño = typeof añoEscolar === 'number' ? añoEscolar : (config[0]?.añoEscolar ?? 2026);
     const valEscuela = typeof escuela === 'string' ? escuela : (config[0]?.escuela ?? 'Centro Escolar');
     const valDirectora = typeof nombreDirectora === 'string' ? nombreDirectora : (config[0]?.nombreDirectora ?? '_______________________________');
-    const valUmbralRec = typeof umbralRecuperacion === 'number' && !isNaN(umbralRecuperacion) ? umbralRecuperacion : (config[0]?.umbralRecuperacion ?? 5.0);
+    const valUmbralRec = typeof umbralRecuperacion === 'number' && !isNaN(umbralRecuperacion) ? umbralRecuperacion : parseFloat(config[0]?.umbralRecuperacion ?? '5.0');
 
     // Normalizar umbrales: auto-corregir desfase 4.49/6.49 → 4.50/6.50 y asegurar uc < ua
-    let rawUmbralCond = typeof umbralCondicionado === 'number' && !isNaN(umbralCondicionado) ? umbralCondicionado : (config[0]?.umbralCondicionado ?? 4.50);
-    let rawUmbralApr = typeof umbralAprobado === 'number' && !isNaN(umbralAprobado) ? umbralAprobado : (config[0]?.umbralAprobado ?? 6.50);
+    const bodyUc = parseFloat(umbralCondicionado ?? 'NaN');
+    const bodyUa = parseFloat(umbralAprobado ?? 'NaN');
+    const dbUc = parseFloat(config[0]?.umbralCondicionado ?? 'NaN');
+    const dbUa = parseFloat(config[0]?.umbralAprobado ?? 'NaN');
+
+    let rawUmbralCond = !Number.isNaN(bodyUc) ? bodyUc : (!Number.isNaN(dbUc) ? dbUc : 4.50);
+    let rawUmbralApr = !Number.isNaN(bodyUa) ? bodyUa : (!Number.isNaN(dbUa) ? dbUa : 6.50);
+
     if (Math.abs(rawUmbralCond - 4.49) < 0.001) rawUmbralCond = 4.50;
     if (Math.abs(rawUmbralApr - 6.49) < 0.001) rawUmbralApr = 6.50;
     if (rawUmbralCond >= rawUmbralApr) {
