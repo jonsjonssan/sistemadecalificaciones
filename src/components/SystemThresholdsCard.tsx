@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { AlertTriangle, Minus, Check, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 
 interface SystemThresholdsCardProps {
   darkMode: boolean;
@@ -47,6 +47,14 @@ export function SystemThresholdsCard({
     setUmbrales((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
+  // Proporciones visuales basadas en escala 0–10
+  const redWidth = Math.max(0, Math.min(100, (uc / 10) * 100));
+  const yellowWidth = Math.max(0, Math.min(100, ((ua - uc) / 10) * 100));
+  const greenWidth = Math.max(0, Math.min(100, ((10 - ua) / 10) * 100));
+
+  const textMuted = darkMode ? "text-slate-500" : "text-slate-400";
+  const inputBase = `text-center border-0 border-b rounded-none px-0 focus-visible:ring-0 focus-visible:border-b-2 transition-colors ${darkMode ? "bg-transparent border-slate-600 text-white focus-visible:border-slate-400" : "bg-transparent border-slate-300 text-slate-900 focus-visible:border-slate-500"}`;
+
   return (
     <Card className={`shadow-sm ${darkMode ? "bg-[#1e293b] border-slate-700" : ""}`}>
       <CardHeader className={`py-3 px-4 ${darkMode ? "border-slate-700" : ""}`}>
@@ -55,142 +63,140 @@ export function SystemThresholdsCard({
           Establezca los intervalos de calificaciones y el límite de historial
         </CardDescription>
       </CardHeader>
-      <CardContent className="pt-0 space-y-4">
-        {/* ===== BARRA VISUAL DE INTERVALOS ===== */}
-        <div className="space-y-2">
-          <p className={`text-[10px] font-semibold uppercase tracking-wider ${darkMode ? "text-slate-500" : "text-slate-400"}`}>
-            Intervalos Activos
-          </p>
-          <div className="flex rounded-xl overflow-hidden border h-12 text-[11px] font-bold">
-            {umbrales.usarIntervaloReprobado && (
-              <div
-                className={`flex-1 flex flex-col items-center justify-center gap-0.5 ${darkMode ? "bg-red-900/50 text-red-200 border-r border-red-800/50" : "bg-red-100 text-red-800 border-r border-red-200"}`}
+      <CardContent className="pt-0 space-y-6">
+        {/* ===== BARRA VISUAL ===== */}
+        <div className="space-y-1.5">
+          {/* Etiquetas */}
+          <div className="flex">
+            <div className="flex-1 flex items-center gap-1">
+              <span className={`text-[10px] font-semibold uppercase tracking-wider ${textMuted}`}>REPROBADO</span>
+              <button
+                onClick={() => toggleInterval("usarIntervaloReprobado")}
+                className={`p-0.5 rounded transition-colors ${darkMode ? "hover:bg-slate-800 text-slate-500" : "hover:bg-slate-100 text-slate-400"}`}
+                title={umbrales.usarIntervaloReprobado ? "Ocultar intervalo" : "Mostrar intervalo"}
               >
-                <div className="flex items-center gap-1">
-                  <AlertTriangle className="h-3 w-3" />
-                  <span>Reprobado</span>
-                </div>
-                <span className="opacity-80 font-mono text-[10px]">0 ≤ x &lt; {uc.toFixed(2)}</span>
-              </div>
-            )}
-            {umbrales.usarIntervaloCondicionado && (
-              <div
-                className={`flex-1 flex flex-col items-center justify-center gap-0.5 ${darkMode ? "bg-amber-900/50 text-amber-200 border-r border-amber-800/50" : "bg-amber-100 text-amber-800 border-r border-amber-200"}`}
+                {umbrales.usarIntervaloReprobado ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+              </button>
+            </div>
+            <div className="flex-1 flex items-center justify-center gap-1">
+              <span className={`text-[10px] font-semibold uppercase tracking-wider ${textMuted}`}>CONDICIONADO</span>
+              <button
+                onClick={() => toggleInterval("usarIntervaloCondicionado")}
+                className={`p-0.5 rounded transition-colors ${darkMode ? "hover:bg-slate-800 text-slate-500" : "hover:bg-slate-100 text-slate-400"}`}
+                title={umbrales.usarIntervaloCondicionado ? "Ocultar intervalo" : "Mostrar intervalo"}
               >
-                <div className="flex items-center gap-1">
-                  <Minus className="h-3 w-3" />
-                  <span>Condicionado</span>
-                </div>
-                <span className="opacity-80 font-mono text-[10px]">{uc.toFixed(2)} ≤ x &lt; {ua.toFixed(2)}</span>
-              </div>
-            )}
-            {umbrales.usarIntervaloAprobado && (
-              <div
-                className={`flex-1 flex flex-col items-center justify-center gap-0.5 ${darkMode ? "bg-emerald-900/50 text-emerald-200" : "bg-emerald-100 text-emerald-800"}`}
+                {umbrales.usarIntervaloCondicionado ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+              </button>
+            </div>
+            <div className="flex-1 flex items-center justify-end gap-1">
+              <span className={`text-[10px] font-semibold uppercase tracking-wider ${textMuted}`}>APROBADO</span>
+              <button
+                onClick={() => toggleInterval("usarIntervaloAprobado")}
+                className={`p-0.5 rounded transition-colors ${darkMode ? "hover:bg-slate-800 text-slate-500" : "hover:bg-slate-100 text-slate-400"}`}
+                title={umbrales.usarIntervaloAprobado ? "Ocultar intervalo" : "Mostrar intervalo"}
               >
-                <div className="flex items-center gap-1">
-                  <Check className="h-3 w-3" />
-                  <span>Aprobado</span>
-                </div>
-                <span className="opacity-80 font-mono text-[10px]">x ≥ {ua.toFixed(2)}</span>
-              </div>
-            )}
+                {umbrales.usarIntervaloAprobado ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+              </button>
+            </div>
+          </div>
+
+          {/* Barra coloreada proporcional */}
+          <div className="flex h-1.5 rounded-full overflow-hidden">
+            <div style={{ width: `${redWidth}%` }} className={umbrales.usarIntervaloReprobado ? "bg-[#f43f5e]" : "bg-slate-300 dark:bg-slate-700"} />
+            <div style={{ width: `${yellowWidth}%` }} className={umbrales.usarIntervaloCondicionado ? "bg-[#f59e0b]" : "bg-slate-300 dark:bg-slate-700"} />
+            <div style={{ width: `${greenWidth}%` }} className={umbrales.usarIntervaloAprobado ? "bg-[#10b981]" : "bg-slate-300 dark:bg-slate-700"} />
+          </div>
+
+          {/* Expresiones matemáticas */}
+          <div className="flex text-xs font-mono">
+            <div className="flex-1 text-left">
+              {umbrales.usarIntervaloReprobado ? (
+                <span className="text-[#f43f5e]">0 ≤ x &lt; {uc.toFixed(2)}</span>
+              ) : (
+                <span className={textMuted}>—</span>
+              )}
+            </div>
+            <div className="flex-1 text-center">
+              {umbrales.usarIntervaloCondicionado ? (
+                <span className="text-[#f59e0b]">{uc.toFixed(2)} ≤ x &lt; {ua.toFixed(2)}</span>
+              ) : (
+                <span className={textMuted}>—</span>
+              )}
+            </div>
+            <div className="flex-1 text-right">
+              {umbrales.usarIntervaloAprobado ? (
+                <span className="text-[#10b981]">x ≥ {ua.toFixed(2)}</span>
+              ) : (
+                <span className={textMuted}>—</span>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* ===== TRES TARJETAS EDITABLES CON TOGGLE ===== */}
-        <div className="space-y-2">
-          {/* Reprobado */}
-          <div className={`rounded-xl border p-3 ${darkMode ? "bg-red-950/20 border-red-900/40" : "bg-red-50/70 border-red-200"} ${!umbrales.usarIntervaloReprobado ? "opacity-50" : ""}`}>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-red-500" />
-                <span className={`text-xs font-bold uppercase tracking-wide ${darkMode ? "text-red-300" : "text-red-800"}`}>Reprobado</span>
-              </div>
-              <button
-                onClick={() => toggleInterval("usarIntervaloReprobado")}
-                className={`p-1.5 rounded-lg transition-colors ${darkMode ? "hover:bg-slate-800 text-slate-400" : "hover:bg-slate-200 text-slate-500"}`}
-                title={umbrales.usarIntervaloReprobado ? "Ocultar intervalo" : "Mostrar intervalo"}
-              >
-                {umbrales.usarIntervaloReprobado ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-              </button>
+        {/* ===== ENTRADAS ===== */}
+        <div className="grid grid-cols-3 gap-4">
+          {/* FIN REPROBADO */}
+          <div className={`text-center space-y-2 ${!umbrales.usarIntervaloReprobado ? "opacity-40" : ""}`}>
+            <div className={`text-[10px] font-semibold uppercase tracking-wider ${textMuted}`}>FIN REPROBADO</div>
+            <div className="flex items-center justify-center gap-1">
+              <span className={`text-sm ${darkMode ? "text-slate-500" : "text-slate-400"}`}>&lt;</span>
+              <Input
+                type="number"
+                step="0.01"
+                min={0}
+                max={10}
+                value={uc}
+                onChange={(e) => setUmbrales((prev) => ({ ...prev, umbralCondicionado: parseFloat(e.target.value) || 0 }))}
+                disabled={!umbrales.usarIntervaloReprobado}
+                className={`w-16 text-lg font-medium ${inputBase}`}
+              />
             </div>
-            {umbrales.usarIntervaloReprobado && (
-              <div className="mt-2 flex items-center gap-1.5">
-                <span className={`text-xs font-mono ${darkMode ? "text-slate-500" : "text-slate-500"}`}>0 ≤ x &lt;</span>
-                <Input
-                  type="number"
-                  step="0.1"
-                  min={0}
-                  max={10}
-                  value={uc}
-                  onChange={(e) => setUmbrales((prev) => ({ ...prev, umbralCondicionado: parseFloat(e.target.value) || 0 }))}
-                  className={`h-8 text-sm text-center font-bold ${darkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300"}`}
-                />
-              </div>
-            )}
+            <div className="flex justify-center">
+              <div className={`w-2 h-2 rounded-full ${umbrales.usarIntervaloReprobado ? "bg-[#f43f5e]" : "bg-slate-300 dark:bg-slate-600"}`} />
+            </div>
           </div>
 
-          {/* Condicionado */}
-          <div className={`rounded-xl border p-3 ${darkMode ? "bg-amber-950/20 border-amber-900/40" : "bg-amber-50/70 border-amber-200"} ${!umbrales.usarIntervaloCondicionado ? "opacity-50" : ""}`}>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-amber-500" />
-                <span className={`text-xs font-bold uppercase tracking-wide ${darkMode ? "text-amber-300" : "text-amber-800"}`}>Condicionado</span>
-              </div>
-              <button
-                onClick={() => toggleInterval("usarIntervaloCondicionado")}
-                className={`p-1.5 rounded-lg transition-colors ${darkMode ? "hover:bg-slate-800 text-slate-400" : "hover:bg-slate-200 text-slate-500"}`}
-                title={umbrales.usarIntervaloCondicionado ? "Ocultar intervalo" : "Mostrar intervalo"}
-              >
-                {umbrales.usarIntervaloCondicionado ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-              </button>
+          {/* RANGO CONDICIONADO */}
+          <div className={`text-center space-y-2 ${!umbrales.usarIntervaloCondicionado ? "opacity-40" : ""}`}>
+            <div className={`text-[10px] font-semibold uppercase tracking-wider ${textMuted}`}>RANGO CONDICIONADO</div>
+            <div className="flex items-center justify-center gap-2">
+              <span className={`text-sm font-medium ${darkMode ? "text-slate-500" : "text-slate-400"}`}>{uc.toFixed(2)}</span>
+              <span className={`text-sm ${darkMode ? "text-slate-600" : "text-slate-300"}`}>—</span>
+              <Input
+                type="number"
+                step="0.01"
+                min={0}
+                max={10}
+                value={ua}
+                onChange={(e) => setUmbrales((prev) => ({ ...prev, umbralAprobado: parseFloat(e.target.value) || 0 }))}
+                disabled={!umbrales.usarIntervaloCondicionado}
+                className={`w-16 text-lg font-medium ${inputBase}`}
+              />
             </div>
-            {umbrales.usarIntervaloCondicionado && (
-              <div className="mt-2 flex items-center gap-1.5">
-                <span className={`text-xs font-mono ${darkMode ? "text-slate-500" : "text-slate-500"}`}>{uc.toFixed(2)} ≤ x &lt;</span>
-                <Input
-                  type="number"
-                  step="0.1"
-                  min={0}
-                  max={10}
-                  value={ua}
-                  onChange={(e) => setUmbrales((prev) => ({ ...prev, umbralAprobado: parseFloat(e.target.value) || 0 }))}
-                  className={`h-8 text-sm text-center font-bold ${darkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300"}`}
-                />
-              </div>
-            )}
+            <div className="flex justify-center">
+              <div className={`w-2 h-2 rounded-full ${umbrales.usarIntervaloCondicionado ? "bg-[#f59e0b]" : "bg-slate-300 dark:bg-slate-600"}`} />
+            </div>
           </div>
 
-          {/* Aprobado */}
-          <div className={`rounded-xl border p-3 ${darkMode ? "bg-emerald-950/20 border-emerald-900/40" : "bg-emerald-50/70 border-emerald-200"} ${!umbrales.usarIntervaloAprobado ? "opacity-50" : ""}`}>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                <span className={`text-xs font-bold uppercase tracking-wide ${darkMode ? "text-emerald-300" : "text-emerald-800"}`}>Aprobado</span>
-              </div>
-              <button
-                onClick={() => toggleInterval("usarIntervaloAprobado")}
-                className={`p-1.5 rounded-lg transition-colors ${darkMode ? "hover:bg-slate-800 text-slate-400" : "hover:bg-slate-200 text-slate-500"}`}
-                title={umbrales.usarIntervaloAprobado ? "Ocultar intervalo" : "Mostrar intervalo"}
-              >
-                {umbrales.usarIntervaloAprobado ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
-              </button>
+          {/* INICIO APROBADO */}
+          <div className={`text-center space-y-2 ${!umbrales.usarIntervaloAprobado ? "opacity-40" : ""}`}>
+            <div className={`text-[10px] font-semibold uppercase tracking-wider ${textMuted}`}>INICIO APROBADO</div>
+            <div className="flex items-center justify-center gap-1">
+              <span className={`text-sm ${darkMode ? "text-slate-500" : "text-slate-400"}`}>≥</span>
+              <Input
+                type="number"
+                step="0.01"
+                min={0}
+                max={10}
+                value={ua}
+                onChange={(e) => setUmbrales((prev) => ({ ...prev, umbralAprobado: parseFloat(e.target.value) || 0 }))}
+                disabled={!umbrales.usarIntervaloAprobado}
+                className={`w-16 text-lg font-medium ${inputBase}`}
+              />
             </div>
-            {umbrales.usarIntervaloAprobado && (
-              <div className="mt-2 flex items-center gap-1.5">
-                <span className={`text-xs font-mono ${darkMode ? "text-slate-500" : "text-slate-500"}`}>x ≥</span>
-                <Input
-                  type="number"
-                  step="0.1"
-                  min={0}
-                  max={10}
-                  value={ua}
-                  onChange={(e) => setUmbrales((prev) => ({ ...prev, umbralAprobado: parseFloat(e.target.value) || 0 }))}
-                  className={`h-8 text-sm text-center font-bold ${darkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300"}`}
-                />
-              </div>
-            )}
+            <div className="flex justify-center">
+              <div className={`w-2 h-2 rounded-full ${umbrales.usarIntervaloAprobado ? "bg-[#10b981]" : "bg-slate-300 dark:bg-slate-600"}`} />
+            </div>
           </div>
         </div>
 
