@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Eye, EyeOff } from "lucide-react";
+// import { Eye, EyeOff } from "lucide-react";
 
 interface SystemThresholdsCardProps {
   darkMode: boolean;
@@ -43,10 +43,6 @@ export function SystemThresholdsCard({
   const uc = umbrales.umbralCondicionado;
   const ua = umbrales.umbralAprobado;
 
-  const toggleInterval = (key: "usarIntervaloReprobado" | "usarIntervaloCondicionado" | "usarIntervaloAprobado") => {
-    setUmbrales((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
-
   // Proporciones visuales basadas en escala 0–10
   const redWidth = Math.max(0, Math.min(100, (uc / 10) * 100));
   const yellowWidth = Math.max(0, Math.min(100, ((ua - uc) / 10) * 100));
@@ -70,33 +66,12 @@ export function SystemThresholdsCard({
           <div className="flex">
             <div className="flex-1 flex items-center gap-1">
               <span className={`text-[10px] font-semibold uppercase tracking-wider ${textMuted}`}>REPROBADO</span>
-              <button
-                onClick={() => toggleInterval("usarIntervaloReprobado")}
-                className={`p-0.5 rounded transition-colors ${darkMode ? "hover:bg-slate-800 text-slate-500" : "hover:bg-slate-100 text-slate-400"}`}
-                title={umbrales.usarIntervaloReprobado ? "Ocultar intervalo" : "Mostrar intervalo"}
-              >
-                {umbrales.usarIntervaloReprobado ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
-              </button>
             </div>
             <div className="flex-1 flex items-center justify-center gap-1">
               <span className={`text-[10px] font-semibold uppercase tracking-wider ${textMuted}`}>CONDICIONADO</span>
-              <button
-                onClick={() => toggleInterval("usarIntervaloCondicionado")}
-                className={`p-0.5 rounded transition-colors ${darkMode ? "hover:bg-slate-800 text-slate-500" : "hover:bg-slate-100 text-slate-400"}`}
-                title={umbrales.usarIntervaloCondicionado ? "Ocultar intervalo" : "Mostrar intervalo"}
-              >
-                {umbrales.usarIntervaloCondicionado ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
-              </button>
             </div>
             <div className="flex-1 flex items-center justify-end gap-1">
               <span className={`text-[10px] font-semibold uppercase tracking-wider ${textMuted}`}>APROBADO</span>
-              <button
-                onClick={() => toggleInterval("usarIntervaloAprobado")}
-                className={`p-0.5 rounded transition-colors ${darkMode ? "hover:bg-slate-800 text-slate-500" : "hover:bg-slate-100 text-slate-400"}`}
-                title={umbrales.usarIntervaloAprobado ? "Ocultar intervalo" : "Mostrar intervalo"}
-              >
-                {umbrales.usarIntervaloAprobado ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
-              </button>
             </div>
           </div>
 
