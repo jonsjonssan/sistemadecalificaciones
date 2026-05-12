@@ -2258,17 +2258,17 @@ useEffect(() => {
                           <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
                           <span className="hidden sm:inline">{refreshing ? 'Refrescando...' : 'Refrescar'}</span>
                         </Button>
-                        <Button size="sm" variant="outline" className={`h-10 px-3 text-sm gap-2 ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''}`} onClick={() => { setEditConfig(configActual); setConfigDialogOpen(true); }}>
+                        <Button size="sm" variant="outline" className={`h-10 px-3 text-sm gap-2 ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''}`} onClick={() => { setEditConfig(configActual); setConfigDialogOpen(true); }} title="Configurar actividades y porcentajes">
                           <Settings className="h-4 w-4" />
-                          <span className="hidden sm:inline">Config</span>
+                          <span className="hidden sm:inline">Configurar</span>
                         </Button>
                         <Button size="sm" variant="outline" className={`h-10 px-3 text-sm gap-2 ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''}`} onClick={() => setImportDialogOpen(true)}>
                           <Upload className="h-4 w-4" />
                           <span className="hidden sm:inline">Importar</span>
                         </Button>
-                        <Button size="sm" variant={promedioDecimal ? "default" : "outline"} className={`h-10 px-3 text-sm gap-2 ${promedioDecimal ? (darkMode ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white') : (darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : '')}`} onClick={() => setPromedioDecimal(!promedioDecimal)} title={promedioDecimal ? "Mostrar como entero" : "Mostrar con decimales"}>
+                        <Button size="sm" variant={promedioDecimal ? "default" : "outline"} className={`h-10 px-3 text-sm gap-2 ${promedioDecimal ? (darkMode ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white') : (darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : '')}`} onClick={() => setPromedioDecimal(!promedioDecimal)} title={promedioDecimal ? "Mostrar promedio sin decimales" : "Mostrar promedio con decimales"}>
                           <Hash className="h-4 w-4" />
-                          <span className="hidden sm:inline">{promedioDecimal ? "0.0" : "#"}</span>
+                          <span className="hidden sm:inline">{promedioDecimal ? "Decimal" : "Decimal"}</span>
                         </Button>
                         {isAdmin(usuario.rol) && (
                           <Button size="sm" variant="destructive" className={`h-10 px-4 text-sm gap-2 ${darkMode ? 'bg-red-700 hover:bg-red-600 border-red-600' : ''}`} onClick={() => { setBorrarCalifTipo("grado"); setBorrarCalifDialogOpen(true); }}>
@@ -2461,7 +2461,7 @@ useEffect(() => {
                                   {sortColumn === 'promFinal' && <ArrowUpDown className="h-3 w-3" />}
                                 </div>
                               </th>
-                              <th className={`w-12 p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-slate-600' : 'border-slate-500'}`} title="Estado de guardado">💾</th>
+                              <th className={`w-12 p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-slate-600' : 'border-slate-500'}`} title="Auto Guardado">Auto.Guard.</th>
                             </>
                           ) : (
                             <>
@@ -2505,7 +2505,7 @@ useEffect(() => {
                                   {sortColumn === 'promFinal' && <ArrowUpDown className="h-3 w-3" />}
                                 </div>
                               </th>
-                              <th className={`w-12 p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-slate-600' : 'border-slate-500'}`} title="Estado de guardado">💾</th>
+                              <th className={`w-12 p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-slate-600' : 'border-slate-500'}`} title="Auto Guardado">Auto.Guard.</th>
                             </>
                           )}
                         </tr></thead>

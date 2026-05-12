@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Estudiante, Calificacion, ConfigActividadPartial } from "@/types";
 import { calcularPromedio, calcularPromedioFinal, parseNotas, getEstadoCompletitud } from "@/utils/gradeCalculations";
-import { RefreshCw, History, AlertTriangle } from "lucide-react";
+import { RefreshCw, History, AlertTriangle, Check, AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { HistorialCalificacionPopup } from "./HistorialCalificacionPopup";
 
@@ -590,15 +590,21 @@ useEffect(() => {
   const finalBg = darkMode ? "bg-emerald-900/60" : "bg-emerald-50/80";
   const hasData = acNotas.some(n => n !== null) || aiNotas.some(n => n !== null) || examen !== null;
   const estadoCompletitud = useMemo(() => getEstadoCompletitud(calificacion, config), [calificacion, config]);
-  const statusIcon =
+const statusIcon =
     saveError ? (
-      <span title="Error al guardar. Se reintentará automáticamente.">⚠️</span>
+      <span title="Error al guardar. Se reintentará automáticamente.">
+        <AlertCircle className="h-3 w-3 sm:h-4 sm:w-4 text-red-500 mx-auto" />
+      </span>
     ) : saving && dirty ? (
-      <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 text-teal-500 animate-spin mx-auto" />
+      <span title="Guardando...">
+        <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 text-amber-500 animate-spin mx-auto" />
+      </span>
     ) : !dirty && hasData ? (
-      <span title="Guardado">✅</span>
+      <span title="Guardado">
+        <Check className="h-3 w-3 sm:h-4 sm:w-4 text-emerald-500 mx-auto" />
+      </span>
     ) : (
-      <span className={darkMode ? "text-slate-600" : "text-slate-300"}>-</span>
+      <span className={`text-xs ${darkMode ? "text-slate-600" : "text-slate-300"}`}>-</span>
     );
   const finalBadgeClass =
     promFinal !== null
