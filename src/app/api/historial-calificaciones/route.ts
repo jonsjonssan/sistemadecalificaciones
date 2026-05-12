@@ -55,12 +55,37 @@ export async function GET(request: NextRequest) {
           include: {
             estudiante: { select: { nombre: true } },
             materia: { select: { nombre: true } },
+            notasActividad: true,
           },
         },
       },
       orderBy: { createdAt: "desc" },
       take: maxHist,
     });
+
+    // Obtener valor actual de la celda según tipoCampo
+    let valorActual: number | null = null;
+    const calif = historial[0]?.calificacion;
+    if (calif) {
+      if (tipoCampo === "examenTrimestral") {
+        valorActual = calif.examenTrimestral ?? null;
+      } else if (tipoCampo === "recuperacion") {
+        valorActual = calif.recuperacion ?? null;
+      } else if (tipoCampo?.startsWith("cotidiana_") || tipoCampo?.startsWith("integradora_")) {
+        const [tipo, numStr] = tipoCampo.split("_");
+        const numeroActividad = parseInt(numStr, 10);
+        const nota = calif.notasActividad?.find(
+          (n: any) => n.tipo === tipo && n.numeroActividad === numeroActividad
+        );
+        valorActual = nota?.nota ?? null;
+      } else if (tipoCampo === "calificacionAC") {
+        valorActual = calif.calificacionAC ?? null;
+      } else if (tipoCampo === "calificacionAI") {
+        valorActual = calif.calificacionAI ?? null;
+      } else if (tipoCampo === "promedioFinal") {
+        valorActual = calif.promedioFinal ?? null;
+      }
+    }
 
     const formatted = historial.map((h: any) => ({
       id: h.id,
@@ -77,7 +102,7 @@ export async function GET(request: NextRequest) {
       createdAt: h.createdAt,
     }));
 
-    return NextResponse.json({ historial: formatted });
+    return NextResponse.json({ historial: formatted, valorActual });
   } catch (error) {
     console.error("[historial-calificaciones] GET Error:", error);
     const errMsg = error instanceof Error ? error.message : String(error);

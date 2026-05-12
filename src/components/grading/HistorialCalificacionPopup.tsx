@@ -77,6 +77,7 @@ export function HistorialCalificacionPopup({
   anchorRef,
 }: HistorialCalificacionPopupProps) {
   const [historial, setHistorial] = useState<HistorialEntry[]>([]);
+  const [valorActual, setValorActual] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [index, setIndex] = useState(0);
@@ -139,6 +140,7 @@ export function HistorialCalificacionPopup({
           const data = await res.json();
           const list: HistorialEntry[] = data.historial || [];
           setHistorial(list);
+          setValorActual(data.valorActual ?? null);
           setIndex(list.length > 0 ? 0 : -1);
         } else {
           let errText = "Error al cargar el historial";
@@ -225,6 +227,18 @@ export function HistorialCalificacionPopup({
           <X className="h-4 w-4" />
         </button>
       </div>
+
+      {/* Valor actual */}
+      {valorActual !== null && (
+        <div className={`px-4 py-2 border-b flex items-center justify-center gap-2 ${darkMode ? "border-slate-600 bg-slate-800/40" : "border-slate-200 bg-slate-50/60"}`}>
+          <span className={`text-[10px] font-semibold uppercase tracking-wider ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
+            Valor actual
+          </span>
+          <span className={`inline-flex items-center justify-center min-w-[48px] px-2.5 py-0.5 rounded-md text-sm font-bold font-mono ${darkMode ? "bg-teal-900/30 text-teal-300 ring-1 ring-teal-700/40" : "bg-teal-50 text-teal-700 ring-1 ring-teal-200"}`}>
+            {formatValor(valorActual)}
+          </span>
+        </div>
+      )}
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
