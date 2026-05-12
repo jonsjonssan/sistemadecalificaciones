@@ -87,83 +87,87 @@ export function EstudiantesTable({ estudiantes, darkMode, isAdmin, loading = fal
 
   if (!isAdmin) {
     return (
-      <Table className="text-sm sm:text-base font-medium">
-        <TableHeader>
-          <TableRow className={darkMode ? 'bg-slate-800' : 'bg-slate-100'}>
-            <TableHead className="w-10 text-center h-12">N°</TableHead>
-            <TableHead>Nombre Completo</TableHead>
-            <TableHead>Correo</TableHead>
-            <TableHead className="w-16 text-center">Estado</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {loading ? (
-            <SkeletonRows darkMode={darkMode} isAdmin={isAdmin} />
-          ) : !estudiantes || estudiantes.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={4} className={`text-center py-8 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                No hay estudiantes
-              </TableCell>
+      <div className="overflow-x-auto">
+        <Table className="text-xs sm:text-sm md:text-base font-medium min-w-[400px]">
+          <TableHeader>
+            <TableRow className={darkMode ? 'bg-slate-800' : 'bg-slate-100'}>
+              <TableHead className="w-10 text-center h-12">N°</TableHead>
+              <TableHead className="min-w-[120px]">Nombre Completo</TableHead>
+              <TableHead className="hidden sm:table-cell">Correo</TableHead>
+              <TableHead className="w-16 text-center">Estado</TableHead>
             </TableRow>
-          ) : (
-            estudiantes.map((est) => (
-              <TableRow key={est.id} className={darkMode ? 'border-slate-700' : ''}>
-                <TableCell className={`text-center font-medium ${darkMode ? 'text-white' : ''}`}>{est.numero}</TableCell>
-                <TableCell className={darkMode ? 'text-white' : ''}>{est.nombre}</TableCell>
-                <TableCell className={darkMode ? 'text-slate-400' : 'text-slate-500'}>{est.email || "—"}</TableCell>
-                <TableCell className="text-center">
-                  <Badge variant={est.activo ? "default" : "secondary"} className={`text-xs sm:text-sm font-medium h-5 ${est.activo ? (darkMode ? 'bg-teal-600' : '') : ''}`}>
-                    {est.activo ? "Activo" : "Inactivo"}
-                  </Badge>
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              <SkeletonRows darkMode={darkMode} isAdmin={isAdmin} />
+            ) : !estudiantes || estudiantes.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={4} className={`text-center py-8 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                  No hay estudiantes
                 </TableCell>
               </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+            ) : (
+              estudiantes.map((est) => (
+                <TableRow key={est.id} className={darkMode ? 'border-slate-700' : ''}>
+                  <TableCell className={`text-center font-medium ${darkMode ? 'text-white' : ''}`}>{est.numero}</TableCell>
+                  <TableCell className={`font-medium ${darkMode ? 'text-white' : ''} break-words`}>{est.nombre}</TableCell>
+                  <TableCell className={`hidden sm:table-cell ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{est.email || "—"}</TableCell>
+                  <TableCell className="text-center">
+                    <Badge variant={est.activo ? "default" : "secondary"} className={`text-xs sm:text-sm font-medium h-5 ${est.activo ? (darkMode ? 'bg-teal-600' : '') : ''}`}>
+                      {est.activo ? "Activo" : "Inactivo"}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
     );
   }
 
   return (
     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext items={estudiantes.map(e => e.id)} strategy={verticalListSortingStrategy}>
-        <Table className="text-sm sm:text-base font-medium">
-          <TableHeader>
-            <TableRow className={darkMode ? 'bg-slate-800' : 'bg-slate-100'}>
-              <TableHead className="w-10 text-center h-12">N°</TableHead>
-              <TableHead>Nombre Completo</TableHead>
-              <TableHead>Correo</TableHead>
-              <TableHead className="w-16 text-center">Estado</TableHead>
-              <TableHead className="w-12 text-center">Orden</TableHead>
-              <TableHead className="w-16 text-center">Acciones</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-          {loading ? (
-            <SkeletonRows darkMode={darkMode} isAdmin={isAdmin} />
-          ) : !estudiantes || estudiantes.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className={`text-center py-8 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                  No hay estudiantes
-                </TableCell>
+        <div className="overflow-x-auto">
+          <Table className="text-xs sm:text-sm md:text-base font-medium min-w-[500px]">
+            <TableHeader>
+              <TableRow className={darkMode ? 'bg-slate-800' : 'bg-slate-100'}>
+                <TableHead className="w-10 text-center h-12">N°</TableHead>
+                <TableHead className="min-w-[120px]">Nombre Completo</TableHead>
+                <TableHead className="hidden sm:table-cell">Correo</TableHead>
+                <TableHead className="w-16 text-center">Estado</TableHead>
+                <TableHead className="w-12 text-center">Orden</TableHead>
+                <TableHead className="w-16 text-center">Acciones</TableHead>
               </TableRow>
-            ) : (
-              estudiantes.map((est, idx) => (
-                <SortableEstudianteRow
-                  key={est.id}
-                  est={est}
-                  idx={idx}
-                  total={estudiantes.length}
-                  darkMode={darkMode}
-                  onMoveUp={() => moverArriba(idx)}
-                  onMoveDown={() => moverAbajo(idx)}
-                  onDelete={() => onDelete(est.id, est.nombre)}
-                  onUpdate={onUpdateEstudiante}
-                />
-              ))
-            )}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+            {loading ? (
+              <SkeletonRows darkMode={darkMode} isAdmin={isAdmin} />
+            ) : !estudiantes || estudiantes.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className={`text-center py-8 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                    No hay estudiantes
+                  </TableCell>
+                </TableRow>
+              ) : (
+                estudiantes.map((est, idx) => (
+                  <SortableEstudianteRow
+                    key={est.id}
+                    est={est}
+                    idx={idx}
+                    total={estudiantes.length}
+                    darkMode={darkMode}
+                    onMoveUp={() => moverArriba(idx)}
+                    onMoveDown={() => moverAbajo(idx)}
+                    onDelete={() => onDelete(est.id, est.nombre)}
+                    onUpdate={onUpdateEstudiante}
+                  />
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </SortableContext>
     </DndContext>
   );

@@ -252,6 +252,75 @@
   .mobile-card-content {
     @apply p-3;
   }
+
+  .grade-input {
+    @apply h-9 text-sm;
+  }
+}
+
+@media (max-width: 640px) {
+  .grade-input {
+    @apply h-9 text-sm;
+  }
+
+  .grade-table th,
+  .grade-table td {
+    @apply px-1 py-1.5 text-xs;
+  }
+
+  .grade-table input[type="text"] {
+    @apply h-9 text-sm min-w-[40px];
+  }
+
+  .grade-badge {
+    @apply text-xs px-1.5 py-1;
+  }
+
+  .stat-card-value {
+    @apply text-lg;
+  }
+
+  .mobile-full-width {
+    @apply w-full;
+  }
+
+  .mobile-stack {
+    @apply flex-col items-stretch;
+  }
+
+  .mobile-select {
+    @apply h-11 text-sm;
+  }
+
+  .mobile-btn {
+    @apply h-11 text-sm;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 768px) {
+  .grade-input {
+    @apply h-8 text-sm;
+  }
+
+  .grade-table th,
+  .grade-table td {
+    @apply px-1.5 py-2 text-sm;
+  }
+}
+
+@media (max-width: 640px) {
+  .table-scroll-container {
+    @apply -mx-2;
+    scrollbar-width: thin;
+  }
+
+  .table-scroll-container table {
+    @apply min-w-[600px];
+  }
+
+  .sticky-col {
+    @apply z-20;
+  }
 }
 
 @media (min-width: 481px) and (max-width: 768px) {

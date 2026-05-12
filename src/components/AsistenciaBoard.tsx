@@ -868,56 +868,60 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
               </div>
             ) : (
               <div className={`rounded-md border overflow-hidden table-scroll-container relative ${darkMode ? 'border-slate-700' : ''}`}>
-                <div className={`flex items-center justify-between px-4 py-3 border-b ${darkMode ? 'bg-gradient-to-r from-slate-800 to-slate-750 border-slate-700' : 'bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200'}`}>
-                  <div className="flex items-center gap-3">
-                    <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-                      Estudiantes
-                    </span>
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${darkMode ? 'bg-teal-900/60 text-teal-300' : 'bg-teal-100 text-teal-700'}`}>
-                      {activeStudents.length}
-                    </span>
+                  <div className={`flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 px-2 sm:px-4 py-2 sm:py-3 border-b ${darkMode ? 'bg-gradient-to-r from-slate-800 to-slate-750 border-slate-700' : 'bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200'}`}>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                        Estudiantes
+                      </span>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${darkMode ? 'bg-teal-900/60 text-teal-300' : 'bg-teal-100 text-teal-700'}`}>
+                        {activeStudents.length}
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        className={`flex-1 sm:flex-none h-9 text-xs font-semibold px-3 sm:px-4 shadow-md transition-all duration-200 hover:shadow-lg ${darkMode ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white' : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white'}`}
+                        onClick={() => {
+                          const newAsistencias: Record<string, string> = {};
+                          activeStudents.forEach(est => {
+                            newAsistencias[est.id] = "presente";
+                          });
+                          setAsistencias(newAsistencias);
+                          activeStudents.forEach(est => {
+                            if (autoSaveTimersRef.current[est.id]) {
+                              clearTimeout(autoSaveTimersRef.current[est.id]);
+                            }
+                            const currentGradoId = gradoId;
+                            const currentFecha = fecha;
+                            autoSaveTimersRef.current[est.id] = setTimeout(() => {
+                              guardarEstudianteIndividual(est.id, "presente", currentGradoId, currentFecha);
+                            }, 800);
+                          });
+                        }}
+                      >
+                        <CheckCircle2 className="h-4 w-4 sm:mr-1.5" />
+                        <span className="hidden sm:inline">Marcar Todos Presentes</span>
+                        <span className="sm:hidden">Todos P</span>
+                      </Button>
+                      <Button
+                        size="sm"
+                        className={`flex-1 sm:flex-none h-9 text-xs font-semibold px-3 sm:px-4 shadow-md transition-all duration-200 hover:shadow-lg ${darkMode ? 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white' : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white'}`}
+                        onClick={() => {
+                          setAsistencias({});
+                          activeStudents.forEach(est => {
+                            if (autoSaveTimersRef.current[est.id]) {
+                              clearTimeout(autoSaveTimersRef.current[est.id]);
+                              delete autoSaveTimersRef.current[est.id];
+                            }
+                          });
+                        }}
+                      >
+                        <XCircle className="h-4 w-4 sm:mr-1.5" />
+                        <span className="hidden sm:inline">Desmarcar Todo</span>
+                        <span className="sm:hidden">Limpiar</span>
+                      </Button>
+                    </div>
                   </div>
-                  <Button
-                    size="sm"
-                    className={`h-9 text-xs font-semibold px-4 shadow-md transition-all duration-200 hover:shadow-lg hover:scale-[1.02] ${darkMode ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white' : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white'}`}
-                    onClick={() => {
-                      const newAsistencias: Record<string, string> = {};
-                      activeStudents.forEach(est => {
-                        newAsistencias[est.id] = "presente";
-                      });
-                      setAsistencias(newAsistencias);
-                      activeStudents.forEach(est => {
-                        if (autoSaveTimersRef.current[est.id]) {
-                          clearTimeout(autoSaveTimersRef.current[est.id]);
-                        }
-                        const currentGradoId = gradoId;
-                        const currentFecha = fecha;
-                        autoSaveTimersRef.current[est.id] = setTimeout(() => {
-                          guardarEstudianteIndividual(est.id, "presente", currentGradoId, currentFecha);
-                        }, 800);
-                      });
-                    }}
-                  >
-                    <CheckCircle2 className="h-4 w-4 mr-1.5" />
-                    Marcar Todos Presentes
-                  </Button>
-                  <Button
-                    size="sm"
-                    className={`h-9 text-xs font-semibold px-4 shadow-md transition-all duration-200 hover:shadow-lg hover:scale-[1.02] ${darkMode ? 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white' : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white'}`}
-                    onClick={() => {
-                      setAsistencias({});
-                      activeStudents.forEach(est => {
-                        if (autoSaveTimersRef.current[est.id]) {
-                          clearTimeout(autoSaveTimersRef.current[est.id]);
-                          delete autoSaveTimersRef.current[est.id];
-                        }
-                      });
-                    }}
-                  >
-                    <XCircle className="h-4 w-4 mr-1.5" />
-                    Desmarcar Todo
-                  </Button>
-                </div>
                 <Table className="text-xs sm:text-sm font-medium">
                   <TableHeader className={darkMode ? 'bg-gradient-to-r from-slate-800 to-slate-750' : 'bg-gradient-to-r from-slate-100 to-slate-50'}>
                     <TableRow>
@@ -978,7 +982,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                           </TableCell>
                           <TableCell className="text-center">
                             <Select value={estado || ""} onValueChange={(val) => handleEstadoChange(est.id, val)}>
-                              <SelectTrigger className={`h-9 w-36 sm:w-44 text-xs font-medium ${getEstadoBadgeClass(estado || "")} ${darkMode ? 'bg-slate-800 border-slate-600' : 'bg-white border-slate-200'}`}>
+                              <SelectTrigger className={`h-10 sm:h-9 w-full min-w-[130px] sm:w-44 text-xs sm:text-sm font-medium ${getEstadoBadgeClass(estado || "")} ${darkMode ? 'bg-slate-800 border-slate-600' : 'bg-white border-slate-200'}`}>
                                 <SelectValue placeholder="Seleccionar..." />
                               </SelectTrigger>
                               <SelectContent>

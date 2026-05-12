@@ -2095,49 +2095,7 @@ useEffect(() => {
             )}
           </div>
 
-          {/* Mobile bottom nav */}
-          <motion.nav
-            initial={{ y: 100 }}
-            animate={{ y: 0 }}
-            transition={{ type: "spring", damping: 20 }}
-            className={`md:hidden fixed bottom-0 left-0 right-0 z-50 border-t backdrop-blur-sm ${darkMode ? 'bg-[#1e293b]/90 border-slate-700/50' : 'bg-white/90 border-slate-200'} safe-area-bottom`}
-          >
-            <div className="flex justify-around items-center h-16">
-              {[
-                { value: "dashboard", icon: LayoutDashboard, label: "Inicio" },
-                { value: "calificaciones", icon: ClipboardList, label: "Notas" },
-                { value: "asistencia", icon: CalendarDays, label: "Asist." },
-                { value: "estudiantes", icon: Users, label: "Estud." },
-                { value: "boletas", icon: FileText, label: "Boletas" },
-                { value: "enlaces", icon: Globe, label: "Enlaces" },
-                { value: "reportes", icon: BarChart3, label: "Reportes" },
-                ...(isAdmin(usuario.rol) ? [{ value: "admin", icon: Settings, label: "Admin" }] : []),
-              ].map((item, idx) => (
-                <motion.button
-                  key={item.value}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.05 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => { setActiveTab(item.value); saveUserState({ activeTab: item.value }); }}
-                  className={`relative flex flex-col items-center justify-center flex-1 h-full text-xs transition-all ${activeTab === item.value
-                    ? (darkMode ? 'text-teal-400' : 'text-teal-600')
-                    : (darkMode ? 'text-slate-500' : 'text-slate-400')
-                    }`}
-                >
-                  {activeTab === item.value && (
-                    <motion.div
-                      layoutId="activeTab"
-                      className="absolute inset-0 bg-teal-500/10 rounded-lg"
-                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    />
-                  )}
-                  <item.icon className={`h-5 w-5 transition-transform ${activeTab === item.value ? 'scale-110' : ''}`} />
-                  <span className={`text-[10px] mt-0.5 font-medium ${activeTab === item.value ? 'font-semibold' : ''}`}>{item.label}</span>
-                </motion.button>
-              ))}
-            </div>
-          </motion.nav>
+          {/* Mobile bottom nav handled below */}
 
           {/* Dashboard */}
           <TabsContent value="dashboard" className="mt-3">
@@ -2253,48 +2211,48 @@ useEffect(() => {
                     {/* Fila de config y botones */}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                       {configActual && (
-                        <div className={`flex items-center gap-3 text-xs font-medium px-3 py-2 rounded-lg ${darkMode ? 'text-slate-400 bg-slate-800/80' : 'text-slate-600 bg-slate-50'}`}>
-                          <span className="flex items-center gap-1.5">
+                        <div className={`flex items-center gap-2 sm:gap-3 text-xs font-medium px-2 sm:px-3 py-2 rounded-lg w-full sm:w-auto overflow-x-auto hide-scrollbar ${darkMode ? 'text-slate-400 bg-slate-800/80' : 'text-slate-600 bg-slate-50'}`}>
+                          <span className="flex items-center gap-1 whitespace-nowrap">
                             <span className={`w-2 h-2 rounded-full ${darkMode ? 'bg-blue-500' : 'bg-blue-600'}`} />
                             {configActual.numActividadesCotidianas} AC ({configActual.porcentajeAC}%)
                           </span>
-                          <span className="flex items-center gap-1.5">
+                          <span className="flex items-center gap-1 whitespace-nowrap">
                             <span className={`w-2 h-2 rounded-full ${darkMode ? 'bg-purple-500' : 'bg-purple-600'}`} />
                             {configActual.numActividadesIntegradoras} AI ({configActual.porcentajeAI}%)
                           </span>
                           {configActual.tieneExamen && (
-                            <span className="flex items-center gap-1.5">
+                            <span className="flex items-center gap-1 whitespace-nowrap">
                               <span className={`w-2 h-2 rounded-full ${darkMode ? 'bg-orange-500' : 'bg-orange-600'}`} />
                               Ex ({configActual.porcentajeExamen}%)
                             </span>
                           )}
                         </div>
                       )}
-                      <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                        <Button size="sm" aria-label={saving ? "Guardando calificaciones" : "Guardar todas las calificaciones"} className={`h-10 px-4 font-semibold text-sm gap-2 ${darkMode ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white'}`} onClick={handleGuardarTodo} disabled={saving}>
-                          <Save className="h-4 w-4" />
-                          <span>{saving ? 'Guardando...' : 'Guardar Todo'}</span>
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 w-full sm:w-auto">
+                        <Button size="sm" aria-label={saving ? "Guardando calificaciones" : "Guardar todas las calificaciones"} className={`h-9 sm:h-10 px-2 sm:px-4 font-semibold text-xs sm:text-sm gap-1 sm:gap-2 ${darkMode ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white'}`} onClick={handleGuardarTodo} disabled={saving}>
+                          <Save className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                          <span className="hidden sm:inline">{saving ? 'Guardando...' : 'Guardar Todo'}</span>
+                          <span className="sm:hidden">{saving ? '...' : 'Guardar'}</span>
                         </Button>
-                        <Button size="sm" variant="outline" className={`h-10 px-3 text-sm gap-2 ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''}`} onClick={handleRefrescar} disabled={refreshing} title="Refrescar calificaciones">
-                          <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+                        <Button size="sm" variant="outline" className={`h-9 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm gap-1 sm:gap-2 ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''}`} onClick={handleRefrescar} disabled={refreshing} title="Refrescar calificaciones">
+                          <RefreshCw className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${refreshing ? 'animate-spin' : ''}`} />
                           <span className="hidden sm:inline">{refreshing ? 'Refrescando...' : 'Refrescar'}</span>
                         </Button>
-                        <Button size="sm" variant="outline" className={`h-10 px-3 text-sm gap-2 ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''}`} onClick={() => { setEditConfig(configActual); setConfigDialogOpen(true); }} title="Configurar actividades y porcentajes">
-                          <Settings className="h-4 w-4" />
+                        <Button size="sm" variant="outline" className={`h-9 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm gap-1 sm:gap-2 ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''}`} onClick={() => { setEditConfig(configActual); setConfigDialogOpen(true); }} title="Configurar actividades y porcentajes">
+                          <Settings className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                           <span className="hidden sm:inline">Configurar</span>
                         </Button>
-                        <Button size="sm" variant="outline" className={`h-10 px-3 text-sm gap-2 ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''}`} onClick={() => setImportDialogOpen(true)}>
-                          <Upload className="h-4 w-4" />
+                        <Button size="sm" variant="outline" className={`h-9 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm gap-1 sm:gap-2 ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''}`} onClick={() => setImportDialogOpen(true)}>
+                          <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                           <span className="hidden sm:inline">Importar</span>
                         </Button>
-                        <Button size="sm" variant={promedioDecimal ? "default" : "outline"} className={`h-10 px-3 text-sm gap-2 ${promedioDecimal ? (darkMode ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white') : (darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : '')}`} onClick={() => setPromedioDecimal(!promedioDecimal)} title={promedioDecimal ? "Mostrar promedio sin decimales" : "Mostrar promedio con decimales"}>
-                          <Hash className="h-4 w-4" />
-                          <span className="hidden sm:inline">{promedioDecimal ? "Decimal" : "Decimal"}</span>
+                        <Button size="sm" variant={promedioDecimal ? "default" : "outline"} className={`h-9 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm gap-1 sm:gap-2 ${promedioDecimal ? (darkMode ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white') : (darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : '')}`} onClick={() => setPromedioDecimal(!promedioDecimal)} title={promedioDecimal ? "Mostrar promedio sin decimales" : "Mostrar promedio con decimales"}>
+                          <Hash className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         </Button>
                         {isAdmin(usuario.rol) && (
-                          <Button size="sm" variant="destructive" className={`h-10 px-4 text-sm gap-2 ${darkMode ? 'bg-red-700 hover:bg-red-600 border-red-600' : ''}`} onClick={() => { setBorrarCalifTipo("grado"); setBorrarCalifDialogOpen(true); }}>
-                            <Trash2 className="h-4 w-4" />
-                            <span className="hidden sm:inline">Borrar Todo</span>
+                          <Button size="sm" variant="destructive" className={`h-9 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm gap-1 sm:gap-2 ${darkMode ? 'bg-red-700 hover:bg-red-600 border-red-600' : ''}`} onClick={() => { setBorrarCalifTipo("grado"); setBorrarCalifDialogOpen(true); }}>
+                            <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                            <span className="hidden sm:inline">Borrar</span>
                           </Button>
                         )}
                       </div>
@@ -2307,30 +2265,30 @@ useEffect(() => {
             {gradoSeleccionado && asignaturaSeleccionada && trimestreSeleccionado && (
               <>
                 {/* Barra de estado de digitación */}
-                <div className={`flex items-center gap-3 px-4 py-2.5 rounded-lg border text-sm ${
+                <div className={`flex flex-wrap items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-lg border text-xs sm:text-sm ${
                   darkMode ? 'bg-slate-800/80 border-slate-700 text-slate-300' : 'bg-white border-slate-200 text-slate-600'
                 }`}>
-                  <span className="font-medium text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider">Digitación</span>
-                  <div className="flex items-center gap-1.5">
-                    <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.6)]" />
-                    <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">{estadosCompletitud.completo}</span>
-                    <span className="text-xs">completo{estadosCompletitud.completo !== 1 ? 's' : ''}</span>
+                  <span className="font-medium text-slate-400 dark:text-slate-500 text-[10px] sm:text-xs uppercase tracking-wider">Digitación</span>
+                  <div className="flex items-center gap-1">
+                    <span className="inline-block w-2 h-2 rounded-full bg-emerald-500" />
+                    <span className="text-xs sm:text-sm font-semibold text-emerald-600 dark:text-emerald-400">{estadosCompletitud.completo}</span>
+                    <span className="text-[10px] sm:text-xs hidden sm:inline">completo{estadosCompletitud.completo !== 1 ? 's' : ''}</span>
                   </div>
-                  <div className={`h-4 w-px ${darkMode ? 'bg-slate-600' : 'bg-slate-300'}`} />
-                  <div className="flex items-center gap-1.5">
-                    <span className="inline-block w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.6)]" />
-                    <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">{estadosCompletitud.parcial}</span>
-                    <span className="text-xs">incompleto{estadosCompletitud.parcial !== 1 ? 's' : ''}</span>
+                  <div className={`h-3 w-px ${darkMode ? 'bg-slate-600' : 'bg-slate-300'}`} />
+                  <div className="flex items-center gap-1">
+                    <span className="inline-block w-2 h-2 rounded-full bg-amber-400" />
+                    <span className="text-xs sm:text-sm font-semibold text-amber-600 dark:text-amber-400">{estadosCompletitud.parcial}</span>
+                    <span className="text-[10px] sm:text-xs hidden sm:inline">incompleto{estadosCompletitud.parcial !== 1 ? 's' : ''}</span>
                   </div>
-                  <div className={`h-4 w-px ${darkMode ? 'bg-slate-600' : 'bg-slate-300'}`} />
-                  <div className="flex items-center gap-1.5">
-                    <span className="inline-block w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-600" />
-                    <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">{estadosCompletitud.vacio}</span>
-                    <span className="text-xs">sin datos</span>
+                  <div className={`h-3 w-px ${darkMode ? 'bg-slate-600' : 'bg-slate-300'}`} />
+                  <div className="flex items-center gap-1">
+                    <span className="inline-block w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600" />
+                    <span className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400">{estadosCompletitud.vacio}</span>
+                    <span className="text-[10px] sm:text-xs hidden sm:inline">sin datos</span>
                   </div>
-                  <div className="flex-1" />
+                  <div className="flex-1 min-w-[60px]" />
                   {/* Barra de progreso */}
-                  <div className={`hidden sm:flex items-center gap-2 min-w-[120px] max-w-[200px]`}>
+                  <div className={`flex items-center gap-2 min-w-[80px] sm:min-w-[120px] max-w-[160px] sm:max-w-[200px]`}>
                     <div className={`flex-1 h-1.5 rounded-full overflow-hidden flex ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`}>
                       {estadosCompletitud.total > 0 && (
                         <>
@@ -2349,72 +2307,74 @@ useEffect(() => {
                         </>
                       )}
                     </div>
-                    <span className="text-xs font-mono text-slate-500 whitespace-nowrap">
+                    <span className="text-[10px] sm:text-xs font-mono text-slate-500 whitespace-nowrap">
                       {estadosCompletitud.total > 0 ? Math.round((estadosCompletitud.completo / estadosCompletitud.total) * 100) : 0}%
                     </span>
                   </div>
                 </div>
 
                 {/* Marco Normativo Legend */}
-                <div className={`flex flex-wrap items-center gap-3 px-4 py-2.5 rounded-lg border text-xs ${
+                <div className={`flex flex-wrap items-center gap-1.5 sm:gap-3 px-2 sm:px-4 py-2 rounded-lg border text-[10px] sm:text-xs ${
                   darkMode ? 'bg-slate-800/80 border-slate-700 text-slate-300' : 'bg-white border-slate-200 text-slate-600'
                 }`}>
-                  <span className="font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Marco Normativo</span>
-                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-semibold ${
+                  <span className="font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 hidden sm:inline">Marco Normativo</span>
+                  <span className={`inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-md font-semibold whitespace-nowrap ${
                     darkMode ? 'bg-red-900/60 text-red-200 ring-1 ring-red-600' : 'bg-red-100 text-red-800 ring-1 ring-red-300'
                   }`}>
-                    <AlertTriangle className="h-3 w-3" /> 0 – {Math.max(0, (configuracion?.umbralCondicionado ?? 4.5) - 0.01).toFixed(2)} Reprobado (MINED + CE)
+                    <AlertTriangle className="h-2.5 w-2.5 sm:h-3 sm:w-3" /> 0–{Math.max(0, (configuracion?.umbralCondicionado ?? 4.5) - 0.01).toFixed(2)} <span className="hidden sm:inline">Reprobado</span>
                   </span>
-                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-semibold ${
+                  <span className={`inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-md font-semibold whitespace-nowrap ${
                     darkMode ? 'bg-amber-900/60 text-amber-200 ring-1 ring-amber-600' : 'bg-amber-100 text-amber-800 ring-1 ring-amber-300'
                   }`}>
-                    {(configuracion?.umbralCondicionado ?? 4.5).toFixed(2)} – {Math.max((configuracion?.umbralCondicionado ?? 4.5), (configuracion?.umbralAprobado ?? 6.5) - 0.01).toFixed(2)} Condicionado (Aprueba MINED / Reprueba CE)
+                    {(configuracion?.umbralCondicionado ?? 4.5).toFixed(2)}–{Math.max((configuracion?.umbralCondicionado ?? 4.5), (configuracion?.umbralAprobado ?? 6.5) - 0.01).toFixed(2)} <span className="hidden sm:inline">Condicionado</span>
                   </span>
-                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md font-semibold ${
+                  <span className={`inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-md font-semibold whitespace-nowrap ${
                     darkMode ? 'bg-emerald-900/60 text-emerald-200 ring-1 ring-emerald-600' : 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-300'
                   }`}>
-                    ≥ {(configuracion?.umbralAprobado ?? 6.5).toFixed(2)} Aprobado (MINED + CE)
+                    ≥{(configuracion?.umbralAprobado ?? 6.5).toFixed(2)} <span className="hidden sm:inline">Aprobado</span>
                   </span>
                 </div>
 
                 {/* Barra de herramientas: Búsqueda, Filtro, Exportar */}
                 <Card className={`shadow-sm border ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'bg-white border-slate-200'}`}>
-                  <CardContent className="p-3">
-                    <div className="flex flex-wrap items-center gap-3">
+                  <CardContent className="p-2 sm:p-3">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                       {/* Búsqueda */}
-                      <div className="flex-1 min-w-[200px]">
+                      <div className="flex-1 min-w-[140px] sm:min-w-[200px] order-1">
                         <div className="relative">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-slate-400" />
                           <Input
-                            placeholder="Buscar estudiante..."
+                            placeholder="Buscar..."
                             value={busquedaEstudiante}
                             onChange={(e) => setBusquedaEstudiante(e.target.value)}
-                            className={`pl-9 h-9 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}
+                            className={`pl-8 sm:pl-9 h-9 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}
                           />
                         </div>
                       </div>
 
                       {/* Filtro por estado */}
-                      <Select value={filtroEstado} onValueChange={setFiltroEstado}>
-                        <SelectTrigger className={`w-[150px] h-9 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="todos">Todos</SelectItem>
-                          <SelectItem value="aprobados">Aprobados (≥${(configuracion?.umbralAprobado ?? 6.5).toFixed(2)})</SelectItem>
-                          <SelectItem value="riesgo">En riesgo (&lt;${(configuracion?.umbralCondicionado ?? 4.5).toFixed(2)})</SelectItem>
-                          <SelectItem value="honor">Cuadro honor (≥7)</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="order-3 sm:order-2">
+                        <Select value={filtroEstado} onValueChange={setFiltroEstado}>
+                          <SelectTrigger className={`w-[130px] sm:w-[150px] h-9 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="todos">Todos</SelectItem>
+                            <SelectItem value="aprobados">Aprobados</SelectItem>
+                            <SelectItem value="riesgo">En riesgo</SelectItem>
+                            <SelectItem value="honor">Cuadro honor</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
 
                       {/* Exportar PDF */}
-                      <Button size="sm" variant="outline" onClick={handleExportarPDF} className={`h-9 text-sm ${darkMode ? 'bg-slate-800 border-slate-600' : ''}`}>
-                        <FileText className="h-4 w-4 mr-1" /> PDF
+                      <Button size="sm" variant="outline" onClick={handleExportarPDF} className={`h-9 text-xs sm:text-sm px-2 sm:px-3 order-2 sm:order-3 ${darkMode ? 'bg-slate-800 border-slate-600' : ''}`}>
+                        <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1" /> <span className="hidden sm:inline">PDF</span><span className="sm:hidden">PDF</span>
                       </Button>
 
                       {/* Exportar Excel */}
-                      <Button size="sm" variant="outline" onClick={handleExportarExcel} className={`h-9 text-sm ${darkMode ? 'bg-slate-800 border-slate-600' : ''}`}>
-                        <Download className="h-4 w-4 mr-1" /> Excel
+                      <Button size="sm" variant="outline" onClick={handleExportarExcel} className={`h-9 text-xs sm:text-sm px-2 sm:px-3 order-4 ${darkMode ? 'bg-slate-800 border-slate-600' : ''}`}>
+                        <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1" /> <span className="hidden sm:inline">Excel</span><span className="sm:hidden">CSV</span>
                       </Button>
                     </div>
                   </CardContent>
@@ -2583,31 +2543,31 @@ useEffect(() => {
                       </table>
                     </div>
                     {/* Resumen de promedios */}
-                    <div className={`flex flex-wrap gap-4 p-3 mt-2 border-t ${darkMode ? 'border-slate-700 bg-slate-800/50' : 'border-slate-200 bg-slate-50'}`}>
-                      <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${darkMode ? 'bg-blue-900/30 border border-blue-700' : 'bg-blue-50 border border-blue-200'}`}>
-                        <div className={`text-xs font-medium ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>Promedio por Asignatura</div>
-                        <div className={`text-lg font-bold ${darkMode ? 'text-blue-400' : 'text-blue-800'}`}>
-                          {sectionLoading ? <Skeleton className={`h-5 w-12 ${darkMode ? 'bg-blue-800' : 'bg-blue-200'}`} /> : (promedioAsignatura !== null ? promedioAsignatura.toFixed(2) : "—")}
+                    <div className={`flex flex-wrap items-center gap-2 sm:gap-4 p-2 sm:p-3 mt-2 border-t ${darkMode ? 'border-slate-700 bg-slate-800/50' : 'border-slate-200 bg-slate-50'}`}>
+                      <div className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg ${darkMode ? 'bg-blue-900/30 border border-blue-700' : 'bg-blue-50 border border-blue-200'}`}>
+                        <div className={`text-[10px] sm:text-xs font-medium whitespace-nowrap ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>Prom. Asig.</div>
+                        <div className={`text-base sm:text-lg font-bold ${darkMode ? 'text-blue-400' : 'text-blue-800'}`}>
+                          {sectionLoading ? <Skeleton className={`h-4 w-10 sm:h-5 sm:w-12 ${darkMode ? 'bg-blue-800' : 'bg-blue-200'}`} /> : (promedioAsignatura !== null ? promedioAsignatura.toFixed(2) : "—")}
                         </div>
                       </div>
-                      <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${darkMode ? 'bg-emerald-900/30 border border-emerald-700' : 'bg-emerald-50 border border-emerald-200'}`}>
-                        <div className={`text-xs font-medium ${darkMode ? 'text-emerald-300' : 'text-emerald-700'}`}>Promedio del Grado</div>
-                        <div className={`text-lg font-bold ${darkMode ? 'text-emerald-400' : 'text-emerald-800'}`}>
-                          {sectionLoading ? <Skeleton className={`h-5 w-12 ${darkMode ? 'bg-emerald-800' : 'bg-emerald-200'}`} /> : (promedioGrado !== null ? promedioGrado.toFixed(2) : "—")}
+                      <div className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg ${darkMode ? 'bg-emerald-900/30 border border-emerald-700' : 'bg-emerald-50 border border-emerald-200'}`}>
+                        <div className={`text-[10px] sm:text-xs font-medium whitespace-nowrap ${darkMode ? 'text-emerald-300' : 'text-emerald-700'}`}>Prom. Grado</div>
+                        <div className={`text-base sm:text-lg font-bold ${darkMode ? 'text-emerald-400' : 'text-emerald-800'}`}>
+                          {sectionLoading ? <Skeleton className={`h-4 w-10 sm:h-5 sm:w-12 ${darkMode ? 'bg-emerald-800' : 'bg-emerald-200'}`} /> : (promedioGrado !== null ? promedioGrado.toFixed(2) : "—")}
                         </div>
                       </div>
-                      <div className={`flex items-center gap-3 px-3 py-2 rounded-lg ${darkMode ? 'bg-slate-700/50 border border-slate-600' : 'bg-slate-100 border border-slate-200'}`}>
-                        <div className="flex items-center gap-1.5">
-                          <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_4px_rgba(16,185,129,0.5)]" />
-                          <span className={`text-xs font-medium ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                            {estadosCompletitud.completo} completo{estadosCompletitud.completo !== 1 ? 's' : ''}
+                      <div className={`flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg ${darkMode ? 'bg-slate-700/50 border border-slate-600' : 'bg-slate-100 border border-slate-200'}`}>
+                        <div className="flex items-center gap-1">
+                          <span className="inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-500" />
+                          <span className={`text-[10px] sm:text-xs font-medium whitespace-nowrap ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                            {estadosCompletitud.completo}
                           </span>
                         </div>
-                        <span className="text-slate-400 dark:text-slate-500">•</span>
-                        <div className="flex items-center gap-1.5">
-                          <span className="inline-block w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_4px_rgba(251,191,36,0.5)]" />
-                          <span className={`text-xs font-medium ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                            {estadosCompletitud.parcial} incompleto{estadosCompletitud.parcial !== 1 ? 's' : ''}
+                        <span className="text-slate-400 dark:text-slate-500 text-[10px]">•</span>
+                        <div className="flex items-center gap-1">
+                          <span className="inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-amber-400" />
+                          <span className={`text-[10px] sm:text-xs font-medium whitespace-nowrap ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                            {estadosCompletitud.parcial}
                           </span>
                         </div>
                       </div>
@@ -3266,14 +3226,22 @@ useEffect(() => {
       <footer className={`py-2 text-center text-xs hidden md:block ${darkMode ? 'bg-[#1e293b] text-slate-500' : 'bg-slate-800 text-slate-400'}`}>© 2026 Centro Escolar Católico San José de la Montaña</footer>
 
       {/* Bottom Nav Bar para Móviles */}
-      <nav className={`md:hidden fixed bottom-0 left-0 right-0 border-t flex justify-around items-center px-1 py-1.5 z-50 safe-area-bottom ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'bg-white border-slate-200'}`} aria-label="Navegación principal">
-        <button onClick={() => { setActiveTab("dashboard"); saveUserState({ activeTab: "dashboard" }); }} aria-label="Ir a Dashboard" className={`flex flex-col items-center p-1.5 px-2 rounded-xl transition-colors ${activeTab === "dashboard" ? (darkMode ? "text-teal-400 bg-slate-800" : "text-teal-700 bg-teal-50") : (darkMode ? "text-slate-500" : "text-slate-500")}`}><LayoutDashboard className="h-5 w-5 mb-0.5" /><span className="text-[9px] sm:text-[10px] font-medium">Inicio</span></button>
-        <button onClick={() => { setActiveTab("calificaciones"); saveUserState({ activeTab: "calificaciones" }); }} aria-label="Ir a Calificaciones" className={`flex flex-col items-center p-1.5 px-2 rounded-xl transition-colors ${activeTab === "calificaciones" ? (darkMode ? "text-teal-400 bg-slate-800" : "text-teal-700 bg-teal-50") : (darkMode ? "text-slate-500" : "text-slate-500")}`}><ClipboardList className="h-5 w-5 mb-0.5" /><span className="text-[9px] sm:text-[10px] font-medium">Notas</span></button>
-        <button onClick={() => { setActiveTab("asistencia"); saveUserState({ activeTab: "asistencia" }); }} aria-label="Ir a Asistencia" className={`flex flex-col items-center p-1.5 px-2 rounded-xl transition-colors ${activeTab === "asistencia" ? (darkMode ? "text-teal-400 bg-slate-800" : "text-teal-700 bg-teal-50") : (darkMode ? "text-slate-500" : "text-slate-500")}`}><CalendarDays className="h-5 w-5 mb-0.5" /><span className="text-[9px] sm:text-[10px] font-medium">Lista</span></button>
-        <button onClick={() => { setActiveTab("estudiantes"); saveUserState({ activeTab: "estudiantes" }); }} aria-label="Ir a Estudiantes" className={`flex flex-col items-center p-1.5 px-2 rounded-xl transition-colors ${activeTab === "estudiantes" ? (darkMode ? "text-teal-400 bg-slate-800" : "text-teal-700 bg-teal-50") : (darkMode ? "text-slate-500" : "text-slate-500")}`}><Users className="h-5 w-5 mb-0.5" /><span className="text-[9px] sm:text-[10px] font-medium">Alumnos</span></button>
-        {isAdmin(usuario.rol) && (
-          <button onClick={() => { setActiveTab("admin"); saveUserState({ activeTab: "admin" }); }} aria-label="Ir a Administración" className={`flex flex-col items-center p-1.5 px-2 rounded-xl transition-colors ${activeTab === "admin" ? (darkMode ? "text-teal-400 bg-slate-800" : "text-teal-700 bg-teal-50") : (darkMode ? "text-slate-500" : "text-slate-500")}`}><Settings className="h-5 w-5 mb-0.5" /><span className="text-[9px] sm:text-[10px] font-medium">Admin</span></button>
-        )}
+      <nav className={`md:hidden fixed bottom-0 left-0 right-0 border-t flex justify-around items-center px-1 py-1 z-50 safe-area-bottom ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'bg-white border-slate-200'}`} aria-label="Navegación principal">
+        {[
+          { value: "dashboard", icon: LayoutDashboard, label: "Inicio" },
+          { value: "calificaciones", icon: ClipboardList, label: "Notas" },
+          { value: "asistencia", icon: CalendarDays, label: "Lista" },
+          { value: "estudiantes", icon: Users, label: "Alumnos" },
+          { value: "boletas", icon: FileText, label: "Boletas" },
+          { value: "enlaces", icon: Globe, label: "Enlaces" },
+          { value: "reportes", icon: BarChart3, label: "Reportes" },
+          ...(isAdmin(usuario.rol) ? [{ value: "admin", icon: Settings, label: "Admin" }] : []),
+        ].map((item) => (
+          <button key={item.value} onClick={() => { setActiveTab(item.value); saveUserState({ activeTab: item.value }); }} aria-label={`Ir a ${item.label}`} className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-colors min-w-0 flex-1 ${activeTab === item.value ? (darkMode ? "text-teal-400 bg-slate-800" : "text-teal-700 bg-teal-50") : (darkMode ? "text-slate-500" : "text-slate-500")}`}>
+            <item.icon className="h-5 w-5 mb-0.5" />
+            <span className="text-[9px] leading-tight font-medium truncate max-w-full">{item.label}</span>
+          </button>
+        ))}
       </nav>
     </div >
   );
