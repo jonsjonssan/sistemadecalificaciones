@@ -28,6 +28,7 @@ import GettingStartedWizard from "@/components/GettingStartedWizard";
 import PredictiveAlerts from "@/components/PredictiveAlerts";
 import { ContextualHelp } from "@/components/ContextualHelp";
 import { CalificacionRow } from "@/components/grading/CalificacionRow";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { HistorialCalificacionPopup } from "@/components/grading/HistorialCalificacionPopup";
 import { Usuario, UsuarioSesion, Estudiante, Asignatura, AsignaturaConGrado, Calificacion, Grado, ConfigActividad, ConfigActividadPartial, ConfiguracionSistema } from "@/types";
 import { calcularPromedio, calcularPromedioFinal, parseNotas, contarEstados } from "@/utils/gradeCalculations";
@@ -93,6 +94,8 @@ export default function Home() {
   const [nuevoEstudiante, setNuevoEstudiante] = useState({ nombre: "", email: "" });
   const [listaEstudiantes, setListaEstudiantes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [configLoading, setConfigLoading] = useState(false);
+  const [importLoading, setImportLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [materiasEnBoleta, setMateriasEnBoleta] = useState<string[]>([]);
 
@@ -226,14 +229,17 @@ useEffect(() => {
     }
   }, [usuario]);
 
-  // Persistence: Guardar en localStorage
-  useEffect(() => { if (typeof window !== "undefined") localStorage.setItem("ss_tab", activeTab); }, [activeTab]);
-  useEffect(() => { if (typeof window !== "undefined" && gradoSeleccionado) localStorage.setItem("ss_grado", gradoSeleccionado); }, [gradoSeleccionado]);
-  useEffect(() => { if (typeof window !== "undefined" && asignaturaSeleccionada) localStorage.setItem("ss_materia", asignaturaSeleccionada); }, [asignaturaSeleccionada]);
-  useEffect(() => { if (typeof window !== "undefined" && trimestreSeleccionado) localStorage.setItem("ss_trimestre", trimestreSeleccionado); }, [trimestreSeleccionado]);
-  useEffect(() => { if (typeof window !== "undefined") localStorage.setItem("ss_promedio_decimal", JSON.stringify(promedioDecimal)); }, [promedioDecimal]);
-  useEffect(() => { if (typeof window !== "undefined") localStorage.setItem("ss_paperSize", paperSize); }, [paperSize]);
-  useEffect(() => { if (typeof window !== "undefined") localStorage.setItem("ss_incluirAsistenciaBoleta", JSON.stringify(incluirAsistenciaBoleta)); }, [incluirAsistenciaBoleta]);
+  // Persistencia consolidada de preferencias de UI en localStorage
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    localStorage.setItem("ss_tab", activeTab);
+    if (gradoSeleccionado) localStorage.setItem("ss_grado", gradoSeleccionado);
+    if (asignaturaSeleccionada) localStorage.setItem("ss_materia", asignaturaSeleccionada);
+    if (trimestreSeleccionado) localStorage.setItem("ss_trimestre", trimestreSeleccionado);
+    localStorage.setItem("ss_promedio_decimal", JSON.stringify(promedioDecimal));
+    localStorage.setItem("ss_paperSize", paperSize);
+    localStorage.setItem("ss_incluirAsistenciaBoleta", JSON.stringify(incluirAsistenciaBoleta));
+  }, [activeTab, gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado, promedioDecimal, paperSize, incluirAsistenciaBoleta]);
 
   // Auth
   const checkAuth = useCallback(async () => {
@@ -1209,34 +1215,32 @@ useEffect(() => {
     }
   };
 
-  const getPromedioFinalForStudent = useCallback((estudianteId: string) => {
-    const calif = calificaciones.find(c => c.estudianteId === estudianteId && c.materiaId === asignaturaSeleccionada && c.trimestre === parseInt(trimestreSeleccionado));
-    return calif?.promedioFinal ?? null;
-  }, [calificaciones, asignaturaSeleccionada, trimestreSeleccionado]);
-
-  const getPromedioACForStudent = useCallback((estudianteId: string) => {
-    const calif = calificaciones.find(c => c.estudianteId === estudianteId && c.materiaId === asignaturaSeleccionada && c.trimestre === parseInt(trimestreSeleccionado));
-    if (calif?.calificacionAC === null || calif?.calificacionAC === undefined) return null;
-    const config = configActual;
-    if (!config) return calif.calificacionAC;
-    return calif.calificacionAC * (config.porcentajeAC / 100);
-  }, [calificaciones, configActual, asignaturaSeleccionada, trimestreSeleccionado]);
-
-  const getPromedioAIForStudent = useCallback((estudianteId: string) => {
-    const calif = calificaciones.find(c => c.estudianteId === estudianteId && c.materiaId === asignaturaSeleccionada && c.trimestre === parseInt(trimestreSeleccionado));
-    if (calif?.calificacionAI === null || calif?.calificacionAI === undefined) return null;
-    const config = configActual;
-    if (!config) return calif.calificacionAI;
-    return calif.calificacionAI * (config.porcentajeAI / 100);
-  }, [calificaciones, configActual, asignaturaSeleccionada, trimestreSeleccionado]);
-
-  const getExamenForStudent = useCallback((estudianteId: string) => {
-    const calif = calificaciones.find(c => c.estudianteId === estudianteId && c.materiaId === asignaturaSeleccionada && c.trimestre === parseInt(trimestreSeleccionado));
-    return calif?.examenTrimestral ?? null;
-  }, [calificaciones, asignaturaSeleccionada, trimestreSeleccionado]);
-
   // Filtrar y ordenar estudiantes (memoizado para evitar O(n²) cada render)
   const filteredAndSortedStudents = useMemo(() => {
+    // Construir un Map rápido para evitar .find() O(n) por estudiante
+    const califMap = new Map<string, Calificacion>();
+    const matId = asignaturaSeleccionada;
+    const trim = parseInt(trimestreSeleccionado);
+    for (const c of calificaciones) {
+      if (c.materiaId === matId && c.trimestre === trim) {
+        califMap.set(c.estudianteId, c);
+      }
+    }
+    const getPromedioFinal = (estId: string) => califMap.get(estId)?.promedioFinal ?? null;
+    const getPromedioAC = (estId: string) => {
+      const calif = califMap.get(estId);
+      if (calif?.calificacionAC === null || calif?.calificacionAC === undefined) return null;
+      if (!configActual) return calif.calificacionAC;
+      return calif.calificacionAC * (configActual.porcentajeAC / 100);
+    };
+    const getPromedioAI = (estId: string) => {
+      const calif = califMap.get(estId);
+      if (calif?.calificacionAI === null || calif?.calificacionAI === undefined) return null;
+      if (!configActual) return calif.calificacionAI;
+      return calif.calificacionAI * (configActual.porcentajeAI / 100);
+    };
+    const getExamen = (estId: string) => califMap.get(estId)?.examenTrimestral ?? null;
+
     let filtered = [...estudiantes];
 
     if (busquedaEstudiante.trim()) {
@@ -1245,11 +1249,13 @@ useEffect(() => {
     }
 
     if (filtroEstado !== "todos") {
+      const umbralApr = configuracion?.umbralAprobado ?? 6.5;
+      const umbralCond = configuracion?.umbralCondicionado ?? 4.5;
       filtered = filtered.filter(e => {
-        const promFinal = getPromedioFinalForStudent(e.id);
+        const promFinal = getPromedioFinal(e.id);
         if (promFinal === null) return false;
-        if (filtroEstado === "aprobados") return promFinal >= (configuracion?.umbralAprobado ?? 6.5);
-        if (filtroEstado === "riesgo") return promFinal < (configuracion?.umbralCondicionado ?? 4.5);
+        if (filtroEstado === "aprobados") return promFinal >= umbralApr;
+        if (filtroEstado === "riesgo") return promFinal < umbralCond;
         if (filtroEstado === "honor") return promFinal >= 7;
         return true;
       });
@@ -1260,25 +1266,24 @@ useEffect(() => {
         let valA: number, valB: number;
         switch (sortColumn) {
           case "nombre":
-            valA = a.nombre.localeCompare(b.nombre);
-            valB = 0;
-            return sortDirection === "asc" ? (valA as unknown as number) : -(valA as unknown as number);
+            const cmp = a.nombre.localeCompare(b.nombre);
+            return sortDirection === "asc" ? cmp : -cmp;
           case "promAC":
-            valA = getPromedioACForStudent(a.id) ?? -1;
-            valB = getPromedioACForStudent(b.id) ?? -1;
+            valA = getPromedioAC(a.id) ?? -1;
+            valB = getPromedioAC(b.id) ?? -1;
             break;
           case "promAI":
-            valA = getPromedioAIForStudent(a.id) ?? -1;
-            valB = getPromedioAIForStudent(b.id) ?? -1;
+            valA = getPromedioAI(a.id) ?? -1;
+            valB = getPromedioAI(b.id) ?? -1;
             break;
           case "examen":
-            valA = getExamenForStudent(a.id) ?? -1;
-            valB = getExamenForStudent(b.id) ?? -1;
+            valA = getExamen(a.id) ?? -1;
+            valB = getExamen(b.id) ?? -1;
             break;
           case "promFinal":
           default:
-            valA = getPromedioFinalForStudent(a.id) ?? -1;
-            valB = getPromedioFinalForStudent(b.id) ?? -1;
+            valA = getPromedioFinal(a.id) ?? -1;
+            valB = getPromedioFinal(b.id) ?? -1;
             break;
         }
         return sortDirection === "asc" ? valA - valB : valB - valA;
@@ -1286,7 +1291,7 @@ useEffect(() => {
     }
 
     return filtered;
-  }, [estudiantes, calificaciones, configActual, busquedaEstudiante, filtroEstado, sortColumn, sortDirection, getPromedioFinalForStudent, getPromedioACForStudent, getPromedioAIForStudent, getExamenForStudent]);
+  }, [estudiantes, calificaciones, configActual, configuracion, busquedaEstudiante, filtroEstado, sortColumn, sortDirection, asignaturaSeleccionada, trimestreSeleccionado]);
 
   const estadosCompletitud = useMemo(() =>
     contarEstados(estudiantes, calificaciones, asignaturaSeleccionada, parseInt(trimestreSeleccionado), configActual),
@@ -2047,7 +2052,12 @@ useEffect(() => {
       </Dialog>
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-3 py-2 sm:py-3 pb-24 md:pb-3">
-        <Tabs value={activeTab} onValueChange={(val) => { setActiveTab(val); saveUserState({ activeTab: val }); }}>
+        <Tabs value={activeTab} onValueChange={(val) => {
+          if (activeTab === "calificaciones" && val !== "calificaciones" && forceSaveRefs.current.size > 0) {
+            if (!window.confirm("Tienes cambios sin guardar en calificaciones. ¿Cambiar de pestaña los perderá. ¿Continuar?")) return;
+          }
+          setActiveTab(val); saveUserState({ activeTab: val });
+        }}>
           <TabsList className={`shadow-lg h-11 overflow-x-auto rounded-xl hidden md:inline-flex w-auto shrink-0 hide-scrollbar justify-start space-x-1.5 ${darkMode ? 'bg-[#1e293b]/80 backdrop-blur-sm border border-slate-700/50 p-1' : 'bg-white/80 backdrop-blur-sm border border-slate-200 p-1'}`} role="tablist" aria-label="Secciones del sistema">
             <motion.div className="flex space-x-1.5">
               <TabsTrigger id="tab-dashboard" value="dashboard" className={`text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 ${darkMode ? 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:data-[state=inactive]:text-slate-200 hover:bg-slate-800/50' : 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-600 hover:data-[state=inactive]:text-slate-800 hover:bg-slate-100'}`}><LayoutDashboard className="h-4 w-4" />Inicio</TabsTrigger>
@@ -2060,16 +2070,18 @@ useEffect(() => {
               {isAdmin(usuario.rol) && <TabsTrigger value="admin" aria-label="Administración" className={`text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 ${darkMode ? 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:data-[state=inactive]:text-slate-200 hover:bg-slate-800/50' : 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-600 hover:data-[state=inactive]:text-slate-800 hover:bg-slate-100'}`}><Settings className="h-4 w-4" />Admin</TabsTrigger>}
             </motion.div>
           </TabsList>
-          <div className="hidden md:flex items-center gap-2 ml-auto">
+          <div className="flex items-center gap-2 ml-auto">
             <ContextualHelp section={activeTab} darkMode={darkMode} />
             {autoSaveStatus === "saving" && (
               <span className={`text-xs flex items-center gap-1 ${darkMode ? 'text-amber-400' : 'text-amber-600'}`}>
-                <RefreshCw className="h-3 w-3 animate-spin" /> Guardando...
+                <RefreshCw className="h-3 w-3 animate-spin" />
+                <span className="hidden sm:inline">Guardando...</span>
               </span>
             )}
             {autoSaveStatus === "saved" && (
               <span className={`text-xs flex items-center gap-1 ${darkMode ? 'text-green-400' : 'text-green-600'}`}>
-                Guardado
+                <span className="hidden sm:inline">Guardado</span>
+                <span className="sm:hidden">✓</span>
               </span>
             )}
           </div>
@@ -3104,7 +3116,7 @@ useEffect(() => {
               <Label htmlFor="aplicarATodas" className="text-sm font-medium">Aplicar a todas las materias de este grado</Label>
             </div>
           </div>}
-          <DialogFooter className="flex-row gap-2 sm:gap-0"><Button variant="outline" size="sm" className="flex-1 sm:flex-initial" onClick={() => setConfigDialogOpen(false)}>Cancelar</Button><Button size="sm" className="flex-1 sm:flex-initial bg-teal-600" onClick={handleSaveConfig}>Guardar</Button></DialogFooter>
+          <DialogFooter className="flex-row gap-2 sm:gap-0"><Button variant="outline" size="sm" className="flex-1 sm:flex-initial" onClick={() => setConfigDialogOpen(false)} disabled={configLoading}>Cancelar</Button><Button size="sm" className="flex-1 sm:flex-initial bg-teal-600" onClick={async () => { setConfigLoading(true); try { await handleSaveConfig(); } finally { setConfigLoading(false); }}} disabled={configLoading}>{configLoading ? "Guardando..." : "Guardar"}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -3120,7 +3132,7 @@ useEffect(() => {
             {importData && <pre className={`p-2 rounded max-h-32 overflow-auto text-[10px] ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>{importData.slice(0, 500)}</pre>}
             <p className={`text-[10px] ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Primera fila: Estudiante, AC1, AC2... AI1... Examen. Filas siguientes: datos.</p>
           </div>
-          <DialogFooter><Button variant="outline" size="sm" onClick={() => { setImportDialogOpen(false); setImportData(""); }}>Cancelar</Button><Button size="sm" onClick={handleImport} disabled={!importData} className="bg-teal-600">Importar</Button></DialogFooter>
+          <DialogFooter><Button variant="outline" size="sm" onClick={() => { setImportDialogOpen(false); setImportData(""); }} disabled={importLoading}>Cancelar</Button><Button size="sm" onClick={async () => { setImportLoading(true); try { await handleImport(); } finally { setImportLoading(false); }}} disabled={!importData || importLoading} className="bg-teal-600">{importLoading ? "Importando..." : "Importar"}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -3258,38 +3270,6 @@ useEffect(() => {
 }
 
 // Componentes
-const NotaInput = React.memo(({ value, onChange, darkMode, hasError, onBlur }: { value: string | number; onChange: (v: string) => void; darkMode: boolean; hasError?: boolean; onBlur?: () => void }) => {
-  const inputBg = darkMode ? 'focus:bg-slate-700/60 text-white placeholder-slate-500' : 'focus:bg-teal-50/60 placeholder-slate-300';
-  const errorBg = darkMode ? 'bg-yellow-800/60' : 'bg-yellow-200';
-  return (
-    <div className="relative inline-block group">
-      {hasError && (
-        <div className="absolute -top-[1px] -right-[1px] w-0 h-0 border-t-[6px] border-t-yellow-500 border-l-[6px] border-l-transparent z-10 pointer-events-none" />
-      )}
-      {hasError && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block z-50">
-          <div className="relative">
-            <div className="bg-slate-800 text-white text-[10px] leading-tight rounded px-2 py-1 whitespace-nowrap shadow-lg">
-              Debe digitar un número, no puede dejar espacios en blanco
-            </div>
-            <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[4px] border-t-slate-800" />
-          </div>
-        </div>
-      )}
-      <input
-        type="number"
-        inputMode="decimal"
-        min="0"
-        max="10"
-        step="0.1"
-        className={`w-10 sm:w-12 h-7 sm:h-8 text-xs sm:text-sm font-medium text-center border border-transparent focus:border-teal-400/50 rounded-md transition-all ${hasError ? errorBg : 'bg-transparent'} ${inputBg}`}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        onBlur={onBlur}
-      />
-    </div>
-  );
-});
 
 interface SortableEstudianteRowProps {
   est: Estudiante;
