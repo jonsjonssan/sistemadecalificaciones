@@ -20,6 +20,7 @@ interface CalificacionRowProps {
     recuperacion: number | null;
   }) => Promise<Calificacion | void> | void;
   onRegisterForceSave?: (studentId: string, saveFn: (() => Promise<void>) | null) => void;
+  onDirtyChange?: (studentId: string, isDirty: boolean) => void;
   saving: boolean;
   darkMode: boolean;
   evenRow: boolean;
@@ -229,6 +230,7 @@ export const CalificacionRow = React.memo(function CalificacionRow({
   config,
   onSave,
   onRegisterForceSave,
+  onDirtyChange,
   saving,
   darkMode,
   evenRow,
@@ -522,6 +524,11 @@ useEffect(() => {
       }, delay);
     };
   }, [doSave]);
+
+  // Notificar al padre cuando cambia el estado dirty (para advertencia al cambiar pestaña)
+  useEffect(() => {
+    onDirtyChange?.(estudiante.id, dirty);
+  }, [dirty, estudiante.id, onDirtyChange]);
 
   // Registrar función de guardado forzado en el padre (para Guardar Todo)
   useEffect(() => {

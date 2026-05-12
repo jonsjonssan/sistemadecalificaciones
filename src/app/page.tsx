@@ -862,6 +862,7 @@ useEffect(() => {
   };
 
   const forceSaveRefs = useRef<Map<string, () => Promise<void>>>(new Map());
+  const dirtyStudentsRef = useRef<Set<string>>(new Set());
   const inputRefs = useRef<Map<string, HTMLInputElement>>(new Map());
   const trimestreRef = useRef(trimestreSeleccionado);
   useEffect(() => { trimestreRef.current = trimestreSeleccionado; }, [trimestreSeleccionado]);
@@ -873,6 +874,14 @@ useEffect(() => {
       forceSaveRefs.current.set(studentId, saveFn);
     } else {
       forceSaveRefs.current.delete(studentId);
+    }
+  }, []);
+
+  const handleDirtyChange = useCallback((studentId: string, isDirty: boolean) => {
+    if (isDirty) {
+      dirtyStudentsRef.current.add(studentId);
+    } else {
+      dirtyStudentsRef.current.delete(studentId);
     }
   }, []);
 
@@ -2053,8 +2062,8 @@ useEffect(() => {
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-3 py-2 sm:py-3 pb-24 md:pb-3">
         <Tabs value={activeTab} onValueChange={(val) => {
-          if (activeTab === "calificaciones" && val !== "calificaciones" && forceSaveRefs.current.size > 0) {
-            if (!window.confirm("Tienes cambios sin guardar en calificaciones. ¿Cambiar de pestaña los perderá. ¿Continuar?")) return;
+          if (activeTab === "calificaciones" && val !== "calificaciones" && dirtyStudentsRef.current.size > 0) {
+            if (!window.confirm("Tienes " + dirtyStudentsRef.current.size + " estudiante(s) con cambios sin guardar. ¿Cambiar de pestaña los perderá. ¿Continuar?")) return;
           }
           setActiveTab(val); saveUserState({ activeTab: val });
         }}>
@@ -2552,6 +2561,7 @@ useEffect(() => {
                                 config={configActual}
                                 onSave={handleSaveCalificacion}
                                 onRegisterForceSave={handleRegisterForceSave}
+                                onDirtyChange={handleDirtyChange}
                                 saving={saving}
                                 darkMode={darkMode}
                                 evenRow={idx % 2 === 0}
