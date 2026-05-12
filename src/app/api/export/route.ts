@@ -323,12 +323,9 @@ function exportBoletaPDF(data: any, format: "letter" | "a4" = "letter") {
         (c: any) => c.materiaId === materia.id && c.trimestre === 3
       );
 
-      const prom1 = trim1?.recuperacion != null && trim1.recuperacion > (trim1.promedioFinal || 0)
-        ? trim1.recuperacion : trim1?.promedioFinal;
-      const prom2 = trim2?.recuperacion != null && trim2.recuperacion > (trim2.promedioFinal || 0)
-        ? trim2.recuperacion : trim2?.promedioFinal;
-      const prom3 = trim3?.recuperacion != null && trim3.recuperacion > (trim3.promedioFinal || 0)
-        ? trim3.recuperacion : trim3?.promedioFinal;
+      const prom1 = trim1?.promedioFinal;
+      const prom2 = trim2?.promedioFinal;
+      const prom3 = trim3?.promedioFinal;
 
       const promFinal = prom1 != null && prom2 != null && prom3 != null
         ? ((prom1 + prom2 + prom3) / 3).toFixed(1)

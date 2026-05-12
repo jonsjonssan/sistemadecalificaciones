@@ -57,7 +57,7 @@ function calcularPromedioFinal(
   let promedio = isNaN(suma) ? null : suma;
 
   if (recuperacion !== null && recuperacion !== undefined) {
-    promedio = Math.min(10, Math.max((promedio ?? 0), recuperacion));
+    promedio = Math.min(10, (promedio ?? 0) + recuperacion);
   }
 
   return promedio;
@@ -412,14 +412,14 @@ describe('calcularPromedioFinal - Cálculo de promedio final', () => {
       expect(calcularPromedioFinal(null, null, null, null, null)).toBe(null);
     });
 
-    it('recuperacion reemplaza al promedio si es mayor', () => {
-      // base = 8.05, recup = 1.5 -> max(8.05, 1.5) = 8.05
-      expect(calcularPromedioFinal(8, 9, 7, 1.5, null)).toBeCloseTo(8.05, 2);
+    it('recuperacion se suma al promedio', () => {
+      // base = 8.05, recup = 1.5 -> 8.05 + 1.5 = 9.55
+      expect(calcularPromedioFinal(8, 9, 7, 1.5, null)).toBeCloseTo(9.55, 2);
     });
 
-    it('recuperacion reemplaza promedio con nota mayor', () => {
-      // base = 4.0, recup = 7.5 -> max(4, 7.5) = 7.5, cap a 10
-      expect(calcularPromedioFinal(4, 4, 4, 7.5, null)).toBe(7.5);
+    it('recuperacion se suma al promedio (cap en 10)', () => {
+      // base = 4.0, recup = 7.5 -> 4 + 7.5 = 11.5, cap a 10
+      expect(calcularPromedioFinal(4, 4, 4, 7.5, null)).toBe(10);
     });
 
     it('recuperacion con promedio nulo retorna null', () => {
@@ -486,9 +486,9 @@ describe('calcularPromedioFinal - Cálculo de promedio final', () => {
       expect(result).toBe(null);
     });
 
-    it('con recuperacion negativa (ignora, toma el promedio base)', () => {
+    it('con recuperacion negativa se resta del promedio', () => {
       const result = calcularPromedioFinal(8, 9, 7, -2, null);
-      expect(result).toBeCloseTo(8.05, 2);
+      expect(result).toBeCloseTo(6.05, 2);
     });
 
     it('con config null usa defaults 35/35/30', () => {
@@ -531,22 +531,22 @@ describe('Flujo completo: desde notas individuales hasta promedio final', () => 
     expect(promFinal).toBe(2.4);
   });
 
-  it('estudiante con notas perfectas y recuperacion', () => {
-    const notasAC = [10, 10, 10, 10];
-    const notasAI = [10];
-    const examen = 10;
-    const recuperacion = 1;
+    it('estudiante con notas perfectas y recuperacion', () => {
+      const notasAC = [10, 10, 10, 10];
+      const notasAI = [10];
+      const examen = 10;
+      const recuperacion = 1;
 
-    const promAC = calcularPromedioNotas(notasAC);
-    const promAI = calcularPromedioNotas(notasAI);
+      const promAC = calcularPromedioNotas(notasAC);
+      const promAI = calcularPromedioNotas(notasAI);
 
-    expect(promAC).toBe(10);
-    expect(promAI).toBe(10);
+      expect(promAC).toBe(10);
+      expect(promAI).toBe(10);
 
-    const promFinal = calcularPromedioFinal(promAC, promAI, examen, recuperacion, null);
-    // base = 10, recup = 1 -> max(10, 1) = 10
-    expect(promFinal).toBe(10);
-  });
+      const promFinal = calcularPromedioFinal(promAC, promAI, examen, recuperacion, null);
+      // base = 10, recup = 1 -> 10 + 1 = 11, cap a 10
+      expect(promFinal).toBe(10);
+    });
 
   it('estudiante con actividades incompletas', () => {
     const notasAC = [8, null, 9, null];
@@ -585,17 +585,17 @@ describe('Reglas de negocio - casos de borde', () => {
     expect(result).toBeCloseTo(4.99, 2);
   });
 
-  it('recuperacion puede hacer que un estudiante apruebe', () => {
-    // base = 4.0, recup = 6.0 -> max(4, 6) = 6.0 (aprueba)
-    const result = calcularPromedioFinal(4, 4, 4, 6.0, null);
-    expect(result).toBe(6);
-  });
+    it('recuperacion puede hacer que un estudiante apruebe', () => {
+      // base = 4.0, recup = 2.0 -> 4 + 2 = 6.0 (aprueba)
+      const result = calcularPromedioFinal(4, 4, 4, 2.0, null);
+      expect(result).toBe(6);
+    });
 
-  it('recuperacion no puede exceder 10', () => {
-    // base = 10, recup = 12 -> max(10, 12) = 12, cap a 10
-    const result = calcularPromedioFinal(10, 10, 10, 12, null);
-    expect(result).toBe(10);
-  });
+    it('promedio con recuperacion no puede exceder 10', () => {
+      // base = 10, recup = 12 -> 10 + 12 = 22, cap a 10
+      const result = calcularPromedioFinal(10, 10, 10, 12, null);
+      expect(result).toBe(10);
+    });
 
   it('estudiante con todas notas 0', () => {
     const result = calcularPromedioFinal(0, 0, 0, null, null);

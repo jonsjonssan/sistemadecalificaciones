@@ -316,7 +316,7 @@ export async function POST(request: NextRequest) {
         const suma = (calificacionAC ?? 0) * porcAC + (calificacionAI ?? 0) * porcAI + ((examenTrimestral ?? 0)) * porcExam;
         promedioFinal = isNaN(suma) ? null : suma;
         if (recuperacion !== null && recuperacion !== undefined) {
-          promedioFinal = Math.min(10, Math.max((promedioFinal ?? 0), recuperacion));
+          promedioFinal = Math.min(10, (promedioFinal ?? 0) + recuperacion);
         }
       }
     } else {
@@ -325,7 +325,7 @@ export async function POST(request: NextRequest) {
         const suma = (calificacionAC ?? 0) * 0.35 + (calificacionAI ?? 0) * 0.35 + ((examenTrimestral ?? 0)) * 0.30;
         promedioFinal = isNaN(suma) ? null : suma;
         if (recuperacion !== null && recuperacion !== undefined) {
-          promedioFinal = Math.min(10, Math.max((promedioFinal ?? 0), recuperacion));
+          promedioFinal = Math.min(10, (promedioFinal ?? 0) + recuperacion);
         }
       }
     }

@@ -173,21 +173,21 @@ describe('calcularPromedioFinal con config por defecto (35/35/30)', () => {
     expect(calcularPromedioFinal(0, 0, 0, defaultConfig)).toBe(0);
   });
 
-  it('aplica recuperacion al promedio (toma el mejor)', () => {
+  it('recuperacion se suma al promedio', () => {
     // Base: (8 * 0.35) + (9 * 0.35) + (7 * 0.30) = 8.05
-    // Recuperacion 1: max(8.05, 1) = 8.05 (recup no ayuda)
+    // Recuperacion 1: 8.05 + 1 = 9.05
     const result = calcularPromedioFinal(8, 9, 7, defaultConfig, 1);
-    expect(result).toBeCloseTo(8.05, 2);
+    expect(result).toBeCloseTo(9.05, 2);
   });
 
-  it('recuperacion reemplaza promedio cuando es mayor (cap en 10)', () => {
+  it('recuperacion se suma al promedio (cap en 10)', () => {
     // (4 * 0.35) + (4 * 0.35) + (4 * 0.30) = 4.0
-    // Con recuperacion 8: max(4, 8) = 8
+    // Con recuperacion 8: 4 + 8 = 12, cap a 10
     const result = calcularPromedioFinal(4, 4, 4, defaultConfig, 8);
-    expect(result).toBe(8);
+    expect(result).toBe(10);
   });
 
-  it('recuperacion sin promedio base retorna el valor de recuperacion', () => {
+  it('recuperacion sin promedio base retorna null', () => {
     const result = calcularPromedioFinal(null, null, null, defaultConfig, 5);
     expect(result).toBe(null);
   });
@@ -243,9 +243,9 @@ describe('calcularPromedioFinal edge cases', () => {
     expect(result).toBeCloseTo(7.55, 1);
   });
 
-  it('recuperacion negativa no reduce el promedio', () => {
+  it('recuperacion negativa se resta del promedio', () => {
     const result = calcularPromedioFinal(8, 9, 7, defaultConfig, -2);
-    expect(result).toBeCloseTo(8.05, 2);
+    expect(result).toBeCloseTo(6.05, 2);
   });
 
   it('config con tieneExamen false aún usa el porcentaje de examen', () => {

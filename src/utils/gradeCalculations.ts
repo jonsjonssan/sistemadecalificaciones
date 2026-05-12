@@ -54,7 +54,7 @@ export const calcularPromedioFinal = (
   const pctAI = cfg.porcentajeAI ?? 35;
   const pctEx = cfg.porcentajeExamen ?? 30;
   let base = ((ac ?? 0) * pctAC) / 100 + ((ai ?? 0) * pctAI) / 100 + ((et ?? 0) * pctEx) / 100;
-  if (recup !== null) base = Math.min(10, Math.max(base, recup));
+  if (recup !== null) base = Math.min(10, base + recup);
   return base;
 };
 
