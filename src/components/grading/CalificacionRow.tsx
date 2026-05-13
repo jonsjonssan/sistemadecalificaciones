@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Estudiante, Calificacion, ConfigActividadPartial } from "@/types";
 import { calcularPromedio, calcularPromedioFinal, parseNotas, getEstadoCompletitud } from "@/utils/gradeCalculations";
-import { RefreshCw, History, AlertTriangle, Check, AlertCircle } from "lucide-react";
+import { RefreshCw, History, AlertTriangle, Check, AlertCircle, Trash2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { HistorialCalificacionPopup } from "./HistorialCalificacionPopup";
 
@@ -750,9 +750,9 @@ const statusIcon =
             <button
               onClick={() => onBorrar(estudiante.id)}
               title="Borrar calificaciones de este alumno"
-              className="text-red-500 hover:text-red-700 p-1"
+              className="text-red-500 hover:text-red-700 p-2 rounded-md"
             >
-              🗑️
+              <Trash2 className="h-4 w-4" />
             </button>
           </td>
         )}

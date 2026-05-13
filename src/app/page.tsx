@@ -18,7 +18,7 @@ import {
   LogOut, Users, User, ClipboardList, FileText, Plus, RefreshCw,
   School, Save, Printer, ChevronDown, ChevronUp,   Settings, Upload,
   Download, Trash2, ListPlus, UserPlus, Key, Calendar, LayoutDashboard, CalendarDays, Lightbulb, Hash,
-  Search, ArrowUpDown, Globe, BarChart3, AlertTriangle
+  Search, ArrowUpDown, Globe, BarChart3, AlertTriangle, Menu
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import Dashboard from "@/components/Dashboard";
@@ -97,7 +97,18 @@ export default function Home() {
   const [configLoading, setConfigLoading] = useState(false);
   const [importLoading, setImportLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
-  const [materiasEnBoleta, setMateriasEnBoleta] = useState<string[]>([]);
+const [menuAbierto, setMenuAbierto] = useState(false);
+const navItems = [
+  { value: "dashboard", icon: LayoutDashboard, label: "Inicio" },
+  { value: "calificaciones", icon: ClipboardList, label: "Notas" },
+  { value: "asistencia", icon: CalendarDays, label: "Lista" },
+  { value: "estudiantes", icon: Users, label: "Alumnos" },
+  { value: "boletas", icon: FileText, label: "Boletas" },
+  { value: "enlaces", icon: Globe, label: "Enlaces" },
+  { value: "reportes", icon: BarChart3, label: "Reportes" },
+  ...(usuario?.rol && isAdmin(usuario.rol) ? [{ value: "admin", icon: Settings, label: "Admin" }] : []),
+];
+const [materiasEnBoleta, setMateriasEnBoleta] = useState<string[]>([]);
 const [mostrarRecuperacion, setMostrarRecuperacion] = useState<boolean>(() => {
   if (typeof window !== "undefined") {
     try {
@@ -3256,23 +3267,27 @@ useEffect(() => {
 
       <footer className={`py-2 text-center text-xs hidden md:block ${darkMode ? 'bg-[#1e293b] text-slate-500' : 'bg-slate-800 text-slate-400'}`}>© 2026 Centro Escolar Católico San José de la Montaña</footer>
 
-      {/* Bottom Nav Bar para Móviles */}
-      <nav className={`md:hidden fixed bottom-0 left-0 right-0 border-t flex justify-around items-center px-1 py-1 z-50 safe-area-bottom ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'bg-white border-slate-200'}`} aria-label="Navegación principal">
-        {[
-          { value: "dashboard", icon: LayoutDashboard, label: "Inicio" },
-          { value: "calificaciones", icon: ClipboardList, label: "Notas" },
-          { value: "asistencia", icon: CalendarDays, label: "Lista" },
-          { value: "estudiantes", icon: Users, label: "Alumnos" },
-          { value: "boletas", icon: FileText, label: "Boletas" },
-          { value: "enlaces", icon: Globe, label: "Enlaces" },
-          { value: "reportes", icon: BarChart3, label: "Reportes" },
-          ...(isAdmin(usuario.rol) ? [{ value: "admin", icon: Settings, label: "Admin" }] : []),
-        ].map((item) => (
-          <button key={item.value} onClick={() => { setActiveTab(item.value); saveUserState({ activeTab: item.value }); }} aria-label={`Ir a ${item.label}`} className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-colors min-w-0 flex-1 ${activeTab === item.value ? (darkMode ? "text-teal-400 bg-slate-800" : "text-teal-700 bg-teal-50") : (darkMode ? "text-slate-500" : "text-slate-500")}`}>
-            <item.icon className="h-5 w-5 mb-0.5" />
-            <span className="text-[9px] leading-tight font-medium truncate max-w-full">{item.label}</span>
-          </button>
-        ))}
+      {/* Bottom Nav Accordion para Móviles */}
+      <nav className={`md:hidden fixed bottom-0 left-0 right-0 z-50 safe-area-bottom ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'bg-white border-slate-200'}`} aria-label="Navegación principal">
+        <button onClick={() => setMenuAbierto(!menuAbierto)} className={`w-full flex items-center justify-center gap-2 py-3 px-4 border-t transition-colors ${darkMode ? 'border-slate-700 text-slate-300 hover:bg-slate-800' : 'border-slate-200 text-slate-700 hover:bg-slate-50'}`} aria-label="Abrir menú de navegación">
+          <Menu className="h-5 w-5" />
+          <span className="text-sm font-medium">{navItems.find(i => i.value === activeTab)?.label || 'Menú'}</span>
+          <ChevronUp className={`h-4 w-4 transition-transform ${menuAbierto ? 'rotate-0' : 'rotate-180'}`} />
+        </button>
+        <AnimatePresence>
+          {menuAbierto && (
+            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className={`overflow-hidden border-t ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
+              <div className={`grid grid-cols-4 gap-1 p-2 ${darkMode ? 'bg-slate-900' : 'bg-slate-50'}`}>
+                {navItems.map((item) => (
+                  <button key={item.value} onClick={() => { setActiveTab(item.value); saveUserState({ activeTab: item.value }); setMenuAbierto(false); }} aria-label={`Ir a ${item.label}`} className={`flex flex-col items-center justify-center py-3 px-1 rounded-xl transition-colors min-h-[56px] ${activeTab === item.value ? (darkMode ? "text-teal-400 bg-slate-800 ring-1 ring-teal-600" : "text-teal-700 bg-teal-50 ring-1 ring-teal-300") : (darkMode ? "text-slate-400 hover:bg-slate-800" : "text-slate-500 hover:bg-white")}`}>
+                    <item.icon className="h-5 w-5 mb-1" />
+                    <span className="text-[10px] leading-tight font-medium">{item.label}</span>
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
     </div >
   );

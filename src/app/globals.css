@@ -238,7 +238,7 @@
 
 @media (max-width: 480px) {
   body {
-    font-size: 14px;
+    font-size: 16px;
   }
   
   .mobile-header {
@@ -254,22 +254,22 @@
   }
 
   .grade-input {
-    @apply h-9 text-sm;
+    @apply h-11 text-base;
   }
 }
 
 @media (max-width: 640px) {
   .grade-input {
-    @apply h-9 text-sm;
+    @apply h-11 text-base;
   }
 
   .grade-table th,
   .grade-table td {
-    @apply px-1 py-1.5 text-xs;
+    @apply px-2 py-2 text-sm;
   }
 
   .grade-table input[type="text"] {
-    @apply h-9 text-sm min-w-[40px];
+    @apply h-11 text-base min-w-[44px];
   }
 
   .grade-badge {
@@ -293,22 +293,9 @@
   }
 
   .mobile-btn {
-    @apply h-11 text-sm;
-  }
-}
-
-@media (min-width: 641px) and (max-width: 768px) {
-  .grade-input {
-    @apply h-8 text-sm;
+    @apply h-11 text-base;
   }
 
-  .grade-table th,
-  .grade-table td {
-    @apply px-1.5 py-2 text-sm;
-  }
-}
-
-@media (max-width: 640px) {
   .table-scroll-container {
     @apply -mx-2;
     scrollbar-width: thin;
@@ -320,6 +307,17 @@
 
   .sticky-col {
     @apply z-20;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 768px) {
+  .grade-input {
+    @apply h-10 text-base;
+  }
+
+  .grade-table th,
+  .grade-table td {
+    @apply px-1.5 py-2 text-sm;
   }
 }
 

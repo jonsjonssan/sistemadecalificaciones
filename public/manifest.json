@@ -3,6 +3,7 @@
   "short_name": "Sistema de Calificaciones",
   "description": "Sistema de gestión de calificaciones para grados 2° a 9°",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0d9488",
