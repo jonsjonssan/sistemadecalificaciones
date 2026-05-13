@@ -19,6 +19,9 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
 
   const uc = configuracion?.umbralCondicionado ?? 4.5;
   const ua = configuracion?.umbralAprobado ?? 6.5;
+  const pctAC = 0.35;
+  const pctAI = 0.35;
+  const pctEx = 0.30;
 
   const paperStyles = paperSize === "a4"
     ? { pageAt: `@page { size: a4; margin: 10mm; }`, fontSize: "10pt" }
@@ -121,9 +124,9 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
         : '-';
       return `<tr>
         <td style="text-align:left;padding:6px 8px">${escapeHtml(m.nombre)}</td>
-        <td>${c?.calificacionAC?.toFixed(2) ?? '-'}</td>
-        <td>${c?.calificacionAI?.toFixed(2) ?? '-'}</td>
-        <td>${c?.examenTrimestral?.toFixed(2) ?? '-'}</td>
+        <td>${c?.calificacionAC != null ? (c.calificacionAC * pctAC).toFixed(2) : '-'}</td>
+        <td>${c?.calificacionAI != null ? (c.calificacionAI * pctAI).toFixed(2) : '-'}</td>
+        <td>${c?.examenTrimestral != null ? (c.examenTrimestral * pctEx).toFixed(2) : '-'}</td>
         ${mostrarRecuperacion ? `<td>${recupVal}</td>` : ''}
         <td style="font-weight:bold">${notaFinal}</td>
         <td style="font-weight:bold;color:${getEstadoColor(estadoLabel)}">${estadoLabel}</td>
@@ -343,9 +346,9 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
           : '-';
         return "<tr>" +
           "<td style=\"text-align:left;padding:6px 8px\">" + escapeHtml(m.nombre) + "</td>" +
-          "<td>" + (c?.calificacionAC?.toFixed(2) ?? '-') + "</td>" +
-          "<td>" + (c?.calificacionAI?.toFixed(2) ?? '-') + "</td>" +
-          "<td>" + (c?.examenTrimestral?.toFixed(2) ?? '-') + "</td>" +
+          "<td>" + (c?.calificacionAC != null ? (c.calificacionAC * pctAC).toFixed(2) : '-') + "</td>" +
+          "<td>" + (c?.calificacionAI != null ? (c.calificacionAI * pctAI).toFixed(2) : '-') + "</td>" +
+          "<td>" + (c?.examenTrimestral != null ? (c.examenTrimestral * pctEx).toFixed(2) : '-') + "</td>" +
           (mostrarRecuperacion ? "<td>" + recupVal + "</td>" : "") +
           "<td style=\"font-weight:bold\">" + notaFinal + "</td>" +
           "<td style=\"font-weight:bold;color:" + getEstadoColor(estadoLabel) + "\">" + estadoLabel + "</td>" +
@@ -1100,7 +1103,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
                 {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
               </div>
             </div>
-            {open && <div className={`border-t p-2 ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50'}`}><Table className="text-xs"><TableHeader><TableRow className={`h-7 ${darkMode ? 'bg-slate-700' : 'bg-slate-100'}`}><TableHead>Asignatura</TableHead><TableHead className="text-center">Prom. A.C.</TableHead><TableHead className="text-center">Prom. A.I.</TableHead><TableHead className="text-center">Examen</TableHead>{mostrarRecuperacion && <TableHead className="text-center">Recup.</TableHead>}<TableHead className="text-center font-bold">Promedio</TableHead></TableRow></TableHeader><TableBody>{materias.map(m => { const c = califs.find(x => x.materiaId === m.id); const estadoMat = c?.promedioFinal !== null && c?.promedioFinal !== undefined ? (c.promedioFinal < uc ? 'REPROBADO' : c.promedioFinal < ua ? 'CONDICIONADO' : 'APROBADO') : 'PENDIENTE'; return <TableRow key={m.id} className={`h-7 ${darkMode ? 'border-slate-700' : ''}`}><TableCell className={`font-medium ${darkMode ? 'text-white' : ''}`}>{m.nombre}</TableCell><TableCell className="text-center">{c?.calificacionAC !== null && c?.calificacionAC !== undefined ? c.calificacionAC.toFixed(2) : "-"}</TableCell><TableCell className="text-center">{c?.calificacionAI !== null && c?.calificacionAI !== undefined ? c.calificacionAI.toFixed(2) : "-"}</TableCell><TableCell className="text-center">{c?.examenTrimestral !== null && c?.examenTrimestral !== undefined ? c.examenTrimestral.toFixed(2) : "-"}</TableCell>{mostrarRecuperacion && <TableCell className="text-center">{c?.recuperacion !== null && c?.recuperacion !== undefined ? c.recuperacion.toFixed(2) : "-"}</TableCell>}<TableCell className="text-center"><Badge variant={c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= ua ? "default" : c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= uc ? "secondary" : "destructive"} className={`text-[10px] ${c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= ua ? 'bg-teal-600' : c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= uc ? 'bg-amber-600' : ''}`}>{c?.promedioFinal !== null && c?.promedioFinal !== undefined ? c.promedioFinal.toFixed(2) : "-"}</Badge></TableCell></TableRow>; })}</TableBody></Table></div>}
+            {open && <div className={`border-t p-2 ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50'}`}><Table className="text-xs"><TableHeader><TableRow className={`h-7 ${darkMode ? 'bg-slate-700' : 'bg-slate-100'}`}><TableHead>Asignatura</TableHead><TableHead className="text-center">Prom. A.C.</TableHead><TableHead className="text-center">Prom. A.I.</TableHead><TableHead className="text-center">Examen</TableHead>{mostrarRecuperacion && <TableHead className="text-center">Recup.</TableHead>}<TableHead className="text-center font-bold">Promedio</TableHead></TableRow></TableHeader><TableBody>{materias.map(m => { const c = califs.find(x => x.materiaId === m.id); const estadoMat = c?.promedioFinal !== null && c?.promedioFinal !== undefined ? (c.promedioFinal < uc ? 'REPROBADO' : c.promedioFinal < ua ? 'CONDICIONADO' : 'APROBADO') : 'PENDIENTE'; return <TableRow key={m.id} className={`h-7 ${darkMode ? 'border-slate-700' : ''}`}><TableCell className={`font-medium ${darkMode ? 'text-white' : ''}`}>{m.nombre}</TableCell><TableCell className="text-center">{c?.calificacionAC != null ? (c.calificacionAC * pctAC).toFixed(2) : "-"}</TableCell><TableCell className="text-center">{c?.calificacionAI != null ? (c.calificacionAI * pctAI).toFixed(2) : "-"}</TableCell><TableCell className="text-center">{c?.examenTrimestral != null ? (c.examenTrimestral * pctEx).toFixed(2) : "-"}</TableCell>{mostrarRecuperacion && <TableCell className="text-center">{c?.recuperacion !== null && c?.recuperacion !== undefined ? c.recuperacion.toFixed(2) : "-"}</TableCell>}<TableCell className="text-center"><Badge variant={c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= ua ? "default" : c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= uc ? "secondary" : "destructive"} className={`text-[10px] ${c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= ua ? 'bg-teal-600' : c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= uc ? 'bg-amber-600' : ''}`}>{c?.promedioFinal !== null && c?.promedioFinal !== undefined ? c.promedioFinal.toFixed(2) : "-"}</Badge></TableCell></TableRow>; })}</TableBody></Table></div>}
           </Card>
         );
       })}
