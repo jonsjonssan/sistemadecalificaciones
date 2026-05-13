@@ -26,21 +26,32 @@ export async function GET(request: NextRequest) {
     const año = searchParams.get("año") ? parseInt(searchParams.get("año")!) : 2026;
 
     const isAdminUser = ["admin", "admin-directora", "admin-codirectora"].includes(session.rol);
-    const materiasArr = (session.asignaturasAsignadas || []) as Array<{ id: string }>;
+    const materiasArr = (session.asignaturasAsignadas || []) as Array<{ id: string; gradoId: string }>;
     const materiaIdsAsignadas = materiasArr.map(m => m.id);
+    const gradosAsignados = [...new Set(materiasArr.map(m => m.gradoId).filter(Boolean))];
 
     let materias;
     if (todas === "true") {
       if (!isAdminUser && materiaIdsAsignadas.length === 0) {
         return NextResponse.json([]);
       }
-      materias = await sql`
-        SELECT m.*, g.id as grado_id, g.numero as grado_numero, g.seccion as grado_seccion
-        FROM "Materia" m
-        JOIN "Grado" g ON m."gradoId" = g.id
-        WHERE g.año = ${año}
-        ORDER BY g.numero, m.nombre
-      `;
+      if (isAdminUser) {
+        materias = await sql`
+          SELECT m.*, g.id as grado_id, g.numero as grado_numero, g.seccion as grado_seccion
+          FROM "Materia" m
+          JOIN "Grado" g ON m."gradoId" = g.id
+          WHERE g.año = ${año}
+          ORDER BY g.numero, m.nombre
+        `;
+      } else {
+        materias = await sql`
+          SELECT m.*, g.id as grado_id, g.numero as grado_numero, g.seccion as grado_seccion
+          FROM "Materia" m
+          JOIN "Grado" g ON m."gradoId" = g.id
+          WHERE g.año = ${año} AND g.id = ANY(${gradosAsignados}::text[])
+          ORDER BY g.numero, m.nombre
+        `;
+      }
       const formatted = materias.map((m: any) => ({
         id: m.id,
         nombre: m.nombre,
@@ -51,13 +62,17 @@ export async function GET(request: NextRequest) {
     }
 
     if (gradoId) {
-      if (!isAdminUser && materiaIdsAsignadas.length === 0) {
-        return NextResponse.json([]);
+      if (!isAdminUser) {
+        if (materiaIdsAsignadas.length === 0 || !gradosAsignados.includes(gradoId)) {
+          return NextResponse.json({ error: "No autorizado" }, { status: 403 });
+        }
       }
       materias = await sql`
-        SELECT * FROM "Materia"
-        WHERE "gradoId" = ${gradoId}
-        ORDER BY nombre
+        SELECT m.*, g.id as grado_id, g.numero as grado_numero, g.seccion as grado_seccion
+        FROM "Materia" m
+        JOIN "Grado" g ON m."gradoId" = g.id
+        WHERE m."gradoId" = ${gradoId} AND g.año = ${año}
+        ORDER BY m.nombre
       `;
       return NextResponse.json(materias);
     }
@@ -65,13 +80,23 @@ export async function GET(request: NextRequest) {
     if (!isAdminUser && materiaIdsAsignadas.length === 0) {
       return NextResponse.json([]);
     }
-    materias = await sql`
-      SELECT m.*, g.id as grado_id, g.numero as grado_numero, g.seccion as grado_seccion
-      FROM "Materia" m
-      JOIN "Grado" g ON m."gradoId" = g.id
-      WHERE g.año = ${año}
-      ORDER BY g.numero, m.nombre
-    `;
+    if (isAdminUser) {
+      materias = await sql`
+        SELECT m.*, g.id as grado_id, g.numero as grado_numero, g.seccion as grado_seccion
+        FROM "Materia" m
+        JOIN "Grado" g ON m."gradoId" = g.id
+        WHERE g.año = ${año}
+        ORDER BY g.numero, m.nombre
+      `;
+    } else {
+      materias = await sql`
+        SELECT m.*, g.id as grado_id, g.numero as grado_numero, g.seccion as grado_seccion
+        FROM "Materia" m
+        JOIN "Grado" g ON m."gradoId" = g.id
+        WHERE g.año = ${año} AND g.id = ANY(${gradosAsignados}::text[])
+        ORDER BY g.numero, m.nombre
+      `;
+    }
     const formatted = materias.map((m: any) => ({
       id: m.id,
       nombre: m.nombre,

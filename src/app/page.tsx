@@ -98,7 +98,15 @@ export default function Home() {
   const [importLoading, setImportLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [materiasEnBoleta, setMateriasEnBoleta] = useState<string[]>([]);
-const [mostrarRecuperacion, setMostrarRecuperacion] = useState<boolean>(true);
+const [mostrarRecuperacion, setMostrarRecuperacion] = useState<boolean>(() => {
+  if (typeof window !== "undefined") {
+    try {
+      const r = localStorage.getItem("ss_mostrarRecuperacion");
+      return r !== null ? JSON.parse(r) : true;
+    } catch { return true; }
+  }
+  return true;
+});
 
 // Load persisted state from localStorage after hydration
 useEffect(() => {
@@ -106,10 +114,6 @@ useEffect(() => {
     const v = localStorage.getItem("ss_materiasBoleta");
     if (v) {
       try { queueMicrotask(() => setMateriasEnBoleta(JSON.parse(v))); } catch { }
-    }
-    const r = localStorage.getItem("ss_mostrarRecuperacion");
-    if (r !== null) {
-      try { queueMicrotask(() => setMostrarRecuperacion(JSON.parse(r))); } catch { }
     }
   }
 }, []);
@@ -1319,7 +1323,7 @@ useEffect(() => {
     const numAC = config?.numActividadesCotidianas ?? 4;
     const numAI = config?.numActividadesIntegradoras ?? 1;
     const tieneExamen = config?.tieneExamen ?? true;
-    const totalCols = numAC + numAI + (tieneExamen ? 1 : 0) + 1; // AC + AI + Examen (opcional) + Recup
+    const totalCols = numAC + numAI + (tieneExamen ? 1 : 0) + (mostrarRecuperacion ? 1 : 0);
 
     let newRow = fromRow;
     let newCol = fromCol;
@@ -2674,14 +2678,14 @@ useEffect(() => {
                 </div>
                 {gradoSeleccionado && estudiantes.length > 0 && (
                   <>
-                    {isAdmin(usuario.rol) && (
+                    {(isAdmin(usuario.rol) || true) && (
                       <div className="space-y-2 mb-2">
                         <div className="flex items-center gap-2 flex-wrap">
                           <Label className="text-xs sm:text-sm font-medium whitespace-nowrap">Asignaturas en boleta:</Label>
                           <Select value={materiasEnBoleta.length === 0 ? "todas" : "personalizado"} onValueChange={(v) => { if (v === "todas") { setMateriasEnBoleta([]); if (typeof window !== "undefined") localStorage.setItem("ss_materiasBoleta", JSON.stringify([])); } }}>
                             <SelectTrigger className={`w-32 h-8 text-xs ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue /></SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="todas" className="text-xs">Todas ({asignaturasFiltradas.length})</SelectItem>
+                              <SelectItem value="todas" className="text-xs">Todas ({todasAsignaturas.filter(m => m.gradoId === gradoSeleccionado).length})</SelectItem>
                               <SelectItem value="personalizado" className="text-xs">Seleccionar...</SelectItem>
                             </SelectContent>
                           </Select>
@@ -2690,7 +2694,7 @@ useEffect(() => {
                           </span>
                         </div>
                         <div className="flex flex-wrap gap-1.5">
-                          {asignaturasFiltradas.map(m => (
+                          {todasAsignaturas.filter(m => m.gradoId === gradoSeleccionado).map(m => (
                             <button
                               key={m.id}
                               onClick={() => {
@@ -2745,7 +2749,7 @@ useEffect(() => {
                         <Label htmlFor="incluir-asistencia" className="text-xs cursor-pointer">Incluir asistencia en boleta</Label>
                       </div>
                     </div>
-                    <BoletaList estudiantes={estudiantes} calificaciones={calificaciones} materias={(() => { const materiasGrado = todasAsignaturas.filter(m => m.gradoId === gradoSeleccionado); return materiasEnBoleta.length > 0 ? materiasGrado.filter(m => materiasEnBoleta.includes(m.id)) : materiasGrado; })()} grado={gradosFiltrados.find(g => g.id === gradoSeleccionado)} trimestre={trimestreSeleccionado ? parseInt(trimestreSeleccionado) : 1} expandedBoleta={expandedBoleta} setExpandedBoleta={setExpandedBoleta} darkMode={darkMode} configuracion={configuracion ? { nombreDirectora: configuracion.nombreDirectora, umbralCondicionado: configuracion?.umbralCondicionado ?? 4.5, umbralAprobado: configuracion?.umbralAprobado ?? 6.5 } : undefined} paperSize={paperSize} incluirAsistencia={incluirAsistenciaBoleta} mostrarRecuperacion={mostrarRecuperacion} />
+                    <BoletaList estudiantes={estudiantes} calificaciones={calificaciones} materias={(() => { const materiasGrado = todasAsignaturas.filter(m => m.gradoId === gradoSeleccionado); return materiasEnBoleta.length > 0 ? materiasGrado.filter(m => materiasEnBoleta.includes(m.id)) : materiasGrado; })()} grado={gradosFiltrados.find(g => g.id === gradoSeleccionado)} trimestre={trimestreSeleccionado ? parseInt(trimestreSeleccionado) : 1} expandedBoleta={expandedBoleta} setExpandedBoleta={setExpandedBoleta} darkMode={darkMode} configuracion={configuracion ? { nombreDirectora: configuracion.nombreDirectora, umbralCondicionado: configuracion?.umbralCondicionado ?? 4.5, umbralAprobado: configuracion?.umbralAprobado ?? 6.5 } : undefined} paperSize={paperSize} incluirAsistencia={incluirAsistenciaBoleta} mostrarRecuperacion={mostrarRecuperacion} porcentajes={configActual ? { ac: configActual.porcentajeAC, ai: configActual.porcentajeAI, ex: configActual.porcentajeExamen } : undefined} />
                   </>
                 )}
               </CardContent>

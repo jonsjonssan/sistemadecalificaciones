@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { escapeHtml } from "@/lib/utils/index";
 import type { Estudiante, Asignatura, Grado, Calificacion } from "@/types";
-export default function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, expandedBoleta, setExpandedBoleta, darkMode, configuracion, paperSize, incluirAsistencia = true, mostrarRecuperacion = true }: { estudiantes: Estudiante[]; calificaciones: Calificacion[]; materias: Asignatura[]; grado?: Grado; trimestre: number; expandedBoleta: string | null; setExpandedBoleta: (id: string | null) => void; darkMode: boolean; configuracion?: { nombreDirectora?: string; umbralCondicionado?: number; umbralAprobado?: number }; paperSize?: "letter" | "a4"; incluirAsistencia?: boolean; mostrarRecuperacion?: boolean; }) {
+export default function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, expandedBoleta, setExpandedBoleta, darkMode, configuracion, paperSize, incluirAsistencia = true, mostrarRecuperacion = true, porcentajes }: { estudiantes: Estudiante[]; calificaciones: Calificacion[]; materias: Asignatura[]; grado?: Grado; trimestre: number; expandedBoleta: string | null; setExpandedBoleta: (id: string | null) => void; darkMode: boolean; configuracion?: { nombreDirectora?: string; umbralCondicionado?: number; umbralAprobado?: number }; paperSize?: "letter" | "a4"; incluirAsistencia?: boolean; mostrarRecuperacion?: boolean; porcentajes?: { ac: number; ai: number; ex: number }; }) {
   const [resumenAsistencia, setResumenAsistencia] = useState<any[]>([]);
   const [todasCalificaciones, setTodasCalificaciones] = useState<Calificacion[]>([]);
   const [resumenAsistenciaAnual, setResumenAsistenciaAnual] = useState<any[]>([]);
@@ -19,9 +19,9 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
 
   const uc = configuracion?.umbralCondicionado ?? 4.5;
   const ua = configuracion?.umbralAprobado ?? 6.5;
-  const pctAC = 0.35;
-  const pctAI = 0.35;
-  const pctEx = 0.30;
+  const pctAC = (porcentajes?.ac ?? 35) / 100;
+  const pctAI = (porcentajes?.ai ?? 35) / 100;
+  const pctEx = (porcentajes?.ex ?? 30) / 100;
 
   const paperStyles = paperSize === "a4"
     ? { pageAt: `@page { size: a4; margin: 10mm; }`, fontSize: "10pt" }
@@ -45,7 +45,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
       if (!grado?.id) return;
       setLoadingAnual(true);
       try {
-        const resCal = await fetch(`/api/calificaciones?gradoId=${grado.id}`, { credentials: "include" });
+        const resCal = await fetch(`/api/calificaciones?gradoId=${grado.id}&boleta=true`, { credentials: "include" });
         if (resCal.ok) setTodasCalificaciones(await resCal.json());
 
         const resAsist = await fetch(`/api/asistencia/resumen?gradoId=${grado.id}&anual=true`, { credentials: "include" });

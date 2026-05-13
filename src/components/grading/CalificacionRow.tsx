@@ -492,7 +492,7 @@ useEffect(() => {
         actividadesCotidianas: stateRef.current.acNotas,
         actividadesIntegradoras: stateRef.current.aiNotas,
         examenTrimestral: stateRef.current.examen,
-        recuperacion: mostrarRecuperacion ? stateRef.current.recup : null,
+        recuperacion: stateRef.current.recup,
       });
       if (result && typeof result === "object") {
         setAcNotas(parseNotas(result.actividadesCotidianas ?? null, numAC));
@@ -557,7 +557,7 @@ useEffect(() => {
           actividadesCotidianas: JSON.stringify(stateRef.current.acNotas),
           actividadesIntegradoras: JSON.stringify(stateRef.current.aiNotas),
           examenTrimestral: stateRef.current.examen,
-          recuperacion: mostrarRecuperacion ? stateRef.current.recup : null,
+          recuperacion: stateRef.current.recup,
         });
         fetch("/api/calificaciones", {
           method: "POST",

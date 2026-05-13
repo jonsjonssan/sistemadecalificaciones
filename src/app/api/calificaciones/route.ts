@@ -87,6 +87,7 @@ export async function GET(request: NextRequest) {
     const materiaId = searchParams.get("materiaId");
     const trimestre = searchParams.get("trimestre");
     const estudianteId = searchParams.get("estudianteId");
+    const boleta = searchParams.get("boleta");
 
     const materiasAsignadasIds = session.asignaturasAsignadas?.map((m: any) => m.id) || [];
     const gradosByMaterias = session.asignaturasAsignadas?.map((m: any) => m.gradoId) || [];
@@ -106,6 +107,9 @@ export async function GET(request: NextRequest) {
       }
 
       const where: any = { estudiante: { gradoId } };
+      if (!boleta && (session.rol === "docente" || session.rol === "docente-orientador")) {
+        where.materiaId = { in: materiasAsignadasIds };
+      }
 
       const calificaciones = await db.calificacion.findMany({
         where,

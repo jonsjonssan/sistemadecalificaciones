@@ -191,7 +191,7 @@ export default function InformeTecnicoDialog({
       <div class="info-card">
         <div class="label">Estudiantes en Riesgo</div>
         <div class="valor" style="color: ${totalRiesgo > 0 ? '#dc2626' : '#059669'}">${totalRiesgo}</div>
-        <div class="sub">Promedio &lt; ${(umbralAprobado ?? 5.0).toFixed(2)}</div>
+        <div class="sub">Estudiantes con menor rendimiento</div>
       </div>
       <div class="info-card">
         <div class="label">Tasa de Aprobación</div>
