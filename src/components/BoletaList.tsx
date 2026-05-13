@@ -1106,11 +1106,13 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     const htmlWord = `<!DOCTYPE html>
 <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
 <head><meta charset="UTF-8"><title>Boleta - ${escapeHtml(est.nombre)}</title>
-<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View></w:WordDocument></xml><![endif]-->
+<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->
 <style>
   @page { size: letter; margin: 2cm; }
-  body { font-family: 'Times New Roman', serif; font-size: 11pt; line-height: 1.4; color: #000; }
-  .header { text-align: center; margin-bottom: 15px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+  body { font-family: 'Times New Roman', serif; font-size: 11pt; line-height: 1.0; color: #000; }
+  .header { text-align: center; margin-bottom: 15px; border-bottom: 2px solid #000; padding-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 15px; }
+  .header-logo { width: 80px; height: 80px; }
+  .header-text { text-align: center; flex: 1; }
   .header h1 { font-size: 13pt; font-weight: bold; text-transform: uppercase; margin: 0; }
   .header h2 { font-size: 10pt; font-weight: normal; margin: 2px 0; }
   .titulo-boleta { text-align: center; background: #f3f4f6; padding: 6px; margin: 15px 0; border: 1px solid #000; }
@@ -1130,8 +1132,12 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
 </style></head>
 <body>
   <div class="header">
-    <h1>Centro Escolar Católico San José de la Montaña</h1>
-    <h2>Código: 88125 | San Salvador</h2>
+    <img src="${window.location.origin}/0.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
+    <div class="header-text">
+      <h1>Centro Escolar Católico San José de la Montaña</h1>
+      <h2>Código: 88125 | San Salvador</h2>
+    </div>
+    <img src="${window.location.origin}/0.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
   </div>
   <div class="titulo-boleta"><h3>Boleta de Calificaciones - Trimestre ${getTrimestreRomano(trimestre)}</h3></div>
   <div class="info-estudiante">
