@@ -35,6 +35,7 @@ interface CalificacionRowProps {
   activeHistoryCell?: { calificacionId: string; tipoCampo: string } | null;
   umbralCondicionado?: number;
   umbralAprobado?: number;
+  mostrarRecuperacion?: boolean;
 }
 
 function NotaInput({ value, onChange, darkMode, hasError, onBlur, onNavigate, inputKey, inputRefs, onShowHistory, calificacionId, tipoCampo, campoLabel, activeHistoryCell }: {
@@ -245,6 +246,7 @@ export const CalificacionRow = React.memo(function CalificacionRow({
   activeHistoryCell,
   umbralCondicionado = 4.50,
   umbralAprobado = 6.50,
+  mostrarRecuperacion = true,
 }: CalificacionRowProps) {
   const numAC = config?.numActividadesCotidianas ?? 4;
   const numAI = config?.numActividadesIntegradoras ?? 1;
@@ -342,8 +344,9 @@ useEffect(() => {
   const promACPeso = config && promAC !== null ? promAC * (config.porcentajeAC / 100) : promAC !== null ? promAC * 0.35 : null;
   const promAIPeso = config && promAI !== null ? promAI * (config.porcentajeAI / 100) : promAI !== null ? promAI * 0.35 : null;
   const promExPeso = config && config.tieneExamen && examen !== null ? examen * (config.porcentajeExamen / 100) : examen !== null ? examen * 0.30 : null;
+  const recupEfectiva = mostrarRecuperacion ? recup : null;
   const promFinal = config
-    ? calcularPromedioFinal(promAC, promAI, examen, config, recup)
+    ? calcularPromedioFinal(promAC, promAI, examen, config, recupEfectiva)
     : promAC !== null || promAI !== null || examen !== null
       ? ((promAC ?? 0) * 0.35 + (promAI ?? 0) * 0.35 + (examen ?? 0) * 0.30)
       : null;
@@ -489,7 +492,7 @@ useEffect(() => {
         actividadesCotidianas: stateRef.current.acNotas,
         actividadesIntegradoras: stateRef.current.aiNotas,
         examenTrimestral: stateRef.current.examen,
-        recuperacion: stateRef.current.recup,
+        recuperacion: mostrarRecuperacion ? stateRef.current.recup : null,
       });
       if (result && typeof result === "object") {
         setAcNotas(parseNotas(result.actividadesCotidianas ?? null, numAC));
@@ -554,7 +557,7 @@ useEffect(() => {
           actividadesCotidianas: JSON.stringify(stateRef.current.acNotas),
           actividadesIntegradoras: JSON.stringify(stateRef.current.aiNotas),
           examenTrimestral: stateRef.current.examen,
-          recuperacion: stateRef.current.recup,
+          recuperacion: mostrarRecuperacion ? stateRef.current.recup : null,
         });
         fetch("/api/calificaciones", {
           method: "POST",
@@ -714,6 +717,7 @@ const statusIcon =
             {promExPeso !== null ? formatNumber(promExPeso) : "-"}
           </td>
         )}
+        {mostrarRecuperacion && (
         <td className={`p-1 border-l ${cellBorder}`}>
           <NotaInput
             value={recup ?? ""}
@@ -731,9 +735,13 @@ const statusIcon =
               activeHistoryCell={activeHistoryCell}
             />
         </td>
+        )}
         <td className={`p-2 text-center border-l ${cellBorder} ${finalBg}`}>
           <span className={`inline-block px-2 py-0.5 rounded-md text-xs sm:text-sm font-bold shadow ${finalBadgeClass}`}>
             {promFinal !== null ? (promedioDecimal ? formatNumber(promFinal, true) : Math.round(promFinal).toString()) : "-"}
+            {promFinal !== null && recup !== null && mostrarRecuperacion && (
+              <span className="ml-0.5 text-[10px] opacity-70" title={`Recuperación: ${formatNumber(recup)}`}>†</span>
+            )}
           </span>
         </td>
         <td className={`p-2 border-l ${cellBorder} text-center`}>{statusIcon}</td>
@@ -835,6 +843,7 @@ const statusIcon =
           {promExPeso !== null ? formatNumber(promExPeso) : "-"}
         </td>
       )}
+      {mostrarRecuperacion && (
       <td className={`p-1 border-l ${cellBorder}`}>
         <NotaInput
           value={recup ?? ""}
@@ -852,10 +861,11 @@ const statusIcon =
           activeHistoryCell={activeHistoryCell}
         />
       </td>
+      )}
       <td className={`p-2 text-center border-l ${cellBorder} ${finalBg}`}>
         <span className={`inline-block px-2 py-0.5 rounded-md text-xs sm:text-sm font-bold shadow ${finalBadgeClass}`}>
           {promFinal !== null ? (promedioDecimal ? formatNumber(promFinal, true) : Math.round(promFinal).toString()) : "-"}
-          {promFinal !== null && recup !== null && (
+          {promFinal !== null && recup !== null && mostrarRecuperacion && (
             <span className="ml-0.5 text-[10px] opacity-70" title={`Recuperación: ${formatNumber(recup)}`}>†</span>
           )}
         </span>

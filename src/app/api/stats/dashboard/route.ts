@@ -132,8 +132,8 @@ export async function GET(req: Request) {
           integradora: countAI > 0 ? sumAI / countAI : null,
           examen: countEx > 0 ? sumEx / countEx : null
         },
-        topEstudiantes: ranking.slice(0, 3),
-        alertas: ranking.slice(-3).reverse(),
+        topEstudiantes: ranking.slice(0, 5),
+        alertas: ranking.slice(-5).reverse(),
         materias: Object.values(materiaAverages).map((m: any) => ({
           id: m.id,
           nombre: m.nombre,

@@ -77,7 +77,7 @@ export default function InformeTecnicoDialog({
       .filter(s => s.topEstudiantes && s.topEstudiantes.length > 0)
       .map(s => ({
         grado: s.nombre,
-        estudiantes: s.topEstudiantes.slice(0, 3).map((e: any) => ({
+        estudiantes: s.topEstudiantes.slice(0, 5).map((e: any) => ({
           nombre: e.nombre,
           promedio: e.promedio,
           numero: e.numero,
@@ -247,7 +247,7 @@ export default function InformeTecnicoDialog({
             <td>${e.numero}</td>
             <td>${escapeHtml(e.nombre)}</td>
             <td class="num destacado">${e.promedio.toFixed(2)}</td>
-            <td>${i === 0 ? '🥇 Primer Lugar' : i === 1 ? '🥈 Segundo Lugar' : '🥉 Tercer Lugar'}</td>
+            <td>${i === 0 ? '🥇 Primer Lugar' : i === 1 ? '🥈 Segundo Lugar' : i === 2 ? '🥉 Tercer Lugar' : i === 3 ? '4° Lugar' : '5° Lugar'}</td>
           </tr>`).join('')}
         </tbody>
       </table>

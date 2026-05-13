@@ -98,6 +98,7 @@ export default function Home() {
   const [importLoading, setImportLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [materiasEnBoleta, setMateriasEnBoleta] = useState<string[]>([]);
+const [mostrarRecuperacion, setMostrarRecuperacion] = useState<boolean>(true);
 
 // Load persisted state from localStorage after hydration
 useEffect(() => {
@@ -105,6 +106,10 @@ useEffect(() => {
     const v = localStorage.getItem("ss_materiasBoleta");
     if (v) {
       try { queueMicrotask(() => setMateriasEnBoleta(JSON.parse(v))); } catch { }
+    }
+    const r = localStorage.getItem("ss_mostrarRecuperacion");
+    if (r !== null) {
+      try { queueMicrotask(() => setMostrarRecuperacion(JSON.parse(r))); } catch { }
     }
   }
 }, []);
@@ -2432,7 +2437,12 @@ useEffect(() => {
                               {configActual.tieneExamen && (
                                 <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-amber-900/60 border-slate-600 text-amber-300' : 'bg-amber-50 border-slate-500 text-amber-700'}`}>Prom Ex</th>
                               )}
-                              <th className={`w-14 p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-slate-600' : 'border-slate-500'}`}>Rec.</th>
+                              <th className={`w-14 p-2 text-center font-semibold border-l border-b cursor-pointer select-none ${darkMode ? 'border-slate-600' : 'border-slate-500'} ${mostrarRecuperacion ? (darkMode ? 'bg-teal-800/40' : 'bg-teal-100') : ''}`} onClick={() => { const next = !mostrarRecuperacion; setMostrarRecuperacion(next); if (typeof window !== "undefined") localStorage.setItem("ss_mostrarRecuperacion", JSON.stringify(next)); }} title={mostrarRecuperacion ? "Desactivar columna Recuperación" : "Activar columna Recuperación"}>
+                                <div className="flex items-center justify-center gap-0.5">
+                                  <span>Rec.</span>
+                                  <span className={`text-[8px] transition-all ${mostrarRecuperacion ? 'opacity-100 text-teal-400' : 'opacity-40'}`}>●</span>
+                                </div>
+                              </th>
                               <th
                                 className={`w-18 p-2 text-center font-semibold border-l border-b cursor-pointer hover:bg-emerald-700 transition-colors ${darkMode ? 'bg-emerald-800/80 border-emerald-700 text-emerald-100' : 'bg-emerald-600 border-emerald-500'}`}
                                 onClick={() => handleSort('promFinal')}
@@ -2476,7 +2486,12 @@ useEffect(() => {
                                 </div>
                               </th>
                               <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-amber-900/60 border-slate-600 text-amber-300' : 'bg-amber-50 border-slate-500 text-amber-700'}`}>Prom Ex</th>
-                              <th className={`w-14 p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-slate-600' : 'border-slate-500'}`}>Rec.</th>
+                              <th className={`w-14 p-2 text-center font-semibold border-l border-b cursor-pointer select-none ${darkMode ? 'border-slate-600' : 'border-slate-500'} ${mostrarRecuperacion ? (darkMode ? 'bg-teal-800/40' : 'bg-teal-100') : ''}`} onClick={() => { const next = !mostrarRecuperacion; setMostrarRecuperacion(next); if (typeof window !== "undefined") localStorage.setItem("ss_mostrarRecuperacion", JSON.stringify(next)); }} title={mostrarRecuperacion ? "Desactivar columna Recuperación" : "Activar columna Recuperación"}>
+                                <div className="flex items-center justify-center gap-0.5">
+                                  <span>Rec.</span>
+                                  <span className={`text-[8px] transition-all ${mostrarRecuperacion ? 'opacity-100 text-teal-400' : 'opacity-40'}`}>●</span>
+                                </div>
+                              </th>
                               <th
                                 className={`w-18 p-2 text-center font-semibold border-l border-b cursor-pointer hover:bg-emerald-700 transition-colors ${darkMode ? 'bg-emerald-800/80 border-emerald-700 text-emerald-100' : 'bg-emerald-600 border-emerald-500'}`}
                                 onClick={() => handleSort('promFinal')}
@@ -2536,6 +2551,7 @@ useEffect(() => {
                                 activeHistoryCell={activeHistoryCell}
                                 umbralCondicionado={configuracion?.umbralCondicionado ?? 4.5}
                                 umbralAprobado={configuracion?.umbralAprobado ?? 6.5}
+                                mostrarRecuperacion={mostrarRecuperacion}
                               />
                             })
                           )}
@@ -2729,7 +2745,7 @@ useEffect(() => {
                         <Label htmlFor="incluir-asistencia" className="text-xs cursor-pointer">Incluir asistencia en boleta</Label>
                       </div>
                     </div>
-                    <BoletaList estudiantes={estudiantes} calificaciones={calificaciones} materias={materiasEnBoleta.length > 0 ? asignaturasFiltradas.filter(m => materiasEnBoleta.includes(m.id)) : asignaturasFiltradas} grado={gradosFiltrados.find(g => g.id === gradoSeleccionado)} trimestre={trimestreSeleccionado ? parseInt(trimestreSeleccionado) : 1} expandedBoleta={expandedBoleta} setExpandedBoleta={setExpandedBoleta} darkMode={darkMode} configuracion={configuracion ? { nombreDirectora: configuracion.nombreDirectora, umbralCondicionado: configuracion?.umbralCondicionado ?? 4.5, umbralAprobado: configuracion?.umbralAprobado ?? 6.5 } : undefined} paperSize={paperSize} incluirAsistencia={incluirAsistenciaBoleta} />
+                    <BoletaList estudiantes={estudiantes} calificaciones={calificaciones} materias={(() => { const materiasGrado = todasAsignaturas.filter(m => m.gradoId === gradoSeleccionado); return materiasEnBoleta.length > 0 ? materiasGrado.filter(m => materiasEnBoleta.includes(m.id)) : materiasGrado; })()} grado={gradosFiltrados.find(g => g.id === gradoSeleccionado)} trimestre={trimestreSeleccionado ? parseInt(trimestreSeleccionado) : 1} expandedBoleta={expandedBoleta} setExpandedBoleta={setExpandedBoleta} darkMode={darkMode} configuracion={configuracion ? { nombreDirectora: configuracion.nombreDirectora, umbralCondicionado: configuracion?.umbralCondicionado ?? 4.5, umbralAprobado: configuracion?.umbralAprobado ?? 6.5 } : undefined} paperSize={paperSize} incluirAsistencia={incluirAsistenciaBoleta} mostrarRecuperacion={mostrarRecuperacion} />
                   </>
                 )}
               </CardContent>
