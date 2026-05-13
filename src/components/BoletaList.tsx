@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Printer, FileText, ChevronUp, ChevronDown } from "lucide-react";
+import { Printer, FileText, ChevronUp, ChevronDown, Download } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -88,6 +88,8 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     return 'APROBADO';
   };
 
+  const entero = (val: number | null | undefined): string => val != null ? Math.round(val).toString() : '-';
+
   const getEstadoColor = (estado: string) => {
     switch (estado) {
       case 'REPROBADO': return '#dc2626';
@@ -117,16 +119,16 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     let tablaAsignaturas = materias.map(m => {
       const c = califs.find(x => x.materiaId === m.id);
       const promFinal = c?.promedioFinal !== null && c?.promedioFinal !== undefined ? c.promedioFinal : null;
-      const recupVal = c?.recuperacion !== null && c?.recuperacion !== undefined ? c.recuperacion.toFixed(2) : '-';
-      const notaFinal = promFinal !== null ? promFinal.toFixed(2) : '-';
+      const recupVal = c?.recuperacion !== null && c?.recuperacion !== undefined ? entero(c.recuperacion) : '-';
+      const notaFinal = promFinal !== null ? entero(promFinal) : '-';
       const estadoLabel = promFinal !== null
         ? (promFinal < uc ? 'REPROBADO' : promFinal < ua ? 'CONDICIONADO' : 'APROBADO')
         : '-';
       return `<tr>
         <td style="text-align:left;padding:6px 8px">${escapeHtml(m.nombre)}</td>
-        <td>${c?.calificacionAC != null ? (c.calificacionAC * pctAC).toFixed(2) : '-'}</td>
-        <td>${c?.calificacionAI != null ? (c.calificacionAI * pctAI).toFixed(2) : '-'}</td>
-        <td>${c?.examenTrimestral != null ? (c.examenTrimestral * pctEx).toFixed(2) : '-'}</td>
+        <td>${c?.calificacionAC != null ? entero(c.calificacionAC * pctAC) : '-'}</td>
+        <td>${c?.calificacionAI != null ? entero(c.calificacionAI * pctAI) : '-'}</td>
+        <td>${c?.examenTrimestral != null ? entero(c.examenTrimestral * pctEx) : '-'}</td>
         ${mostrarRecuperacion ? `<td>${recupVal}</td>` : ''}
         <td style="font-weight:bold">${notaFinal}</td>
         <td style="font-weight:bold;color:${getEstadoColor(estadoLabel)}">${estadoLabel}</td>
@@ -274,7 +276,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
 
     <div class="resumen">
       <div class="resumen-item">
-        <div class="valor">${prom !== null && prom !== undefined ? Math.round(prom).toString() : 'N/A'}</div>
+        <div class="valor">${prom !== null && prom !== undefined ? entero(prom) : 'N/A'}</div>
         <div class="etiqueta">Promedio General</div>
       </div>
       <div class="resumen-item ${estadoFinal === 'REPROBADO' ? 'reprobado' : estadoFinal === 'CONDICIONADO' ? 'condicionado' : ''}">
@@ -285,6 +287,11 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
         <div class="valor">${getTrimestreRomano(trimestre)} Trimestre</div>
         <div class="etiqueta">Período Evaluado</div>
       </div>
+    </div>
+
+    <div class="observaciones" style="margin:15px 0;padding:10px;border:1px solid #333;border-radius:4px;min-height:80px;">
+      <div style="font-weight:bold;font-size:10pt;margin-bottom:4px;">Observaciones:</div>
+      <div style="min-height:60px;font-size:10pt;color:#555;">&nbsp;</div>
     </div>
 
     <div class="firmas">
@@ -339,16 +346,16 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
       let tablaAsignaturas = materias.map(m => {
         const c = califs.find(x => x.materiaId === m.id);
         const promFinal = c?.promedioFinal !== null && c?.promedioFinal !== undefined ? c.promedioFinal : null;
-        const recupVal = c?.recuperacion !== null && c?.recuperacion !== undefined ? c.recuperacion.toFixed(2) : '-';
-        const notaFinal = promFinal !== null ? promFinal.toFixed(2) : '-';
+        const recupVal = c?.recuperacion !== null && c?.recuperacion !== undefined ? entero(c.recuperacion) : '-';
+        const notaFinal = promFinal !== null ? entero(promFinal) : '-';
         const estadoLabel = promFinal !== null
           ? (promFinal < uc ? 'REPROBADO' : promFinal < ua ? 'CONDICIONADO' : 'APROBADO')
           : '-';
         return "<tr>" +
           "<td style=\"text-align:left;padding:6px 8px\">" + escapeHtml(m.nombre) + "</td>" +
-          "<td>" + (c?.calificacionAC != null ? (c.calificacionAC * pctAC).toFixed(2) : '-') + "</td>" +
-          "<td>" + (c?.calificacionAI != null ? (c.calificacionAI * pctAI).toFixed(2) : '-') + "</td>" +
-          "<td>" + (c?.examenTrimestral != null ? (c.examenTrimestral * pctEx).toFixed(2) : '-') + "</td>" +
+          "<td>" + (c?.calificacionAC != null ? entero(c.calificacionAC * pctAC) : '-') + "</td>" +
+          "<td>" + (c?.calificacionAI != null ? entero(c.calificacionAI * pctAI) : '-') + "</td>" +
+          "<td>" + (c?.examenTrimestral != null ? entero(c.examenTrimestral * pctEx) : '-') + "</td>" +
           (mostrarRecuperacion ? "<td>" + recupVal + "</td>" : "") +
           "<td style=\"font-weight:bold\">" + notaFinal + "</td>" +
           "<td style=\"font-weight:bold;color:" + getEstadoColor(estadoLabel) + "\">" + estadoLabel + "</td>" +
@@ -434,7 +441,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
 
         <div class="resumen">
           <div class="resumen-item">
-            <div class="valor">${prom?.toFixed(2) ?? 'N/A'}</div>
+            <div class="valor">${prom !== null && prom !== undefined ? entero(prom) : 'N/A'}</div>
             <div class="etiqueta">Promedio General</div>
           </div>
           <div class="resumen-item ${estadoFinal === 'REPROBADO' ? 'reprobado' : estadoFinal === 'CONDICIONADO' ? 'condicionado' : ''}">
@@ -445,6 +452,11 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
             <div class="valor">${getTrimestreRomano(trimestre)} Trimestre</div>
             <div class="etiqueta">Período Evaluado</div>
           </div>
+        </div>
+
+        <div class="observaciones" style="margin:15px 0;padding:10px;border:1px solid #333;border-radius:4px;min-height:80px;">
+          <div style="font-weight:bold;font-size:10pt;margin-bottom:4px;">Observaciones:</div>
+          <div style="min-height:60px;font-size:10pt;color:#555;">&nbsp;</div>
         </div>
 
         <div class="firmas">
@@ -1062,6 +1074,104 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     if (w) { w.document.write(html); w.document.close(); setTimeout(() => w.print(), 500); }
   };
 
+  const descargarWord = async (id: string) => {
+    const est = estudiantes.find(e => e.id === id);
+    if (!est) return;
+    const califs = getCalifs(id);
+    const prom = calcProm(califs);
+    const estadoFinal = getEstadoFinal(prom);
+    const año = grado?.año || new Date().getFullYear();
+    const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
+    const docenteOrientador = escapeHtml(grado?.docente?.nombre || '_______________________________');
+    const nombreDirectora = escapeHtml(configuracion?.nombreDirectora || '_______________________________');
+    const asist = getAsistInfo(id);
+
+    let tablaAsignaturas = materias.map(m => {
+      const c = califs.find(x => x.materiaId === m.id);
+      const promFinal = c?.promedioFinal !== null && c?.promedioFinal !== undefined ? c.promedioFinal : null;
+      const recupVal = c?.recuperacion !== null && c?.recuperacion !== undefined ? entero(c.recuperacion) : '-';
+      const notaFinal = promFinal !== null ? entero(promFinal) : '-';
+      const estadoLabel = promFinal !== null ? (promFinal < uc ? 'REPROBADO' : promFinal < ua ? 'CONDICIONADO' : 'APROBADO') : '-';
+      return `<tr>
+        <td style="text-align:left;padding:6px 8px">${escapeHtml(m.nombre)}</td>
+        <td>${c?.calificacionAC != null ? entero(c.calificacionAC * pctAC) : '-'}</td>
+        <td>${c?.calificacionAI != null ? entero(c.calificacionAI * pctAI) : '-'}</td>
+        <td>${c?.examenTrimestral != null ? entero(c.examenTrimestral * pctEx) : '-'}</td>
+        ${mostrarRecuperacion ? `<td>${recupVal}</td>` : ''}
+        <td style="font-weight:bold">${notaFinal}</td>
+        <td style="font-weight:bold;color:${getEstadoColor(estadoLabel)}">${estadoLabel}</td>
+      </tr>`;
+    }).join('');
+
+    const htmlWord = `<!DOCTYPE html>
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head><meta charset="UTF-8"><title>Boleta - ${escapeHtml(est.nombre)}</title>
+<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View></w:WordDocument></xml><![endif]-->
+<style>
+  @page { size: letter; margin: 2cm; }
+  body { font-family: 'Times New Roman', serif; font-size: 11pt; line-height: 1.4; color: #000; }
+  .header { text-align: center; margin-bottom: 15px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+  .header h1 { font-size: 13pt; font-weight: bold; text-transform: uppercase; margin: 0; }
+  .header h2 { font-size: 10pt; font-weight: normal; margin: 2px 0; }
+  .titulo-boleta { text-align: center; background: #f3f4f6; padding: 6px; margin: 15px 0; border: 1px solid #000; }
+  .titulo-boleta h3 { font-size: 12pt; text-transform: uppercase; margin: 0; }
+  .info-estudiante { margin-bottom: 15px; }
+  .info-estudiante p { margin: 2px 0; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+  th, td { border: 1px solid #000; padding: 4px 6px; text-align: center; }
+  th { background: #e5e7eb; font-weight: bold; font-size: 9pt; }
+  td { font-size: 10pt; }
+  .resumen { margin: 20px 0; padding: 8px; border: 2px solid #000; }
+  .resumen-item { display: inline-block; width: 30%; text-align: center; }
+  .observaciones { margin: 15px 0; padding: 10px; border: 1px solid #000; min-height: 80px; }
+  .firmas { margin-top: 50px; }
+  .firma { display: inline-block; width: 45%; text-align: center; border-top: 1px solid #000; padding-top: 5px; }
+  .pie { margin-top: 30px; text-align: center; font-size: 8pt; border-top: 1px solid #ccc; padding-top: 10px; }
+</style></head>
+<body>
+  <div class="header">
+    <h1>Centro Escolar Católico San José de la Montaña</h1>
+    <h2>Código: 88125 | San Salvador</h2>
+  </div>
+  <div class="titulo-boleta"><h3>Boleta de Calificaciones - Trimestre ${getTrimestreRomano(trimestre)}</h3></div>
+  <div class="info-estudiante">
+    <p><b>Estudiante:</b> ${escapeHtml(est.nombre)}</p>
+    <p><b>Grado:</b> ${grado?.numero}° Grado "${grado?.seccion}" &nbsp;&nbsp; <b>Año:</b> ${año} &nbsp;&nbsp; <b>N° Lista:</b> ${est.numero}</p>
+  </div>
+  <table>
+    <thead><tr><th>Asignatura</th><th>Prom. A.C.</th><th>Prom. A.I.</th><th>Examen</th>${mostrarRecuperacion ? '<th>Recup.</th>' : ''}<th>Prom. Final</th><th>Estado</th></tr></thead>
+    <tbody>${tablaAsignaturas}</tbody>
+  </table>
+  ${incluirAsistencia ? `<p><b>Asistencia:</b> Asistencias: ${asist.asistencias} | Inasistencias: ${asist.ausencias} | Tardanzas: ${asist.tardanzas} | Total: ${asist.total}</p>` : ''}
+  <div class="resumen">
+    <div class="resumen-item"><b>Promedio General:</b> ${prom !== null ? entero(prom) : 'N/A'}</div>
+    <div class="resumen-item"><b>Estado:</b> ${estadoFinal}</div>
+    <div class="resumen-item"><b>Período:</b> ${getTrimestreRomano(trimestre)} Trimestre</div>
+  </div>
+  <div class="observaciones">
+    <p><b>Observaciones:</b></p>
+    <p style="min-height:60px;">&nbsp;</p>
+  </div>
+  <div class="firmas">
+    <div class="firma"><p>${docenteOrientador}</p><p>Firma del Docente Orientador</p></div>
+    <div class="firma"><p>${nombreDirectora}</p><p>Firma de la Directora</p></div>
+  </div>
+  <div class="pie">
+    <p>Fecha de impresión: ${fechaImpresion} | Código: 88125 | San Salvador</p>
+  </div>
+</body></html>`;
+
+    const blob = new Blob([htmlWord], { type: 'application/msword' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Boleta_${est.nombre.replace(/\s+/g, '_')}_T${getTrimestreRomano(trimestre)}.doc`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-1.5">
       {(loadingAsistencia || loadingAnual) && (
@@ -1099,6 +1209,9 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
                 </Button>
                 <Button size="sm" variant="ghost" title="Imprimir Trimestre" className={`h-6 px-2 text-xs ${darkMode ? 'text-slate-300' : ''}`} onClick={e => { e.stopPropagation(); imprimir(est.id); }}>
                   <Printer className="h-3 w-3 mr-1" />Boleta
+                </Button>
+                <Button size="sm" variant="ghost" title="Descargar Word" className={`h-6 px-2 text-xs ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} onClick={e => { e.stopPropagation(); descargarWord(est.id); }}>
+                  <Download className="h-3 w-3 mr-1" />Word
                 </Button>
                 {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
               </div>
