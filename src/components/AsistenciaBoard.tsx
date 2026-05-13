@@ -75,6 +75,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
   const [asistenciaBloqueada, setAsistenciaBloqueada] = useState(false);
   const [bloqueoDialogOpen, setBloqueoDialogOpen] = useState(false);
 
+  const puedeSobrescribir = usuario && ["admin", "admin-directora", "admin-codirectora", "docente-orientador"].includes(usuario.rol);
   const activeStudents = estudiantes.filter(e => e.activo);
 
   // Auto-save individual por estudiante
@@ -120,10 +121,17 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
         });
         setAsistencias(loadedAsistencias);
         const tieneRegistros = data.length > 0;
-        if (tieneRegistros && !asistenciaBloqueada) {
-          setAsistenciaBloqueada(true);
-          setBloqueoDialogOpen(true);
-        } else if (!tieneRegistros) {
+        if (tieneRegistros) {
+          if (puedeSobrescribir) {
+            if (!asistenciaBloqueada) {
+              setAsistenciaBloqueada(true);
+              setBloqueoDialogOpen(true);
+            }
+          } else {
+            setAsistenciaBloqueada(true);
+            if (!asistenciaBloqueada) setBloqueoDialogOpen(true);
+          }
+        } else {
           setAsistenciaBloqueada(false);
         }
       } else {
@@ -793,9 +801,9 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
         {view === "pass" ? (
           <>
             {asistenciaBloqueada && (
-              <div className={`flex items-center gap-3 p-3 rounded-lg border ${darkMode ? 'bg-amber-900/30 border-amber-700 text-amber-200' : 'bg-amber-50 border-amber-200 text-amber-800'}`}>
+              <div className={`flex items-center gap-3 p-3 rounded-lg border ${darkMode ? (puedeSobrescribir ? 'bg-blue-900/30 border-blue-700 text-blue-200' : 'bg-amber-900/30 border-amber-700 text-amber-200') : (puedeSobrescribir ? 'bg-blue-50 border-blue-200 text-blue-800' : 'bg-amber-50 border-amber-200 text-amber-800')}`}>
                 <Lock className="h-5 w-5 shrink-0" />
-                <div className="text-sm font-medium">Ya existe un registro de asistencia para esta fecha y grado. No se puede modificar.</div>
+                <div className="text-sm font-medium">{puedeSobrescribir ? 'Ya existe asistencia para esta fecha. Puedes sobrescribirla si es necesario.' : 'Ya existe un registro de asistencia para esta fecha y grado. No se puede modificar.'}</div>
               </div>
             )}
             <div className={`flex flex-wrap items-end gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl border ${darkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50'}`}>
@@ -1318,22 +1326,30 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
         <DialogContent className={`max-w-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
           <DialogHeader>
             <DialogTitle className={`flex items-center gap-2 ${darkMode ? 'text-white' : ''}`}>
-              <Lock className="h-5 w-5 text-amber-500" />
+              <Lock className={`h-5 w-5 ${puedeSobrescribir ? 'text-blue-500' : 'text-amber-500'}`} />
               Asistencia ya registrada
             </DialogTitle>
             <DialogDescription className={darkMode ? 'text-slate-400' : ''}>
-              Ya existe un registro de asistencia para esta fecha y grado.
-              {usuario && (
-                <span className="block mt-2 text-sm font-medium">
-                  No puedes modificarla porque ya fue guardada previamente por otro usuario.
+              {puedeSobrescribir ? (
+                <span>Ya existe un registro de asistencia para esta fecha y grado.{' '}
+                  <span className="block mt-2 text-sm font-medium">Puedes sobrescribirlo si lo deseas.</span>
+                </span>
+              ) : (
+                <span>Ya existe un registro de asistencia para esta fecha y grado.{' '}
+                  <span className="block mt-2 text-sm font-medium">No puedes modificarla porque ya fue guardada previamente por otro usuario.</span>
                 </span>
               )}
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button size="sm" onClick={() => setBloqueoDialogOpen(false)} className="bg-teal-600 hover:bg-teal-700">
-              Entendido
+          <DialogFooter className="gap-2">
+            <Button size="sm" variant="outline" onClick={() => { setBloqueoDialogOpen(false); if (!puedeSobrescribir) setAsistenciaBloqueada(true); }} className={darkMode ? 'border-slate-600 text-slate-300' : ''}>
+              {puedeSobrescribir ? 'Cancelar' : 'Entendido'}
             </Button>
+            {puedeSobrescribir && (
+              <Button size="sm" onClick={() => { setAsistenciaBloqueada(false); setBloqueoDialogOpen(false); }} className="bg-blue-600 hover:bg-blue-700 text-white">
+                Sobrescribir
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
