@@ -2176,6 +2176,7 @@ useEffect(() => {
                 saveUserState({ gradoSeleccionado: nuevoGradoId });
               }}
               onPresenceEmit={(accion, descripcion, extra) => emitActionRef.current(accion, descripcion, extra)}
+              usuario={usuario ? { nombre: usuario.nombre, rol: usuario.rol } : undefined}
             />
           </TabsContent>
 

@@ -7,9 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar as CalendarIcon, Save, RefreshCw, CheckCircle2, XCircle, Clock, CalendarDays, Download, Trash2, FileCheck } from "lucide-react";
+import { Calendar as CalendarIcon, Save, RefreshCw, CheckCircle2, XCircle, Clock, CalendarDays, Download, Trash2, FileCheck, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { escapeHtml } from "@/lib/utils/index";
 import { format } from "date-fns";
@@ -40,9 +41,10 @@ interface AsistenciaBoardProps {
   gradoInicial?: string;
   onGradoChange?: (gradoId: string) => void;
   onPresenceEmit?: (accion: string, descripcion: string, extra?: { grado?: string; asignatura?: string; estudiante?: string }) => void;
+  usuario?: { nombre: string; rol: string };
 }
 
-export default function AsistenciaBoard({ grados, asignaturas, estudiantes, gradoInicial = "", onGradoChange, onPresenceEmit }: AsistenciaBoardProps) {
+export default function AsistenciaBoard({ grados, asignaturas, estudiantes, gradoInicial = "", onGradoChange, onPresenceEmit, usuario }: AsistenciaBoardProps) {
   const { resolvedTheme } = useTheme();
   const darkMode = resolvedTheme === "dark";
   const { toast } = useToast();
@@ -70,6 +72,8 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
   const [asistenciaDetallada, setAsistenciaDetallada] = useState<Record<string, Record<string, string>>>({});
   const [dateToDelete, setDateToDelete] = useState<string>("");
   const [deletingDate, setDeletingDate] = useState<string | null>(null);
+  const [asistenciaBloqueada, setAsistenciaBloqueada] = useState(false);
+  const [bloqueoDialogOpen, setBloqueoDialogOpen] = useState(false);
 
   const activeStudents = estudiantes.filter(e => e.activo);
 
@@ -115,6 +119,13 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
           loadedAsistencias[a.estudianteId] = a.estado;
         });
         setAsistencias(loadedAsistencias);
+        const tieneRegistros = data.length > 0;
+        if (tieneRegistros && !asistenciaBloqueada) {
+          setAsistenciaBloqueada(true);
+          setBloqueoDialogOpen(true);
+        } else if (!tieneRegistros) {
+          setAsistenciaBloqueada(false);
+        }
       } else {
         if (abortController.signal.aborted) return;
         setAsistencias(initializeAttendance());
@@ -133,7 +144,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
         setLoading(false);
       }
     }
-  }, [gradoId, fecha, initializeAttendance, toast]);
+  }, [gradoId, fecha, initializeAttendance, toast, asistenciaBloqueada]);
 
   const loadResumen = useCallback(async () => {
     if (!gradoId) return;
@@ -574,6 +585,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
   }, [toast]);
 
   const handleEstadoChange = (estudianteId: string, estado: string) => {
+    if (asistenciaBloqueada) return;
     setAsistencias(prev => ({ ...prev, [estudianteId]: estado }));
     // Auto-save individual con debounce de 800ms
     if (autoSaveTimersRef.current[estudianteId]) {
@@ -780,6 +792,12 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
       <CardContent className="pt-4 space-y-4">
         {view === "pass" ? (
           <>
+            {asistenciaBloqueada && (
+              <div className={`flex items-center gap-3 p-3 rounded-lg border ${darkMode ? 'bg-amber-900/30 border-amber-700 text-amber-200' : 'bg-amber-50 border-amber-200 text-amber-800'}`}>
+                <Lock className="h-5 w-5 shrink-0" />
+                <div className="text-sm font-medium">Ya existe un registro de asistencia para esta fecha y grado. No se puede modificar.</div>
+              </div>
+            )}
             <div className={`flex flex-wrap items-end gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl border ${darkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50'}`}>
               <div className="flex-1 min-w-[150px] sm:min-w-[200px]">
                 <Label className={`text-xs sm:text-sm font-bold mb-1 block ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Grado</Label>
@@ -811,10 +829,10 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
               <Button
                 className={`h-10 text-white w-full sm:w-auto px-6 font-bold text-xs sm:text-sm ${darkMode ? 'bg-teal-600 hover:bg-teal-500' : 'bg-teal-600 hover:bg-teal-700'}`}
                 onClick={handleSave}
-                disabled={saving || activeStudents.length === 0}
+                disabled={saving || activeStudents.length === 0 || asistenciaBloqueada}
               >
                 {saving ? <RefreshCw className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
-                {saving ? "Guardando..." : "Guardar Lista"}
+                {saving ? "Guardando..." : asistenciaBloqueada ? "Bloqueado" : "Guardar Lista"}
               </Button>
               <Button
                 className={`h-10 text-white w-full sm:w-auto px-4 font-bold text-xs sm:text-sm ${darkMode ? 'bg-red-700 hover:bg-red-600' : 'bg-red-600 hover:bg-red-700'}`}
@@ -880,8 +898,10 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                     <div className="flex gap-2">
                       <Button
                         size="sm"
+                        disabled={asistenciaBloqueada}
                         className={`flex-1 sm:flex-none h-9 text-xs font-semibold px-3 sm:px-4 shadow-md transition-all duration-200 hover:shadow-lg ${darkMode ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white' : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white'}`}
                         onClick={() => {
+                          if (asistenciaBloqueada) return;
                           const newAsistencias: Record<string, string> = {};
                           activeStudents.forEach(est => {
                             newAsistencias[est.id] = "presente";
@@ -905,8 +925,11 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                       </Button>
                       <Button
                         size="sm"
-                        className={`flex-1 sm:flex-none h-9 text-xs font-semibold px-3 sm:px-4 shadow-md transition-all duration-200 hover:shadow-lg ${darkMode ? 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white' : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white'}`}
+                        variant="outline"
+                        disabled={asistenciaBloqueada}
+                        className={`flex-1 sm:flex-none h-9 text-xs font-semibold px-2 sm:px-4 ${darkMode ? 'border-slate-600 text-slate-300 hover:bg-slate-800' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}
                         onClick={() => {
+                          if (asistenciaBloqueada) return;
                           setAsistencias({});
                           activeStudents.forEach(est => {
                             if (autoSaveTimersRef.current[est.id]) {
@@ -981,9 +1004,9 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                             </div>
                           </TableCell>
                           <TableCell className="text-center">
-                            <Select value={estado || ""} onValueChange={(val) => handleEstadoChange(est.id, val)}>
+                            <Select value={estado || ""} onValueChange={(val) => handleEstadoChange(est.id, val)} disabled={asistenciaBloqueada}>
                               <SelectTrigger className={`h-10 sm:h-9 w-full min-w-[130px] sm:w-44 text-xs sm:text-sm font-medium ${getEstadoBadgeClass(estado || "")} ${darkMode ? 'bg-slate-800 border-slate-600' : 'bg-white border-slate-200'}`}>
-                                <SelectValue placeholder="Seleccionar..." />
+                                <SelectValue placeholder={asistenciaBloqueada ? "Bloqueado" : "Seleccionar..."} />
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="presente" className="text-xs font-medium">
@@ -1290,6 +1313,30 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
           </div>
         )}
       </CardContent>
+
+      <Dialog open={bloqueoDialogOpen} onOpenChange={setBloqueoDialogOpen}>
+        <DialogContent className={`max-w-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
+          <DialogHeader>
+            <DialogTitle className={`flex items-center gap-2 ${darkMode ? 'text-white' : ''}`}>
+              <Lock className="h-5 w-5 text-amber-500" />
+              Asistencia ya registrada
+            </DialogTitle>
+            <DialogDescription className={darkMode ? 'text-slate-400' : ''}>
+              Ya existe un registro de asistencia para esta fecha y grado.
+              {usuario && (
+                <span className="block mt-2 text-sm font-medium">
+                  No puedes modificarla porque ya fue guardada previamente por otro usuario.
+                </span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button size="sm" onClick={() => setBloqueoDialogOpen(false)} className="bg-teal-600 hover:bg-teal-700">
+              Entendido
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
