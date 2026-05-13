@@ -106,9 +106,6 @@ export async function GET(request: NextRequest) {
       }
 
       const where: any = { estudiante: { gradoId } };
-      if (session.rol === "docente" || session.rol === "docente-orientador") {
-        where.materiaId = { in: materiasAsignadasIds };
-      }
 
       const calificaciones = await db.calificacion.findMany({
         where,
