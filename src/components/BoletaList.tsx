@@ -119,16 +119,16 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     let tablaAsignaturas = materias.map(m => {
       const c = califs.find(x => x.materiaId === m.id);
       const promFinal = c?.promedioFinal !== null && c?.promedioFinal !== undefined ? c.promedioFinal : null;
-      const recupVal = c?.recuperacion !== null && c?.recuperacion !== undefined ? entero(c.recuperacion) : '-';
+      const recupVal = c?.recuperacion !== null && c?.recuperacion !== undefined ? c.recuperacion.toFixed(2) : '-';
       const notaFinal = promFinal !== null ? entero(promFinal) : '-';
       const estadoLabel = promFinal !== null
         ? (promFinal < uc ? 'REPROBADO' : promFinal < ua ? 'CONDICIONADO' : 'APROBADO')
         : '-';
       return `<tr>
         <td style="text-align:left;padding:6px 8px">${escapeHtml(m.nombre)}</td>
-        <td>${c?.calificacionAC != null ? entero(c.calificacionAC * pctAC) : '-'}</td>
-        <td>${c?.calificacionAI != null ? entero(c.calificacionAI * pctAI) : '-'}</td>
-        <td>${c?.examenTrimestral != null ? entero(c.examenTrimestral * pctEx) : '-'}</td>
+        <td>${c?.calificacionAC != null ? (c.calificacionAC * pctAC).toFixed(2) : '-'}</td>
+        <td>${c?.calificacionAI != null ? (c.calificacionAI * pctAI).toFixed(2) : '-'}</td>
+        <td>${c?.examenTrimestral != null ? (c.examenTrimestral * pctEx).toFixed(2) : '-'}</td>
         ${mostrarRecuperacion ? `<td>${recupVal}</td>` : ''}
         <td style="font-weight:bold">${notaFinal}</td>
         <td style="font-weight:bold;color:${getEstadoColor(estadoLabel)}">${estadoLabel}</td>
@@ -346,16 +346,16 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
       let tablaAsignaturas = materias.map(m => {
         const c = califs.find(x => x.materiaId === m.id);
         const promFinal = c?.promedioFinal !== null && c?.promedioFinal !== undefined ? c.promedioFinal : null;
-        const recupVal = c?.recuperacion !== null && c?.recuperacion !== undefined ? entero(c.recuperacion) : '-';
+        const recupVal = c?.recuperacion !== null && c?.recuperacion !== undefined ? c.recuperacion.toFixed(2) : '-';
         const notaFinal = promFinal !== null ? entero(promFinal) : '-';
         const estadoLabel = promFinal !== null
           ? (promFinal < uc ? 'REPROBADO' : promFinal < ua ? 'CONDICIONADO' : 'APROBADO')
           : '-';
         return "<tr>" +
           "<td style=\"text-align:left;padding:6px 8px\">" + escapeHtml(m.nombre) + "</td>" +
-          "<td>" + (c?.calificacionAC != null ? entero(c.calificacionAC * pctAC) : '-') + "</td>" +
-          "<td>" + (c?.calificacionAI != null ? entero(c.calificacionAI * pctAI) : '-') + "</td>" +
-          "<td>" + (c?.examenTrimestral != null ? entero(c.examenTrimestral * pctEx) : '-') + "</td>" +
+          "<td>" + (c?.calificacionAC != null ? (c.calificacionAC * pctAC).toFixed(2) : '-') + "</td>" +
+          "<td>" + (c?.calificacionAI != null ? (c.calificacionAI * pctAI).toFixed(2) : '-') + "</td>" +
+          "<td>" + (c?.examenTrimestral != null ? (c.examenTrimestral * pctEx).toFixed(2) : '-') + "</td>" +
           (mostrarRecuperacion ? "<td>" + recupVal + "</td>" : "") +
           "<td style=\"font-weight:bold\">" + notaFinal + "</td>" +
           "<td style=\"font-weight:bold;color:" + getEstadoColor(estadoLabel) + "\">" + estadoLabel + "</td>" +
@@ -1089,14 +1089,14 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     let tablaAsignaturas = materias.map(m => {
       const c = califs.find(x => x.materiaId === m.id);
       const promFinal = c?.promedioFinal !== null && c?.promedioFinal !== undefined ? c.promedioFinal : null;
-      const recupVal = c?.recuperacion !== null && c?.recuperacion !== undefined ? entero(c.recuperacion) : '-';
+      const recupVal = c?.recuperacion !== null && c?.recuperacion !== undefined ? c.recuperacion.toFixed(2) : '-';
       const notaFinal = promFinal !== null ? entero(promFinal) : '-';
       const estadoLabel = promFinal !== null ? (promFinal < uc ? 'REPROBADO' : promFinal < ua ? 'CONDICIONADO' : 'APROBADO') : '-';
       return `<tr>
         <td style="text-align:left;padding:6px 8px">${escapeHtml(m.nombre)}</td>
-        <td>${c?.calificacionAC != null ? entero(c.calificacionAC * pctAC) : '-'}</td>
-        <td>${c?.calificacionAI != null ? entero(c.calificacionAI * pctAI) : '-'}</td>
-        <td>${c?.examenTrimestral != null ? entero(c.examenTrimestral * pctEx) : '-'}</td>
+        <td>${c?.calificacionAC != null ? (c.calificacionAC * pctAC).toFixed(2) : '-'}</td>
+        <td>${c?.calificacionAI != null ? (c.calificacionAI * pctAI).toFixed(2) : '-'}</td>
+        <td>${c?.examenTrimestral != null ? (c.examenTrimestral * pctEx).toFixed(2) : '-'}</td>
         ${mostrarRecuperacion ? `<td>${recupVal}</td>` : ''}
         <td style="font-weight:bold">${notaFinal}</td>
         <td style="font-weight:bold;color:${getEstadoColor(estadoLabel)}">${estadoLabel}</td>
