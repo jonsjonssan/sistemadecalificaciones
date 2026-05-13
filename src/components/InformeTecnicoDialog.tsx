@@ -247,7 +247,7 @@ export default function InformeTecnicoDialog({
             <td>${e.numero}</td>
             <td>${escapeHtml(e.nombre)}</td>
             <td class="num destacado">${e.promedio.toFixed(2)}</td>
-            <td>${i === 0 ? '🥇 Primer Lugar' : i === 1 ? '🥈 Segundo Lugar' : i === 2 ? '🥉 Tercer Lugar' : i === 3 ? '4° Lugar' : '5° Lugar'}</td>
+            <td>${i === 0 ? '🥇 Primer Lugar' : i === 1 ? '🥈 Segundo Lugar' : i === 2 ? '🥉 Tercer Lugar' : `${i + 1}° Lugar`}</td>
           </tr>`).join('')}
         </tbody>
       </table>

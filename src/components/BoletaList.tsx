@@ -1109,7 +1109,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
 <!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->
 <style>
   @page { size: letter; margin: 2cm; }
-  body { font-family: 'Times New Roman', serif; font-size: 11pt; line-height: 1.0; color: #000; }
+  body { font-family: 'Times New Roman', serif; font-size: 11pt; line-height: 1.15; color: #000; }
   .header { text-align: center; margin-bottom: 15px; border-bottom: 2px solid #000; padding-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 15px; }
   .header-logo { width: 80px; height: 80px; }
   .header-text { text-align: center; flex: 1; }

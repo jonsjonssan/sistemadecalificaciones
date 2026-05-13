@@ -97,18 +97,18 @@ export default function Home() {
   const [configLoading, setConfigLoading] = useState(false);
   const [importLoading, setImportLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
-const [menuAbierto, setMenuAbierto] = useState(false);
-const navItems = [
-  { value: "dashboard", icon: LayoutDashboard, label: "Inicio" },
-  { value: "calificaciones", icon: ClipboardList, label: "Notas" },
-  { value: "asistencia", icon: CalendarDays, label: "Lista" },
-  { value: "estudiantes", icon: Users, label: "Alumnos" },
-  { value: "boletas", icon: FileText, label: "Boletas" },
-  { value: "enlaces", icon: Globe, label: "Enlaces" },
-  { value: "reportes", icon: BarChart3, label: "Reportes" },
-  ...(usuario?.rol && isAdmin(usuario.rol) ? [{ value: "admin", icon: Settings, label: "Admin" }] : []),
-];
-const [materiasEnBoleta, setMateriasEnBoleta] = useState<string[]>([]);
+  const [menuAbierto, setMenuAbierto] = useState(false);
+  const navItems = [
+    { value: "dashboard", icon: LayoutDashboard, label: "Inicio" },
+    { value: "calificaciones", icon: ClipboardList, label: "Notas" },
+    { value: "asistencia", icon: CalendarDays, label: "Lista" },
+    { value: "estudiantes", icon: Users, label: "Alumnos" },
+    { value: "boletas", icon: FileText, label: "Boletas" },
+    { value: "enlaces", icon: Globe, label: "Enlaces" },
+    { value: "reportes", icon: BarChart3, label: "Reportes" },
+    ...(usuario?.rol && isAdmin(usuario.rol) ? [{ value: "admin", icon: Settings, label: "Admin" }] : []),
+  ];
+  const [materiasEnBoleta, setMateriasEnBoleta] = useState<string[]>([]);
 const [mostrarRecuperacion, setMostrarRecuperacion] = useState<boolean>(() => {
   if (typeof window !== "undefined") {
     try {
@@ -121,7 +121,7 @@ const [mostrarRecuperacion, setMostrarRecuperacion] = useState<boolean>(() => {
 
 // Load persisted state from localStorage after hydration
 useEffect(() => {
-  if (typeof window !== "undefined") {
+  if (typeof window !== "undefined" && todasAsignaturas.length > 0) {
     const v = localStorage.getItem("ss_materiasBoleta");
     if (v) {
       try {
@@ -132,7 +132,7 @@ useEffect(() => {
             setMateriasEnBoleta(idsValidos);
             localStorage.setItem("ss_materiasBoleta", JSON.stringify(idsValidos));
           } else {
-            queueMicrotask(() => setMateriasEnBoleta(parsed));
+            setMateriasEnBoleta(parsed);
           }
         }
       } catch { }
@@ -2701,7 +2701,7 @@ useEffect(() => {
                 </div>
                 {gradoSeleccionado && estudiantes.length > 0 && (
                   <>
-                    {(isAdmin(usuario.rol) || true) && (
+                    {(isAdmin(usuario.rol) || usuario?.rol === "docente-orientador") && (
                       <div className="space-y-2 mb-2">
                         <div className="flex items-center gap-2 flex-wrap">
                           <Label className="text-xs sm:text-sm font-medium whitespace-nowrap">Asignaturas en boleta:</Label>
