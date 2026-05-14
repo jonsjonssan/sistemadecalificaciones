@@ -167,6 +167,36 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
       </div>
     </div>` : '';
 
+    const bloqueAsistenciaManual = `
+    <div class="seccion-asistencia" style="margin-top:15px;">
+      <div class="seccion-asistencia-header">
+        <span>REGISTRO DE ASISTENCIA</span>
+        <span>(para llenar manualmente)</span>
+      </div>
+      <div class="asistencia-grid" style="grid-template-columns: repeat(5, 1fr);">
+        <div class="asistencia-item">
+          <div class="n" style="border-bottom:1px solid #333;min-height:24px;">&nbsp;</div>
+          <div class="l">Asistencias</div>
+        </div>
+        <div class="asistencia-item">
+          <div class="n" style="border-bottom:1px solid #333;min-height:24px;">&nbsp;</div>
+          <div class="l">Inasistencias</div>
+        </div>
+        <div class="asistencia-item">
+          <div class="n" style="border-bottom:1px solid #333;min-height:24px;">&nbsp;</div>
+          <div class="l">Tardanzas</div>
+        </div>
+        <div class="asistencia-item">
+          <div class="n" style="border-bottom:1px solid #333;min-height:24px;">&nbsp;</div>
+          <div class="l">Justificadas</div>
+        </div>
+        <div class="asistencia-item">
+          <div class="n" style="border-bottom:1px solid #333;min-height:24px;">&nbsp;</div>
+          <div class="l">Total Días</div>
+        </div>
+      </div>
+    </div>`;
+
     const html = `<!DOCTYPE html>
 <html>
 <head>
@@ -273,6 +303,8 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     </table>
 
     ${bloqueAsistencia}
+
+    ${bloqueAsistenciaManual}
 
     <div class="resumen">
       <div class="resumen-item">
@@ -438,6 +470,35 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
         </table>
 
         ${bloqueAsistenciaTodas}
+
+        <div class="seccion-asistencia" style="margin-top:15px;">
+          <div class="seccion-asistencia-header">
+            <span>REGISTRO DE ASISTENCIA</span>
+            <span>(para llenar manualmente)</span>
+          </div>
+          <div class="asistencia-grid" style="grid-template-columns: repeat(5, 1fr);">
+            <div class="asistencia-item">
+              <div class="n" style="border-bottom:1px solid #333;min-height:24px;">&nbsp;</div>
+              <div class="l">Asistencias</div>
+            </div>
+            <div class="asistencia-item">
+              <div class="n" style="border-bottom:1px solid #333;min-height:24px;">&nbsp;</div>
+              <div class="l">Inasistencias</div>
+            </div>
+            <div class="asistencia-item">
+              <div class="n" style="border-bottom:1px solid #333;min-height:24px;">&nbsp;</div>
+              <div class="l">Tardanzas</div>
+            </div>
+            <div class="asistencia-item">
+              <div class="n" style="border-bottom:1px solid #333;min-height:24px;">&nbsp;</div>
+              <div class="l">Justificadas</div>
+            </div>
+            <div class="asistencia-item">
+              <div class="n" style="border-bottom:1px solid #333;min-height:24px;">&nbsp;</div>
+              <div class="l">Total Días</div>
+            </div>
+          </div>
+        </div>
 
         <div class="resumen">
           <div class="resumen-item">
@@ -1149,6 +1210,16 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     <tbody>${tablaAsignaturas}</tbody>
   </table>
   ${incluirAsistencia ? `<p><b>Asistencia:</b> Asistencias: ${asist.asistencias} | Inasistencias: ${asist.ausencias} | Tardanzas: ${asist.tardanzas} | Total: ${asist.total}</p>` : ''}
+  <div style="margin:15px 0;padding:8px;border:1px solid #000;">
+    <div style="font-weight:bold;font-size:10pt;margin-bottom:6px;">REGISTRO DE ASISTENCIA (para llenar manualmente)</div>
+    <table style="width:100%;border-collapse:collapse;">
+      <tr><td style="border:1px solid #000;padding:4px;text-align:center;width:20%;"><b>Asistencias</b><br><span style="font-size:14pt;">&nbsp;</span></td>
+      <td style="border:1px solid #000;padding:4px;text-align:center;width:20%;"><b>Inasistencias</b><br><span style="font-size:14pt;">&nbsp;</span></td>
+      <td style="border:1px solid #000;padding:4px;text-align:center;width:20%;"><b>Tardanzas</b><br><span style="font-size:14pt;">&nbsp;</span></td>
+      <td style="border:1px solid #000;padding:4px;text-align:center;width:20%;"><b>Justificadas</b><br><span style="font-size:14pt;">&nbsp;</span></td>
+      <td style="border:1px solid #000;padding:4px;text-align:center;width:20%;"><b>Total Días</b><br><span style="font-size:14pt;">&nbsp;</span></td></tr>
+    </table>
+  </div>
   <div class="resumen">
     <div class="resumen-item"><b>Promedio General:</b> ${prom !== null ? entero(prom) : 'N/A'}</div>
     <div class="resumen-item"><b>Estado:</b> ${estadoFinal}</div>

@@ -77,24 +77,26 @@ export default function InformeTecnicoDialog({
       .filter(s => s.topEstudiantes && s.topEstudiantes.length > 0)
       .map(s => ({
         grado: s.nombre,
-        estudiantes: s.topEstudiantes.slice(0, 5).map((e: any) => ({
+        estudiantes: s.topEstudiantes.slice(0, 10).map((e: any) => ({
           nombre: e.nombre,
           promedio: e.promedio,
           numero: e.numero,
+          estado: e.estado,
         })),
       }));
 
     // Estudiantes en riesgo
-    const enRiesgo = stats
-      .filter(s => s.alertas && s.alertas.length > 0)
-      .map(s => ({
-        grado: s.nombre,
-        estudiantes: s.alertas.map((e: any) => ({
-          nombre: e.nombre,
-          promedio: e.promedio,
-          numero: e.numero,
-        })),
-      }));
+      const enRiesgo = stats
+        .filter(s => s.alertas && s.alertas.length > 0)
+        .map(s => ({
+          grado: s.nombre,
+          estudiantes: s.alertas.slice(0, 10).map((e: any) => ({
+            nombre: e.nombre,
+            promedio: e.promedio,
+            numero: e.numero,
+            estado: e.estado,
+          })),
+        }));
 
     const totalHonor = cuadroHonor.reduce((a, g) => a + g.estudiantes.length, 0);
     const totalRiesgo = enRiesgo.reduce((a, g) => a + g.estudiantes.length, 0);
@@ -240,13 +242,14 @@ export default function InformeTecnicoDialog({
     ${cuadroHonor.map(g => `
       <p style="font-size:10pt;font-weight:600;color:#0d9488;margin:8px 0 4px;">${escapeHtml(g.grado)}</p>
       <table class="tabla">
-        <thead><tr><th>N°</th><th>Estudiante</th><th>Promedio</th><th>Reconocimiento</th></tr></thead>
+        <thead><tr><th>N°</th><th>Estudiante</th><th>Promedio</th><th>Estado</th><th>Reconocimiento</th></tr></thead>
         <tbody>
           ${g.estudiantes.map((e: any, i: number) => `
           <tr>
             <td>${e.numero}</td>
             <td>${escapeHtml(e.nombre)}</td>
             <td class="num destacado">${e.promedio.toFixed(2)}</td>
+            <td>${e.estado === 'CONDICIONADO' ? '<span class="badge badge-warn">C</span>' : e.estado === 'REPROBADO' ? '<span class="badge badge-danger">R</span>' : '<span class="badge badge-ok">A</span>'}</td>
             <td>${i === 0 ? '🥇 Primer Lugar' : i === 1 ? '🥈 Segundo Lugar' : i === 2 ? '🥉 Tercer Lugar' : `${i + 1}° Lugar`}</td>
           </tr>`).join('')}
         </tbody>

@@ -37,8 +37,8 @@ interface GradeStats {
     integradora: number;
     examen: number;
   };
-  topEstudiantes: { id: string, nombre: string, numero: number, promedio: number }[];
-  alertas: { id: string, nombre: string, numero: number, promedio: number }[];
+  topEstudiantes: { id: string, nombre: string, numero: number, promedio: number, estado?: string }[];
+  alertas: { id: string, nombre: string, numero: number, promedio: number, estado?: string }[];
   materias?: { id: string; nombre: string; promedio: number | null }[];
 }
 
@@ -717,9 +717,17 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
                       {selectedStats.topEstudiantes.length > 0 ? selectedStats.topEstudiantes.map((est, i) => (
                         <div key={est.id} className="flex items-center justify-between text-xs sm:text-sm gap-2">
                           <span className={`flex-1 truncate ${darkMode ? 'text-slate-300' : 'text-slate-700'}`} title={`${i + 1}. ${est.nombre}`}>{i + 1}. {est.nombre}</span>
-                          <Badge variant="outline" className={`shrink-0 py-0 h-5 text-xs ${darkMode ? 'bg-slate-800 text-teal-400 border-teal-700' : 'bg-white text-teal-700 border-teal-200'}`}>
-                            {est.promedio.toFixed(1)}
-                          </Badge>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {est.estado === "CONDICIONADO" && (
+                              <Badge variant="secondary" className="text-[9px] py-0 h-4 px-1 bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/50 dark:text-amber-300 dark:border-amber-700">C</Badge>
+                            )}
+                            {est.estado === "REPROBADO" && (
+                              <Badge variant="destructive" className="text-[9px] py-0 h-4 px-1">R</Badge>
+                            )}
+                            <Badge variant="outline" className={`shrink-0 py-0 h-5 text-xs ${darkMode ? 'bg-slate-800 text-teal-400 border-teal-700' : 'bg-white text-teal-700 border-teal-200'}`}>
+                              {est.promedio.toFixed(1)}
+                            </Badge>
+                          </div>
                         </div>
                       )) : <p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>Sin datos</p>}
                     </div>
@@ -732,9 +740,14 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
                       {selectedStats.alertas.length > 0 ? selectedStats.alertas.map((est, i) => (
                         <div key={est.id} className="flex items-center justify-between text-xs sm:text-sm gap-2">
                           <span className={`flex-1 truncate ${darkMode ? 'text-slate-300' : 'text-slate-700'}`} title={est.nombre}>{est.nombre}</span>
-                          <Badge variant="destructive" className="shrink-0 bg-red-500 text-white font-bold py-0 h-5 text-xs">
-                            {est.promedio.toFixed(1)}
-                          </Badge>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {est.estado === "CONDICIONADO" && (
+                              <Badge variant="secondary" className="text-[9px] py-0 h-4 px-1 bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/50 dark:text-amber-300 dark:border-amber-700">C</Badge>
+                            )}
+                            <Badge variant="destructive" className="shrink-0 bg-red-500 text-white font-bold py-0 h-5 text-xs">
+                              {est.promedio.toFixed(1)}
+                            </Badge>
+                          </div>
                         </div>
                       )) : <p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>Sin alertas</p>}
                     </div>

@@ -112,14 +112,24 @@ export async function GET(req: Request) {
         }
       });
 
+      const umbralCondicionado = 4.5;
+      const umbralAprobado = 6.5;
+
       const ranking = Object.values(studentAverages)
         .filter(s => s.cuenta > 0)
-        .map(s => ({
-          id: s.id,
-          nombre: s.nombre,
-          numero: s.numero,
-          promedio: s.suma / s.cuenta
-        }))
+        .map(s => {
+          const prom = s.suma / s.cuenta;
+          let estado = 'APROBADO';
+          if (prom < umbralCondicionado) estado = 'REPROBADO';
+          else if (prom < umbralAprobado) estado = 'CONDICIONADO';
+          return {
+            id: s.id,
+            nombre: s.nombre,
+            numero: s.numero,
+            promedio: prom,
+            estado
+          };
+        })
         .sort((a: any, b: any) => b.promedio - a.promedio);
 
       return {
@@ -132,8 +142,8 @@ export async function GET(req: Request) {
           integradora: countAI > 0 ? sumAI / countAI : null,
           examen: countEx > 0 ? sumEx / countEx : null
         },
-        topEstudiantes: ranking.slice(0, 5),
-        alertas: ranking.slice(-5).reverse(),
+        topEstudiantes: ranking.slice(0, 10),
+        alertas: ranking.slice(-10).reverse(),
         materias: Object.values(materiaAverages).map((m: any) => ({
           id: m.id,
           nombre: m.nombre,
