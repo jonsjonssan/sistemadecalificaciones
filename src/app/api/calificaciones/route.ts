@@ -417,11 +417,11 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      await tx.notaActividad.deleteMany({
-        where: { calificacionId: result.id },
-      });
-
+      // Solo borrar y recrear notas si hay datos nuevos que guardar
       if (notasCreateData.length > 0) {
+        await tx.notaActividad.deleteMany({
+          where: { calificacionId: result.id },
+        });
         await tx.notaActividad.createMany({
           data: notasCreateData.map(n => ({
             calificacionId: result.id,
