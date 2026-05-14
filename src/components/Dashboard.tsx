@@ -744,7 +744,10 @@ export default function Dashboard({ usuario, grados, totalEstudiantes, totalAsig
                             {est.estado === "CONDICIONADO" && (
                               <Badge variant="secondary" className="text-[9px] py-0 h-4 px-1 bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/50 dark:text-amber-300 dark:border-amber-700">C</Badge>
                             )}
-                            <Badge variant="destructive" className="shrink-0 bg-red-500 text-white font-bold py-0 h-5 text-xs">
+                            {est.estado === "REPROBADO" && (
+                              <Badge variant="destructive" className="text-[9px] py-0 h-4 px-1">R</Badge>
+                            )}
+                            <Badge variant={est.estado === "REPROBADO" ? "destructive" : "secondary"} className={`shrink-0 font-bold py-0 h-5 text-xs ${est.estado === "CONDICIONADO" ? 'bg-amber-500 text-white' : est.estado === "REPROBADO" ? 'bg-red-500 text-white' : 'bg-red-500 text-white'}`}>
                               {est.promedio.toFixed(1)}
                             </Badge>
                           </div>
