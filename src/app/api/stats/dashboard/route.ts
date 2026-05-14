@@ -115,21 +115,31 @@ export async function GET(req: Request) {
       const umbralCondicionado = 4.5;
       const umbralAprobado = 6.5;
 
+      const estudianteEstado: Record<string, string> = {};
+
+      calificaciones.forEach((c: any) => {
+        if (c.promedioFinal === null) return;
+        const baseProm = Number(c.promedioFinal) - (c.recuperacion !== null ? Number(c.recuperacion) : 0);
+        let materiaEstado = 'APROBADO';
+        if (baseProm < umbralCondicionado) materiaEstado = 'REPROBADO';
+        else if (baseProm < umbralAprobado && c.recuperacion !== null) materiaEstado = 'CONDICIONADO';
+        else if (baseProm < umbralAprobado) materiaEstado = 'CONDICIONADO';
+
+        const actual = estudianteEstado[c.estudianteId];
+        if (!actual || (materiaEstado === 'REPROBADO') || (materiaEstado === 'CONDICIONADO' && actual === 'APROBADO')) {
+          estudianteEstado[c.estudianteId] = materiaEstado;
+        }
+      });
+
       const ranking = Object.values(studentAverages)
         .filter(s => s.cuenta > 0)
-        .map(s => {
-          const prom = s.suma / s.cuenta;
-          let estado = 'APROBADO';
-          if (prom < umbralCondicionado) estado = 'REPROBADO';
-          else if (prom < umbralAprobado) estado = 'CONDICIONADO';
-          return {
-            id: s.id,
-            nombre: s.nombre,
-            numero: s.numero,
-            promedio: prom,
-            estado
-          };
-        })
+        .map(s => ({
+          id: s.id,
+          nombre: s.nombre,
+          numero: s.numero,
+          promedio: s.suma / s.cuenta,
+          estado: estudianteEstado[s.id] || 'APROBADO'
+        }))
         .sort((a: any, b: any) => b.promedio - a.promedio);
 
       return {
