@@ -118,7 +118,8 @@ export async function GET(req: Request) {
       const estudianteEstado: Record<string, string> = {};
 
       calificaciones.forEach((c: any) => {
-        if (c.promedioFinal === null) return;
+        const tieneNotas = c.calificacionAC !== null || c.calificacionAI !== null || c.examenTrimestral !== null;
+        if (!tieneNotas || c.promedioFinal === null) return;
         const baseProm = Number(c.promedioFinal) - (c.recuperacion !== null ? Number(c.recuperacion) : 0);
         let materiaEstado = 'APROBADO';
         if (baseProm < umbralCondicionado) materiaEstado = 'REPROBADO';
