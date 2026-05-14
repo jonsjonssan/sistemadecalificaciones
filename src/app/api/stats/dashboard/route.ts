@@ -119,12 +119,7 @@ export async function GET(req: Request) {
 
       calificaciones.forEach((c: any) => {
         const tieneNotas = c.calificacionAC !== null || c.calificacionAI !== null || c.examenTrimestral !== null;
-        if (!tieneNotas) {
-          const actual = estudianteEstado[c.estudianteId];
-          if (actual !== 'REPROBADO') estudianteEstado[c.estudianteId] = 'CONDICIONADO';
-          return;
-        }
-        if (c.promedioFinal === null) return;
+        if (!tieneNotas || c.promedioFinal === null) return;
         const baseProm = Number(c.promedioFinal) - (c.recuperacion !== null ? Number(c.recuperacion) : 0);
         let materiaEstado = 'APROBADO';
         if (baseProm < umbralCondicionado) materiaEstado = 'REPROBADO';
