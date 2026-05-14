@@ -191,6 +191,7 @@ useEffect(() => {
   const [promedioDecimal, setPromedioDecimal] = useState<boolean>(false);
   const [paperSize, setPaperSize] = useState<"letter" | "a4">("letter");
   const [incluirAsistenciaBoleta, setIncluirAsistenciaBoleta] = useState<boolean>(true);
+const [incluirAsistenciaManual, setIncluirAsistenciaManual] = useState<boolean>(false);
 
 // Load persisted state from localStorage after hydration
 useEffect(() => {
@@ -203,10 +204,14 @@ useEffect(() => {
     if (savedPaperSize === "a4" || savedPaperSize === "letter") {
       queueMicrotask(() => setPaperSize(savedPaperSize));
     }
-    const savedIncluirAsistencia = localStorage.getItem("ss_incluirAsistenciaBoleta");
-    if (savedIncluirAsistencia !== null) {
-      try { queueMicrotask(() => setIncluirAsistenciaBoleta(JSON.parse(savedIncluirAsistencia))); } catch { }
-    }
+const savedIncluirAsistencia = localStorage.getItem("ss_incluirAsistenciaBoleta");
+      if (savedIncluirAsistencia) {
+        try { queueMicrotask(() => setIncluirAsistenciaBoleta(JSON.parse(savedIncluirAsistencia))); } catch { }
+      }
+      const savedAsistenciaManual = localStorage.getItem("ss_incluirAsistenciaManual");
+      if (savedAsistenciaManual) {
+        try { queueMicrotask(() => setIncluirAsistenciaManual(JSON.parse(savedAsistenciaManual))); } catch { }
+      }
   }
 }, []);
 
@@ -269,8 +274,9 @@ useEffect(() => {
     if (trimestreSeleccionado) localStorage.setItem("ss_trimestre", trimestreSeleccionado);
     localStorage.setItem("ss_promedio_decimal", JSON.stringify(promedioDecimal));
     localStorage.setItem("ss_paperSize", paperSize);
-    localStorage.setItem("ss_incluirAsistenciaBoleta", JSON.stringify(incluirAsistenciaBoleta));
-  }, [activeTab, gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado, promedioDecimal, paperSize, incluirAsistenciaBoleta]);
+localStorage.setItem("ss_incluirAsistenciaBoleta", JSON.stringify(incluirAsistenciaBoleta));
+  localStorage.setItem("ss_incluirAsistenciaManual", JSON.stringify(incluirAsistenciaManual));
+}, [activeTab, gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado, promedioDecimal, paperSize, incluirAsistenciaBoleta, incluirAsistenciaManual]);
 
   // Auth
   const checkAuth = useCallback(async () => {
@@ -2771,8 +2777,18 @@ useEffect(() => {
                         />
                         <Label htmlFor="incluir-asistencia" className="text-xs cursor-pointer">Incluir asistencia en boleta</Label>
                       </div>
+                      <div className="flex items-center gap-1.5">
+                        <input
+                          type="checkbox"
+                          id="incluir-asistencia-manual"
+                          checked={incluirAsistenciaManual}
+                          onChange={(e) => setIncluirAsistenciaManual(e.target.checked)}
+                          className="h-3.5 w-3.5 accent-teal-600"
+                        />
+                        <Label htmlFor="incluir-asistencia-manual" className="text-xs cursor-pointer">Espacio para asistencia manual</Label>
+                      </div>
                     </div>
-                    <BoletaList estudiantes={estudiantes} calificaciones={calificaciones} materias={(() => { const materiasGrado = todasAsignaturas.filter(m => m.gradoId === gradoSeleccionado); const materiasGradoIds = new Set(materiasGrado.map(m => m.id)); const materiasValidas = materiasEnBoleta.filter(id => materiasGradoIds.has(id)); if (materiasValidas.length !== materiasEnBoleta.length) { queueMicrotask(() => { setMateriasEnBoleta(materiasValidas); if (typeof window !== "undefined") localStorage.setItem("ss_materiasBoleta", JSON.stringify(materiasValidas)); }); } return materiasValidas.length > 0 ? materiasGrado.filter(m => materiasValidas.includes(m.id)) : materiasGrado; })()} grado={gradosFiltrados.find(g => g.id === gradoSeleccionado)} trimestre={trimestreSeleccionado ? parseInt(trimestreSeleccionado) : 1} expandedBoleta={expandedBoleta} setExpandedBoleta={setExpandedBoleta} darkMode={darkMode} configuracion={configuracion ? { nombreDirectora: configuracion.nombreDirectora, umbralCondicionado: configuracion?.umbralCondicionado ?? 4.5, umbralAprobado: configuracion?.umbralAprobado ?? 6.5 } : undefined} paperSize={paperSize} incluirAsistencia={incluirAsistenciaBoleta} mostrarRecuperacion={mostrarRecuperacion} porcentajes={configActual ? { ac: configActual.porcentajeAC, ai: configActual.porcentajeAI, ex: configActual.porcentajeExamen } : undefined} />
+                    <BoletaList estudiantes={estudiantes} calificaciones={calificaciones} materias={(() => { const materiasGrado = todasAsignaturas.filter(m => m.gradoId === gradoSeleccionado); const materiasGradoIds = new Set(materiasGrado.map(m => m.id)); const materiasValidas = materiasEnBoleta.filter(id => materiasGradoIds.has(id)); if (materiasValidas.length !== materiasEnBoleta.length) { queueMicrotask(() => { setMateriasEnBoleta(materiasValidas); if (typeof window !== "undefined") localStorage.setItem("ss_materiasBoleta", JSON.stringify(materiasValidas)); }); } return materiasValidas.length > 0 ? materiasGrado.filter(m => materiasValidas.includes(m.id)) : materiasGrado; })()} grado={gradosFiltrados.find(g => g.id === gradoSeleccionado)} trimestre={trimestreSeleccionado ? parseInt(trimestreSeleccionado) : 1} expandedBoleta={expandedBoleta} setExpandedBoleta={setExpandedBoleta} darkMode={darkMode} configuracion={configuracion ? { nombreDirectora: configuracion.nombreDirectora, umbralCondicionado: configuracion?.umbralCondicionado ?? 4.5, umbralAprobado: configuracion?.umbralAprobado ?? 6.5 } : undefined} paperSize={paperSize} incluirAsistencia={incluirAsistenciaBoleta} mostrarRecuperacion={mostrarRecuperacion} porcentajes={configActual ? { ac: configActual.porcentajeAC, ai: configActual.porcentajeAI, ex: configActual.porcentajeExamen } : undefined} incluirAsistenciaManual={incluirAsistenciaManual} />
                   </>
                 )}
               </CardContent>

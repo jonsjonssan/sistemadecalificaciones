@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { escapeHtml } from "@/lib/utils/index";
 import type { Estudiante, Asignatura, Grado, Calificacion } from "@/types";
-export default function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, expandedBoleta, setExpandedBoleta, darkMode, configuracion, paperSize, incluirAsistencia = true, mostrarRecuperacion = true, porcentajes }: { estudiantes: Estudiante[]; calificaciones: Calificacion[]; materias: Asignatura[]; grado?: Grado; trimestre: number; expandedBoleta: string | null; setExpandedBoleta: (id: string | null) => void; darkMode: boolean; configuracion?: { nombreDirectora?: string; umbralCondicionado?: number; umbralAprobado?: number }; paperSize?: "letter" | "a4"; incluirAsistencia?: boolean; mostrarRecuperacion?: boolean; porcentajes?: { ac: number; ai: number; ex: number }; }) {
+export default function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, expandedBoleta, setExpandedBoleta, darkMode, configuracion, paperSize, incluirAsistencia = true, mostrarRecuperacion = true, porcentajes, incluirAsistenciaManual = false }: { estudiantes: Estudiante[]; calificaciones: Calificacion[]; materias: Asignatura[]; grado?: Grado; trimestre: number; expandedBoleta: string | null; setExpandedBoleta: (id: string | null) => void; darkMode: boolean; configuracion?: { nombreDirectora?: string; umbralCondicionado?: number; umbralAprobado?: number }; paperSize?: "letter" | "a4"; incluirAsistencia?: boolean; mostrarRecuperacion?: boolean; porcentajes?: { ac: number; ai: number; ex: number }; incluirAsistenciaManual?: boolean; }) {
   const [resumenAsistencia, setResumenAsistencia] = useState<any[]>([]);
   const [todasCalificaciones, setTodasCalificaciones] = useState<Calificacion[]>([]);
   const [resumenAsistenciaAnual, setResumenAsistenciaAnual] = useState<any[]>([]);
@@ -167,35 +167,35 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
       </div>
     </div>` : '';
 
-    const bloqueAsistenciaManual = `
-    <div class="seccion-asistencia" style="margin-top:15px;">
-      <div class="seccion-asistencia-header">
+    const bloqueAsistenciaManual = incluirAsistenciaManual ? `
+    <div class="seccion-asistencia" style="margin-top:15px;page-break-inside:avoid;">
+      <div class="seccion-asistencia-header" style="background:#0d9488;color:#fff;padding:6px 10px;font-weight:bold;font-size:9pt;display:flex;justify-content:space-between;">
         <span>REGISTRO DE ASISTENCIA</span>
-        <span>(para llenar manualmente)</span>
+        <span style="font-weight:normal;font-size:8pt;">para llenar manualmente</span>
       </div>
-      <div class="asistencia-grid" style="grid-template-columns: repeat(5, 1fr);">
-        <div class="asistencia-item">
-          <div class="n" style="border-bottom:1px solid #333;min-height:24px;">&nbsp;</div>
-          <div class="l">Asistencias</div>
+      <div class="asistencia-grid" style="grid-template-columns:repeat(5,1fr);padding:8px;">
+        <div class="asistencia-item" style="text-align:center;">
+          <div class="n" style="font-size:14pt;font-weight:bold;border-bottom:2px solid #333;min-height:28px;padding:4px;">&nbsp;</div>
+          <div class="l" style="font-size:8pt;color:#555;text-transform:uppercase;margin-top:2px;">Asistencias</div>
         </div>
-        <div class="asistencia-item">
-          <div class="n" style="border-bottom:1px solid #333;min-height:24px;">&nbsp;</div>
-          <div class="l">Inasistencias</div>
+        <div class="asistencia-item" style="text-align:center;">
+          <div class="n" style="font-size:14pt;font-weight:bold;border-bottom:2px solid #333;min-height:28px;padding:4px;">&nbsp;</div>
+          <div class="l" style="font-size:8pt;color:#555;text-transform:uppercase;margin-top:2px;">Inasistencias</div>
         </div>
-        <div class="asistencia-item">
-          <div class="n" style="border-bottom:1px solid #333;min-height:24px;">&nbsp;</div>
-          <div class="l">Tardanzas</div>
+        <div class="asistencia-item" style="text-align:center;">
+          <div class="n" style="font-size:14pt;font-weight:bold;border-bottom:2px solid #333;min-height:28px;padding:4px;">&nbsp;</div>
+          <div class="l" style="font-size:8pt;color:#555;text-transform:uppercase;margin-top:2px;">Tardanzas</div>
         </div>
-        <div class="asistencia-item">
-          <div class="n" style="border-bottom:1px solid #333;min-height:24px;">&nbsp;</div>
-          <div class="l">Justificadas</div>
+        <div class="asistencia-item" style="text-align:center;">
+          <div class="n" style="font-size:14pt;font-weight:bold;border-bottom:2px solid #333;min-height:28px;padding:4px;">&nbsp;</div>
+          <div class="l" style="font-size:8pt;color:#555;text-transform:uppercase;margin-top:2px;">Justificadas</div>
         </div>
-        <div class="asistencia-item">
-          <div class="n" style="border-bottom:1px solid #333;min-height:24px;">&nbsp;</div>
-          <div class="l">Total Días</div>
+        <div class="asistencia-item" style="text-align:center;">
+          <div class="n" style="font-size:14pt;font-weight:bold;border-bottom:2px solid #333;min-height:28px;padding:4px;">&nbsp;</div>
+          <div class="l" style="font-size:8pt;color:#555;text-transform:uppercase;margin-top:2px;">Total Días</div>
         </div>
       </div>
-    </div>`;
+    </div>` : '';
 
     const html = `<!DOCTYPE html>
 <html>
@@ -471,34 +471,35 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
 
         ${bloqueAsistenciaTodas}
 
-        <div class="seccion-asistencia" style="margin-top:15px;">
-          <div class="seccion-asistencia-header">
+        ${incluirAsistenciaManual ? `
+        <div class="seccion-asistencia" style="margin-top:15px;page-break-inside:avoid;">
+          <div class="seccion-asistencia-header" style="background:#0d9488;color:#fff;padding:6px 10px;font-weight:bold;font-size:9pt;display:flex;justify-content:space-between;">
             <span>REGISTRO DE ASISTENCIA</span>
-            <span>(para llenar manualmente)</span>
+            <span style="font-weight:normal;font-size:8pt;">para llenar manualmente</span>
           </div>
-          <div class="asistencia-grid" style="grid-template-columns: repeat(5, 1fr);">
-            <div class="asistencia-item">
-              <div class="n" style="border-bottom:1px solid #333;min-height:24px;">&nbsp;</div>
-              <div class="l">Asistencias</div>
+          <div class="asistencia-grid" style="grid-template-columns:repeat(5,1fr);padding:8px;">
+            <div class="asistencia-item" style="text-align:center;">
+              <div class="n" style="font-size:14pt;font-weight:bold;border-bottom:2px solid #333;min-height:28px;padding:4px;">&nbsp;</div>
+              <div class="l" style="font-size:8pt;color:#555;text-transform:uppercase;margin-top:2px;">Asistencias</div>
             </div>
-            <div class="asistencia-item">
-              <div class="n" style="border-bottom:1px solid #333;min-height:24px;">&nbsp;</div>
-              <div class="l">Inasistencias</div>
+            <div class="asistencia-item" style="text-align:center;">
+              <div class="n" style="font-size:14pt;font-weight:bold;border-bottom:2px solid #333;min-height:28px;padding:4px;">&nbsp;</div>
+              <div class="l" style="font-size:8pt;color:#555;text-transform:uppercase;margin-top:2px;">Inasistencias</div>
             </div>
-            <div class="asistencia-item">
-              <div class="n" style="border-bottom:1px solid #333;min-height:24px;">&nbsp;</div>
-              <div class="l">Tardanzas</div>
+            <div class="asistencia-item" style="text-align:center;">
+              <div class="n" style="font-size:14pt;font-weight:bold;border-bottom:2px solid #333;min-height:28px;padding:4px;">&nbsp;</div>
+              <div class="l" style="font-size:8pt;color:#555;text-transform:uppercase;margin-top:2px;">Tardanzas</div>
             </div>
-            <div class="asistencia-item">
-              <div class="n" style="border-bottom:1px solid #333;min-height:24px;">&nbsp;</div>
-              <div class="l">Justificadas</div>
+            <div class="asistencia-item" style="text-align:center;">
+              <div class="n" style="font-size:14pt;font-weight:bold;border-bottom:2px solid #333;min-height:28px;padding:4px;">&nbsp;</div>
+              <div class="l" style="font-size:8pt;color:#555;text-transform:uppercase;margin-top:2px;">Justificadas</div>
             </div>
-            <div class="asistencia-item">
-              <div class="n" style="border-bottom:1px solid #333;min-height:24px;">&nbsp;</div>
-              <div class="l">Total Días</div>
+            <div class="asistencia-item" style="text-align:center;">
+              <div class="n" style="font-size:14pt;font-weight:bold;border-bottom:2px solid #333;min-height:28px;padding:4px;">&nbsp;</div>
+              <div class="l" style="font-size:8pt;color:#555;text-transform:uppercase;margin-top:2px;">Total Días</div>
             </div>
           </div>
-        </div>
+        </div>` : ''}
 
         <div class="resumen">
           <div class="resumen-item">
@@ -1210,16 +1211,19 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     <tbody>${tablaAsignaturas}</tbody>
   </table>
   ${incluirAsistencia ? `<p><b>Asistencia:</b> Asistencias: ${asist.asistencias} | Inasistencias: ${asist.ausencias} | Tardanzas: ${asist.tardanzas} | Total: ${asist.total}</p>` : ''}
-  <div style="margin:15px 0;padding:8px;border:1px solid #000;">
-    <div style="font-weight:bold;font-size:10pt;margin-bottom:6px;">REGISTRO DE ASISTENCIA (para llenar manualmente)</div>
+  ${incluirAsistenciaManual ? `
+  <div style="margin:15px 0;padding:10px;border:2px solid #0d9488;border-radius:4px;">
+    <div style="font-weight:bold;font-size:11pt;margin-bottom:8px;color:#0d9488;">REGISTRO DE ASISTENCIA <span style="font-weight:normal;font-size:8pt;color:#555;">(para llenar manualmente)</span></div>
     <table style="width:100%;border-collapse:collapse;">
-      <tr><td style="border:1px solid #000;padding:4px;text-align:center;width:20%;"><b>Asistencias</b><br><span style="font-size:14pt;">&nbsp;</span></td>
-      <td style="border:1px solid #000;padding:4px;text-align:center;width:20%;"><b>Inasistencias</b><br><span style="font-size:14pt;">&nbsp;</span></td>
-      <td style="border:1px solid #000;padding:4px;text-align:center;width:20%;"><b>Tardanzas</b><br><span style="font-size:14pt;">&nbsp;</span></td>
-      <td style="border:1px solid #000;padding:4px;text-align:center;width:20%;"><b>Justificadas</b><br><span style="font-size:14pt;">&nbsp;</span></td>
-      <td style="border:1px solid #000;padding:4px;text-align:center;width:20%;"><b>Total Días</b><br><span style="font-size:14pt;">&nbsp;</span></td></tr>
+      <tr>
+        <td style="border:1px solid #333;padding:8px 4px;text-align:center;width:20%;background:#f0fdfa;"><b style="font-size:9pt;text-transform:uppercase;">Asistencias</b><br><span style="font-size:16pt;line-height:2;">&nbsp;</span></td>
+        <td style="border:1px solid #333;padding:8px 4px;text-align:center;width:20%;background:#fef2f2;"><b style="font-size:9pt;text-transform:uppercase;">Inasistencias</b><br><span style="font-size:16pt;line-height:2;">&nbsp;</span></td>
+        <td style="border:1px solid #333;padding:8px 4px;text-align:center;width:20%;background:#fffbeb;"><b style="font-size:9pt;text-transform:uppercase;">Tardanzas</b><br><span style="font-size:16pt;line-height:2;">&nbsp;</span></td>
+        <td style="border:1px solid #333;padding:8px 4px;text-align:center;width:20%;background:#eff6ff;"><b style="font-size:9pt;text-transform:uppercase;">Justificadas</b><br><span style="font-size:16pt;line-height:2;">&nbsp;</span></td>
+        <td style="border:1px solid #333;padding:8px 4px;text-align:center;width:20%;background:#f8fafc;"><b style="font-size:9pt;text-transform:uppercase;">Total Días</b><br><span style="font-size:16pt;line-height:2;">&nbsp;</span></td>
+      </tr>
     </table>
-  </div>
+  </div>` : ''}
   <div class="resumen">
     <div class="resumen-item"><b>Promedio General:</b> ${prom !== null ? entero(prom) : 'N/A'}</div>
     <div class="resumen-item"><b>Estado:</b> ${estadoFinal}</div>
