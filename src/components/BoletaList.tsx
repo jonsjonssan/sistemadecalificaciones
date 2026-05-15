@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { escapeHtml } from "@/lib/utils/index";
 import type { Estudiante, Asignatura, Grado, Calificacion } from "@/types";
-export default function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, expandedBoleta, setExpandedBoleta, darkMode, configuracion, paperSize, incluirAsistencia = true, mostrarRecuperacion = true, porcentajes, incluirAsistenciaManual = false, asistenciaManualHabilitado = false, asistenciaManualData = {}, onAsistenciaManualChange }: { estudiantes: Estudiante[]; calificaciones: Calificacion[]; materias: Asignatura[]; grado?: Grado; trimestre: number; expandedBoleta: string | null; setExpandedBoleta: (id: string | null) => void; darkMode: boolean; configuracion?: { nombreDirectora?: string; umbralCondicionado?: number; umbralAprobado?: number }; paperSize?: "letter" | "a4"; incluirAsistencia?: boolean; mostrarRecuperacion?: boolean; porcentajes?: { ac: number; ai: number; ex: number }; incluirAsistenciaManual?: boolean; asistenciaManualHabilitado?: boolean; asistenciaManualData?: { [key: string]: { asistencias: string; inasistencias: string; tardanzas: string; justificadas: string; totalDias: string } }; onAsistenciaManualChange?: (estudianteId: string, field: string, value: string) => void; }) {
+export default function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, expandedBoleta, setExpandedBoleta, darkMode, configuracion, paperSize, incluirAsistencia = true, mostrarRecuperacion = true, porcentajes, incluirAsistenciaManual = false, asistenciaManualHabilitado = false, asistenciaManualData = {}, onAsistenciaManualChange }: { estudiantes: Estudiante[]; calificaciones: Calificacion[]; materias: Asignatura[]; grado?: Grado; trimestre: number; expandedBoleta: string | null; setExpandedBoleta: (id: string | null) => void; darkMode: boolean; configuracion?: { nombreDirectora?: string; umbralCondicionado?: number; umbralAprobado?: number }; paperSize?: "letter" | "a4"; incluirAsistencia?: boolean; mostrarRecuperacion?: boolean; porcentajes?: { ac: number; ai: number; ex: number }; incluirAsistenciaManual?: boolean; asistenciaManualHabilitado?: boolean; asistenciaManualData?: { [key: string]: { asistencias: string; inasistencias: string; tardanzas: string; justificadas: string; totalDias: string; observaciones: string } }; onAsistenciaManualChange?: (estudianteId: string, field: string, value: string) => void; }) {
   const [resumenAsistencia, setResumenAsistencia] = useState<any[]>([]);
   const [todasCalificaciones, setTodasCalificaciones] = useState<Calificacion[]>([]);
   const [resumenAsistenciaAnual, setResumenAsistenciaAnual] = useState<any[]>([]);
@@ -127,6 +127,13 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     return resumenAsistenciaAnual.find(r => r.id === id) || { asistencias: 0, ausencias: 0, tardanzas: 0, justificadas: 0, total: 0 };
   };
 
+  const obsHTML = (id: string) => {
+    const t = (asistenciaManualHabilitado && asistenciaManualData[id]?.observaciones)
+      ? escapeHtml(asistenciaManualData[id].observaciones).replace(/\n/g, '<br>')
+      : '&nbsp;';
+    return `<div style="min-height:60px;font-size:10pt;color:#555;">${t}</div>`;
+  };
+
   const imprimir = async (id: string) => {
     const est = estudiantes.find(e => e.id === id);
     if (!est) return;
@@ -163,7 +170,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
 
     const asist = getAsistInfo(id);
 
-    const bloqueAsistencia = incluirAsistencia ? `
+    const bloqueAsistencia = (incluirAsistencia || asistenciaManualHabilitado) ? `
     <div class="seccion-asistencia">
       <div class="seccion-asistencia-header">
         <span>RESUMEN DE ASISTENCIA</span>
@@ -349,7 +356,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
 
     <div class="observaciones" style="margin:15px 0;padding:10px;border:1px solid #333;border-radius:4px;min-height:80px;">
       <div style="font-weight:bold;font-size:10pt;margin-bottom:4px;">Observaciones:</div>
-      <div style="min-height:60px;font-size:10pt;color:#555;">&nbsp;</div>
+      ${obsHTML(id)}
     </div>
 
     <div class="firmas">
@@ -420,7 +427,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
           "</tr>";
       }).join('');
 
-      const bloqueAsistenciaTodas = incluirAsistencia ? `
+      const bloqueAsistenciaTodas = (incluirAsistencia || asistenciaManualHabilitado) ? `
         <div class="seccion-asistencia">
           <div class="seccion-asistencia-header">
             <span>RESUMEN DE ASISTENCIA</span>
@@ -544,7 +551,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
 
         <div class="observaciones" style="margin:15px 0;padding:10px;border:1px solid #333;border-radius:4px;min-height:80px;">
           <div style="font-weight:bold;font-size:10pt;margin-bottom:4px;">Observaciones:</div>
-          <div style="min-height:60px;font-size:10pt;color:#555;">&nbsp;</div>
+          ${obsHTML(est.id)}
         </div>
 
         <div class="firmas">
@@ -682,7 +689,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
 
     const pFinal = promGralAnual();
 
-    const bloqueAsistenciaAnual = incluirAsistencia ? `
+    const bloqueAsistenciaAnual = (incluirAsistencia || asistenciaManualHabilitado) ? `
     <div class="seccion-asistencia">
       <div class="seccion-asistencia-header">RESUMEN DE ASISTENCIA ANUAL (TOTAL ACUMULADO)</div>
       <div class="asistencia-grid">
@@ -774,6 +781,10 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
         <div class="etiqueta">ESTADO FINAL</div>
       </div>
     </div>
+    <div class="observaciones" style="margin:15px 0;padding:10px;border:1px solid #333;border-radius:4px;min-height:80px;">
+      <div style="font-weight:bold;font-size:10pt;margin-bottom:4px;">Observaciones:</div>
+      ${obsHTML(id)}
+    </div>
     <div class="firmas">
       <div class="firma">
         <p>${docenteOrientador}</p>
@@ -825,7 +836,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
       }).filter((n): n is number => n !== null);
       const pFinal = notasFinales.length ? notasFinales.reduce((a, b) => a + b, 0) / notasFinales.length : null;
 
-      const bloqueAsistenciaTodasAnual = incluirAsistencia ? `
+      const bloqueAsistenciaTodasAnual = (incluirAsistencia || asistenciaManualHabilitado) ? `
         <div class="seccion-asistencia">
           <div class="seccion-asistencia-header">RESUMEN DE ASISTENCIA ANUAL (TOTAL ACUMULADO)</div>
           <div class="asistencia-grid">
@@ -856,6 +867,10 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
         <div class="resumen-anual">
           <div class="resumen-item"><div class="valor" style="color:#1e293b">${pFinal !== null ? pFinal.toFixed(2) : 'N/A'}</div><div class="etiqueta">PROMEDIO FINAL ANUAL</div></div>
           <div class="resumen-item"><div class="valor" style="color:${pFinal ? getEstadoColor(pFinal < uc ? 'REPROBADO' : pFinal < ua ? 'CONDICIONADO' : 'APROBADO') : '#dc2626'}">${pFinal ? (pFinal < uc ? 'REPROBADO' : pFinal < ua ? 'CONDICIONADO' : 'APROBADO') : 'REPROBADO'}</div><div class="etiqueta">ESTADO FINAL</div></div>
+        </div>
+        <div class="observaciones" style="margin:15px 0;padding:10px;border:1px solid #333;border-radius:4px;min-height:80px;">
+          <div style="font-weight:bold;font-size:10pt;margin-bottom:4px;">Observaciones:</div>
+          ${obsHTML(est.id)}
         </div>
         <div class="firmas">
           <div class="firma"><p>${docenteOrientador}</p><p>Firma del Docente Orientador</p></div>
@@ -945,7 +960,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     }).filter((n): n is number => n !== null);
     const pFinal = notasFinales.length ? notasFinales.reduce((a, b) => a + b, 0) / notasFinales.length : null;
 
-    const bloqueAsistenciaAnual = incluirAsistencia ? `
+    const bloqueAsistenciaAnual = (incluirAsistencia || asistenciaManualHabilitado) ? `
     <div class="seccion-asistencia">
       <div class="seccion-asistencia-header">RESUMEN DE ASISTENCIA ANUAL (TOTAL ACUMULADO)</div>
       <div class="asistencia-grid">
@@ -1039,6 +1054,10 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
         <div class="etiqueta">ESTADO FINAL</div>
       </div>
     </div>
+    <div class="observaciones" style="margin:15px 0;padding:10px;border:1px solid #333;border-radius:4px;min-height:80px;">
+      <div style="font-weight:bold;font-size:10pt;margin-bottom:4px;">Observaciones:</div>
+      ${obsHTML(id)}
+    </div>
     <div class="firmas">
       <div class="firma">
         <p>${docenteOrientador}</p>
@@ -1093,7 +1112,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
       }).filter((n): n is number => n !== null);
       const pFinal = notasFinales.length ? notasFinales.reduce((a, b) => a + b, 0) / notasFinales.length : null;
 
-      const bloqueAsistenciaTodasAnual = incluirAsistencia ? `
+      const bloqueAsistenciaTodasAnual = (incluirAsistencia || asistenciaManualHabilitado) ? `
         <div class="seccion-asistencia">
           <div class="seccion-asistencia-header">RESUMEN DE ASISTENCIA ANUAL (TOTAL ACUMULADO)</div>
           <div class="asistencia-grid">
@@ -1124,6 +1143,10 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
         <div class="resumen-anual">
           <div class="resumen-item"><div class="valor" style="color:#1e293b">${pFinal !== null ? pFinal.toFixed(2) : 'N/A'}</div><div class="etiqueta">PROMEDIO FINAL ANUAL</div></div>
           <div class="resumen-item"><div class="valor" style="color:${pFinal ? getEstadoColor(pFinal < uc ? 'REPROBADO' : pFinal < ua ? 'CONDICIONADO' : 'APROBADO') : '#dc2626'}">${pFinal ? (pFinal < uc ? 'REPROBADO' : pFinal < ua ? 'CONDICIONADO' : 'APROBADO') : 'REPROBADO'}</div><div class="etiqueta">ESTADO FINAL</div></div>
+        </div>
+        <div class="observaciones" style="margin:15px 0;padding:10px;border:1px solid #333;border-radius:4px;min-height:80px;">
+          <div style="font-weight:bold;font-size:10pt;margin-bottom:4px;">Observaciones:</div>
+          ${obsHTML(est.id)}
         </div>
         <div class="firmas">
           <div class="firma"><p>${docenteOrientador}</p><p>Firma del Docente Orientador</p></div>
@@ -1238,7 +1261,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     <thead><tr><th>Asignatura</th><th>Prom. A.C.</th><th>Prom. A.I.</th><th>Examen</th>${mostrarRecuperacion ? '<th>Recup.</th>' : ''}<th>Prom. Final</th><th>Estado</th></tr></thead>
     <tbody>${tablaAsignaturas}</tbody>
   </table>
-  ${incluirAsistencia ? `<p><b>Asistencia:</b> Asistencias: ${asist.asistencias} | Inasistencias: ${asist.ausencias} | Tardanzas: ${asist.tardanzas} | Total: ${asist.total}</p>` : ''}
+  ${(incluirAsistencia || asistenciaManualHabilitado) ? `<p><b>Asistencia:</b> Asistencias: ${asist.asistencias} | Inasistencias: ${asist.ausencias} | Tardanzas: ${asist.tardanzas} | Total: ${asist.total}</p>` : ''}
   ${incluirAsistenciaManual ? `
   <div style="margin:15px 0;padding:10px;border:2px solid #0d9488;border-radius:4px;">
     <div style="font-weight:bold;font-size:11pt;margin-bottom:8px;color:#0d9488;">REGISTRO DE ASISTENCIA <span style="font-weight:normal;font-size:8pt;color:#555;">(para llenar manualmente)</span></div>
@@ -1259,7 +1282,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
   </div>
   <div class="observaciones">
     <p><b>Observaciones:</b></p>
-    <p style="min-height:60px;">&nbsp;</p>
+    <p style="min-height:60px;">${(asistenciaManualHabilitado && asistenciaManualData[id]?.observaciones) ? escapeHtml(asistenciaManualData[id].observaciones).replace(/\n/g, '<br>') : '&nbsp;'}</p>
   </div>
   <div class="firmas">
     <div class="firma"><p>${docenteOrientador}</p><p>Firma del Docente Orientador</p></div>
@@ -1349,6 +1372,10 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
                     <div>
                       <label className="text-[10px] block text-slate-500">Total Días</label>
                       <input type="text" inputMode="numeric" value={asistenciaManualData[est.id]?.totalDias || ''} onChange={(e) => onAsistenciaManualChange?.(est.id, 'totalDias', e.target.value)} className="w-full h-7 text-xs text-center border rounded dark:bg-slate-700 dark:border-slate-600" />
+                    </div>
+                    <div className="mt-2">
+                      <label className="text-[10px] block text-slate-500">Observaciones</label>
+                      <textarea value={asistenciaManualData[est.id]?.observaciones || ''} onChange={(e) => onAsistenciaManualChange?.(est.id, 'observaciones', e.target.value)} className="w-full h-14 text-xs border rounded dark:bg-slate-700 dark:border-slate-600 p-1 resize-none" placeholder="Escriba observaciones para la boleta..." />
                     </div>
                   </div>
                 </div>

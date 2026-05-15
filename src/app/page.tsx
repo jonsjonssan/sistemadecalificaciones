@@ -193,7 +193,7 @@ useEffect(() => {
   const [incluirAsistenciaBoleta, setIncluirAsistenciaBoleta] = useState<boolean>(true);
 const [incluirAsistenciaManual, setIncluirAsistenciaManual] = useState<boolean>(false);
 const [asistenciaManualHabilitado, setAsistenciaManualHabilitado] = useState<boolean>(false);
-const [asistenciaManualData, setAsistenciaManualData] = useState<{[key: string]: { asistencias: string; inasistencias: string; tardanzas: string; justificadas: string; totalDias: string }}>({});
+const [asistenciaManualData, setAsistenciaManualData] = useState<{[key: string]: { asistencias: string; inasistencias: string; tardanzas: string; justificadas: string; totalDias: string; observaciones: string }}>({});
 
 // Load persisted state from localStorage after hydration
 useEffect(() => {
