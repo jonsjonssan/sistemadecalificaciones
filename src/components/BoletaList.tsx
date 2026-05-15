@@ -128,7 +128,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
   };
 
   const obsHTML = (id: string) => {
-    const t = (asistenciaManualHabilitado && asistenciaManualData[id]?.observaciones)
+    const t = asistenciaManualData[id]?.observaciones
       ? escapeHtml(asistenciaManualData[id].observaciones).replace(/\n/g, '<br>')
       : '&nbsp;';
     return `<div style="min-height:60px;font-size:10pt;color:#555;">${t}</div>`;
@@ -1284,7 +1284,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
   </div>
   <div class="observaciones">
     <p><b>Observaciones:</b></p>
-    <p style="min-height:60px;">${(asistenciaManualHabilitado && asistenciaManualData[id]?.observaciones) ? escapeHtml(asistenciaManualData[id].observaciones).replace(/\n/g, '<br>') : '&nbsp;'}</p>
+    <p style="min-height:60px;">${asistenciaManualData[id]?.observaciones ? escapeHtml(asistenciaManualData[id].observaciones).replace(/\n/g, '<br>') : '&nbsp;'}</p>
   </div>
   <div class="firmas">
     <div class="firma"><p>${docenteOrientador}</p><p>Firma del Docente Orientador</p></div>
