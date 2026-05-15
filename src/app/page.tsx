@@ -129,10 +129,10 @@ useEffect(() => {
         if (Array.isArray(parsed)) {
           const idsValidos = parsed.filter((id: any) => typeof id === "string" && todasAsignaturas.some(m => m.id === id));
           if (idsValidos.length !== parsed.length) {
-            setMateriasEnBoleta(idsValidos);
+            queueMicrotask(() => setMateriasEnBoleta(idsValidos));
             localStorage.setItem("ss_materiasBoleta", JSON.stringify(idsValidos));
           } else {
-            setMateriasEnBoleta(parsed);
+            queueMicrotask(() => setMateriasEnBoleta(parsed));
           }
         }
       } catch { }
@@ -2730,103 +2730,183 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
           </TabsContent >
 
           {/* Boletas */}
-          < TabsContent value="boletas" className="mt-3" >
-            <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
-              <CardHeader className={`py-3 px-4 ${darkMode ? 'border-slate-700' : ''}`}><CardTitle className="text-base">Generación de Boletas</CardTitle></CardHeader>
-              <CardContent className="pt-0 space-y-3">
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                  <div className="flex-1"><Label className="text-sm sm:text-base font-medium">Grado</Label><Select value={gradoSeleccionado} onValueChange={(val) => { setGradoSeleccionado(val); setAsignaturaSeleccionada(""); }}><SelectTrigger className={`h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue /></SelectTrigger><SelectContent>{gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}"</SelectItem>)}</SelectContent></Select></div>
-                  <div className="w-full sm:w-32"><Label className="text-sm sm:text-base font-medium">Trimestre</Label><Select value={trimestreSeleccionado || ""} onValueChange={setTrimestreSeleccionado}><SelectTrigger className={`h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue placeholder="Seleccionar trimestre" /></SelectTrigger><SelectContent><SelectItem value="1">I</SelectItem><SelectItem value="2">II</SelectItem><SelectItem value="3">III</SelectItem></SelectContent></Select></div>
-                </div>
-                {gradoSeleccionado && estudiantes.length > 0 && (
-                  <>
-                    {(isAdmin(usuario.rol) || usuario?.rol === "docente-orientador") && (
-                      <div className="space-y-2 mb-2">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <Label className="text-xs sm:text-sm font-medium whitespace-nowrap">Asignaturas en boleta:</Label>
-                          <Select value={materiasEnBoleta.length === 0 ? "todas" : "personalizado"} onValueChange={(v) => { if (v === "todas") { setMateriasEnBoleta([]); if (typeof window !== "undefined") localStorage.setItem("ss_materiasBoleta", JSON.stringify([])); } }}>
-                            <SelectTrigger className={`w-32 h-8 text-xs ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="todas" className="text-xs">Todas ({todasAsignaturas.filter(m => m.gradoId === gradoSeleccionado).length})</SelectItem>
-                              <SelectItem value="personalizado" className="text-xs">Seleccionar...</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <span className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                            {materiasEnBoleta.length > 0 ? `${materiasEnBoleta.length} seleccionada(s)` : 'Todas las asignaturas'}
-                          </span>
-                        </div>
-                        <div className="flex flex-wrap gap-1.5">
-                          {todasAsignaturas.filter(m => m.gradoId === gradoSeleccionado).map(m => (
-                            <button
-                              key={m.id}
-                              onClick={() => {
-                                const next = materiasEnBoleta.includes(m.id)
-                                  ? materiasEnBoleta.filter(id => id !== m.id)
-                                  : [...materiasEnBoleta, m.id];
-                                setMateriasEnBoleta(next);
-                                if (typeof window !== "undefined") localStorage.setItem("ss_materiasBoleta", JSON.stringify(next));
-                              }}
-                              className={`px-2 py-0.5 rounded-full text-xs font-medium border transition-colors ${materiasEnBoleta.length > 0 && materiasEnBoleta.includes(m.id)
-                                ? (darkMode ? 'bg-teal-700 text-white border-teal-600' : 'bg-teal-600 text-white border-teal-600')
-                                : (darkMode ? 'bg-slate-800 text-slate-300 border-slate-600 hover:border-teal-600' : 'bg-white text-slate-700 border-slate-300 hover:border-teal-400')
-                                }`}
-                            >
-                              {m.nombre}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-4 pt-2 border-t">
-                      <span className={`text-xs font-medium ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Tamaño papel:</span>
-                      <RadioGroup
-                        value={paperSize}
-                        onValueChange={(val) => {
-                          const size = val as "letter" | "a4";
-                          setPaperSize(size);
-                          if (typeof window !== "undefined") localStorage.setItem("ss_paperSize", size);
-                        }}
-                        className="flex items-center gap-4"
-                      >
-                        <div className="flex items-center gap-1.5">
-                          <RadioGroupItem value="letter" id="pp-letter" className="h-3.5 w-3.5" />
-                          <Label htmlFor="pp-letter" className="text-xs cursor-pointer">Carta</Label>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <RadioGroupItem value="a4" id="pp-a4" className="h-3.5 w-3.5" />
-                          <Label htmlFor="pp-a4" className="text-xs cursor-pointer">A4</Label>
-                        </div>
-                      </RadioGroup>
-                      <span className={`text-[10px] ${darkMode ? 'text-slate-600' : 'text-slate-400'}`}>
-                        {paperSize === "letter" ? "(215.9 x 279.4 mm)" : "(210 x 297 mm)"}
-                      </span>
-                      <div className="flex items-center gap-2 ml-auto">
-                        <span className={`text-xs font-medium whitespace-nowrap ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Asistencia:</span>
-                        <Select value={tipoAsistencia} onValueChange={(val) => {
-                          const v = val as "auto" | "manual_espacio" | "manual_digital";
-                          setTipoAsistencia(v);
-                          setIncluirAsistenciaBoleta(v === "auto");
-                          setIncluirAsistenciaManual(v === "manual_espacio");
-                          setAsistenciaManualHabilitado(v === "manual_digital");
-                          localStorage.setItem("ss_tipoAsistencia", JSON.stringify(v));
-                        }}>
-                          <SelectTrigger className={`w-40 h-8 text-xs ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}>
-                            <SelectValue />
+          <TabsContent value="boletas" className="mt-3">
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+            >
+              <Card className={`shadow-md border-0 overflow-hidden ${darkMode ? 'bg-[#1e293b]' : 'bg-gradient-to-br from-white to-slate-50/60'}`}>
+                <div className={`h-1 w-full ${darkMode ? 'bg-gradient-to-r from-teal-500 to-emerald-400' : 'bg-gradient-to-r from-teal-600 to-emerald-500'}`} />
+                <CardHeader className={`pb-3 px-5 ${darkMode ? '' : ''}`}>
+                  <div className="flex items-center gap-2.5">
+                    <div className={`p-2 rounded-lg ${darkMode ? 'bg-teal-900/40 text-teal-300' : 'bg-teal-50 text-teal-700'}`}>
+                      <FileText className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <CardTitle className={`text-base font-semibold tracking-tight ${darkMode ? 'text-slate-100' : 'text-slate-800'}`}>
+                        Generación de Boletas
+                      </CardTitle>
+                      <CardDescription className={`text-xs mt-0.5 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                        Selecciona grado y trimestre para visualizar las boletas de calificaciones
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0 px-5 pb-5 space-y-4">
+                  <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-800/40 border-slate-700/50' : 'bg-white border-slate-200/70 shadow-sm'}`}>
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                      <div className="flex-1">
+                        <Label className={`text-xs font-semibold uppercase tracking-wider mb-1.5 block ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                          Grado
+                        </Label>
+                        <Select value={gradoSeleccionado} onValueChange={(val) => { setGradoSeleccionado(val); setAsignaturaSeleccionada(""); }}>
+                          <SelectTrigger className={`h-10 sm:h-11 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-slate-300'}`}>
+                            <SelectValue placeholder="Seleccionar grado" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="auto" className="text-xs">Automática</SelectItem>
-                            <SelectItem value="manual_espacio" className="text-xs">Espacio Manual</SelectItem>
-                            <SelectItem value="manual_digital" className="text-xs">Manual por Alumno</SelectItem>
+                            {gradosFiltrados.map(g => (
+                              <SelectItem key={g.id} value={g.id} className="text-sm">
+                                {g.numero}° "{g.seccion}"
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="w-full sm:w-36">
+                        <Label className={`text-xs font-semibold uppercase tracking-wider mb-1.5 block ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                          Trimestre
+                        </Label>
+                        <Select value={trimestreSeleccionado || ""} onValueChange={setTrimestreSeleccionado}>
+                          <SelectTrigger className={`h-10 sm:h-11 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-slate-300'}`}>
+                            <SelectValue placeholder="Trimestre" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1">I</SelectItem>
+                            <SelectItem value="2">II</SelectItem>
+                            <SelectItem value="3">III</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                     </div>
-                    <BoletaList estudiantes={estudiantes} calificaciones={calificaciones} materias={(() => { const materiasGrado = todasAsignaturas.filter(m => m.gradoId === gradoSeleccionado); const materiasGradoIds = new Set(materiasGrado.map(m => m.id)); const materiasValidas = materiasEnBoleta.filter(id => materiasGradoIds.has(id)); if (materiasValidas.length !== materiasEnBoleta.length) { queueMicrotask(() => { setMateriasEnBoleta(materiasValidas); if (typeof window !== "undefined") localStorage.setItem("ss_materiasBoleta", JSON.stringify(materiasValidas)); }); } return materiasValidas.length > 0 ? materiasGrado.filter(m => materiasValidas.includes(m.id)) : materiasGrado; })()} grado={gradosFiltrados.find(g => g.id === gradoSeleccionado)} trimestre={trimestreSeleccionado ? parseInt(trimestreSeleccionado) : 1} expandedBoleta={expandedBoleta} setExpandedBoleta={setExpandedBoleta} darkMode={darkMode} configuracion={configuracion ? { nombreDirectora: configuracion.nombreDirectora, umbralCondicionado: configuracion?.umbralCondicionado ?? 4.5, umbralAprobado: configuracion?.umbralAprobado ?? 6.5 } : undefined} paperSize={paperSize} incluirAsistencia={incluirAsistenciaBoleta} mostrarRecuperacion={mostrarRecuperacion} porcentajes={configActual ? { ac: configActual.porcentajeAC, ai: configActual.porcentajeAI, ex: configActual.porcentajeExamen } : undefined} incluirAsistenciaManual={incluirAsistenciaManual} asistenciaManualHabilitado={asistenciaManualHabilitado} asistenciaManualData={asistenciaManualData} onAsistenciaManualChange={handleAsistenciaManualChange} />
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent >
+                  </div>
+
+                  {gradoSeleccionado && estudiantes.length > 0 && (
+                    <>
+                      {(isAdmin(usuario.rol) || usuario?.rol === "docente-orientador") && (
+                        <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-800/40 border-slate-700/50' : 'bg-white border-slate-200/70 shadow-sm'}`}>
+                          <div className="flex items-center justify-between mb-3">
+                            <Label className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                              Asignaturas en boleta
+                            </Label>
+                            <Select value={materiasEnBoleta.length === 0 ? "todas" : "personalizado"} onValueChange={(v) => { if (v === "todas") { setMateriasEnBoleta([]); if (typeof window !== "undefined") localStorage.setItem("ss_materiasBoleta", JSON.stringify([])); } }}>
+                              <SelectTrigger className={`w-36 h-8 text-xs ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-slate-300'}`}>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="todas" className="text-xs">Todas ({todasAsignaturas.filter(m => m.gradoId === gradoSeleccionado).length})</SelectItem>
+                                <SelectItem value="personalizado" className="text-xs">Seleccionar...</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {todasAsignaturas.filter(m => m.gradoId === gradoSeleccionado).map(m => {
+                              const isSelected = materiasEnBoleta.length === 0 || materiasEnBoleta.includes(m.id);
+                              return (
+                                <button
+                                  key={m.id}
+                                  onClick={() => {
+                                    if (materiasEnBoleta.length === 0) {
+                                      const todas = todasAsignaturas.filter(m2 => m2.gradoId === gradoSeleccionado).map(m2 => m2.id);
+                                      const next = todas.filter(id => id !== m.id);
+                                      setMateriasEnBoleta(next);
+                                      if (typeof window !== "undefined") localStorage.setItem("ss_materiasBoleta", JSON.stringify(next));
+                                    } else {
+                                      const next = materiasEnBoleta.includes(m.id)
+                                        ? materiasEnBoleta.filter(id => id !== m.id)
+                                        : [...materiasEnBoleta, m.id];
+                                      setMateriasEnBoleta(next);
+                                      if (typeof window !== "undefined") localStorage.setItem("ss_materiasBoleta", JSON.stringify(next));
+                                    }
+                                  }}
+                                  className={`px-3 py-1 rounded-full text-xs font-medium border transition-all duration-150 ${
+                                    isSelected
+                                      ? (darkMode ? 'bg-teal-600/20 text-teal-300 border-teal-500/50 shadow-sm' : 'bg-teal-50 text-teal-700 border-teal-300 shadow-sm')
+                                      : (darkMode ? 'bg-slate-800 text-slate-400 border-slate-600 hover:border-slate-500 hover:text-slate-300' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:text-slate-700')
+                                  }`}
+                                >
+                                  {m.nombre}
+                                </button>
+                              );
+                            })}
+                          </div>
+                          <div className={`mt-2 text-[10px] ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                            {materiasEnBoleta.length === 0
+                              ? 'Todas las asignaturas están seleccionadas'
+                              : `${materiasEnBoleta.length} de ${todasAsignaturas.filter(m => m.gradoId === gradoSeleccionado).length} asignaturas seleccionadas`
+                            }
+                          </div>
+                        </div>
+                      )}
+
+                      <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-800/40 border-slate-700/50' : 'bg-white border-slate-200/70 shadow-sm'}`}>
+                        <Label className={`text-xs font-semibold uppercase tracking-wider mb-3 block ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                          Opciones de impresión
+                        </Label>
+                        <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
+                          <div className="flex items-center gap-4">
+                            <RadioGroup
+                              value={paperSize}
+                              onValueChange={(val) => {
+                                const size = val as "letter" | "a4";
+                                setPaperSize(size);
+                                if (typeof window !== "undefined") localStorage.setItem("ss_paperSize", size);
+                              }}
+                              className="flex items-center gap-3"
+                            >
+                              <div className="flex items-center gap-1.5">
+                                <RadioGroupItem value="letter" id="pp-letter" className="h-3.5 w-3.5" />
+                                <Label htmlFor="pp-letter" className={`text-xs cursor-pointer ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Carta</Label>
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <RadioGroupItem value="a4" id="pp-a4" className="h-3.5 w-3.5" />
+                                <Label htmlFor="pp-a4" className={`text-xs cursor-pointer ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>A4</Label>
+                              </div>
+                            </RadioGroup>
+                            <span className={`text-[10px] hidden sm:inline ${darkMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                              {paperSize === "letter" ? "(215.9 × 279.4 mm)" : "(210 × 297 mm)"}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className={`text-xs font-medium whitespace-nowrap ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Asistencia:</span>
+                            <Select value={tipoAsistencia} onValueChange={(val) => {
+                              const v = val as "auto" | "manual_espacio" | "manual_digital";
+                              setTipoAsistencia(v);
+                              setIncluirAsistenciaBoleta(v === "auto");
+                              setIncluirAsistenciaManual(v === "manual_espacio");
+                              setAsistenciaManualHabilitado(v === "manual_digital");
+                              localStorage.setItem("ss_tipoAsistencia", JSON.stringify(v));
+                            }}>
+                              <SelectTrigger className={`w-40 h-8 text-xs ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-slate-300'}`}>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="auto" className="text-xs">Automática</SelectItem>
+                                <SelectItem value="manual_espacio" className="text-xs">Espacio Manual</SelectItem>
+                                <SelectItem value="manual_digital" className="text-xs">Manual por Alumno</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      </div>
+
+                      <BoletaList estudiantes={estudiantes} calificaciones={calificaciones} materias={(() => { const materiasGrado = todasAsignaturas.filter(m => m.gradoId === gradoSeleccionado); const materiasGradoIds = new Set(materiasGrado.map(m => m.id)); const materiasValidas = materiasEnBoleta.filter(id => materiasGradoIds.has(id)); if (materiasValidas.length !== materiasEnBoleta.length) { queueMicrotask(() => { setMateriasEnBoleta(materiasValidas); if (typeof window !== "undefined") localStorage.setItem("ss_materiasBoleta", JSON.stringify(materiasValidas)); }); } return materiasValidas.length > 0 ? materiasGrado.filter(m => materiasValidas.includes(m.id)) : materiasGrado; })()} grado={gradosFiltrados.find(g => g.id === gradoSeleccionado)} trimestre={trimestreSeleccionado ? parseInt(trimestreSeleccionado) : 1} expandedBoleta={expandedBoleta} setExpandedBoleta={setExpandedBoleta} darkMode={darkMode} configuracion={configuracion ? { nombreDirectora: configuracion.nombreDirectora, umbralCondicionado: configuracion?.umbralCondicionado ?? 4.5, umbralAprobado: configuracion?.umbralAprobado ?? 6.5 } : undefined} paperSize={paperSize} incluirAsistencia={incluirAsistenciaBoleta} mostrarRecuperacion={mostrarRecuperacion} porcentajes={configActual ? { ac: configActual.porcentajeAC, ai: configActual.porcentajeAI, ex: configActual.porcentajeExamen } : undefined} incluirAsistenciaManual={incluirAsistenciaManual} asistenciaManualHabilitado={asistenciaManualHabilitado} asistenciaManualData={asistenciaManualData} onAsistenciaManualChange={handleAsistenciaManualChange} />
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+          </TabsContent>
 
           {/* Enlaces Institucionales */}
           <TabsContent value="enlaces" className="mt-3">
