@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { escapeHtml } from "@/lib/utils/index";
 import type { Estudiante, Asignatura, Grado, Calificacion } from "@/types";
-export default function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, expandedBoleta, setExpandedBoleta, darkMode, configuracion, paperSize, incluirAsistencia = true, mostrarRecuperacion = true, porcentajes, incluirAsistenciaManual = false }: { estudiantes: Estudiante[]; calificaciones: Calificacion[]; materias: Asignatura[]; grado?: Grado; trimestre: number; expandedBoleta: string | null; setExpandedBoleta: (id: string | null) => void; darkMode: boolean; configuracion?: { nombreDirectora?: string; umbralCondicionado?: number; umbralAprobado?: number }; paperSize?: "letter" | "a4"; incluirAsistencia?: boolean; mostrarRecuperacion?: boolean; porcentajes?: { ac: number; ai: number; ex: number }; incluirAsistenciaManual?: boolean; }) {
+export default function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, expandedBoleta, setExpandedBoleta, darkMode, configuracion, paperSize, incluirAsistencia = true, mostrarRecuperacion = true, porcentajes, incluirAsistenciaManual = false, asistenciaManualHabilitado = false, asistenciaManualData = {}, onAsistenciaManualChange }: { estudiantes: Estudiante[]; calificaciones: Calificacion[]; materias: Asignatura[]; grado?: Grado; trimestre: number; expandedBoleta: string | null; setExpandedBoleta: (id: string | null) => void; darkMode: boolean; configuracion?: { nombreDirectora?: string; umbralCondicionado?: number; umbralAprobado?: number }; paperSize?: "letter" | "a4"; incluirAsistencia?: boolean; mostrarRecuperacion?: boolean; porcentajes?: { ac: number; ai: number; ex: number }; incluirAsistenciaManual?: boolean; asistenciaManualHabilitado?: boolean; asistenciaManualData?: { [key: string]: { asistencias: string; inasistencias: string; tardanzas: string; justificadas: string; totalDias: string } }; onAsistenciaManualChange?: (estudianteId: string, field: string, value: string) => void; }) {
   const [resumenAsistencia, setResumenAsistencia] = useState<any[]>([]);
   const [todasCalificaciones, setTodasCalificaciones] = useState<Calificacion[]>([]);
   const [resumenAsistenciaAnual, setResumenAsistenciaAnual] = useState<any[]>([]);
@@ -99,7 +99,33 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     }
   };
 
-  const getAsistInfo = (id: string) => resumenAsistencia.find(r => r.id === id) || { asistencias: 0, ausencias: 0, tardanzas: 0, total: 0 };
+  const getAsistInfo = (id: string) => {
+    if (asistenciaManualHabilitado && asistenciaManualData[id]) {
+      const d = asistenciaManualData[id];
+      return {
+        asistencias: parseInt(d.asistencias) || 0,
+        ausencias: parseInt(d.inasistencias) || 0,
+        tardanzas: parseInt(d.tardanzas) || 0,
+        justificadas: parseInt(d.justificadas) || 0,
+        total: parseInt(d.totalDias) || 0,
+      };
+    }
+    return resumenAsistencia.find(r => r.id === id) || { asistencias: 0, ausencias: 0, tardanzas: 0, justificadas: 0, total: 0 };
+  };
+
+  const getAsistenciaAnual = (id: string) => {
+    if (asistenciaManualHabilitado && asistenciaManualData[id]) {
+      const d = asistenciaManualData[id];
+      return {
+        asistencias: parseInt(d.asistencias) || 0,
+        ausencias: parseInt(d.inasistencias) || 0,
+        tardanzas: parseInt(d.tardanzas) || 0,
+        justificadas: parseInt(d.justificadas) || 0,
+        total: parseInt(d.totalDias) || 0,
+      };
+    }
+    return resumenAsistenciaAnual.find(r => r.id === id) || { asistencias: 0, ausencias: 0, tardanzas: 0, justificadas: 0, total: 0 };
+  };
 
   const imprimir = async (id: string) => {
     const est = estudiantes.find(e => e.id === id);
@@ -613,7 +639,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
 
     const año = grado?.año || new Date().getFullYear();
     const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
-    const asistAnual = resumenAsistenciaAnual.find(r => r.id === id) || { asistencias: 0, ausencias: 0, tardanzas: 0, total: 0 };
+    const asistAnual = getAsistenciaAnual(id);
 
     // Obtener nombre del docente orientador
     const docenteOrientador = escapeHtml(grado?.docente?.nombre || '_______________________________');
@@ -663,6 +689,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
         <div class="asistencia-item"><div class="n" style="color:#059669">${asistAnual.asistencias}</div><div class="l">Asistencias</div></div>
         <div class="asistencia-item"><div class="n" style="color:#dc2626">${asistAnual.ausencias}</div><div class="l">Inasistencias</div></div>
         <div class="asistencia-item"><div class="n" style="color:#d97706">${asistAnual.tardanzas}</div><div class="l">Tardanzas</div></div>
+        <div class="asistencia-item"><div class="n">${asistAnual.justificadas || 0}</div><div class="l">Justificadas</div></div>
         <div class="asistencia-item"><div class="n">${asistAnual.total}</div><div class="l">Total Días</div></div>
       </div>
     </div>` : '';
@@ -777,7 +804,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     const nombreDirectora = escapeHtml(configuracion?.nombreDirectora || '_______________________________');
 
     for (const est of estudiantes) {
-      const asistAnual = resumenAsistenciaAnual.find(r => r.id === est.id) || { asistencias: 0, ausencias: 0, tardanzas: 0, total: 0 };
+      const asistAnual = getAsistenciaAnual(est.id);
       const califsEst = todasCalificaciones.filter(c => c.estudianteId === est.id);
 
       let tablaAsignaturas = materias.map(m => {
@@ -875,7 +902,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
 
     const año = grado?.año || new Date().getFullYear();
     const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
-    const asistAnual = resumenAsistenciaAnual.find(r => r.id === id) || { asistencias: 0, ausencias: 0, tardanzas: 0, total: 0 };
+    const asistAnual = getAsistenciaAnual(id);
 
     const docenteOrientador = escapeHtml(grado?.docente?.nombre || '_______________________________');
     const nombreDirectora = escapeHtml(configuracion?.nombreDirectora || '_______________________________');
@@ -925,6 +952,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
         <div class="asistencia-item"><div class="n" style="color:#059669">${asistAnual.asistencias}</div><div class="l">Asistencias</div></div>
         <div class="asistencia-item"><div class="n" style="color:#dc2626">${asistAnual.ausencias}</div><div class="l">Inasistencias</div></div>
         <div class="asistencia-item"><div class="n" style="color:#d97706">${asistAnual.tardanzas}</div><div class="l">Tardanzas</div></div>
+        <div class="asistencia-item"><div class="n">${asistAnual.justificadas || 0}</div><div class="l">Justificadas</div></div>
         <div class="asistencia-item"><div class="n">${asistAnual.total}</div><div class="l">Total Días</div></div>
       </div>
     </div>` : '';
@@ -1040,7 +1068,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     const nombreDirectora = escapeHtml(configuracion?.nombreDirectora || '_______________________________');
 
     for (const est of estudiantes) {
-      const asistAnual = resumenAsistenciaAnual.find(r => r.id === est.id) || { asistencias: 0, ausencias: 0, tardanzas: 0, total: 0 };
+      const asistAnual = getAsistenciaAnual(est.id);
       const califsEst = todasCalificaciones.filter(c => c.estudianteId === est.id);
 
       let tablaAsignaturas = materias.map(m => {
@@ -1297,7 +1325,35 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
                 {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
               </div>
             </div>
-            {open && <div className={`border-t p-2 ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50'}`}><Table className="text-xs"><TableHeader><TableRow className={`h-7 ${darkMode ? 'bg-slate-700' : 'bg-slate-100'}`}><TableHead>Asignatura</TableHead><TableHead className="text-center">Prom. A.C.</TableHead><TableHead className="text-center">Prom. A.I.</TableHead><TableHead className="text-center">Examen</TableHead>{mostrarRecuperacion && <TableHead className="text-center">Recup.</TableHead>}<TableHead className="text-center font-bold">Promedio</TableHead></TableRow></TableHeader><TableBody>{materias.map(m => { const c = califs.find(x => x.materiaId === m.id); const estadoMat = c?.promedioFinal !== null && c?.promedioFinal !== undefined ? (c.promedioFinal < uc ? 'REPROBADO' : c.promedioFinal < ua ? 'CONDICIONADO' : 'APROBADO') : 'PENDIENTE'; return <TableRow key={m.id} className={`h-7 ${darkMode ? 'border-slate-700' : ''}`}><TableCell className={`font-medium ${darkMode ? 'text-white' : ''}`}>{m.nombre}</TableCell><TableCell className="text-center">{c?.calificacionAC != null ? (c.calificacionAC * pctAC).toFixed(2) : "-"}</TableCell><TableCell className="text-center">{c?.calificacionAI != null ? (c.calificacionAI * pctAI).toFixed(2) : "-"}</TableCell><TableCell className="text-center">{c?.examenTrimestral != null ? (c.examenTrimestral * pctEx).toFixed(2) : "-"}</TableCell>{mostrarRecuperacion && <TableCell className="text-center">{c?.recuperacion !== null && c?.recuperacion !== undefined ? c.recuperacion.toFixed(2) : "-"}</TableCell>}<TableCell className="text-center"><Badge variant={c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= ua ? "default" : c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= uc ? "secondary" : "destructive"} className={`text-[10px] ${c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= ua ? 'bg-teal-600' : c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= uc ? 'bg-amber-600' : ''}`}>{c?.promedioFinal !== null && c?.promedioFinal !== undefined ? c.promedioFinal.toFixed(2) : "-"}</Badge></TableCell></TableRow>; })}</TableBody></Table></div>}
+            {open && <div className={`border-t p-2 ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50'}`}><Table className="text-xs"><TableHeader><TableRow className={`h-7 ${darkMode ? 'bg-slate-700' : 'bg-slate-100'}`}><TableHead>Asignatura</TableHead><TableHead className="text-center">Prom. A.C.</TableHead><TableHead className="text-center">Prom. A.I.</TableHead><TableHead className="text-center">Examen</TableHead>{mostrarRecuperacion && <TableHead className="text-center">Recup.</TableHead>}<TableHead className="text-center font-bold">Promedio</TableHead></TableRow></TableHeader><TableBody>{materias.map(m => { const c = califs.find(x => x.materiaId === m.id); const estadoMat = c?.promedioFinal !== null && c?.promedioFinal !== undefined ? (c.promedioFinal < uc ? 'REPROBADO' : c.promedioFinal < ua ? 'CONDICIONADO' : 'APROBADO') : 'PENDIENTE'; return <TableRow key={m.id} className={`h-7 ${darkMode ? 'border-slate-700' : ''}`}><TableCell className={`font-medium ${darkMode ? 'text-white' : ''}`}>{m.nombre}</TableCell><TableCell className="text-center">{c?.calificacionAC != null ? (c.calificacionAC * pctAC).toFixed(2) : "-"}</TableCell><TableCell className="text-center">{c?.calificacionAI != null ? (c.calificacionAI * pctAI).toFixed(2) : "-"}</TableCell><TableCell className="text-center">{c?.examenTrimestral != null ? (c.examenTrimestral * pctEx).toFixed(2) : "-"}</TableCell>{mostrarRecuperacion && <TableCell className="text-center">{c?.recuperacion !== null && c?.recuperacion !== undefined ? c.recuperacion.toFixed(2) : "-"}</TableCell>}<TableCell className="text-center"><Badge variant={c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= ua ? "default" : c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= uc ? "secondary" : "destructive"} className={`text-[10px] ${c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= ua ? 'bg-teal-600' : c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= uc ? 'bg-amber-600' : ''}`}>{c?.promedioFinal !== null && c?.promedioFinal !== undefined ? c.promedioFinal.toFixed(2) : "-"}</Badge></TableCell></TableRow>;         })}</TableBody></Table>
+              {asistenciaManualHabilitado && (
+                <div className="mt-2 border-t pt-2">
+                  <div className="text-xs font-semibold mb-1.5 text-teal-600 dark:text-teal-400">REGISTRO DE ASISTENCIA MANUAL</div>
+                  <div className="grid grid-cols-5 gap-1.5">
+                    <div>
+                      <label className="text-[10px] block text-slate-500">Asistencias</label>
+                      <input type="text" inputMode="numeric" value={asistenciaManualData[est.id]?.asistencias || ''} onChange={(e) => onAsistenciaManualChange?.(est.id, 'asistencias', e.target.value)} className="w-full h-7 text-xs text-center border rounded dark:bg-slate-700 dark:border-slate-600" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] block text-slate-500">Inasistencias</label>
+                      <input type="text" inputMode="numeric" value={asistenciaManualData[est.id]?.inasistencias || ''} onChange={(e) => onAsistenciaManualChange?.(est.id, 'inasistencias', e.target.value)} className="w-full h-7 text-xs text-center border rounded dark:bg-slate-700 dark:border-slate-600" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] block text-slate-500">Tardanzas</label>
+                      <input type="text" inputMode="numeric" value={asistenciaManualData[est.id]?.tardanzas || ''} onChange={(e) => onAsistenciaManualChange?.(est.id, 'tardanzas', e.target.value)} className="w-full h-7 text-xs text-center border rounded dark:bg-slate-700 dark:border-slate-600" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] block text-slate-500">Justificadas</label>
+                      <input type="text" inputMode="numeric" value={asistenciaManualData[est.id]?.justificadas || ''} onChange={(e) => onAsistenciaManualChange?.(est.id, 'justificadas', e.target.value)} className="w-full h-7 text-xs text-center border rounded dark:bg-slate-700 dark:border-slate-600" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] block text-slate-500">Total Días</label>
+                      <input type="text" inputMode="numeric" value={asistenciaManualData[est.id]?.totalDias || ''} onChange={(e) => onAsistenciaManualChange?.(est.id, 'totalDias', e.target.value)} className="w-full h-7 text-xs text-center border rounded dark:bg-slate-700 dark:border-slate-600" />
+                    </div>
+                  </div>
+                </div>
+              )}
+              </div>}
           </Card>
         );
       })}
