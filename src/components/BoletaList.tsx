@@ -843,6 +843,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
             <div class="asistencia-item"><div class="n" style="color:#059669">${asistAnual.asistencias}</div><div class="l">Asistencias</div></div>
             <div class="asistencia-item"><div class="n" style="color:#dc2626">${asistAnual.ausencias}</div><div class="l">Inasistencias</div></div>
             <div class="asistencia-item"><div class="n" style="color:#d97706">${asistAnual.tardanzas}</div><div class="l">Tardanzas</div></div>
+            <div class="asistencia-item"><div class="n">${asistAnual.justificadas || 0}</div><div class="l">Justificadas</div></div>
             <div class="asistencia-item"><div class="n">${asistAnual.total}</div><div class="l">Total Días</div></div>
           </div>
         </div>` : '';
@@ -1119,6 +1120,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
             <div class="asistencia-item"><div class="n" style="color:#059669">${asistAnual.asistencias}</div><div class="l">Asistencias</div></div>
             <div class="asistencia-item"><div class="n" style="color:#dc2626">${asistAnual.ausencias}</div><div class="l">Inasistencias</div></div>
             <div class="asistencia-item"><div class="n" style="color:#d97706">${asistAnual.tardanzas}</div><div class="l">Tardanzas</div></div>
+            <div class="asistencia-item"><div class="n">${asistAnual.justificadas || 0}</div><div class="l">Justificadas</div></div>
             <div class="asistencia-item"><div class="n">${asistAnual.total}</div><div class="l">Total Días</div></div>
           </div>
         </div>` : '';
@@ -1261,7 +1263,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     <thead><tr><th>Asignatura</th><th>Prom. A.C.</th><th>Prom. A.I.</th><th>Examen</th>${mostrarRecuperacion ? '<th>Recup.</th>' : ''}<th>Prom. Final</th><th>Estado</th></tr></thead>
     <tbody>${tablaAsignaturas}</tbody>
   </table>
-  ${(incluirAsistencia || asistenciaManualHabilitado) ? `<p><b>Asistencia:</b> Asistencias: ${asist.asistencias} | Inasistencias: ${asist.ausencias} | Tardanzas: ${asist.tardanzas} | Total: ${asist.total}</p>` : ''}
+  ${(incluirAsistencia || asistenciaManualHabilitado) ? `<p><b>Asistencia:</b> Asistencias: ${asist.asistencias} | Inasistencias: ${asist.ausencias} | Tardanzas: ${asist.tardanzas} | Justificadas: ${asist.justificadas || 0} | Total: ${asist.total}</p>` : ''}
   ${incluirAsistenciaManual ? `
   <div style="margin:15px 0;padding:10px;border:2px solid #0d9488;border-radius:4px;">
     <div style="font-weight:bold;font-size:11pt;margin-bottom:8px;color:#0d9488;">REGISTRO DE ASISTENCIA <span style="font-weight:normal;font-size:8pt;color:#555;">(para llenar manualmente)</span></div>
