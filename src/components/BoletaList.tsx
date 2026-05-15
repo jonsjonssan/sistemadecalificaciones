@@ -1375,13 +1375,13 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
                       <label className="text-[10px] block text-slate-500">Total Días</label>
                       <input type="text" inputMode="numeric" value={asistenciaManualData[est.id]?.totalDias || ''} onChange={(e) => onAsistenciaManualChange?.(est.id, 'totalDias', e.target.value)} className="w-full h-7 text-xs text-center border rounded dark:bg-slate-700 dark:border-slate-600" />
                     </div>
-                    <div className="mt-2">
-                      <label className="text-[10px] block text-slate-500">Observaciones</label>
-                      <textarea value={asistenciaManualData[est.id]?.observaciones || ''} onChange={(e) => onAsistenciaManualChange?.(est.id, 'observaciones', e.target.value)} className="w-full h-14 text-xs border rounded dark:bg-slate-700 dark:border-slate-600 p-1 resize-none" placeholder="Escriba observaciones para la boleta..." />
-                    </div>
                   </div>
                 </div>
               )}
+              <div className="mt-2 border-t pt-2">
+                <label className="text-[10px] block text-slate-500 font-medium">Observaciones</label>
+                <textarea value={asistenciaManualData[est.id]?.observaciones || ''} onChange={(e) => onAsistenciaManualChange?.(est.id, 'observaciones', e.target.value)} className="w-full h-14 text-xs border rounded dark:bg-slate-700 dark:border-slate-600 p-1 resize-none" placeholder="Escriba observaciones para la boleta..." />
+              </div>
               </div>}
           </Card>
         );

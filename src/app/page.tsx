@@ -194,6 +194,7 @@ useEffect(() => {
 const [incluirAsistenciaManual, setIncluirAsistenciaManual] = useState<boolean>(false);
 const [asistenciaManualHabilitado, setAsistenciaManualHabilitado] = useState<boolean>(false);
 const [asistenciaManualData, setAsistenciaManualData] = useState<{[key: string]: { asistencias: string; inasistencias: string; tardanzas: string; justificadas: string; totalDias: string; observaciones: string }}>({});
+const [tipoAsistencia, setTipoAsistencia] = useState<"auto" | "manual_espacio" | "manual_digital">("auto");
 
 // Load persisted state from localStorage after hydration
 useEffect(() => {
@@ -206,17 +207,27 @@ useEffect(() => {
     if (savedPaperSize === "a4" || savedPaperSize === "letter") {
       queueMicrotask(() => setPaperSize(savedPaperSize));
     }
-const savedIncluirAsistencia = localStorage.getItem("ss_incluirAsistenciaBoleta");
-      if (savedIncluirAsistencia) {
-        try { queueMicrotask(() => setIncluirAsistenciaBoleta(JSON.parse(savedIncluirAsistencia))); } catch { }
-      }
-      const savedAsistenciaManual = localStorage.getItem("ss_incluirAsistenciaManual");
-      if (savedAsistenciaManual) {
-        try { queueMicrotask(() => setIncluirAsistenciaManual(JSON.parse(savedAsistenciaManual))); } catch { }
-      }
-      const savedAsistManualEnabled = localStorage.getItem("ss_asistenciaManualHabilitado");
-      if (savedAsistManualEnabled) {
-        try { queueMicrotask(() => setAsistenciaManualHabilitado(JSON.parse(savedAsistManualEnabled))); } catch { }
+const savedTipoAsistencia = localStorage.getItem("ss_tipoAsistencia");
+      if (savedTipoAsistencia) {
+        try {
+          const parsed = JSON.parse(savedTipoAsistencia);
+          if (["auto", "manual_espacio", "manual_digital"].includes(parsed)) {
+            queueMicrotask(() => setTipoAsistencia(parsed));
+          }
+        } catch { }
+      } else {
+        const savedIncluirAsistencia = localStorage.getItem("ss_incluirAsistenciaBoleta");
+        if (savedIncluirAsistencia) {
+          try { queueMicrotask(() => setIncluirAsistenciaBoleta(JSON.parse(savedIncluirAsistencia))); } catch { }
+        }
+        const savedAsistenciaManual = localStorage.getItem("ss_incluirAsistenciaManual");
+        if (savedAsistenciaManual) {
+          try { queueMicrotask(() => setIncluirAsistenciaManual(JSON.parse(savedAsistenciaManual))); } catch { }
+        }
+        const savedAsistManualEnabled = localStorage.getItem("ss_asistenciaManualHabilitado");
+        if (savedAsistManualEnabled) {
+          try { queueMicrotask(() => setAsistenciaManualHabilitado(JSON.parse(savedAsistManualEnabled))); } catch { }
+        }
       }
       const savedAsistManualData = localStorage.getItem("ss_asistenciaManualData");
       if (savedAsistManualData) {
@@ -284,11 +295,9 @@ const savedIncluirAsistencia = localStorage.getItem("ss_incluirAsistenciaBoleta"
     if (trimestreSeleccionado) localStorage.setItem("ss_trimestre", trimestreSeleccionado);
     localStorage.setItem("ss_promedio_decimal", JSON.stringify(promedioDecimal));
     localStorage.setItem("ss_paperSize", paperSize);
-localStorage.setItem("ss_incluirAsistenciaBoleta", JSON.stringify(incluirAsistenciaBoleta));
-  localStorage.setItem("ss_incluirAsistenciaManual", JSON.stringify(incluirAsistenciaManual));
-  localStorage.setItem("ss_asistenciaManualHabilitado", JSON.stringify(asistenciaManualHabilitado));
+localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
   localStorage.setItem("ss_asistenciaManualData", JSON.stringify(asistenciaManualData));
-}, [activeTab, gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado, promedioDecimal, paperSize, incluirAsistenciaBoleta, incluirAsistenciaManual, asistenciaManualHabilitado, asistenciaManualData]);
+}, [activeTab, gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado, promedioDecimal, paperSize, tipoAsistencia, asistenciaManualData]);
 
 
 
@@ -2791,39 +2800,25 @@ localStorage.setItem("ss_incluirAsistenciaBoleta", JSON.stringify(incluirAsisten
                       <span className={`text-[10px] ${darkMode ? 'text-slate-600' : 'text-slate-400'}`}>
                         {paperSize === "letter" ? "(215.9 x 279.4 mm)" : "(210 x 297 mm)"}
                       </span>
-                      <div className="flex items-center gap-1.5 ml-auto">
-                        <input
-                          type="checkbox"
-                          id="incluir-asistencia"
-                          checked={incluirAsistenciaBoleta && !asistenciaManualHabilitado}
-                          onChange={(e) => setIncluirAsistenciaBoleta(e.target.checked)}
-                          disabled={asistenciaManualHabilitado}
-                          className={`h-3.5 w-3.5 accent-teal-600 ${asistenciaManualHabilitado ? 'opacity-40 cursor-not-allowed' : ''}`}
-                        />
-                        <Label htmlFor="incluir-asistencia" className={`text-xs cursor-pointer ${asistenciaManualHabilitado ? 'opacity-40' : ''}`}>Incluir asistencia en boleta</Label>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <input
-                          type="checkbox"
-                          id="incluir-asistencia-manual"
-                          checked={incluirAsistenciaManual}
-                          onChange={(e) => setIncluirAsistenciaManual(e.target.checked)}
-                          className="h-3.5 w-3.5 accent-teal-600"
-                        />
-                        <Label htmlFor="incluir-asistencia-manual" className="text-xs cursor-pointer">Espacio para asistencia manual</Label>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <input
-                          type="checkbox"
-                          id="asistencia-manual-digitada"
-                          checked={asistenciaManualHabilitado}
-                          onChange={(e) => {
-                            setAsistenciaManualHabilitado(e.target.checked);
-                            if (e.target.checked) setIncluirAsistenciaBoleta(false);
-                          }}
-                          className="h-3.5 w-3.5 accent-teal-600"
-                        />
-                        <Label htmlFor="asistencia-manual-digitada" className="text-xs cursor-pointer font-medium text-teal-600 dark:text-teal-400">Digitar asistencia manual por estudiante</Label>
+                      <div className="flex items-center gap-2 ml-auto">
+                        <span className={`text-xs font-medium whitespace-nowrap ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Asistencia:</span>
+                        <Select value={tipoAsistencia} onValueChange={(val) => {
+                          const v = val as "auto" | "manual_espacio" | "manual_digital";
+                          setTipoAsistencia(v);
+                          setIncluirAsistenciaBoleta(v === "auto");
+                          setIncluirAsistenciaManual(v === "manual_espacio");
+                          setAsistenciaManualHabilitado(v === "manual_digital");
+                          localStorage.setItem("ss_tipoAsistencia", JSON.stringify(v));
+                        }}>
+                          <SelectTrigger className={`w-40 h-8 text-xs ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="auto" className="text-xs">Automática</SelectItem>
+                            <SelectItem value="manual_espacio" className="text-xs">Espacio Manual</SelectItem>
+                            <SelectItem value="manual_digital" className="text-xs">Manual por Alumno</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                     <BoletaList estudiantes={estudiantes} calificaciones={calificaciones} materias={(() => { const materiasGrado = todasAsignaturas.filter(m => m.gradoId === gradoSeleccionado); const materiasGradoIds = new Set(materiasGrado.map(m => m.id)); const materiasValidas = materiasEnBoleta.filter(id => materiasGradoIds.has(id)); if (materiasValidas.length !== materiasEnBoleta.length) { queueMicrotask(() => { setMateriasEnBoleta(materiasValidas); if (typeof window !== "undefined") localStorage.setItem("ss_materiasBoleta", JSON.stringify(materiasValidas)); }); } return materiasValidas.length > 0 ? materiasGrado.filter(m => materiasValidas.includes(m.id)) : materiasGrado; })()} grado={gradosFiltrados.find(g => g.id === gradoSeleccionado)} trimestre={trimestreSeleccionado ? parseInt(trimestreSeleccionado) : 1} expandedBoleta={expandedBoleta} setExpandedBoleta={setExpandedBoleta} darkMode={darkMode} configuracion={configuracion ? { nombreDirectora: configuracion.nombreDirectora, umbralCondicionado: configuracion?.umbralCondicionado ?? 4.5, umbralAprobado: configuracion?.umbralAprobado ?? 6.5 } : undefined} paperSize={paperSize} incluirAsistencia={incluirAsistenciaBoleta} mostrarRecuperacion={mostrarRecuperacion} porcentajes={configActual ? { ac: configActual.porcentajeAC, ai: configActual.porcentajeAI, ex: configActual.porcentajeExamen } : undefined} incluirAsistenciaManual={incluirAsistenciaManual} asistenciaManualHabilitado={asistenciaManualHabilitado} asistenciaManualData={asistenciaManualData} onAsistenciaManualChange={handleAsistenciaManualChange} />
