@@ -195,6 +195,7 @@ const [incluirAsistenciaManual, setIncluirAsistenciaManual] = useState<boolean>(
 const [asistenciaManualHabilitado, setAsistenciaManualHabilitado] = useState<boolean>(false);
 const [asistenciaManualData, setAsistenciaManualData] = useState<{[key: string]: { asistencias: string; inasistencias: string; tardanzas: string; justificadas: string; totalDias: string; observaciones: string }}>({});
 const [tipoAsistencia, setTipoAsistencia] = useState<"auto" | "manual_espacio" | "manual_digital">("auto");
+const observacionesSaveTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
 // Load persisted state from localStorage after hydration
 useEffect(() => {
@@ -235,6 +236,42 @@ const savedTipoAsistencia = localStorage.getItem("ss_tipoAsistencia");
       }
   }
 }, []);
+
+  // Cargar observaciones desde la base de datos cuando cambia grado/trimestre
+  useEffect(() => {
+    if (!gradoSeleccionado || !trimestreSeleccionado) return;
+    const grado = gradosFiltrados.find(g => g.id === gradoSeleccionado);
+    if (!grado) return;
+    const año = grado.año || new Date().getFullYear();
+    const controller = new AbortController();
+    fetch(`/api/observaciones?gradoId=${gradoSeleccionado}&trimestre=${trimestreSeleccionado}&año=${año}`, {
+      credentials: "include",
+      signal: controller.signal,
+    })
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (!data || controller.signal.aborted) return;
+        setAsistenciaManualData(prev => {
+          const updated = { ...prev };
+          for (const [estudianteId, observaciones] of Object.entries(data as Record<string, string>)) {
+            updated[estudianteId] = {
+              ...updated[estudianteId],
+              asistencias: updated[estudianteId]?.asistencias || '',
+              inasistencias: updated[estudianteId]?.inasistencias || '',
+              tardanzas: updated[estudianteId]?.tardanzas || '',
+              justificadas: updated[estudianteId]?.justificadas || '',
+              totalDias: updated[estudianteId]?.totalDias || '',
+              observaciones: observaciones,
+            };
+          }
+          return updated;
+        });
+      })
+      .catch(err => {
+        if (err?.name !== 'AbortError') console.error("Error loading observaciones:", err);
+      });
+    return () => controller.abort();
+  }, [gradoSeleccionado, trimestreSeleccionado, gradosFiltrados]);
 
   // Promedios
   const [promedioAsignatura, setPromedioAsignatura] = useState<number | null>(null);
@@ -485,7 +522,33 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
       }
       return updated;
     });
-  }, []);
+    // Persistir observaciones en la base de datos con debounce
+    if (field === 'observaciones' && gradoSeleccionado && trimestreSeleccionado) {
+      const existing = observacionesSaveTimersRef.current.get(estudianteId);
+      if (existing) clearTimeout(existing);
+      const timer = setTimeout(async () => {
+        const grado = gradosFiltrados.find(g => g.id === gradoSeleccionado);
+        const año = grado?.año || new Date().getFullYear();
+        try {
+          await fetch("/api/observaciones", {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              estudianteId,
+              gradoId: gradoSeleccionado,
+              trimestre: trimestreSeleccionado,
+              año,
+              observaciones: value,
+            }),
+          });
+        } catch (err) {
+          console.error("Error guardando observacion en BD:", err);
+        }
+      }, 1500);
+      observacionesSaveTimersRef.current.set(estudianteId, timer);
+    }
+  }, [gradoSeleccionado, trimestreSeleccionado, gradosFiltrados]);
 
   const handleRefrescar = useCallback(async () => {
     if (!gradoSeleccionado || !asignaturaSeleccionada || !trimestreSeleccionado) {

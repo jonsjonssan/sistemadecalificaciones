@@ -1328,6 +1328,37 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
           ))}
         </div>
       )}
+      <div className={`flex flex-wrap items-center gap-2 p-2 rounded-lg border ${darkMode ? 'bg-slate-800/60 border-slate-700' : 'bg-teal-50/60 border-teal-200'}`}>
+        <span className={`text-xs font-semibold uppercase tracking-wider mr-1 ${darkMode ? 'text-slate-400' : 'text-teal-700'}`}>
+          Imprimir en Lote
+        </span>
+        <Button
+          size="sm"
+          className={`h-8 text-xs font-bold px-3 ${darkMode ? 'bg-teal-600 hover:bg-teal-500 text-white' : 'bg-teal-600 hover:bg-teal-700 text-white'}`}
+          onClick={imprimirTodas}
+          disabled={loadingAsistencia || !estudiantes.length}
+        >
+          <Printer className="h-3.5 w-3.5 mr-1.5" />Todas las Boletas
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          className={`h-8 text-xs font-bold px-3 ${darkMode ? 'border-teal-600 text-teal-400 hover:bg-teal-900/30' : 'border-teal-300 text-teal-700 hover:bg-teal-50'}`}
+          onClick={imprimirTodasAnual}
+          disabled={loadingAnual || !estudiantes.length}
+        >
+          <FileText className="h-3.5 w-3.5 mr-1.5" />Todas Anual
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          className={`h-8 text-xs font-bold px-3 ${darkMode ? 'border-amber-600 text-amber-400 hover:bg-amber-900/30' : 'border-amber-300 text-amber-700 hover:bg-amber-50'}`}
+          onClick={imprimirTodasAnualConRecuperacion}
+          disabled={loadingAnual || !estudiantes.length}
+        >
+          <FileText className="h-3.5 w-3.5 mr-1.5" />Anual + Recup.
+        </Button>
+      </div>
       {(estudiantes || []).map(est => {
         const califs = getCalifs(est.id), prom = calcProm(califs), open = expandedBoleta === est.id;
         return (
