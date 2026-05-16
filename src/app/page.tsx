@@ -2143,36 +2143,45 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
 
   // Loading
   const dataReady = usuario && grados.length > 0;
-  if (loading || dataLoading) return <div className="min-h-screen flex items-center justify-center bg-background"><RefreshCw className="h-12 w-8 animate-spin text-teal-600" /></div>;
+  if (loading || dataLoading) return <div className="min-h-screen flex items-center justify-center" style={{ background: 'oklch(0.975 0.005 75)' }}><RefreshCw className="h-8 w-8 animate-spin" style={{ color: 'oklch(0.52 0.18 35 / 0.6)' }} /></div>;
 
   // Login
   if (!usuario) return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-teal-600 to-emerald-700 p-4 safe-area-bottom">
-      <Card className="w-full max-w-sm sm:max-w-md shadow-2xl mx-4">
+    <div className="min-h-screen flex items-center justify-center p-4 safe-area-bottom relative overflow-hidden" style={{ background: 'oklch(0.975 0.005 75)' }}>
+      <div className="absolute inset-0" style={{
+        backgroundImage: 'radial-gradient(ellipse at 20% 30%, oklch(0.85 0.06 55 / 0.15) 0%, transparent 60%), radial-gradient(ellipse at 80% 70%, oklch(0.92 0.03 85 / 0.1) 0%, transparent 50%)',
+      }} />
+      <div className="absolute inset-0 opacity-[0.015]" style={{
+        backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M30 0L60 30L30 60L0 30Z\' fill=\'%23000\' fill-opacity=\'0.4\'/%3E%3C/svg%3E")',
+        backgroundSize: '60px 60px',
+      }} />
+      <Card className="w-full max-w-sm sm:max-w-md mx-4 relative animate-scale-in" style={{ background: 'oklch(0.99 0.002 75)', borderColor: 'oklch(0.87 0.01 75)' }}>
         <CardHeader className="text-center pb-2">
-          <div className="mx-auto w-14 h-14 bg-white rounded-xl flex items-center justify-center mb-3 shadow-lg overflow-hidden"><img src="/0.png" alt="Logo CEC San José de la Montaña" className="h-10 w-10 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} /></div>
-          <CardTitle className="text-base sm:text-xl">Sistema de Calificaciones</CardTitle>
-          <CardDescription className="text-xs sm:text-sm">Centro Escolar Católico San José de la Montaña</CardDescription>
+          <div className="mx-auto w-14 h-14 flex items-center justify-center mb-3 overflow-hidden rounded-sm" style={{ background: 'oklch(0.95 0.02 55 / 0.15)', border: '1px solid oklch(0.85 0.04 55 / 0.3)' }}>
+            <img src="/0.png" alt="Logo" className="h-9 w-9 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+          </div>
+          <CardTitle className="font-display text-base sm:text-lg" style={{ color: 'oklch(0.13 0.015 45)' }}>Sistema de Calificaciones</CardTitle>
+          <CardDescription className="text-xs sm:text-sm" style={{ color: 'oklch(0.55 0.01 45)' }}>Centro Escolar Católico San José de la Montaña</CardDescription>
         </CardHeader>
         <CardContent className="pt-4">
           {!initialized ? (
             <div className="space-y-3 text-center">
-              <p className="text-sm text-muted-foreground">Inicializa el sistema para comenzar</p>
-              <Button onClick={initSystem} className="w-full bg-teal-600 hover:bg-teal-700 mobile-button">Inicializar Sistema</Button>
+              <p className="text-sm" style={{ color: 'oklch(0.55 0.01 45)' }}>Inicializa el sistema para comenzar</p>
+              <Button onClick={initSystem} className="w-full mobile-button" style={{ background: 'oklch(0.52 0.18 35)', color: 'oklch(0.97 0.005 75)' }}>Inicializar Sistema</Button>
             </div>
           ) : (
             <form onSubmit={handleLogin} className="space-y-3">
-              <div><Label className="text-sm">Email</Label><Input type="email" value={loginForm.email} onChange={e => setLoginForm({ ...loginForm, email: e.target.value })} placeholder="correo@ejemplo.edu" required className="mobile-input" /></div>
-              <div><Label className="text-sm">Contraseña</Label><Input type="password" autoComplete="current-password" value={loginForm.password} onChange={e => setLoginForm({ ...loginForm, password: e.target.value })} required className="mobile-input" /></div>
+              <div><Label className="text-sm" style={{ color: 'oklch(0.22 0.015 45)' }}>Email</Label><Input type="email" value={loginForm.email} onChange={e => setLoginForm({ ...loginForm, email: e.target.value })} placeholder="correo@ejemplo.edu" required className="mobile-input" /></div>
+              <div><Label className="text-sm" style={{ color: 'oklch(0.22 0.015 45)' }}>Contraseña</Label><Input type="password" autoComplete="current-password" value={loginForm.password} onChange={e => setLoginForm({ ...loginForm, password: e.target.value })} required className="mobile-input" /></div>
               {loginError && <p className={`text-sm text-center ${loginError.includes("no está registrada") ? "text-amber-600" : "text-red-500"}`}>{loginError}</p>}
-              <Button type="submit" className="w-full bg-teal-600 hover:bg-teal-700 mobile-button" disabled={loginLoading}>{loginLoading ? "Ingresando..." : "Ingresar"}</Button>
+              <Button type="submit" className="w-full mobile-button" disabled={loginLoading} style={{ background: 'oklch(0.52 0.18 35)', color: 'oklch(0.97 0.005 75)' }}>{loginLoading ? "Ingresando..." : "Ingresar"}</Button>
               <div className="relative flex items-center justify-center">
-                <div className="border-t border-slate-300 w-full" />
-                <span className="bg-white px-2 text-xs text-slate-400 absolute">o</span>
+                <div className="border-t w-full" style={{ borderColor: 'oklch(0.87 0.01 75)' }} />
+                <span className="px-2 text-xs" style={{ background: 'oklch(0.99 0.002 75)', color: 'oklch(0.55 0.01 45)' }}>o</span>
               </div>
               <div ref={googleButtonRef} id="google-button-container" className="flex justify-center min-h-[40px]" />
-              {googleLoading && <p className="text-sm text-center text-muted-foreground">Iniciando sesión con Google...</p>}
-              <p className="text-sm font-medium text-center text-muted-foreground">Ingrese sus credenciales para continuar</p>
+              {googleLoading && <p className="text-sm text-center" style={{ color: 'oklch(0.55 0.01 45)' }}>Iniciando sesión con Google...</p>}
+              <p className="text-sm font-medium text-center" style={{ color: 'oklch(0.55 0.01 45)' }}>Ingrese sus credenciales para continuar</p>
             </form>
           )}
         </CardContent>
@@ -2182,7 +2191,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
 
   // Main
   return (
-    <div className={`min-h-screen flex flex-col transition-colors duration-300 ${darkMode ? 'bg-[#0f172a] text-white' : 'bg-slate-100 text-slate-900'} safe-area-bottom`}>
+    <div className={`page-atmosphere min-h-screen flex flex-col transition-colors duration-300 ${darkMode ? 'text-white' : 'text-[#2d2a24]'} safe-area-bottom`} style={{ background: darkMode ? 'oklch(0.12 0.008 45)' : 'oklch(0.975 0.005 75)' }}>
       <PresenceIndicator
         userId={usuario.id}
         nombre={usuario.nombre}
@@ -2195,19 +2204,24 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
           }
         }}
       />
-      <header className={`shadow-lg ${darkMode ? 'bg-[#1e293b] text-white border-b border-slate-700' : 'bg-teal-600 text-white'} mobile-header`}>
+      <header className={`shadow-sm ${darkMode ? 'bg-[#16181c] text-white border-b border-white/5' : 'bg-white text-[#2d2a24] border-b border-amber-900/10'} mobile-header`}>
         <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
-            <img src="/0.png" alt="Logo CEC San José de la Montaña" className="h-8 w-8 sm:h-10 sm:w-10 shrink-0 object-contain rounded-full bg-white" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-            <div className="min-w-0"><h1 className="text-xs sm:text-sm font-bold truncate">Sistema de Calificaciones</h1><p className={`text-xs font-medium truncate ${darkMode ? 'text-slate-400' : 'text-teal-100'}`}>CEC San José de la Montaña</p></div>
+            <div className={`h-9 w-9 sm:h-10 sm:w-10 shrink-0 rounded-full flex items-center justify-center ${darkMode ? 'bg-amber-900/30' : 'bg-amber-50'} ring-1 ${darkMode ? 'ring-amber-700/30' : 'ring-amber-200/50'}`}>
+              <img src="/0.png" alt="Logo" className="h-7 w-7 sm:h-8 sm:w-8 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+            </div>
+            <div className="min-w-0">
+              <h1 className="font-display text-xs sm:text-sm tracking-tight truncate" style={{ fontFamily: 'var(--font-display)' }}>Sistema de Calificaciones</h1>
+              <p className={`text-[10px] sm:text-xs font-medium truncate ${darkMode ? 'text-amber-400/60' : 'text-amber-700/60'}`}>CEC San José de la Montaña</p>
+            </div>
           </div>
           <div className="flex items-center gap-1 sm:gap-3">
             {configuracion && (
-              <Badge className={`text-xs font-medium px-1.5 sm:px-2 py-0.5 ${darkMode ? 'bg-slate-700 text-slate-200' : 'bg-teal-700 text-white'}`}>
-                Año {configuracion.añoEscolar}
-              </Badge>
+              <span className={`text-[10px] sm:text-xs font-mono font-medium px-2 py-0.5 rounded-sm border tracking-tight ${darkMode ? 'text-amber-400/80 border-amber-700/30 bg-amber-900/10' : 'text-amber-700 border-amber-200 bg-amber-50'}`}>
+                {configuracion.añoEscolar}
+              </span>
             )}
-            <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className={`p-1.5 sm:p-2 rounded-lg transition-colors ${darkMode ? 'bg-slate-700 hover:bg-slate-600 text-yellow-400' : 'bg-teal-700 hover:bg-teal-800 text-white'}`} title={darkMode ? "Modo claro" : "Modo oscuro"}>
+            <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className={`p-1.5 sm:p-2 rounded-sm transition-all ${darkMode ? 'hover:bg-white/5 text-amber-400/60 hover:text-amber-300' : 'hover:bg-amber-50 text-amber-600 hover:text-amber-800'}`} title={darkMode ? "Modo claro" : "Modo oscuro"}>
               {darkMode ? (
                 <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
               ) : (

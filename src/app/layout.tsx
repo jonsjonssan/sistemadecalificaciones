@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Nunito } from "next/font/google";
+import { DM_Sans, DM_Serif_Display, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -8,9 +8,22 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ClientComponents } from "@/components/ClientComponents";
 import { QueryProvider } from "@/lib/query-provider";
 
-const nunito = Nunito({
-  variable: "--font-nunito",
+const dmSans = DM_Sans({
+  variable: "--font-body",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const dmSerifDisplay = DM_Serif_Display({
+  variable: "--font-display",
+  subsets: ["latin"],
+  weight: ["400"],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-mono",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
 });
 
 export const viewport: Viewport = {
@@ -45,7 +58,7 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body
-        className={`${nunito.variable} antialiased bg-background text-foreground`}
+        className={`${dmSans.variable} ${dmSerifDisplay.variable} ${jetbrainsMono.variable} antialiased bg-background text-foreground font-body`}
       >
         <ErrorBoundary>
           <QueryProvider>

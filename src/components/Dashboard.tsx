@@ -233,22 +233,19 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
 
   return (
     <div className="space-y-4 pb-8">
-      <h2 className={`text-xl sm:text-2xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-slate-800'}`}>
-        Hola, {usuario.nombre} 👋
-      </h2>
-      <p className={`text-base sm:text-lg font-medium mb-6 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
-        {usuario.rol === "admin"
-          ? "Bienvenido al panel de administración del sistema."
-          : "Te damos la bienvenida al ciclo escolar."}
-      </p>
+      <div className="animate-fade-slide-up">
+        <h2 className="font-display text-xl sm:text-2xl tracking-tight" style={{ color: darkMode ? 'oklch(0.95 0.005 75)' : 'oklch(0.13 0.015 45)' }}>
+          Hola, {usuario.nombre}
+        </h2>
+        <p className={`text-sm sm:text-base mt-1 ${darkMode ? 'text-amber-200/40' : 'text-amber-700/50'}`}>
+          {usuario.rol === "admin"
+            ? "Bienvenido al panel de administración del sistema."
+            : "Te damos la bienvenida al ciclo escolar."}
+        </p>
+      </div>
 
       {usuario.rol === "admin" && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {loading ? (
             <>
               <StatCard loading title="Total Estudiantes" value={0} subtitle="" icon={Users} iconColor="" iconBg="" accentColor="" darkMode />
@@ -258,123 +255,132 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
             </>
           ) : (
             <>
-              <StatCard
-                title="Total Estudiantes"
-                value={totalEstudiantesVisibles}
-                subtitle="Registrados"
-                icon={Users}
-                iconColor={darkMode ? "text-teal-400" : "text-teal-600"}
-                iconBg={darkMode ? "bg-teal-900/50" : "bg-teal-50"}
-                accentColor="bg-teal-500"
-                darkMode={darkMode}
-                delay={0}
-                action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.totalEstudiantes} />}
-              />
+              <div className="animate-fade-slide-up" style={{ animationDelay: '0s' }}>
+                <StatCard
+                  title="Total Estudiantes"
+                  value={totalEstudiantesVisibles}
+                  subtitle="Registrados"
+                  icon={Users}
+                  iconColor={darkMode ? "text-amber-400" : "text-amber-600"}
+                  iconBg={darkMode ? "bg-amber-900/20" : "bg-amber-50"}
+                  accentColor="bg-amber-500"
+                  darkMode={darkMode}
+                  delay={0}
+                  action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.totalEstudiantes} />}
+                />
+              </div>
 
-              <StatCard
-                title="Grados Activos"
-                value={gradosVisibles.length}
-                subtitle="Secciones"
-                icon={School}
-                iconColor={darkMode ? "text-emerald-400" : "text-emerald-600"}
-                iconBg={darkMode ? "bg-emerald-900/50" : "bg-emerald-50"}
-                accentColor="bg-emerald-500"
-                darkMode={darkMode}
-                delay={0.1}
-                action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.gradosActivos} />}
-              />
+              <div className="animate-fade-slide-up" style={{ animationDelay: '0.1s' }}>
+                <StatCard
+                  title="Grados Activos"
+                  value={gradosVisibles.length}
+                  subtitle="Secciones"
+                  icon={School}
+                  iconColor={darkMode ? "text-amber-400" : "text-amber-600"}
+                  iconBg={darkMode ? "bg-amber-900/20" : "bg-amber-50"}
+                  accentColor="bg-amber-500"
+                  darkMode={darkMode}
+                  delay={0.1}
+                  action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.gradosActivos} />}
+                />
+              </div>
 
-              <StatCard
-                title="Asignaturas"
-                value={totalAsignaturasVisibles}
-                subtitle="Impartidas"
-                icon={BookOpen}
-                iconColor={darkMode ? "text-blue-400" : "text-blue-600"}
-                iconBg={darkMode ? "bg-blue-900/50" : "bg-blue-50"}
-                accentColor="bg-blue-500"
-                darkMode={darkMode}
-                delay={0.2}
-                action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.asignaturas} />}
-              />
+              <div className="animate-fade-slide-up" style={{ animationDelay: '0.2s' }}>
+                <StatCard
+                  title="Asignaturas"
+                  value={totalAsignaturasVisibles}
+                  subtitle="Impartidas"
+                  icon={BookOpen}
+                  iconColor={darkMode ? "text-amber-400" : "text-amber-600"}
+                  iconBg={darkMode ? "bg-amber-900/20" : "bg-amber-50"}
+                  accentColor="bg-amber-500"
+                  darkMode={darkMode}
+                  delay={0.2}
+                  action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.asignaturas} />}
+                />
+              </div>
 
-              <StatCard
-                title="Docentes"
-                value={totalDocentes}
-                subtitle="Activos"
-                icon={GraduationCap}
-                iconColor={darkMode ? "text-amber-400" : "text-amber-600"}
-                iconBg={darkMode ? "bg-amber-900/50" : "bg-amber-50"}
-                accentColor="bg-amber-500"
-                darkMode={darkMode}
-                delay={0.3}
-                action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.docentes} />}
-              />
+              <div className="animate-fade-slide-up" style={{ animationDelay: '0.3s' }}>
+                <StatCard
+                  title="Docentes"
+                  value={totalDocentes}
+                  subtitle="Activos"
+                  icon={GraduationCap}
+                  iconColor={darkMode ? "text-amber-400" : "text-amber-600"}
+                  iconBg={darkMode ? "bg-amber-900/20" : "bg-amber-50"}
+                  accentColor="bg-amber-500"
+                  darkMode={darkMode}
+                  delay={0.3}
+                  action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.docentes} />}
+                />
+              </div>
             </>
           )}
-        </motion.div>
+        </div>
       )}
 
       {/* Promedio Institucional */}
       {esDirectiva && (
-        <Card className={`shadow-sm overflow-hidden ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-slate-100'}`}>
-          <div className="h-1 bg-gradient-to-r from-teal-500 via-blue-500 to-violet-500 w-full" />
-          <CardHeader className="pb-3 flex flex-row items-center justify-between">
-            <CardTitle className={`text-sm sm:text-base flex items-center gap-2 ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>
-              <Target className="h-5 w-5 text-teal-600" />
-              Rendimiento Institucional
-            </CardTitle>
-            <MathInfoButton darkMode={darkMode} explanation={mathExplanations.rendimientoInstitucional} />
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-center">
-              {/* Promedio principal */}
-              <div className="flex justify-center">
-                <PromedioCircular valor={promInstitucional} darkMode={darkMode} />
+        <div className="animate-fade-slide-up" style={{ animationDelay: '0.1s' }}>
+          <Card className={`shadow-sm overflow-hidden ${darkMode ? 'bg-[#16181c] border-white/5' : 'bg-white border-amber-900/10'}`}>
+            <div className="h-px bg-gradient-to-r from-amber-500/40 via-amber-300/20 to-transparent w-full" />
+            <CardHeader className="pb-3 flex flex-row items-center justify-between">
+              <CardTitle className={`font-display text-sm sm:text-base flex items-center gap-2 ${darkMode ? 'text-amber-200/90' : 'text-[#2d2a24]'}`}>
+                <Target className="h-4 w-4 text-amber-500" />
+                Rendimiento Institucional
+              </CardTitle>
+              <MathInfoButton darkMode={darkMode} explanation={mathExplanations.rendimientoInstitucional} />
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-center">
+                <div className="flex justify-center">
+                  <PromedioCircular valor={promInstitucional} darkMode={darkMode} />
+                </div>
+                <div className="sm:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {promPorCiclo.map(c => {
+                    const d = getCicloDark({ nombre: c.nombre } as CicloAsignaturas);
+                    return (
+                      <div key={c.nombre} className={`rounded-sm border p-3 text-center ${darkMode ? 'bg-white/[0.02] border-white/10' : 'bg-amber-50/30 border-amber-900/10'}`}>
+                        <p className={`font-display text-xs mb-1 ${darkMode ? 'text-amber-200/60' : 'text-[#2d2a24]/60'}`}>{c.nombre}</p>
+                        <p className={`text-2xl font-semibold font-mono ${c.prom != null && Math.round(c.prom) >= 5 ? (darkMode ? 'text-amber-300' : 'text-amber-700') : (darkMode ? 'text-red-400' : 'text-red-600')}`}>
+                          {c.prom != null ? c.prom.toFixed(2) : "—"}
+                        </p>
+                        <p className={`text-[10px] font-medium ${darkMode ? 'text-white/30' : 'text-amber-900/40'}`}>
+                          {c.prom != null && Math.round(c.prom) >= 5 ? 'Sobre umbral' : c.prom != null ? 'Bajo umbral' : 'Sin datos'}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-
-              {/* Promedios por ciclo */}
-              <div className="sm:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {promPorCiclo.map(c => {
-                  const d = getCicloDark({ nombre: c.nombre } as CicloAsignaturas);
-                  return (
-                    <div key={c.nombre} className={`rounded-lg border p-3 text-center ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
-                      <p className={`text-xs font-semibold mb-1 ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>{c.nombre}</p>
-                      <p className={`text-2xl font-bold ${c.prom != null && Math.round(c.prom) >= 5 ? (darkMode ? 'text-teal-400' : 'text-teal-600') : (darkMode ? 'text-red-400' : 'text-red-600')}`}>
-                        {c.prom != null ? c.prom.toFixed(2) : "—"}
-                      </p>
-                      <p className={`text-[10px] ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                        {c.prom != null && Math.round(c.prom) >= 5 ? '✓ Sobre umbral' : c.prom != null ? '⚠ Bajo umbral' : 'Sin datos'}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {/* Promedio por Categoría */}
       {esDirectiva && evolutionChartData.length > 0 && (
-        <GradeChart
-          data={evolutionChartData}
-          title="Promedio por Categoría"
-          description="Promedio institucional por tipo de actividad"
-          icon={TrendingUp}
-          showArea
-          showTarget
-          darkMode={darkMode}
-          height={280}
-          action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.promedioPorCategoria} />}
-        />
+        <div className="animate-fade-slide-up" style={{ animationDelay: '0.2s' }}>
+          <GradeChart
+            data={evolutionChartData}
+            title="Promedio por Categoría"
+            description="Promedio institucional por tipo de actividad"
+            icon={TrendingUp}
+            showArea
+            showTarget
+            darkMode={darkMode}
+            height={280}
+            action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.promedioPorCategoria} />}
+          />
+        </div>
       )}
 
       {/* Asignaturas por Ciclo */}
       {esDirectiva && todasAsignaturasList.length > 0 && (
-        <div>
+        <div className="animate-fade-slide-up" style={{ animationDelay: '0.3s' }}>
           <div className="flex items-center gap-2 mb-3">
-            <h3 className={`text-base font-semibold ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
-              <BookOpen className="h-5 w-5 inline mr-2 text-teal-600" />
+            <h3 className={`font-display text-base ${darkMode ? 'text-amber-200/80' : 'text-[#2d2a24]'}`}>
+              <BookOpen className="h-4 w-4 inline mr-2 text-amber-500" />
               Asignaturas por Ciclo
             </h3>
             <MathInfoButton darkMode={darkMode} explanation={mathExplanations.asignaturasPorCiclo} />
@@ -409,21 +415,20 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
-        <Card className={`lg:col-span-2 xl:col-span-3 shadow-sm overflow-hidden flex flex-col ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-slate-100'}`}>
-          <CardHeader className={`flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b gap-4 ${darkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50/50'}`}>
+        <Card className={`lg:col-span-2 xl:col-span-3 shadow-sm overflow-hidden flex flex-col ${darkMode ? 'bg-[#16181c] border-white/5' : 'bg-white border-amber-900/10'}`}>
+          <CardHeader className={`flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b gap-4 ${darkMode ? 'bg-white/[0.02] border-white/5' : 'bg-amber-50/30 border-amber-900/10'}`}>
             <div>
-              <CardTitle className={`text-sm sm:text-base flex items-center gap-2 ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>
-                <TrendingUp className="h-5 w-5 text-teal-600" />
+              <CardTitle className={`font-display text-sm sm:text-base flex items-center gap-2 ${darkMode ? 'text-amber-200/90' : 'text-[#2d2a24]'}`}>
+                <TrendingUp className="h-4 w-4 text-amber-500" />
                 Rendimiento Académico
               </CardTitle>
-              <CardDescription className={`text-xs sm:text-sm font-medium ${darkMode ? 'text-slate-400' : ''}`}>
+              <CardDescription className={`text-xs sm:text-sm ${darkMode ? 'text-amber-200/40' : 'text-amber-900/40'}`}>
                 {esDocente ? `Estadísticas de ${gradosVisibles[0]?.numero}° ${gradosVisibles[0]?.seccion}` : 'Promedios por categoría'}
               </CardDescription>
             </div>
-            {/* Selector de grado solo para admins/directivos */}
             {!esDocente && (
               <Select value={selectedGradoId} onValueChange={setSelectedGradoId}>
-                <SelectTrigger className={`w-full sm:w-[180px] h-9 text-xs sm:text-sm font-medium ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white'}`}>
+                <SelectTrigger className={`w-full sm:w-[180px] h-9 text-xs sm:text-sm font-medium ${darkMode ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-amber-200'}`}>
                   <SelectValue placeholder="Seleccionar grado" />
                 </SelectTrigger>
                 <SelectContent>
@@ -526,16 +531,16 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
 
         <div className="flex flex-col gap-3 sm:gap-4 lg:col-span-1 xl:col-span-1">
           {(usuario.rol === "docente" || usuario.rol === "docente-orientador") && asignaturasAsignadas && asignaturasAsignadas.length > 0 && (
-            <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-slate-100'}`}>
-              <CardHeader className={`py-3 px-4 border-b ${darkMode ? 'border-slate-700' : ''}`}>
-                <CardTitle className={`text-xs font-bold uppercase ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Mis Asignaturas</CardTitle>
+            <Card className={`shadow-sm ${darkMode ? 'bg-[#16181c] border-white/5' : 'bg-white border-amber-900/10'}`}>
+              <CardHeader className={`py-3 px-4 border-b ${darkMode ? 'border-white/5' : 'border-amber-900/10'}`}>
+                <CardTitle className={`font-display text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-amber-200/50' : 'text-amber-700/50'}`}>Mis Asignaturas</CardTitle>
               </CardHeader>
               <CardContent className="p-3 max-h-[200px] overflow-y-auto">
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {asignaturasAsignadas.map(m => (
-                    <div key={m.id} className={`p-2 rounded border text-xs flex justify-between items-center ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border'}`}>
-                      <span className={`font-medium truncate mr-2 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>{m.nombre}</span>
-                      <Badge variant="secondary" className={`text-[10px] whitespace-nowrap ${darkMode ? 'bg-slate-700 text-slate-300' : ''}`}>{m.grado?.numero}°{m.grado?.seccion}</Badge>
+                    <div key={m.id} className={`p-2 text-xs flex justify-between items-center ${darkMode ? 'bg-white/[0.02] border border-white/5' : 'bg-amber-50/30 border border-amber-900/10'}`}>
+                      <span className={`font-medium truncate mr-2 ${darkMode ? 'text-amber-200/70' : 'text-[#2d2a24]/80'}`}>{m.nombre}</span>
+                      <span className={`font-mono text-[10px] ${darkMode ? 'text-amber-300/50' : 'text-amber-700/50'}`}>{m.grado?.numero}°{m.grado?.seccion}</span>
                     </div>
                   ))}
                 </div>
@@ -543,31 +548,31 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
             </Card>
           )}
 
-          <Card className={`shadow-sm flex-1 ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-slate-100'}`}>
-            <CardHeader className={`py-3 px-4 border-b ${darkMode ? 'border-slate-700' : ''}`}>
-              <CardTitle className={`text-xs font-bold uppercase ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Gestión Rápida</CardTitle>
+          <Card className={`shadow-sm flex-1 ${darkMode ? 'bg-[#16181c] border-white/5' : 'bg-white border-amber-900/10'}`}>
+            <CardHeader className={`py-3 px-4 border-b ${darkMode ? 'border-white/5' : 'border-amber-900/10'}`}>
+              <CardTitle className={`font-display text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-amber-200/50' : 'text-amber-700/50'}`}>Gestión Rápida</CardTitle>
             </CardHeader>
-            <CardContent className="p-3 sm:p-4 space-y-3">
-              <div className={`p-3 border rounded-lg flex items-center gap-3 hover:bg-teal-50 transition-colors cursor-pointer group ${darkMode ? 'bg-teal-900/30 border-teal-800 hover:bg-teal-900/50' : 'bg-teal-50/50 border-teal-100'}`} onClick={() => (window as any).setActiveTab?.('calificaciones')}>
-                <div className={`p-2 rounded-md shrink-0 group-hover:scale-110 transition-transform ${darkMode ? 'bg-teal-800 text-teal-300' : 'bg-teal-100 text-teal-700'}`}><ClipboardList className="h-5 w-5" /></div>
+            <CardContent className="p-3 sm:p-4 space-y-2">
+              <div className={`p-3 flex items-center gap-3 cursor-pointer group transition-all ${darkMode ? 'bg-white/[0.02] border border-white/5 hover:bg-white/[0.04]' : 'bg-amber-50/30 border border-amber-900/10 hover:bg-amber-50/60'}`} onClick={() => (window as any).setActiveTab?.('calificaciones')}>
+                <div className={`p-2 shrink-0 group-hover:scale-105 transition-transform ${darkMode ? 'bg-amber-900/20 text-amber-400' : 'bg-amber-100 text-amber-700'}`}><ClipboardList className="h-5 w-5" /></div>
                 <div>
-                  <h4 className={`text-sm font-bold ${darkMode ? 'text-teal-200' : 'text-teal-900'}`}>Pasar Notas</h4>
-                  <p className={`text-[11px] ${darkMode ? 'text-teal-400' : 'text-teal-700/70'}`}>Calificaciones</p>
+                  <h4 className={`text-sm font-semibold ${darkMode ? 'text-amber-200/80' : 'text-[#2d2a24]'}`}>Pasar Notas</h4>
+                  <p className={`text-[11px] ${darkMode ? 'text-amber-300/50' : 'text-amber-700/50'}`}>Calificaciones</p>
                 </div>
               </div>
-              <div className={`p-3 border rounded-lg flex items-center gap-3 hover:bg-blue-50 transition-colors cursor-pointer group ${darkMode ? 'bg-blue-900/30 border-blue-800 hover:bg-blue-900/50' : 'bg-blue-50/50 border-blue-100'}`} onClick={() => (window as any).setActiveTab?.('asistencia')}>
-                <div className={`p-2 rounded-md shrink-0 group-hover:scale-110 transition-transform ${darkMode ? 'bg-blue-800 text-blue-300' : 'bg-blue-100 text-blue-700'}`}><CalendarDays className="h-5 w-5" /></div>
+              <div className={`p-3 flex items-center gap-3 cursor-pointer group transition-all ${darkMode ? 'bg-white/[0.02] border border-white/5 hover:bg-white/[0.04]' : 'bg-amber-50/30 border border-amber-900/10 hover:bg-amber-50/60'}`} onClick={() => (window as any).setActiveTab?.('asistencia')}>
+                <div className={`p-2 shrink-0 group-hover:scale-105 transition-transform ${darkMode ? 'bg-amber-900/20 text-amber-400' : 'bg-amber-100 text-amber-700'}`}><CalendarDays className="h-5 w-5" /></div>
                 <div>
-                  <h4 className={`text-sm font-bold ${darkMode ? 'text-blue-200' : 'text-blue-900'}`}>Asistencia</h4>
-                  <p className={`text-[11px] ${darkMode ? 'text-blue-400' : 'text-blue-700/70'}`}>Control diario</p>
+                  <h4 className={`text-sm font-semibold ${darkMode ? 'text-amber-200/80' : 'text-[#2d2a24]'}`}>Asistencia</h4>
+                  <p className={`text-[11px] ${darkMode ? 'text-amber-300/50' : 'text-amber-700/50'}`}>Control diario</p>
                 </div>
               </div>
               {usuario.rol === "admin" && (
-                <div className={`p-3 border rounded-lg flex items-center gap-3 hover:bg-amber-50 transition-colors cursor-pointer group ${darkMode ? 'bg-amber-900/30 border-amber-800 hover:bg-amber-900/50' : 'bg-amber-50/50 border-amber-100'}`} onClick={() => (window as any).setActiveTab?.('admin')}>
-                  <div className={`p-2 rounded-md shrink-0 group-hover:scale-110 transition-transform ${darkMode ? 'bg-amber-800 text-amber-300' : 'bg-amber-100 text-amber-700'}`}><GraduationCap className="h-5 w-5" /></div>
+                <div className={`p-3 flex items-center gap-3 cursor-pointer group transition-all ${darkMode ? 'bg-white/[0.02] border border-white/5 hover:bg-white/[0.04]' : 'bg-amber-50/30 border border-amber-900/10 hover:bg-amber-50/60'}`} onClick={() => (window as any).setActiveTab?.('admin')}>
+                  <div className={`p-2 shrink-0 group-hover:scale-105 transition-transform ${darkMode ? 'bg-amber-900/20 text-amber-400' : 'bg-amber-100 text-amber-700'}`}><GraduationCap className="h-5 w-5" /></div>
                   <div>
-                    <h4 className={`text-sm font-bold ${darkMode ? 'text-amber-200' : 'text-amber-900'}`}>Docentes</h4>
-                    <p className={`text-[11px] ${darkMode ? 'text-amber-400' : 'text-amber-700/70'}`}>Administración</p>
+                    <h4 className={`text-sm font-semibold ${darkMode ? 'text-amber-200/80' : 'text-[#2d2a24]'}`}>Docentes</h4>
+                    <p className={`text-[11px] ${darkMode ? 'text-amber-300/50' : 'text-amber-700/50'}`}>Administración</p>
                   </div>
                 </div>
               )}
