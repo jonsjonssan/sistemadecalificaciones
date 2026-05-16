@@ -151,7 +151,7 @@ export const CiclosSection = memo(function CiclosSection({
           : null;
 
         return (
-          <Card key={ciclo.nombre} className={`shadow-sm overflow-hidden ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-slate-100'}`}>
+          <Card key={ciclo.nombre} className={`shadow-sm overflow-hidden border-border bg-card`}>
             <div className={`h-1 w-full ${darkMode ? d.bg.replace('/20', '') : ciclo.colorBg}`} />
             <CardHeader
               className={`flex flex-row items-center justify-between cursor-pointer py-3 px-4 ${darkMode ? 'hover:bg-slate-800/50' : 'hover:bg-slate-50'} transition-colors`}
@@ -162,30 +162,30 @@ export const CiclosSection = memo(function CiclosSection({
                   <Book className={`h-4 w-4 ${darkMode ? d.icon : ciclo.iconColor}`} />
                 </div>
                 <div>
-                  <CardTitle className={`text-sm font-semibold ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>{ciclo.nombre}</CardTitle>
-                  <CardDescription className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                  <CardTitle className={`text-sm font-semibold ${darkMode ? 'text-slate-400' : 'text-slate-700'}`}>{ciclo.nombre}</CardTitle>
+                  <CardDescription className="text-xs text-muted-foreground">
                     {porGrado.map(g => `${g.grado}°${g.seccion}`).join(", ")} · {totalMaterias} asignaturas · {totalEstudiantesCiclo} estudiantes
                   </CardDescription>
                 </div>
               </div>
               {isOpen
-                ? <ChevronDown className={`h-5 w-5 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`} />
-                : <ChevronRight className={`h-5 w-5 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`} />}
+                ? <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                : <ChevronRight className="h-5 w-5 text-muted-foreground" />}
             </CardHeader>
 
             {isOpen && (
               <CardContent className="px-4 pb-4 pt-0 space-y-4">
                 <div className={`grid grid-cols-2 sm:grid-cols-3 gap-3 p-3 rounded-lg ${darkMode ? 'bg-slate-800/50' : 'bg-slate-50'}`}>
                   <div className="text-center">
-                    <p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>Estudiantes</p>
+                    <p className="text-xs text-muted-foreground">Estudiantes</p>
                     <p className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{totalEstudiantesCiclo}</p>
                   </div>
                   <div className="text-center">
-                    <p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>Asignaturas</p>
+                    <p className="text-xs text-muted-foreground">Asignaturas</p>
                     <p className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{totalMaterias}</p>
                   </div>
                   <div className="text-center col-span-2 sm:col-span-1">
-                    <p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>Promedio Ciclo</p>
+                    <p className="text-xs text-muted-foreground">Promedio Ciclo</p>
                     <p className={`text-lg font-bold ${promCiclo != null && Math.round(promCiclo) >= 5 ? (darkMode ? 'text-teal-400' : 'text-teal-600') : (darkMode ? 'text-red-400' : 'text-red-600')}`}>
                       {promCiclo != null ? promCiclo.toFixed(2) : "N/A"}
                     </p>
@@ -204,7 +204,7 @@ export const CiclosSection = memo(function CiclosSection({
                     }}
                     className="rounded border-slate-300 text-teal-600 focus:ring-teal-500 h-4 w-4"
                   />
-                  <label htmlFor={`select-all-${ciclo.nombre}`} className={`text-xs font-semibold cursor-pointer ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>
+                  <label htmlFor={`select-all-${ciclo.nombre}`} className={`text-xs font-semibold cursor-pointer ${darkMode ? 'text-slate-400' : 'text-slate-700'}`}>
                     {allSelected ? "Deseleccionar todas" : someSelected ? "Seleccionar restantes" : "Seleccionar todas"} las asignaturas
                   </label>
                 </div>
@@ -215,7 +215,7 @@ export const CiclosSection = memo(function CiclosSection({
                     return (
                       <div key={grupo.grado} className={`rounded-lg border p-3 ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
                         <div className="flex items-center justify-between mb-2">
-                          <h4 className={`text-xs font-bold uppercase tracking-wider ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                          <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                             {grupo.grado}° "{grupo.seccion}"
                           </h4>
                           <Badge variant={grupo.promedio != null && Math.round(grupo.promedio) >= 5 ? "default" : "destructive"} className={`text-[10px] h-5 ${grupo.promedio != null && Math.round(grupo.promedio) >= 5 ? (darkMode ? 'bg-teal-600' : 'bg-teal-600') : ''}`}>
@@ -223,8 +223,8 @@ export const CiclosSection = memo(function CiclosSection({
                           </Badge>
                         </div>
                         <div className="flex items-center gap-1 mb-2">
-                          <Users className={`h-3 w-3 ${darkMode ? 'text-slate-600' : 'text-slate-400'}`} />
-                          <span className={`text-[10px] ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>{grupo.estudianteCount} estudiantes</span>
+                          <Users className="h-3 w-3 text-muted-foreground" />
+                          <span className="text-[10px] text-muted-foreground">{grupo.estudianteCount} estudiantes</span>
                         </div>
                         <ul className="space-y-1.5">
                           {grupo.materias.sort((a, b) => a.nombre.localeCompare(b.nombre)).map((mat) => {

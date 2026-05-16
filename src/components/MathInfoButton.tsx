@@ -33,7 +33,7 @@ export function MathInfoModal({ isOpen, onClose, darkMode, explanation }: MathIn
       <div
         className={`relative w-full max-w-md rounded-2xl shadow-2xl border overflow-hidden transform transition-all ${
           darkMode
-            ? "bg-[#1e293b] border-slate-600 text-white"
+            ? "bg-card border-border text-card-foreground"
             : "bg-white border-slate-200 text-slate-900"
         }`}
       >
@@ -103,7 +103,7 @@ export function MathInfoModal({ isOpen, onClose, darkMode, explanation }: MathIn
             <div
               className={`font-mono text-sm px-3 py-2 rounded-lg text-center ${
                 darkMode
-                  ? "bg-slate-900/60 text-teal-300 border border-teal-800/50"
+                  ? "bg-slate-900/60 text-teal-400 border border-teal-800/50"
                   : "bg-white text-teal-700 border border-teal-200"
               }`}
             >
@@ -115,11 +115,30 @@ export function MathInfoModal({ isOpen, onClose, darkMode, explanation }: MathIn
           <div className="space-y-2">
             <p
               className={`text-[10px] font-semibold uppercase tracking-wider ${
-                darkMode ? "text-slate-500" : "text-slate-400"
-              }`}
-            >
-              Pasos del cálculo
-            </p>
+                    "text-muted-foreground"
+                  }
+                >
+                  Pasos del cálculo
+                </p>
+                <div className="space-y-2">
+                  {explanation.steps.map((step, i) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <div
+                        className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold mt-0.5 ${
+                          darkMode
+                            ? "bg-teal-900/40 text-teal-400"
+                            : "bg-teal-100 text-teal-700"
+                        }`}
+                      >
+                        {i + 1}
+                      </div>
+                      <p
+                        className={`text-sm leading-relaxed pt-0.5 ${
+                          darkMode ? "text-slate-400" : "text-slate-600"
+                        }`}
+                      >
+                        {step}
+                      </p>
             <div className="space-y-2">
               {explanation.steps.map((step, i) => (
                 <div key={i} className="flex items-start gap-3">

@@ -43,7 +43,7 @@ function CustomTooltip({ active, payload, darkMode, showTarget }: { active?: boo
       <div
         className={cn(
           "rounded-lg shadow-lg border p-3",
-          darkMode ? "bg-[#1e293b] border-slate-700" : "bg-white border-slate-200"
+          darkMode ? "bg-card border-border" : "bg-white border-slate-200"
         )}
       >
         <p className={cn("text-sm font-semibold mb-1", darkMode ? "text-white" : "text-slate-800")}>
@@ -52,7 +52,7 @@ function CustomTooltip({ active, payload, darkMode, showTarget }: { active?: boo
         <div className="space-y-0.5">
           <p className="text-xs flex items-center gap-1">
             <span className="h-2 w-2 rounded-full bg-teal-500 inline-block" />
-            <span className={darkMode ? "text-slate-300" : "text-slate-600"}>Promedio:</span>
+            <span className={darkMode ? "text-slate-400" : "text-slate-600"}>Promedio:</span>
             <span className={cn("font-bold", darkMode ? "text-white" : "text-slate-800")}>
               {data.value.toFixed(2)}
             </span>
@@ -60,7 +60,7 @@ function CustomTooltip({ active, payload, darkMode, showTarget }: { active?: boo
           {showTarget && data.target && (
             <p className="text-xs flex items-center gap-1">
               <span className="h-2 w-2 rounded-full bg-amber-500 inline-block" />
-              <span className={darkMode ? "text-slate-300" : "text-slate-600"}>Meta:</span>
+              <span className={darkMode ? "text-slate-400" : "text-slate-600"}>Meta:</span>
               <span className={cn("font-bold", darkMode ? "text-white" : "text-slate-800")}>
                 {data.target.toFixed(2)}
               </span>
@@ -105,21 +105,28 @@ export function GradeChart({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
-      <Card
-        className={cn(
-          "shadow-sm overflow-hidden",
-          darkMode ? "bg-[#1e293b] border-slate-700" : "border-slate-100"
-        )}
-      >
-        <div className="h-1 w-full bg-gradient-to-r from-teal-500 to-cyan-500" />
+        <Card
+          className={cn(
+            "shadow-sm overflow-hidden border-border bg-card",
+          )}
+        >
+          <div className="h-1 w-full bg-gradient-to-r from-primary/60 to-primary/30" />
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               {Icon && (
-                <div className={cn("h-8 w-8 rounded-full flex items-center justify-center", darkMode ? "bg-teal-900/30" : "bg-teal-50")}>
+                <div className={cn("h-8 w-8 rounded-full flex items-center justify-center", darkMode ? "bg-primary/20" : "bg-teal-50")}>
                   <Icon className="h-4 w-4 text-teal-500" />
                 </div>
-              )}
+                <div>
+                  <CardTitle className={cn("text-sm sm:text-base", darkMode ? "text-slate-400" : "text-slate-700")}>
+                    {title}
+                  </CardTitle>
+                  {description && (
+                    <CardDescription className="text-xs text-muted-foreground">
+                      {description}
+                    </CardDescription>
+                  )}
               <div>
                 <CardTitle className={cn("text-sm sm:text-base", darkMode ? "text-slate-200" : "text-slate-700")}>
                   {title}
@@ -142,7 +149,7 @@ export function GradeChart({
         </CardHeader>
         <CardContent>
           {data.length === 0 ? (
-            <div className={cn("flex items-center justify-center py-12", darkMode ? "text-slate-500" : "text-slate-400")}>
+            <div className="flex items-center justify-center py-12 text-muted-foreground">
               <p className="text-sm">No hay datos disponibles</p>
             </div>
           ) : (

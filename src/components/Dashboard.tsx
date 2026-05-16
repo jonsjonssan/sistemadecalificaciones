@@ -388,7 +388,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
               <Button
                 size="sm"
                 onClick={() => setInformeOpen(true)}
-                className={`w-full sm:w-auto bg-teal-600 hover:bg-teal-700 text-white shadow-sm`}
+                className={`w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm`}
               >
                 <FileText className="h-4 w-4 mr-2" />
                 Generar Informe Técnico Pedagógico-Didáctico
@@ -447,7 +447,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={darkMode ? "#334155" : "#E2E8F0"} />
                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: darkMode ? '#94a3b8' : '#64748b' }} />
                     <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: darkMode ? '#94a3b8' : '#64748b' }} />
-                    <Tooltip cursor={{ fill: darkMode ? '#334155' : '#f1f5f9' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '11px', backgroundColor: darkMode ? '#1e293b' : '#fff', color: darkMode ? '#fff' : '#333' }} />
+                    <Tooltip cursor={{ fill: darkMode ? '#334155' : '#f1f5f9' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '11px', backgroundColor: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#e8e8e8' : '#111' }} />
                     <Bar dataKey="estudiantes" name="N° Estudiantes" fill="#0d9488" radius={[4, 4, 0, 0]} barSize={30} />
                   </BarChart>
                 </ResponsiveContainer>
@@ -460,7 +460,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                       <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={darkMode ? "#334155" : "#E2E8F0"} />
                       <XAxis type="number" domain={[0, 10]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: darkMode ? '#94a3b8' : '#64748b' }} />
                       <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: darkMode ? '#94a3b8' : '#64748b' }} width={80} />
-                      <Tooltip cursor={{ fill: darkMode ? '#334155' : '#f1f5f9' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '11px', backgroundColor: darkMode ? '#1e293b' : '#fff', color: darkMode ? '#fff' : '#333' }} />
+                    <Tooltip cursor={{ fill: darkMode ? '#334155' : '#f1f5f9' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '11px', backgroundColor: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#e8e8e8' : '#111' }} />
                       <Bar dataKey="valor" name="Promedio" radius={[0, 4, 4, 0]} barSize={25}>
                         {categoryChartData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
@@ -470,14 +470,14 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                   </ResponsiveContainer>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-3 sm:gap-4">
-                  <div className={`p-3 sm:p-4 rounded-xl border ${darkMode ? 'bg-teal-900/30 border-teal-800' : 'bg-teal-50/50 border-teal-100'}`}>
-                    <h4 className={`text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2 ${darkMode ? 'text-teal-300' : 'text-teal-800'}`}>
+                  <div className={`p-3 sm:p-4 rounded-xl border ${darkMode ? 'bg-teal-900/20 border-teal-800/60' : 'bg-teal-50/50 border-teal-100'}`}>
+                    <h4 className={`text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2 ${darkMode ? 'text-teal-400' : 'text-teal-700'}`}>
                       <Trophy className="h-4 w-4 text-amber-500" /> Cuadro de Honor
                     </h4>
                     <div className="space-y-2">
                       {selectedStats.topEstudiantes.length > 0 ? selectedStats.topEstudiantes.map((est, i) => (
                         <div key={est.id} className="flex items-center justify-between text-xs sm:text-sm gap-2">
-                          <span className={`flex-1 truncate ${darkMode ? 'text-slate-300' : 'text-slate-700'}`} title={`${i + 1}. ${est.nombre}`}>{i + 1}. {est.nombre}</span>
+                          <span className={`flex-1 truncate ${darkMode ? 'text-slate-400' : 'text-slate-700'}`} title={`${i + 1}. ${est.nombre}`}>{i + 1}. {est.nombre}</span>
                           <div className="flex items-center gap-1.5 shrink-0">
                             {est.estado === "CONDICIONADO" && (
                               <Badge variant="secondary" className="text-[9px] py-0 h-4 px-1 bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/50 dark:text-amber-300 dark:border-amber-700">C</Badge>
@@ -490,17 +490,17 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                             </Badge>
                           </div>
                         </div>
-                      )) : <p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>Sin datos</p>}
+                        )) : <p className="text-xs text-muted-foreground">Sin datos</p>}
                     </div>
                   </div>
-                  <div className={`p-3 sm:p-4 rounded-xl border ${darkMode ? 'bg-red-900/30 border-red-800' : 'bg-red-50/50 border-red-100'}`}>
-                    <h4 className={`text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2 ${darkMode ? 'text-red-300' : 'text-red-800'}`}>
+                  <div className={`p-3 sm:p-4 rounded-xl border ${darkMode ? 'bg-red-900/20 border-red-800/60' : 'bg-red-50/50 border-red-100'}`}>
+                    <h4 className={`text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2 ${darkMode ? 'text-red-400' : 'text-red-700'}`}>
                       <AlertTriangle className="h-4 w-4 text-red-500" /> Alertas
                     </h4>
                     <div className="space-y-2">
                       {selectedStats.alertas.length > 0 ? selectedStats.alertas.map((est, i) => (
                         <div key={est.id} className="flex items-center justify-between text-xs sm:text-sm gap-2">
-                          <span className={`flex-1 truncate ${darkMode ? 'text-slate-300' : 'text-slate-700'}`} title={est.nombre}>{est.nombre}</span>
+                          <span className={`flex-1 truncate ${darkMode ? 'text-slate-400' : 'text-slate-700'}`} title={est.nombre}>{est.nombre}</span>
                           <div className="flex items-center gap-1.5 shrink-0">
                             {est.estado === "CONDICIONADO" && (
                               <Badge variant="secondary" className="text-[9px] py-0 h-4 px-1 bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/50 dark:text-amber-300 dark:border-amber-700">C</Badge>
@@ -513,7 +513,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                             </Badge>
                           </div>
                         </div>
-                      )) : <p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>Sin alertas</p>}
+                        )) : <p className="text-xs text-muted-foreground">Sin alertas</p>}
                     </div>
                   </div>
                 </div>

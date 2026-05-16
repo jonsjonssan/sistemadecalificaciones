@@ -2399,7 +2399,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                     {/* Fila de config y botones */}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                       {configActual && (
-                        <div className={`flex items-center gap-2 sm:gap-3 text-xs font-medium px-2 sm:px-3 py-2 rounded-lg w-full sm:w-auto overflow-x-auto hide-scrollbar ${darkMode ? 'text-slate-400 bg-slate-800/80' : 'text-slate-600 bg-slate-50'}`}>
+                        <div className={`flex items-center gap-2 sm:gap-3 text-xs font-medium px-2 sm:px-3 py-2 rounded-lg w-full sm:w-auto overflow-x-auto hide-scrollbar ${darkMode ? 'text-slate-300 bg-slate-800/60' : 'text-slate-600 bg-slate-50'}`}>
                           <span className="flex items-center gap-1 whitespace-nowrap">
                             <span className={`w-2 h-2 rounded-full ${darkMode ? 'bg-blue-500' : 'bg-blue-600'}`} />
                             {configActual.numActividadesCotidianas} AC ({configActual.porcentajeAC}%)
@@ -2422,15 +2422,15 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                           <span className="hidden sm:inline">{saving ? 'Guardando...' : 'Guardar Todo'}</span>
                           <span className="sm:hidden">{saving ? '...' : 'Guardar'}</span>
                         </Button>
-                        <Button size="sm" variant="outline" className={`h-9 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm gap-1 sm:gap-2 ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''}`} onClick={handleRefrescar} disabled={refreshing} title="Refrescar calificaciones">
+                        <Button size="sm" variant="outline" className={`h-9 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm gap-1 sm:gap-2 ${darkMode ? 'bg-slate-100/10 border-border text-slate-400 hover:bg-slate-100/20' : ''}`} onClick={handleRefrescar} disabled={refreshing} title="Refrescar calificaciones">
                           <RefreshCw className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${refreshing ? 'animate-spin' : ''}`} />
                           <span className="hidden sm:inline">{refreshing ? 'Refrescando...' : 'Refrescar'}</span>
                         </Button>
-                        <Button size="sm" variant="outline" className={`h-9 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm gap-1 sm:gap-2 ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''}`} onClick={() => { setEditConfig(configActual); setConfigDialogOpen(true); }} title="Configurar actividades y porcentajes">
+                        <Button size="sm" variant="outline" className={`h-9 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm gap-1 sm:gap-2 ${darkMode ? 'bg-slate-100/10 border-border text-slate-400 hover:bg-slate-100/20' : ''}`} onClick={() => { setEditConfig(configActual); setConfigDialogOpen(true); }} title="Configurar actividades y porcentajes">
                           <Settings className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                           <span className="hidden sm:inline">Configurar</span>
                         </Button>
-                        <Button size="sm" variant="outline" className={`h-9 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm gap-1 sm:gap-2 ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''}`} onClick={() => setImportDialogOpen(true)}>
+                        <Button size="sm" variant="outline" className={`h-9 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm gap-1 sm:gap-2 ${darkMode ? 'bg-slate-100/10 border-border text-slate-400 hover:bg-slate-100/20' : ''}`} onClick={() => setImportDialogOpen(true)}>
                           <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                           <span className="hidden sm:inline">Importar</span>
                         </Button>
@@ -2438,7 +2438,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                           <Hash className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         </Button>
                         {isAdmin(usuario.rol) && (
-                          <Button size="sm" variant="destructive" className={`h-9 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm gap-1 sm:gap-2 ${darkMode ? 'bg-red-700 hover:bg-red-600 border-red-600' : ''}`} onClick={() => { setBorrarCalifTipo("grado"); setBorrarCalifDialogOpen(true); }}>
+                          <Button size="sm" variant="destructive" className={`h-9 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm gap-1 sm:gap-2`} onClick={() => { setBorrarCalifTipo("grado"); setBorrarCalifDialogOpen(true); }}>
                             <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                             <span className="hidden sm:inline">Borrar</span>
                           </Button>

@@ -43,7 +43,7 @@ export function StatCard({
       <Card
         className={cn(
           "shadow-sm overflow-hidden",
-          darkMode ? "bg-[#1e293b] border-slate-700" : "border-slate-100"
+          "border-border bg-card shadow-sm overflow-hidden"
         )}
       >
         <div className={cn("h-1 w-full", accentColor)} />
@@ -70,8 +70,7 @@ export function StatCard({
     >
       <Card
         className={cn(
-          "shadow-sm overflow-hidden transition-shadow duration-200 hover:shadow-md cursor-default",
-          darkMode ? "bg-[#1e293b] border-slate-700" : "border-slate-100"
+          "shadow-sm overflow-hidden transition-shadow duration-200 hover:shadow-md cursor-default border-border bg-card",
         )}
       >
         <div className={cn("h-1 w-full", accentColor)} />
@@ -81,7 +80,7 @@ export function StatCard({
               <p
                 className={cn(
                   "text-sm font-medium",
-                  darkMode ? "text-slate-300" : "text-slate-600"
+                  darkMode ? "text-slate-400" : "text-slate-600"
                 )}
               >
                 {title}
@@ -113,11 +112,11 @@ export function StatCard({
             <p
               className={cn(
                 "text-xs font-medium",
-                darkMode ? "text-slate-400" : "text-slate-500"
-              )}
-            >
-              {subtitle}
-            </p>
+                  "text-muted-foreground"
+                )}
+              >
+                {subtitle}
+              </p>
             {trend && (
               <div
                 className={cn(

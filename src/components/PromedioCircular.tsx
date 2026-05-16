@@ -13,7 +13,9 @@ export const PromedioCircular = memo(function PromedioCircular({ valor, darkMode
   const normalizedRadius = radius - stroke;
   const circumference = normalizedRadius * 2 * Math.PI;
   const strokeDashoffset = valor != null ? circumference - (valor / 10) * circumference : circumference;
-  const color = valor != null && Math.round(valor) >= 5 ? "#14b8a6" : "#ef4444";
+  const tealColor = darkMode ? "oklch(0.62 0.22 160)" : "oklch(0.42 0.16 160)";
+  const redColor = darkMode ? "oklch(0.65 0.20 25)" : "oklch(0.52 0.20 25)";
+  const color = valor != null && Math.round(valor) >= 5 ? tealColor : redColor;
 
   return (
     <div className="flex flex-col items-center">
@@ -24,7 +26,7 @@ export const PromedioCircular = memo(function PromedioCircular({ valor, darkMode
             cy={radius}
             r={normalizedRadius}
             fill="none"
-            stroke={darkMode ? "#334155" : "#e2e8f0"}
+            stroke={darkMode ? "oklch(0.20 0 0)" : "oklch(0.90 0 0)"}
             strokeWidth={stroke}
           />
           <circle
@@ -41,10 +43,10 @@ export const PromedioCircular = memo(function PromedioCircular({ valor, darkMode
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>
+          <span className={`text-3xl font-bold ${darkMode ? 'text-slate-100' : 'text-slate-800'}`}>
             {valor != null ? valor.toFixed(2) : "—"}
           </span>
-          <span className={`text-[10px] ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>de 10</span>
+          <span className="text-[10px] text-muted-foreground">de 10</span>
         </div>
       </div>
       <div className="mt-2 flex items-center gap-1">
