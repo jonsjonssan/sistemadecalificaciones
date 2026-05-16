@@ -196,6 +196,7 @@ const [asistenciaManualHabilitado, setAsistenciaManualHabilitado] = useState<boo
 const [asistenciaManualData, setAsistenciaManualData] = useState<{[key: string]: { asistencias: string; inasistencias: string; tardanzas: string; justificadas: string; totalDias: string; observaciones: string }}>({});
 const [tipoAsistencia, setTipoAsistencia] = useState<"auto" | "manual_espacio" | "manual_digital">("auto");
 const observacionesSaveTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
+const asistenciaManualDataRef = useRef(asistenciaManualData);
 
 // Load persisted state from localStorage after hydration
 useEffect(() => {
@@ -236,6 +237,9 @@ const savedTipoAsistencia = localStorage.getItem("ss_tipoAsistencia");
       }
   }
 }, []);
+
+  // Mantener ref sincronizada con asistenciaManualData para beforeunload
+  useEffect(() => { asistenciaManualDataRef.current = asistenciaManualData; }, [asistenciaManualData]);
 
   // Cargar observaciones desde la base de datos cuando cambia grado/trimestre
   useEffect(() => {
@@ -517,7 +521,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
       }
       return updated;
     });
-    // Persistir observaciones en la base de datos con debounce
+    // Persistir observaciones en la base de datos (debounce 300ms, se guarda también al cerrar página)
     if (field === 'observaciones' && gradoSeleccionado && trimestreSeleccionado) {
       const existing = observacionesSaveTimersRef.current.get(estudianteId);
       if (existing) clearTimeout(existing);
@@ -540,7 +544,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
         } catch (err) {
           console.error("Error guardando observacion en BD:", err);
         }
-      }, 1500);
+      }, 300);
       observacionesSaveTimersRef.current.set(estudianteId, timer);
     }
   }, [gradoSeleccionado, trimestreSeleccionado, gradosFiltrados]);
@@ -1986,6 +1990,26 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
 
   // Guardar estado antes de cerrar la pestaña - intentar guardar datos primero
   useEffect(() => {
+    const flushPendingObservaciones = () => {
+      const data = asistenciaManualDataRef.current;
+      if (!gradoSeleccionado || !trimestreSeleccionado) return;
+      const grado = gradosFiltrados.find(g => g.id === gradoSeleccionado);
+      const año = grado?.año || new Date().getFullYear();
+      for (const [estudianteId, entry] of Object.entries(data)) {
+        const obs = entry?.observaciones?.trim();
+        if (obs) {
+          const blob = new Blob([JSON.stringify({
+            estudianteId,
+            gradoId: gradoSeleccionado,
+            trimestre: trimestreSeleccionado,
+            año,
+            observaciones: obs,
+          })], { type: "application/json" });
+          navigator.sendBeacon("/api/observaciones", blob);
+        }
+      }
+    };
+
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (usuario) {
         // Trigger saves without awaiting (browser may not wait for async)
@@ -2006,6 +2030,8 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
         saveUserState({ gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado, activeTab });
         localStorage.setItem(`sis_last_session_${usuario.id}`, new Date().toISOString());
       }
+      // Flush observaciones pendientes a la BD antes de cerrar
+      flushPendingObservaciones();
     };
 
     const handleVisibilityChange = () => {
@@ -2017,6 +2043,8 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
         // Cuando la pestaña se oculta, guardar estado
         saveUserState({ gradoSeleccionado, asignaturaSeleccionada, trimestreSeleccionado, activeTab });
         localStorage.setItem(`sis_last_session_${usuario.id}`, new Date().toISOString());
+        // Flush observaciones pendientes a la BD
+        flushPendingObservaciones();
       }
     };
 
