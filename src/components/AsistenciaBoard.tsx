@@ -74,6 +74,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
   const [deletingDate, setDeletingDate] = useState<string | null>(null);
   const [asistenciaBloqueada, setAsistenciaBloqueada] = useState(false);
   const [bloqueoDialogOpen, setBloqueoDialogOpen] = useState(false);
+  const [tieneRegistrosGuardados, setTieneRegistrosGuardados] = useState(false);
 
   const puedeSobrescribir = usuario && ["admin", "admin-directora", "admin-codirectora", "docente-orientador"].includes(usuario.rol);
   const activeStudents = estudiantes.filter(e => e.activo);
@@ -121,12 +122,10 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
         });
         setAsistencias(loadedAsistencias);
         const tieneRegistros = data.length > 0;
+        setTieneRegistrosGuardados(tieneRegistros);
         if (tieneRegistros) {
           if (puedeSobrescribir) {
-            if (!asistenciaBloqueada) {
-              setAsistenciaBloqueada(true);
-              setBloqueoDialogOpen(true);
-            }
+            setAsistenciaBloqueada(false);
           } else {
             setAsistenciaBloqueada(true);
             if (!asistenciaBloqueada) setBloqueoDialogOpen(true);
@@ -137,6 +136,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
       } else {
         if (abortController.signal.aborted) return;
         setAsistencias(initializeAttendance());
+        setTieneRegistrosGuardados(false);
       }
     } catch (error: any) {
       // Ignorar errores de aborto
@@ -146,6 +146,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
       }
       toast({ title: "Error cargar asistencia", variant: "destructive" });
       setAsistencias(initializeAttendance());
+      setTieneRegistrosGuardados(false);
     } finally {
       // Solo quitar loading si no fue abortado
       if (!abortController.signal.aborted) {
@@ -610,24 +611,6 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     if (!gradoId || !fecha) return;
     setSaving(true);
 
-    // Verificar si ya existe asistencia para esta fecha
-    try {
-      const checkUrl = `/api/asistencia?fecha=${fecha}T00:00:00.000Z&gradoId=${gradoId}`;
-      const checkRes = await fetch(checkUrl, { credentials: "include" });
-      if (checkRes.ok) {
-        const existingRecords = await checkRes.json();
-        if (existingRecords && existingRecords.length > 0) {
-          const confirmOverwrite = confirm(`Ya existe asistencia guardada para el ${fecha}.\n\n¿Deseas sobrescribir los registros existentes?`);
-          if (!confirmOverwrite) {
-            setSaving(false);
-            return;
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Error verificando asistencia existente:", error);
-    }
-
     const records = Object.entries(asistencias).map(([estudianteId, estado]) => ({
       estudianteId,
       estado
@@ -800,10 +783,10 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
       <CardContent className="pt-4 space-y-4">
         {view === "pass" ? (
           <>
-            {asistenciaBloqueada && (
-              <div className={`flex items-center gap-3 p-3 rounded-lg border ${darkMode ? (puedeSobrescribir ? 'bg-blue-900/30 border-blue-700 text-blue-200' : 'bg-amber-900/30 border-amber-700 text-amber-200') : (puedeSobrescribir ? 'bg-blue-50 border-blue-200 text-blue-800' : 'bg-amber-50 border-amber-200 text-amber-800')}`}>
-                <Lock className="h-5 w-5 shrink-0" />
-                <div className="text-sm font-medium">{puedeSobrescribir ? 'Ya existe asistencia para esta fecha. Puedes sobrescribirla si es necesario.' : 'Ya existe un registro de asistencia para esta fecha y grado. No se puede modificar.'}</div>
+            {tieneRegistrosGuardados && (
+              <div className={`flex items-center gap-3 p-3 rounded-lg border ${puedeSobrescribir ? (darkMode ? 'bg-blue-900/30 border-blue-700 text-blue-200' : 'bg-blue-50 border-blue-200 text-blue-800') : (darkMode ? 'bg-amber-900/30 border-amber-700 text-amber-200' : 'bg-amber-50 border-amber-200 text-amber-800')}`}>
+                {puedeSobrescribir ? <FileCheck className="h-5 w-5 shrink-0" /> : <Lock className="h-5 w-5 shrink-0" />}
+                <div className="text-sm font-medium">{puedeSobrescribir ? 'Ya existe asistencia para esta fecha. Puedes modificarla libremente.' : 'Ya existe un registro de asistencia para esta fecha y grado. No se puede modificar.'}</div>
               </div>
             )}
             <div className={`flex flex-wrap items-end gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl border ${darkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50'}`}>
