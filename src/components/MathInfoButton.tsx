@@ -53,16 +53,9 @@ export function MathInfoModal({ isOpen, onClose, darkMode, explanation }: MathIn
             </div>
             <div>
               <h3 className="text-sm font-bold">{explanation.title}</h3>
-              <p
-                className={`text-[11px] ${
-                  darkMode ? "text-slate-400" : "text-slate-500"
-                }`}
-              >
+              <p className={`text-[11px] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
                 Proceso de cálculo
-                    </p>
-                  </div>
-                ))}
-              </div>
+              </p>
             </div>
           </div>
           <button
