@@ -1382,7 +1382,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
                 <Button size="sm" variant="ghost" title="Consolidado Anual" className={`h-6 px-2 text-xs ${darkMode ? 'text-teal-400' : 'text-teal-600'}`} onClick={e => { e.stopPropagation(); imprimirAnual(est.id); }}>
                   <FileText className="h-3.5 w-3.5 mr-1" />Anual
                 </Button>
-                <Button size="sm" variant="ghost" title="Imprimir Trimestre" className={`h-6 px-2 text-xs ${darkMode ? 'text-slate-300' : ''}`} onClick={e => { e.stopPropagation(); imprimir(est.id); }}>
+                <Button size="sm" variant="ghost" title="Imprimir Trimestre" className={`h-6 px-2 text-xs ${darkMode ? 'text-slate-400' : ''}`} onClick={e => { e.stopPropagation(); imprimir(est.id); }}>
                   <Printer className="h-3 w-3 mr-1" />Boleta
                 </Button>
                 <Button size="sm" variant="ghost" title="Descargar Word" className={`h-6 px-2 text-xs ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} onClick={e => { e.stopPropagation(); descargarWord(est.id); }}>

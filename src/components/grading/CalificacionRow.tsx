@@ -213,7 +213,7 @@ function NotaInput({ value, onChange, darkMode, hasError, onBlur, onNavigate, in
           }`} />
           {/* Tooltip mini al hacer hover */}
           <div className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-            <div className={`px-1 py-0.5 rounded text-[9px] font-medium whitespace-nowrap ${darkMode ? "bg-slate-600 text-teal-300" : "bg-white text-teal-700 border border-teal-200 shadow-sm"}`}>
+            <div className={`px-1 py-0.5 rounded text-[9px] font-medium whitespace-nowrap ${darkMode ? "bg-slate-600 text-teal-400" : "bg-white text-teal-700 border border-teal-200 shadow-sm"}`}>
               Historial
             </div>
           </div>

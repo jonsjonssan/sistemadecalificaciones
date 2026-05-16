@@ -39,14 +39,14 @@ const steps = [
         </p>
         {role === "admin" ? (
           <div className="p-3 bg-teal-50 dark:bg-teal-900/30 rounded-lg border border-teal-200 dark:border-teal-800">
-            <p className="text-sm font-medium text-teal-800 dark:text-teal-300">Como Administrador</p>
+            <p className="text-sm font-medium text-teal-800 dark:text-teal-400">Como Administrador</p>
             <p className="text-xs text-teal-700 dark:text-teal-400 mt-1">
               Puedes gestionar usuarios, grados, materias y ver estadísticas generales del sistema.
             </p>
           </div>
         ) : (
           <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
-            <p className="text-sm font-medium text-blue-800 dark:text-blue-300">Como Docente</p>
+            <p className="text-sm font-medium text-blue-800 dark:text-blue-400">Como Docente</p>
             <p className="text-xs text-blue-700 dark:text-blue-400 mt-1">
               Puedes ingresar calificaciones, tomar asistencia y ver el rendimiento de tus estudiantes asignados.
             </p>

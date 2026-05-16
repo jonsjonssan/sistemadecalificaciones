@@ -91,7 +91,7 @@ export class ErrorBoundary extends Component<Props, State> {
             </CardHeader>
             <CardContent className="text-sm">
               <details className="space-y-2">
-                <summary className="cursor-pointer font-medium text-red-700 dark:text-red-300 hover:text-red-800 dark:hover:text-red-200">
+                <summary className="cursor-pointer font-medium text-red-700 dark:text-red-400 hover:text-red-800 dark:hover:text-red-200">
                   Ver detalles técnicos
                 </summary>
                 <pre className="mt-2 whitespace-pre-wrap break-all rounded-md bg-red-50 dark:bg-red-950/40 p-3 text-xs text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900">

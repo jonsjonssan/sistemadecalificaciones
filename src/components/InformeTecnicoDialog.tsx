@@ -338,7 +338,7 @@ export default function InformeTecnicoDialog({
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label className={darkMode ? 'text-slate-300' : ''}>Seleccionar Trimestre</Label>
+            <Label className={darkMode ? 'text-slate-400' : ''}>Seleccionar Trimestre</Label>
             <Select value={trimestre} onValueChange={setTrimestre}>
               <SelectTrigger className={darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}>
                 <SelectValue />
@@ -352,7 +352,7 @@ export default function InformeTecnicoDialog({
           </div>
 
           <div className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-teal-50 border-teal-100'}`}>
-            <p className={`text-xs font-medium ${darkMode ? 'text-slate-300' : 'text-teal-800'}`}>
+            <p className={`text-xs font-medium ${darkMode ? 'text-slate-400' : 'text-teal-800'}`}>
               📄 El informe incluirá:
             </p>
             <ul className={`text-xs mt-2 space-y-1 ${darkMode ? 'text-slate-400' : 'text-teal-700'}`}>
@@ -366,7 +366,7 @@ export default function InformeTecnicoDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} className={darkMode ? 'border-slate-600 text-slate-300' : ''}>
+          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} className={darkMode ? 'border-slate-600 text-slate-400' : ''}>
             Cancelar
           </Button>
           <Button size="sm" onClick={generarInforme} disabled={generando} className="bg-teal-600 hover:bg-teal-700">

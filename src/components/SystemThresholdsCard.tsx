@@ -204,7 +204,7 @@ export function SystemThresholdsCard({
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-[#f43f5e]" />
-                <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-300" : "text-slate-700"}`}>Reprobado</span>
+                <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-400" : "text-slate-700"}`}>Reprobado</span>
               </div>
               <label className="flex items-center gap-1 cursor-pointer text-[10px]">
                 <input
@@ -254,7 +254,7 @@ export function SystemThresholdsCard({
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-[#f59e0b]" />
-                <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-300" : "text-slate-700"}`}>Condicionado</span>
+                <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-400" : "text-slate-700"}`}>Condicionado</span>
               </div>
               <label className="flex items-center gap-1 cursor-pointer text-[10px]">
                 <input
@@ -304,7 +304,7 @@ export function SystemThresholdsCard({
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-[#10b981]" />
-                <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-300" : "text-slate-700"}`}>Aprobado</span>
+                <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-400" : "text-slate-700"}`}>Aprobado</span>
               </div>
               <label className="flex items-center gap-1 cursor-pointer text-[10px]">
                 <input
@@ -372,7 +372,7 @@ export function SystemThresholdsCard({
         <div className={`rounded-xl border p-3 ${darkMode ? "bg-slate-800/60 border-slate-700" : "bg-slate-50 border-slate-200"}`}>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <Label className={`text-xs font-semibold ${darkMode ? "text-slate-300" : "text-slate-700"}`}>
+              <Label className={`text-xs font-semibold ${darkMode ? "text-slate-400" : "text-slate-700"}`}>
                 Límite Historial por Celda
               </Label>
               <p className={`text-[10px] ${darkMode ? "text-slate-500" : "text-slate-500"}`}>

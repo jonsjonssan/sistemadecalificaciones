@@ -51,7 +51,7 @@ export function EmptyState({
           <h3
             className={cn(
               "text-lg font-semibold mb-1",
-              darkMode ? "text-slate-300" : "text-slate-700"
+              darkMode ? "text-slate-400" : "text-slate-700"
             )}
           >
             {title}

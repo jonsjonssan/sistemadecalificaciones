@@ -242,7 +242,7 @@ export const CiclosSection = memo(function CiclosSection({
                                   {mat.nombre}
                                 </span>
                                 {statMateria?.promedio != null && (
-                                  <Badge variant="secondary" className={`shrink-0 text-[10px] h-4 px-1 ${darkMode ? 'bg-slate-700 text-slate-300' : ''}`}>
+                                  <Badge variant="secondary" className={`shrink-0 text-[10px] h-4 px-1 ${darkMode ? 'bg-slate-700 text-slate-400' : ''}`}>
                                     {statMateria.promedio.toFixed(1)}
                                   </Badge>
                                 )}

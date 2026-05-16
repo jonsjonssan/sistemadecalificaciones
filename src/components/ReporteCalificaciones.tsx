@@ -307,7 +307,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
         <CardContent className="p-2 sm:p-3">
           <div className="flex flex-wrap items-end gap-2 sm:gap-3">
             <div className="flex-1 min-w-[140px]">
-              <Label className={`text-sm font-medium mb-1 block ${darkMode ? "text-slate-300" : ""}`}>Grado</Label>
+              <Label className={`text-sm font-medium mb-1 block ${darkMode ? "text-slate-400" : ""}`}>Grado</Label>
               <Select value={gradoId} onValueChange={handleGradoChange}>
                 <SelectTrigger className={`h-11 sm:h-12 text-sm ${darkMode ? "bg-slate-800 border-slate-600 text-white" : ""}`}>
                   <SelectValue placeholder="Seleccionar grado" />
@@ -320,7 +320,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
               </Select>
             </div>
             <div className="w-20 sm:w-28">
-              <Label className={`text-sm font-medium mb-1 block ${darkMode ? "text-slate-300" : ""}`}>Trimestre</Label>
+              <Label className={`text-sm font-medium mb-1 block ${darkMode ? "text-slate-400" : ""}`}>Trimestre</Label>
               <Select value={trimestre} onValueChange={setTrimestre}>
                 <SelectTrigger className={`h-11 sm:h-12 text-sm ${darkMode ? "bg-slate-800 border-slate-600 text-white" : ""}`}>
                   <SelectValue placeholder="Seleccionar trimestre" />
@@ -362,7 +362,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
                     }}
                     className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium transition-all border ${
                       activa
-                        ? (darkMode ? "bg-teal-900/40 border-teal-600 text-teal-300" : "bg-teal-50 border-teal-300 text-teal-700")
+                        ? (darkMode ? "bg-teal-900/40 border-teal-600 text-teal-400" : "bg-teal-50 border-teal-300 text-teal-700")
                         : (darkMode ? "bg-slate-800 border-slate-600 text-slate-500 line-through opacity-60" : "bg-slate-100 border-slate-300 text-slate-400 line-through opacity-60")
                     }`}
                   >
@@ -400,7 +400,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
         <>
           {/* Resumen */}
           <div className={`flex flex-wrap gap-3 px-4 py-2.5 rounded-lg border text-sm ${
-            darkMode ? "bg-slate-800/80 border-slate-700 text-slate-300" : "bg-white border-slate-200 text-slate-600"
+            darkMode ? "bg-slate-800/80 border-slate-700 text-slate-400" : "bg-white border-slate-200 text-slate-600"
           }`}>
             <span className="font-medium text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider">Resumen</span>
             <div className="flex items-center gap-1.5">
@@ -487,7 +487,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
                   const rango = getRangoNota(promedio, umbralCondicionado, umbralAprobado);
                   return (
                     <div key={mat.id} className={`flex items-center gap-2 px-3 py-2 rounded-lg ${darkMode ? "bg-slate-700/50 border border-slate-600" : "bg-slate-100 border border-slate-200"}`}>
-                      <span className={`text-xs font-medium ${darkMode ? "text-slate-300" : "text-slate-600"}`}>
+                      <span className={`text-xs font-medium ${darkMode ? "text-slate-400" : "text-slate-600"}`}>
                         {mat.nombre}
                       </span>
                       <Badge className={`text-[10px] font-bold ${getRangoColor(rango, darkMode)}`}>

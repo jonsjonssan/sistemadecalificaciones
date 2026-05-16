@@ -231,7 +231,7 @@ const CuadroTrimestres = memo(function CuadroTrimestres({ gradoId, gradoNumero, 
       <CardContent className="p-3">
         <div className="flex flex-wrap items-end gap-3 mb-3">
           <div className="flex-1 min-w-[180px]">
-            <Label className={`text-sm font-medium mb-1 block ${darkMode ? "text-slate-300" : ""}`}>Asignatura para cuadro de trimestres</Label>
+            <Label className={`text-sm font-medium mb-1 block ${darkMode ? "text-slate-400" : ""}`}>Asignatura para cuadro de trimestres</Label>
             <Select value={asignaturaCuadroId} onValueChange={setAsignaturaCuadroId}>
               <SelectTrigger className={`h-11 sm:h-12 text-sm ${darkMode ? "bg-slate-800 border-slate-600 text-white" : ""}`}>
                 <SelectValue placeholder="Seleccionar asignatura" />
@@ -261,7 +261,7 @@ const CuadroTrimestres = memo(function CuadroTrimestres({ gradoId, gradoNumero, 
           <div className="text-center text-slate-500 py-4">Asignatura no encontrada.</div>
         ) : asignaturaCuadroId ? (
           <>
-            <div className={`mb-2 text-center ${darkMode ? "text-slate-300" : "text-slate-700"}`}>
+            <div className={`mb-2 text-center ${darkMode ? "text-slate-400" : "text-slate-700"}`}>
               <div className="text-xs font-bold uppercase tracking-wider">Escuela Parroquial San José de la Montaña</div>
               <div className="text-sm font-semibold">CUADRO B — PROMEDIOS POR PERÍODO</div>
               <div className="text-xs">MATERIA: {asignaturaCuadro?.nombre} &nbsp;|&nbsp; GRADO: {gradoNumero}° "{gradoSeccion}" &nbsp;|&nbsp; AÑO: {gradoAño || new Date().getFullYear()}</div>

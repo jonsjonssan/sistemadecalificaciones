@@ -124,7 +124,7 @@ export function ContextualHelp({ section, darkMode }: ContextualHelpProps) {
               {help.tips.map((tip, i) => (
                 <li key={i} className="text-xs flex items-start gap-1.5">
                   <span className="text-teal-600 mt-0.5">•</span>
-                  <span className={darkMode ? 'text-slate-300' : 'text-slate-600'}>{tip}</span>
+                  <span className={darkMode ? 'text-slate-400' : 'text-slate-600'}>{tip}</span>
                 </li>
               ))}
             </ul>

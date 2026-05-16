@@ -882,7 +882,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                       <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                         Estudiantes
                       </span>
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${darkMode ? 'bg-teal-900/60 text-teal-300' : 'bg-teal-100 text-teal-700'}`}>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${darkMode ? 'bg-teal-900/60 text-teal-400' : 'bg-teal-100 text-teal-700'}`}>
                         {activeStudents.length}
                       </span>
                     </div>
@@ -918,7 +918,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                         size="sm"
                         variant="outline"
                         disabled={asistenciaBloqueada}
-                        className={`flex-1 sm:flex-none h-9 text-xs font-semibold px-2 sm:px-4 ${darkMode ? 'border-slate-600 text-slate-300 hover:bg-slate-800' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                        className={`flex-1 sm:flex-none h-9 text-xs font-semibold px-2 sm:px-4 ${darkMode ? 'border-slate-600 text-slate-400 hover:bg-slate-800' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}
                         onClick={() => {
                           if (asistenciaBloqueada) return;
                           setAsistencias({});
@@ -1166,11 +1166,11 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                                       <div className={`rounded-lg p-3 ${darkMode ? 'bg-teal-900/20 border border-teal-800/50' : 'bg-teal-50 border border-teal-200'}`}>
                                         <div className="flex items-center justify-between mb-2">
                                           <span className={`font-semibold text-sm ${darkMode ? 'text-teal-400' : 'text-teal-700'}`}>✓ Asistencias</span>
-                                          <span className={`text-xs px-2 py-0.5 rounded-full ${darkMode ? 'bg-teal-900/40 text-teal-300' : 'bg-teal-100 text-teal-700'}`}>{r.fechasPresente.length} días</span>
+                                          <span className={`text-xs px-2 py-0.5 rounded-full ${darkMode ? 'bg-teal-900/40 text-teal-400' : 'bg-teal-100 text-teal-700'}`}>{r.fechasPresente.length} días</span>
                                         </div>
                                         <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
                                           {r.fechasPresente.map((fecha, i) => (
-                                            <span key={i} className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-mono ${darkMode ? 'bg-teal-900/40 text-teal-300 border border-teal-700/30' : 'bg-white text-teal-700 border border-teal-200 shadow-sm'}`}>
+                                            <span key={i} className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-mono ${darkMode ? 'bg-teal-900/40 text-teal-400 border border-teal-700/30' : 'bg-white text-teal-700 border border-teal-200 shadow-sm'}`}>
                                               {fecha}
                                               <button
                                                 onClick={(e) => {
@@ -1197,11 +1197,11 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                                       <div className={`rounded-lg p-3 ${darkMode ? 'bg-amber-900/20 border border-amber-800/50' : 'bg-amber-50 border border-amber-200'}`}>
                                         <div className="flex items-center justify-between mb-2">
                                           <span className={`font-semibold text-sm ${darkMode ? 'text-amber-400' : 'text-amber-700'}`}>⏰ Tardanzas</span>
-                                          <span className={`text-xs px-2 py-0.5 rounded-full ${darkMode ? 'bg-amber-900/40 text-amber-300' : 'bg-amber-100 text-amber-700'}`}>{r.fechasTardanza.length} días</span>
+                                          <span className={`text-xs px-2 py-0.5 rounded-full ${darkMode ? 'bg-amber-900/40 text-amber-400' : 'bg-amber-100 text-amber-700'}`}>{r.fechasTardanza.length} días</span>
                                         </div>
                                         <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
                                           {r.fechasTardanza.map((fecha, i) => (
-                                            <span key={i} className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-mono ${darkMode ? 'bg-amber-900/40 text-amber-300 border border-amber-700/30' : 'bg-white text-amber-700 border border-amber-200 shadow-sm'}`}>
+                                            <span key={i} className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-mono ${darkMode ? 'bg-amber-900/40 text-amber-400 border border-amber-700/30' : 'bg-white text-amber-700 border border-amber-200 shadow-sm'}`}>
                                               {fecha}
                                               <button
                                                 onClick={(e) => {
@@ -1228,11 +1228,11 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                                       <div className={`rounded-lg p-3 ${darkMode ? 'bg-blue-900/20 border border-blue-800/50' : 'bg-blue-50 border border-blue-200'}`}>
                                         <div className="flex items-center justify-between mb-2">
                                           <span className={`font-semibold text-sm ${darkMode ? 'text-blue-400' : 'text-blue-700'}`}>📋 Justificadas</span>
-                                          <span className={`text-xs px-2 py-0.5 rounded-full ${darkMode ? 'bg-blue-900/40 text-blue-300' : 'bg-blue-100 text-blue-700'}`}>{r.fechasJustificada.length} días</span>
+                                          <span className={`text-xs px-2 py-0.5 rounded-full ${darkMode ? 'bg-blue-900/40 text-blue-400' : 'bg-blue-100 text-blue-700'}`}>{r.fechasJustificada.length} días</span>
                                         </div>
                                         <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
                                           {r.fechasJustificada.map((fecha, i) => (
-                                            <span key={i} className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-mono ${darkMode ? 'bg-blue-900/40 text-blue-300 border border-blue-700/30' : 'bg-white text-blue-700 border border-blue-200 shadow-sm'}`}>
+                                            <span key={i} className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-mono ${darkMode ? 'bg-blue-900/40 text-blue-400 border border-blue-700/30' : 'bg-white text-blue-700 border border-blue-200 shadow-sm'}`}>
                                               {fecha}
                                               <button
                                                 onClick={(e) => {
@@ -1259,11 +1259,11 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                                       <div className={`rounded-lg p-3 ${darkMode ? 'bg-red-900/20 border border-red-800/50' : 'bg-red-50 border border-red-200'}`}>
                                         <div className="flex items-center justify-between mb-2">
                                           <span className={`font-semibold text-sm ${darkMode ? 'text-red-400' : 'text-red-700'}`}>✗ Ausencias</span>
-                                          <span className={`text-xs px-2 py-0.5 rounded-full ${darkMode ? 'bg-red-900/40 text-red-300' : 'bg-red-100 text-red-700'}`}>{r.fechasAusente.length} días</span>
+                                          <span className={`text-xs px-2 py-0.5 rounded-full ${darkMode ? 'bg-red-900/40 text-red-400' : 'bg-red-100 text-red-700'}`}>{r.fechasAusente.length} días</span>
                                         </div>
                                         <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
                                           {r.fechasAusente.map((fecha, i) => (
-                                            <span key={i} className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-mono ${darkMode ? 'bg-red-900/40 text-red-300 border border-red-700/30' : 'bg-white text-red-700 border border-red-200 shadow-sm'}`}>
+                                            <span key={i} className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-mono ${darkMode ? 'bg-red-900/40 text-red-400 border border-red-700/30' : 'bg-white text-red-700 border border-red-200 shadow-sm'}`}>
                                               {fecha}
                                               <button
                                                 onClick={(e) => {
@@ -1325,7 +1325,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
-            <Button size="sm" variant="outline" onClick={() => { setBloqueoDialogOpen(false); if (!puedeSobrescribir) setAsistenciaBloqueada(true); }} className={darkMode ? 'border-slate-600 text-slate-300' : ''}>
+            <Button size="sm" variant="outline" onClick={() => { setBloqueoDialogOpen(false); if (!puedeSobrescribir) setAsistenciaBloqueada(true); }} className={darkMode ? 'border-slate-600 text-slate-400' : ''}>
               {puedeSobrescribir ? 'Cancelar' : 'Entendido'}
             </Button>
             {puedeSobrescribir && (

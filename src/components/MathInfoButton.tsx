@@ -75,7 +75,7 @@ export function MathInfoModal({ isOpen, onClose, darkMode, explanation }: MathIn
           {/* Description */}
           <p
             className={`text-sm leading-relaxed ${
-              darkMode ? "text-slate-300" : "text-slate-600"
+              darkMode ? "text-slate-400" : "text-slate-600"
             }`}
           >
             {explanation.description}

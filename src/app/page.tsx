@@ -2341,7 +2341,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
             {(!gradosFiltrados || gradosFiltrados.length === 0) ? (
               <Card className="shadow-sm">
                 <CardContent className="p-6 text-center">
-                  <School className="h-12 w-12 mx-auto text-slate-300 mb-3" />
+                  <School className="h-12 w-12 mx-auto text-slate-400 mb-3" />
                   <h3 className="text-lg font-medium text-slate-600 mb-2">No hay grados disponibles</h3>
                   <p className="text-slate-500">
                     {isAdmin(usuario.rol)
@@ -2357,7 +2357,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                     {/* Fila de selectores */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div className="space-y-2">
-                        <Label className={`text-sm font-medium ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Grado</Label>
+                        <Label className={`text-sm font-medium ${darkMode ? 'text-slate-400' : 'text-slate-700'}`}>Grado</Label>
                         <Select value={gradoSeleccionado || ""} onValueChange={(val) => { setGradoSeleccionado(val); setAsignaturaSeleccionada(""); saveUserState({ gradoSeleccionado: val }); }}>
                           <SelectTrigger className={`h-11 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}>
                             <SelectValue placeholder="Seleccionar grado" />
@@ -2368,7 +2368,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label className={`text-sm font-medium ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Asignatura</Label>
+                        <Label className={`text-sm font-medium ${darkMode ? 'text-slate-400' : 'text-slate-700'}`}>Asignatura</Label>
                         <Select value={asignaturaSeleccionada || ""} onValueChange={(val) => { setAsignaturaSeleccionada(val); saveUserState({ asignaturaSeleccionada: val }); }}>
                           <SelectTrigger className={`h-11 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}>
                             <SelectValue placeholder="Seleccionar asignatura" />
@@ -2379,7 +2379,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label className={`text-sm font-medium ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Trimestre</Label>
+                        <Label className={`text-sm font-medium ${darkMode ? 'text-slate-400' : 'text-slate-700'}`}>Trimestre</Label>
                         <Select value={trimestreSeleccionado || ""} onValueChange={setTrimestreSeleccionado}>
                           <SelectTrigger className={`h-11 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}>
                             <SelectValue placeholder="Seleccionar trimestre" />
@@ -2399,7 +2399,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                     {/* Fila de config y botones */}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                       {configActual && (
-                        <div className={`flex items-center gap-2 sm:gap-3 text-xs font-medium px-2 sm:px-3 py-2 rounded-lg w-full sm:w-auto overflow-x-auto hide-scrollbar ${darkMode ? 'text-slate-300 bg-slate-800/60' : 'text-slate-600 bg-slate-50'}`}>
+                        <div className={`flex items-center gap-2 sm:gap-3 text-xs font-medium px-2 sm:px-3 py-2 rounded-lg w-full sm:w-auto overflow-x-auto hide-scrollbar ${darkMode ? 'text-slate-400 bg-slate-800/60' : 'text-slate-600 bg-slate-50'}`}>
                           <span className="flex items-center gap-1 whitespace-nowrap">
                             <span className={`w-2 h-2 rounded-full ${darkMode ? 'bg-blue-500' : 'bg-blue-600'}`} />
                             {configActual.numActividadesCotidianas} AC ({configActual.porcentajeAC}%)
@@ -2584,7 +2584,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                             <>
                               <th colSpan={configActual.numActividadesCotidianas} className={`p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-slate-600' : 'border-slate-500'}`}>Act. Cotidianas</th>
                               <th
-                                className={`w-16 p-2 text-center font-semibold border-l border-b cursor-pointer hover:bg-blue-800 transition-colors ${darkMode ? 'bg-blue-900/60 border-slate-600 text-blue-300' : 'bg-blue-50 border-slate-500 text-blue-700'}`}
+                                className={`w-16 p-2 text-center font-semibold border-l border-b cursor-pointer hover:bg-blue-800 transition-colors ${darkMode ? 'bg-blue-900/60 border-slate-600 text-blue-400' : 'bg-blue-50 border-slate-500 text-blue-700'}`}
                                 onClick={() => handleSort('promAC')}
                               >
                                 <div className="flex items-center justify-center gap-1">
@@ -2614,7 +2614,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                                 </th>
                               )}
                               {configActual.tieneExamen && (
-                                <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-amber-900/60 border-slate-600 text-amber-300' : 'bg-amber-50 border-slate-500 text-amber-700'}`}>Prom Ex</th>
+                                <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-amber-900/60 border-slate-600 text-amber-400' : 'bg-amber-50 border-slate-500 text-amber-700'}`}>Prom Ex</th>
                               )}
                               <th className={`w-14 p-2 text-center font-semibold border-l border-b cursor-pointer select-none ${darkMode ? 'border-slate-600' : 'border-slate-500'} ${mostrarRecuperacion ? (darkMode ? 'bg-teal-800/40' : 'bg-teal-100') : ''}`} onClick={() => { const next = !mostrarRecuperacion; setMostrarRecuperacion(next); if (typeof window !== "undefined") localStorage.setItem("ss_mostrarRecuperacion", JSON.stringify(next)); }} title={mostrarRecuperacion ? "Desactivar columna Recuperación" : "Activar columna Recuperación"}>
                                 <div className="flex items-center justify-center gap-0.5">
@@ -2637,7 +2637,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                             <>
                               <th colSpan={4} className={`p-2 text-center font-semibold border-l border-b ${darkMode ? 'border-slate-600' : 'border-slate-500'}`}>Act. Cotidianas</th>
                               <th
-                                className={`w-16 p-2 text-center font-semibold border-l border-b cursor-pointer hover:bg-blue-800 transition-colors ${darkMode ? 'bg-blue-900/60 border-slate-600 text-blue-300' : 'bg-blue-50 border-slate-500 text-blue-700'}`}
+                                className={`w-16 p-2 text-center font-semibold border-l border-b cursor-pointer hover:bg-blue-800 transition-colors ${darkMode ? 'bg-blue-900/60 border-slate-600 text-blue-400' : 'bg-blue-50 border-slate-500 text-blue-700'}`}
                                 onClick={() => handleSort('promAC')}
                               >
                                 <div className="flex items-center justify-center gap-1">
@@ -2664,7 +2664,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                                   {sortColumn === 'examen' && <ArrowUpDown className="h-3 w-3" />}
                                 </div>
                               </th>
-                              <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-amber-900/60 border-slate-600 text-amber-300' : 'bg-amber-50 border-slate-500 text-amber-700'}`}>Prom Ex</th>
+                              <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-amber-900/60 border-slate-600 text-amber-400' : 'bg-amber-50 border-slate-500 text-amber-700'}`}>Prom Ex</th>
                               <th className={`w-14 p-2 text-center font-semibold border-l border-b cursor-pointer select-none ${darkMode ? 'border-slate-600' : 'border-slate-500'} ${mostrarRecuperacion ? (darkMode ? 'bg-teal-800/40' : 'bg-teal-100') : ''}`} onClick={() => { const next = !mostrarRecuperacion; setMostrarRecuperacion(next); if (typeof window !== "undefined") localStorage.setItem("ss_mostrarRecuperacion", JSON.stringify(next)); }} title={mostrarRecuperacion ? "Desactivar columna Recuperación" : "Activar columna Recuperación"}>
                                 <div className="flex items-center justify-center gap-0.5">
                                   <span>Rec.</span>
@@ -2740,13 +2740,13 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                     {/* Resumen de promedios */}
                     <div className={`flex flex-wrap items-center gap-2 sm:gap-4 p-2 sm:p-3 mt-2 border-t ${darkMode ? 'border-slate-700 bg-slate-800/50' : 'border-slate-200 bg-slate-50'}`}>
                       <div className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg ${darkMode ? 'bg-blue-900/30 border border-blue-700' : 'bg-blue-50 border border-blue-200'}`}>
-                        <div className={`text-[10px] sm:text-xs font-medium whitespace-nowrap ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>Prom. Asig.</div>
+                        <div className={`text-[10px] sm:text-xs font-medium whitespace-nowrap ${darkMode ? 'text-blue-400' : 'text-blue-700'}`}>Prom. Asig.</div>
                         <div className={`text-base sm:text-lg font-bold ${darkMode ? 'text-blue-400' : 'text-blue-800'}`}>
                           {sectionLoading ? <Skeleton className={`h-4 w-10 sm:h-5 sm:w-12 ${darkMode ? 'bg-blue-800' : 'bg-blue-200'}`} /> : (promedioAsignatura !== null ? promedioAsignatura.toFixed(2) : "—")}
                         </div>
                       </div>
                       <div className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg ${darkMode ? 'bg-emerald-900/30 border border-emerald-700' : 'bg-emerald-50 border border-emerald-200'}`}>
-                        <div className={`text-[10px] sm:text-xs font-medium whitespace-nowrap ${darkMode ? 'text-emerald-300' : 'text-emerald-700'}`}>Prom. Grado</div>
+                        <div className={`text-[10px] sm:text-xs font-medium whitespace-nowrap ${darkMode ? 'text-emerald-400' : 'text-emerald-700'}`}>Prom. Grado</div>
                         <div className={`text-base sm:text-lg font-bold ${darkMode ? 'text-emerald-400' : 'text-emerald-800'}`}>
                           {sectionLoading ? <Skeleton className={`h-4 w-10 sm:h-5 sm:w-12 ${darkMode ? 'bg-emerald-800' : 'bg-emerald-200'}`} /> : (promedioGrado !== null ? promedioGrado.toFixed(2) : "—")}
                         </div>
@@ -2754,14 +2754,14 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                       <div className={`flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg ${darkMode ? 'bg-slate-700/50 border border-slate-600' : 'bg-slate-100 border border-slate-200'}`}>
                         <div className="flex items-center gap-1">
                           <span className="inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-500" />
-                          <span className={`text-[10px] sm:text-xs font-medium whitespace-nowrap ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                          <span className={`text-[10px] sm:text-xs font-medium whitespace-nowrap ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
                             {estadosCompletitud.completo}
                           </span>
                         </div>
                         <span className="text-slate-400 dark:text-slate-500 text-[10px]">•</span>
                         <div className="flex items-center gap-1">
                           <span className="inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-amber-400" />
-                          <span className={`text-[10px] sm:text-xs font-medium whitespace-nowrap ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                          <span className={`text-[10px] sm:text-xs font-medium whitespace-nowrap ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
                             {estadosCompletitud.parcial}
                           </span>
                         </div>
@@ -2799,7 +2799,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                 {(isAdmin(usuario.rol) || (usuario.rol === "docente" || usuario.rol === "docente-orientador")) && (
                   <div className="flex gap-2">
                     <Dialog open={listaDialogOpen} onOpenChange={setListaDialogOpen}>
-                      <DialogTrigger asChild><Button size="sm" variant="outline" className={`h-10 text-xs sm:text-sm ${darkMode ? 'border-slate-600 text-slate-300 hover:bg-slate-700' : ''}`}><ListPlus className="h-5 w-5 mr-1" />Lista</Button></DialogTrigger>
+                      <DialogTrigger asChild><Button size="sm" variant="outline" className={`h-10 text-xs sm:text-sm ${darkMode ? 'border-slate-600 text-slate-400 hover:bg-slate-700' : ''}`}><ListPlus className="h-5 w-5 mr-1" />Lista</Button></DialogTrigger>
                       <DialogContent className="max-w-md bg-card border-border">
                         <DialogHeader><DialogTitle>Agregar Lista de Estudiantes</DialogTitle><DialogDescription>Ingresa los nombres de los estudiantes, uno por línea. Opcional: agrega correo separado por coma (Nombre, correo@email.com).</DialogDescription></DialogHeader>
                         <div className="space-y-2"><Label>Un nombre por línea</Label><textarea className={`w-full h-48 p-2 text-sm border rounded-md ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} value={listaEstudiantes} onChange={e => setListaEstudiantes(e.target.value)} placeholder="Apellido, Nombre&#10;Apellido, Nombre, correo@email.com&#10;..." /></div>
@@ -2823,7 +2823,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                     <SelectTrigger className={`w-full md:w-[250px] h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue /></SelectTrigger>
                     <SelectContent>{gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}" ({g._count?.estudiantes || 0})</SelectItem>)}</SelectContent>
                   </Select>
-                  <Button size="sm" variant="outline" onClick={imprimirListadoEstudiantesPDF} className={`h-10 text-xs sm:text-sm ${darkMode ? 'border-slate-600 text-slate-300 hover:bg-slate-700' : ''}`}>
+                  <Button size="sm" variant="outline" onClick={imprimirListadoEstudiantesPDF} className={`h-10 text-xs sm:text-sm ${darkMode ? 'border-slate-600 text-slate-400 hover:bg-slate-700' : ''}`}>
                     <Printer className="h-4 w-4 mr-1" />Imprimir PDF
                   </Button>
                 </div>
@@ -2853,7 +2853,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                 <div className={`h-1 w-full ${darkMode ? 'bg-gradient-to-r from-teal-500 to-emerald-400' : 'bg-gradient-to-r from-teal-600 to-emerald-500'}`} />
                 <CardHeader className={`pb-3 px-5 ${darkMode ? '' : ''}`}>
                   <div className="flex items-center gap-2.5">
-                    <div className={`p-2 rounded-lg ${darkMode ? 'bg-teal-900/40 text-teal-300' : 'bg-teal-50 text-teal-700'}`}>
+                    <div className={`p-2 rounded-lg ${darkMode ? 'bg-teal-900/40 text-teal-400' : 'bg-teal-50 text-teal-700'}`}>
                       <FileText className="h-4 w-4" />
                     </div>
                     <div>
@@ -2944,8 +2944,8 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                                   }}
                                   className={`px-3 py-1 rounded-full text-xs font-medium border transition-all duration-150 ${
                                     isSelected
-                                      ? (darkMode ? 'bg-primary/20 text-teal-300 border-teal-500/50 shadow-sm' : 'bg-teal-50 text-teal-700 border-teal-300 shadow-sm')
-                                      : (darkMode ? 'bg-slate-800 text-slate-400 border-slate-600 hover:border-slate-500 hover:text-slate-300' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:text-slate-700')
+                                      ? (darkMode ? 'bg-primary/20 text-teal-400 border-teal-500/50 shadow-sm' : 'bg-teal-50 text-teal-700 border-teal-300 shadow-sm')
+                                      : (darkMode ? 'bg-slate-800 text-slate-400 border-slate-600 hover:border-slate-500 hover:text-slate-400' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:text-slate-700')
                                   }`}
                                 >
                                   {m.nombre}
@@ -2979,11 +2979,11 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                             >
                               <div className="flex items-center gap-1.5">
                                 <RadioGroupItem value="letter" id="pp-letter" className="h-3.5 w-3.5" />
-                                <Label htmlFor="pp-letter" className={`text-xs cursor-pointer ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Carta</Label>
+                                <Label htmlFor="pp-letter" className={`text-xs cursor-pointer ${darkMode ? 'text-slate-400' : 'text-slate-700'}`}>Carta</Label>
                               </div>
                               <div className="flex items-center gap-1.5">
                                 <RadioGroupItem value="a4" id="pp-a4" className="h-3.5 w-3.5" />
-                                <Label htmlFor="pp-a4" className={`text-xs cursor-pointer ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>A4</Label>
+                                <Label htmlFor="pp-a4" className={`text-xs cursor-pointer ${darkMode ? 'text-slate-400' : 'text-slate-700'}`}>A4</Label>
                               </div>
                             </RadioGroup>
                             <span className={`text-[10px] hidden sm:inline ${darkMode ? 'text-slate-600' : 'text-slate-400'}`}>
@@ -3111,7 +3111,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                               <TableCell className={`font-medium ${darkMode ? 'text-white' : ''}`}>{u.nombre}</TableCell>
                               <TableCell className={darkMode ? 'text-slate-400' : ''}>{u.email}</TableCell>
                               <TableCell>
-                                <Badge variant={isAdmin(u.rol) ? "default" : u.rol === "docente-orientador" ? "outline" : "secondary"} className={`text-[10px] ${isAdmin(u.rol) ? '' : (u.rol === "docente-orientador" ? (darkMode ? 'border-slate-600 text-slate-300' : '') : (darkMode ? 'bg-slate-700 text-slate-300' : ''))}`}>
+                                <Badge variant={isAdmin(u.rol) ? "default" : u.rol === "docente-orientador" ? "outline" : "secondary"} className={`text-[10px] ${isAdmin(u.rol) ? '' : (u.rol === "docente-orientador" ? (darkMode ? 'border-slate-600 text-slate-400' : '') : (darkMode ? 'bg-slate-700 text-slate-400' : ''))}`}>
                                   {u.rol === "admin" ? "Admin" : u.rol === "admin-directora" ? "Directora" : u.rol === "admin-codirectora" ? "Codirectora" : u.rol === "docente-orientador" ? "Docente-Orient." : "Docente"}
                                 </Badge>
                               </TableCell>
@@ -3167,7 +3167,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                     <div><CardTitle className="text-sm sm:text-base">Año Escolar</CardTitle><CardDescription className="text-xs text-muted-foreground">Configure el año lectivo actual del sistema</CardDescription></div>
                     <Dialog open={añoDialogOpen} onOpenChange={setAñoDialogOpen}>
                       <DialogTrigger asChild>
-                        <Button size="sm" variant="outline" className={`h-7 text-xs ${darkMode ? 'border-slate-600 text-slate-300 hover:bg-slate-700' : ''}`}>
+                        <Button size="sm" variant="outline" className={`h-7 text-xs ${darkMode ? 'border-slate-600 text-slate-400 hover:bg-slate-700' : ''}`}>
                           <Calendar className="h-3.5 w-3.5 mr-1" />
                           Cambiar Año
                         </Button>
@@ -3202,7 +3202,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                   <CardContent className="pt-0">
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
                       <div className={`flex-1 p-4 rounded-lg border ${darkMode ? 'bg-teal-900/30 border-teal-800' : 'bg-teal-50 border-teal-200'}`}>
-                        <p className={`text-2xl font-bold ${darkMode ? 'text-teal-300' : 'text-teal-700'}`}>{configuracion?.añoEscolar || 2026}</p>
+                        <p className={`text-2xl font-bold ${darkMode ? 'text-teal-400' : 'text-teal-700'}`}>{configuracion?.añoEscolar || 2026}</p>
                         <p className={`text-xs ${darkMode ? 'text-teal-400' : 'text-teal-600'}`}>Año lectivo actual</p>
                       </div>
                       <div className={`flex-1 p-4 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50'}`}>
@@ -3303,7 +3303,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                                       {log.accion === 'DELETE' ? 'Borró' : 'Digitó'}
                                     </Badge>
                                   </td>
-                                  <td className={`p-2 ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>{log.grado || '—'}</td>
+                                  <td className={`p-2 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>{log.grado || '—'}</td>
                                 </tr>
                               ))}
                         </tbody>
@@ -3380,8 +3380,8 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
           <DialogHeader><DialogTitle>Importar Calificaciones</DialogTitle><DialogDescription>Carga un archivo CSV con las notas de los estudiantes.</DialogDescription></DialogHeader>
           <div className="space-y-3">
             <div className="flex gap-2">
-              <Button size="sm" variant="outline" onClick={generateTemplate} className={`flex-1 text-xs ${darkMode ? 'border-slate-600 text-slate-300 hover:bg-slate-700' : ''}`}><Download className="h-3.5 w-3.5 mr-1" />Plantilla</Button>
-              <Button size="sm" variant="outline" onClick={() => document.querySelector<HTMLInputElement>('input[type="file"]')?.click()} className={`flex-1 text-xs ${darkMode ? 'border-slate-600 text-slate-300 hover:bg-slate-700' : ''}`}><Upload className="h-3.5 w-3.5 mr-1" />Cargar</Button>
+              <Button size="sm" variant="outline" onClick={generateTemplate} className={`flex-1 text-xs ${darkMode ? 'border-slate-600 text-slate-400 hover:bg-slate-700' : ''}`}><Download className="h-3.5 w-3.5 mr-1" />Plantilla</Button>
+              <Button size="sm" variant="outline" onClick={() => document.querySelector<HTMLInputElement>('input[type="file"]')?.click()} className={`flex-1 text-xs ${darkMode ? 'border-slate-600 text-slate-400 hover:bg-slate-700' : ''}`}><Upload className="h-3.5 w-3.5 mr-1" />Cargar</Button>
               <input type="file" accept=".csv,.txt" className="hidden" onChange={handleFileUpload} />
             </div>
             {importData && <pre className={`p-2 rounded max-h-32 overflow-auto text-[10px] ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>{importData.slice(0, 500)}</pre>}
@@ -3465,7 +3465,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                 <p className={`text-xs mb-1 ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Grados como Tutor</p>
                 <div className="flex flex-wrap gap-1">
                   {usuario.gradosAsignados.map((g: any) => (
-                    <Badge key={g.id} variant="outline" className={darkMode ? 'bg-teal-900/30 text-teal-300 border-teal-700' : 'bg-teal-50'}>{g.numero}° "{g.seccion}"</Badge>
+                    <Badge key={g.id} variant="outline" className={darkMode ? 'bg-teal-900/30 text-teal-400 border-teal-700' : 'bg-teal-50'}>{g.numero}° "{g.seccion}"</Badge>
                   ))}
                 </div>
               </div>
@@ -3476,7 +3476,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                 <p className={`text-xs mb-1 ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Materias Asignadas</p>
                 <div className="flex flex-wrap gap-1">
                   {usuario.asignaturasAsignadas.map((m: any) => (
-                    <Badge key={m.id} variant="outline" className={darkMode ? 'bg-slate-800 text-slate-300 border-slate-700' : ''}>{m.nombre} ({m.gradoNumero}°)</Badge>
+                    <Badge key={m.id} variant="outline" className={darkMode ? 'bg-slate-800 text-slate-400 border-slate-700' : ''}>{m.nombre} ({m.gradoNumero}°)</Badge>
                   ))}
                 </div>
               </div>

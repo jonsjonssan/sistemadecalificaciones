@@ -480,7 +480,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                           <span className={`flex-1 truncate ${darkMode ? 'text-slate-400' : 'text-slate-700'}`} title={`${i + 1}. ${est.nombre}`}>{i + 1}. {est.nombre}</span>
                           <div className="flex items-center gap-1.5 shrink-0">
                             {est.estado === "CONDICIONADO" && (
-                              <Badge variant="secondary" className="text-[9px] py-0 h-4 px-1 bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/50 dark:text-amber-300 dark:border-amber-700">C</Badge>
+                              <Badge variant="secondary" className="text-[9px] py-0 h-4 px-1 bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/50 dark:text-amber-400 dark:border-amber-700">C</Badge>
                             )}
                             {est.estado === "REPROBADO" && (
                               <Badge variant="destructive" className="text-[9px] py-0 h-4 px-1">R</Badge>
@@ -503,7 +503,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                           <span className={`flex-1 truncate ${darkMode ? 'text-slate-400' : 'text-slate-700'}`} title={est.nombre}>{est.nombre}</span>
                           <div className="flex items-center gap-1.5 shrink-0">
                             {est.estado === "CONDICIONADO" && (
-                              <Badge variant="secondary" className="text-[9px] py-0 h-4 px-1 bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/50 dark:text-amber-300 dark:border-amber-700">C</Badge>
+                              <Badge variant="secondary" className="text-[9px] py-0 h-4 px-1 bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/50 dark:text-amber-400 dark:border-amber-700">C</Badge>
                             )}
                             {est.estado === "REPROBADO" && (
                               <Badge variant="destructive" className="text-[9px] py-0 h-4 px-1">R</Badge>

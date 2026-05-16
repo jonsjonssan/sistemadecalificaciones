@@ -287,10 +287,10 @@ function SortableEstudianteRow({ est, idx, total, darkMode, onMoveUp, onMoveDown
       </TableCell>
       <TableCell className="text-center">
         <div className="flex items-center justify-center gap-1">
-          <Button size="sm" variant="ghost" aria-label={`Editar estudiante ${est.nombre}`} className={`h-6 w-6 p-0 ${darkMode ? 'text-blue-400 hover:text-blue-300 hover:bg-blue-900/30' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} onClick={() => { setEditNombre(est.nombre); setEditEmail(est.email || ""); setEditing(true); }}>
+          <Button size="sm" variant="ghost" aria-label={`Editar estudiante ${est.nombre}`} className={`h-6 w-6 p-0 ${darkMode ? 'text-blue-400 hover:text-blue-400 hover:bg-blue-900/30' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} onClick={() => { setEditNombre(est.nombre); setEditEmail(est.email || ""); setEditing(true); }}>
             <Edit2 className="h-4 w-4" />
           </Button>
-          <Button size="sm" variant="ghost" aria-label={`Eliminar estudiante ${est.nombre}`} className={`h-6 w-6 p-0 ${darkMode ? 'text-red-400 hover:text-red-300 hover:bg-red-900/30' : 'text-red-500 hover:text-red-700 hover:bg-red-50'}`} onClick={onDelete}>
+          <Button size="sm" variant="ghost" aria-label={`Eliminar estudiante ${est.nombre}`} className={`h-6 w-6 p-0 ${darkMode ? 'text-red-400 hover:text-red-400 hover:bg-red-900/30' : 'text-red-500 hover:text-red-700 hover:bg-red-50'}`} onClick={onDelete}>
             <Trash2 className="h-5 w-5" />
           </Button>
         </div>

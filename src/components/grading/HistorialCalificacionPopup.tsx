@@ -234,7 +234,7 @@ export function HistorialCalificacionPopup({
           <span className={`text-[10px] font-semibold uppercase tracking-wider ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
             Valor actual
           </span>
-          <span className={`inline-flex items-center justify-center min-w-[48px] px-2.5 py-0.5 rounded-md text-sm font-bold font-mono ${darkMode ? "bg-teal-900/30 text-teal-300 ring-1 ring-teal-700/40" : "bg-teal-50 text-teal-700 ring-1 ring-teal-200"}`}>
+          <span className={`inline-flex items-center justify-center min-w-[48px] px-2.5 py-0.5 rounded-md text-sm font-bold font-mono ${darkMode ? "bg-teal-900/30 text-teal-400 ring-1 ring-teal-700/40" : "bg-teal-50 text-teal-700 ring-1 ring-teal-200"}`}>
             {formatValor(valorActual)}
           </span>
         </div>

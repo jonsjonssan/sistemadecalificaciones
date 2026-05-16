@@ -249,126 +249,126 @@
 }
 
 .dark {
-  --white: oklch(0.08 0 0);
+  --white: oklch(0.18 0.008 265);
   --black: oklch(0.93 0 0);
 
-  --background: oklch(0.04 0 0);
+  --background: oklch(0.10 0.006 265);
   --foreground: oklch(0.93 0 0);
 
-  --card: oklch(0.10 0 0);
+  --card: oklch(0.14 0.006 265);
   --card-foreground: oklch(0.93 0 0);
 
-  --popover: oklch(0.10 0 0);
+  --popover: oklch(0.16 0.006 265);
   --popover-foreground: oklch(0.93 0 0);
 
-  --primary: oklch(0.62 0.22 160);
-  --primary-foreground: oklch(0.04 0 0);
+  --primary: oklch(0.60 0.22 160);
+  --primary-foreground: oklch(0.10 0 0);
 
-  --secondary: oklch(0.16 0 0);
+  --secondary: oklch(0.18 0.006 265);
   --secondary-foreground: oklch(0.93 0 0);
 
-  --muted: oklch(0.12 0 0);
+  --muted: oklch(0.12 0.006 265);
   --muted-foreground: oklch(0.60 0 0);
 
-  --accent: oklch(0.16 0 0);
+  --accent: oklch(0.18 0.006 265);
   --accent-foreground: oklch(0.93 0 0);
 
-  --destructive: oklch(0.65 0.20 25);
-  --border: oklch(0.20 0 0);
-  --input: oklch(0.20 0 0);
-  --ring: oklch(0.62 0.22 160);
+  --destructive: oklch(0.60 0.22 25);
+  --border: oklch(0.30 0.006 265);
+  --input: oklch(0.30 0.006 265);
+  --ring: oklch(0.60 0.22 160);
 
-  --chart-1: oklch(0.62 0.22 160);
-  --chart-2: oklch(0.68 0.16 100);
-  --chart-3: oklch(0.55 0.14 210);
-  --chart-4: oklch(0.70 0.16 75);
-  --chart-5: oklch(0.62 0.18 28);
+  --chart-1: oklch(0.60 0.22 160);
+  --chart-2: oklch(0.66 0.16 100);
+  --chart-3: oklch(0.52 0.12 210);
+  --chart-4: oklch(0.70 0.18 75);
+  --chart-5: oklch(0.62 0.20 28);
 
-  --sidebar: oklch(0.06 0 0);
-  --sidebar-foreground: oklch(0.93 0 0);
-  --sidebar-primary: oklch(0.62 0.22 160);
-  --sidebar-primary-foreground: oklch(0.04 0 0);
-  --sidebar-accent: oklch(0.14 0 0);
+  --sidebar: oklch(0.08 0.006 265);
+  --sidebar-foreground: oklch(0.88 0 0);
+  --sidebar-primary: oklch(0.60 0.22 160);
+  --sidebar-primary-foreground: oklch(0.10 0 0);
+  --sidebar-accent: oklch(0.12 0.006 265);
   --sidebar-accent-foreground: oklch(0.93 0 0);
-  --sidebar-border: oklch(0.18 0 0);
-  --sidebar-ring: oklch(0.62 0.22 160);
+  --sidebar-border: oklch(0.16 0.006 265);
+  --sidebar-ring: oklch(0.60 0.22 160);
 
-  --slate-50: oklch(0.10 0 0);
-  --slate-100: oklch(0.12 0 0);
-  --slate-200: oklch(0.15 0 0);
-  --slate-300: oklch(0.45 0 0);
-  --slate-400: oklch(0.58 0 0);
-  --slate-500: oklch(0.65 0 0);
-  --slate-600: oklch(0.72 0 0);
-  --slate-700: oklch(0.80 0 0);
-  --slate-800: oklch(0.88 0 0);
-  --slate-900: oklch(0.93 0 0);
+  --slate-50: oklch(0.07 0.006 265);
+  --slate-100: oklch(0.09 0.006 265);
+  --slate-200: oklch(0.12 0.006 265);
+  --slate-300: oklch(0.45 0.006 265);
+  --slate-400: oklch(0.58 0.006 265);
+  --slate-500: oklch(0.65 0.006 265);
+  --slate-600: oklch(0.72 0.006 265);
+  --slate-700: oklch(0.80 0.006 265);
+  --slate-800: oklch(0.88 0.006 265);
+  --slate-900: oklch(0.93 0.006 265);
 
-  --teal-50: oklch(0.12 0.04 160);
-  --teal-100: oklch(0.15 0.06 160);
-  --teal-200: oklch(0.20 0.09 160);
-  --teal-300: oklch(0.55 0.18 160);
-  --teal-400: oklch(0.62 0.22 160);
+  --teal-50: oklch(0.10 0.04 160);
+  --teal-100: oklch(0.13 0.06 160);
+  --teal-200: oklch(0.18 0.08 160);
+  --teal-300: oklch(0.52 0.18 160);
+  --teal-400: oklch(0.60 0.22 160);
   --teal-500: oklch(0.68 0.20 160);
-  --teal-600: oklch(0.62 0.22 160);
-  --teal-700: oklch(0.72 0.16 160);
-  --teal-800: oklch(0.80 0.10 160);
-  --teal-900: oklch(0.88 0.05 160);
+  --teal-600: oklch(0.74 0.16 160);
+  --teal-700: oklch(0.82 0.12 160);
+  --teal-800: oklch(0.88 0.07 160);
+  --teal-900: oklch(0.93 0.03 160);
 
-  --emerald-50: oklch(0.12 0.04 155);
-  --emerald-100: oklch(0.15 0.06 155);
-  --emerald-200: oklch(0.20 0.09 155);
-  --emerald-300: oklch(0.55 0.18 155);
-  --emerald-400: oklch(0.62 0.22 155);
+  --emerald-50: oklch(0.10 0.04 155);
+  --emerald-100: oklch(0.13 0.06 155);
+  --emerald-200: oklch(0.18 0.08 155);
+  --emerald-300: oklch(0.52 0.18 155);
+  --emerald-400: oklch(0.60 0.22 155);
   --emerald-500: oklch(0.68 0.20 155);
-  --emerald-600: oklch(0.62 0.22 155);
-  --emerald-700: oklch(0.72 0.16 155);
-  --emerald-800: oklch(0.80 0.10 155);
-  --emerald-900: oklch(0.88 0.05 155);
+  --emerald-600: oklch(0.74 0.16 155);
+  --emerald-700: oklch(0.82 0.12 155);
+  --emerald-800: oklch(0.88 0.07 155);
+  --emerald-900: oklch(0.93 0.03 155);
 
-  --amber-50: oklch(0.16 0.04 85);
-  --amber-100: oklch(0.20 0.06 85);
-  --amber-200: oklch(0.26 0.08 85);
-  --amber-300: oklch(0.36 0.10 85);
-  --amber-400: oklch(0.48 0.13 85);
-  --amber-500: oklch(0.58 0.15 85);
-  --amber-600: oklch(0.66 0.14 85);
-  --amber-700: oklch(0.74 0.12 85);
-  --amber-800: oklch(0.82 0.08 85);
-  --amber-900: oklch(0.90 0.04 85);
+  --amber-50: oklch(0.12 0.04 85);
+  --amber-100: oklch(0.15 0.06 85);
+  --amber-200: oklch(0.20 0.08 85);
+  --amber-300: oklch(0.38 0.10 85);
+  --amber-400: oklch(0.50 0.14 85);
+  --amber-500: oklch(0.60 0.16 85);
+  --amber-600: oklch(0.68 0.14 85);
+  --amber-700: oklch(0.76 0.12 85);
+  --amber-800: oklch(0.84 0.08 85);
+  --amber-900: oklch(0.92 0.04 85);
 
-  --blue-50: oklch(0.14 0.03 240);
-  --blue-100: oklch(0.18 0.05 240);
-  --blue-200: oklch(0.24 0.07 240);
-  --blue-300: oklch(0.34 0.09 240);
-  --blue-400: oklch(0.46 0.12 240);
-  --blue-500: oklch(0.56 0.14 240);
-  --blue-600: oklch(0.64 0.13 240);
-  --blue-700: oklch(0.72 0.11 240);
-  --blue-800: oklch(0.80 0.07 240);
-  --blue-900: oklch(0.88 0.03 240);
+  --blue-50: oklch(0.10 0.03 240);
+  --blue-100: oklch(0.13 0.05 240);
+  --blue-200: oklch(0.18 0.07 240);
+  --blue-300: oklch(0.35 0.09 240);
+  --blue-400: oklch(0.48 0.12 240);
+  --blue-500: oklch(0.58 0.14 240);
+  --blue-600: oklch(0.66 0.13 240);
+  --blue-700: oklch(0.74 0.11 240);
+  --blue-800: oklch(0.82 0.07 240);
+  --blue-900: oklch(0.90 0.03 240);
 
-  --red-50: oklch(0.16 0.04 30);
-  --red-100: oklch(0.20 0.06 30);
-  --red-200: oklch(0.26 0.08 30);
-  --red-300: oklch(0.62 0.18 30);
-  --red-400: oklch(0.68 0.20 30);
-  --red-500: oklch(0.72 0.18 30);
+  --red-50: oklch(0.12 0.04 30);
+  --red-100: oklch(0.15 0.06 30);
+  --red-200: oklch(0.20 0.08 30);
+  --red-300: oklch(0.52 0.20 30);
+  --red-400: oklch(0.62 0.22 30);
+  --red-500: oklch(0.70 0.18 30);
   --red-600: oklch(0.76 0.15 30);
-  --red-700: oklch(0.80 0.12 30);
-  --red-800: oklch(0.85 0.08 30);
-  --red-900: oklch(0.90 0.04 30);
+  --red-700: oklch(0.82 0.12 30);
+  --red-800: oklch(0.88 0.08 30);
+  --red-900: oklch(0.93 0.04 30);
 
-  --violet-50: oklch(0.14 0.03 290);
-  --violet-100: oklch(0.18 0.05 290);
-  --violet-200: oklch(0.24 0.07 290);
-  --violet-300: oklch(0.34 0.09 290);
-  --violet-400: oklch(0.46 0.12 290);
-  --violet-500: oklch(0.56 0.14 290);
-  --violet-600: oklch(0.64 0.13 290);
-  --violet-700: oklch(0.72 0.11 290);
-  --violet-800: oklch(0.80 0.07 290);
-  --violet-900: oklch(0.88 0.03 290);
+  --violet-50: oklch(0.10 0.03 290);
+  --violet-100: oklch(0.13 0.05 290);
+  --violet-200: oklch(0.18 0.07 290);
+  --violet-300: oklch(0.35 0.09 290);
+  --violet-400: oklch(0.48 0.12 290);
+  --violet-500: oklch(0.58 0.14 290);
+  --violet-600: oklch(0.66 0.13 290);
+  --violet-700: oklch(0.74 0.11 290);
+  --violet-800: oklch(0.82 0.07 290);
+  --violet-900: oklch(0.90 0.03 290);
 }
 
 @layer base {
@@ -463,8 +463,8 @@
   }
   .dark .page-atmosphere::before {
     background-image:
-      radial-gradient(ellipse at 15% 20%, oklch(0.62 0.22 160 / 0.08) 0%, transparent 60%),
-      radial-gradient(ellipse at 85% 80%, oklch(0.55 0.14 210 / 0.04) 0%, transparent 50%);
+      radial-gradient(ellipse at 15% 20%, oklch(0.60 0.22 160 / 0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 85% 80%, oklch(0.52 0.12 210 / 0.025) 0%, transparent 50%);
   }
 
   @keyframes fade-slide-up {
@@ -505,7 +505,7 @@
     animation: shimmer 1.5s ease-in-out infinite;
   }
   .dark .skeleton-shimmer {
-    background: linear-gradient(90deg, oklch(0.18 0 0 / 0.3) 25%, oklch(0.22 0 0 / 0.5) 50%, oklch(0.18 0 0 / 0.3) 75%);
+    background: linear-gradient(90deg, oklch(0.18 0 0 / 0.4) 25%, oklch(0.24 0 0 / 0.6) 50%, oklch(0.18 0 0 / 0.4) 75%);
     background-size: 200% 100%;
   }
 }
