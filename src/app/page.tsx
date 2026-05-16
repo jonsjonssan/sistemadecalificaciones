@@ -2242,7 +2242,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
           </div>
           <DialogFooter>
             <Button variant="outline" size="sm" onClick={() => { setPasswordDialogOpen(false); setPasswordForm({ actual: "", nueva: "", confirmar: "" }); }}>Cancelar</Button>
-            <Button size="sm" onClick={handleChangePassword} disabled={passwordLoading} className="bg-teal-600">{passwordLoading ? "Guardando..." : "Cambiar"}</Button>
+            <Button size="sm" onClick={handleChangePassword} disabled={passwordLoading} className="bg-primary">{passwordLoading ? "Guardando..." : "Cambiar"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -2254,28 +2254,28 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
           }
           setActiveTab(val); saveUserState({ activeTab: val });
         }}>
-          <TabsList className={`shadow-lg h-11 overflow-x-auto rounded-xl hidden md:inline-flex w-auto shrink-0 hide-scrollbar justify-start space-x-1.5 ${darkMode ? 'bg-[#1e293b]/80 backdrop-blur-sm border border-slate-700/50 p-1' : 'bg-white/80 backdrop-blur-sm border border-slate-200 p-1'}`} role="tablist" aria-label="Secciones del sistema">
+          <TabsList className="shadow-lg h-11 overflow-x-auto rounded-xl hidden md:inline-flex w-auto shrink-0 hide-scrollbar justify-start space-x-1.5 bg-card/80 backdrop-blur-sm border border-border p-1" role="tablist" aria-label="Secciones del sistema">
             <motion.div className="flex space-x-1.5">
-              <TabsTrigger id="tab-dashboard" value="dashboard" className={`text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 ${darkMode ? 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:data-[state=inactive]:text-slate-200 hover:bg-slate-800/50' : 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-600 hover:data-[state=inactive]:text-slate-800 hover:bg-slate-100'}`}><LayoutDashboard className="h-4 w-4" />Inicio</TabsTrigger>
-              <TabsTrigger id="tab-calificaciones" value="calificaciones" className={`text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 ${darkMode ? 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:data-[state=inactive]:text-slate-200 hover:bg-slate-800/50' : 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-600 hover:data-[state=inactive]:text-slate-800 hover:bg-slate-100'}`}><ClipboardList className="h-4 w-4" />Calificaciones</TabsTrigger>
-              <TabsTrigger id="tab-asistencia" value="asistencia" className={`text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 ${darkMode ? 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:data-[state=inactive]:text-slate-200 hover:bg-slate-800/50' : 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-600 hover:data-[state=inactive]:text-slate-800 hover:bg-slate-100'}`}><CalendarDays className="h-4 w-4" />Asistencia</TabsTrigger>
-              <TabsTrigger value="estudiantes" aria-label="Ver estudiantes" className={`text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 ${darkMode ? 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:data-[state=inactive]:text-slate-200 hover:bg-slate-800/50' : 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-600 hover:data-[state=inactive]:text-slate-800 hover:bg-slate-100'}`}><Users className="h-4 w-4" />Estudiantes</TabsTrigger>
-              <TabsTrigger value="boletas" aria-label="Ver boletas" className={`text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 ${darkMode ? 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:data-[state=inactive]:text-slate-200 hover:bg-slate-800/50' : 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-600 hover:data-[state=inactive]:text-slate-800 hover:bg-slate-100'}`}><FileText className="h-4 w-4" />Boletas</TabsTrigger>
-              <TabsTrigger value="enlaces" aria-label="Enlaces institucionales" className={`text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 ${darkMode ? 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:data-[state=inactive]:text-slate-200 hover:bg-slate-800/50' : 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-600 hover:data-[state=inactive]:text-slate-800 hover:bg-slate-100'}`}><Globe className="h-4 w-4" />Enlaces</TabsTrigger>
-              <TabsTrigger value="reportes" aria-label="Reportes de calificaciones" className={`text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 ${darkMode ? 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:data-[state=inactive]:text-slate-200 hover:bg-slate-800/50' : 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-600 hover:data-[state=inactive]:text-slate-800 hover:bg-slate-100'}`}><BarChart3 className="h-4 w-4" />Reportes</TabsTrigger>
-              {isAdmin(usuario.rol) && <TabsTrigger value="admin" aria-label="Administración" className={`text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 ${darkMode ? 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-400 hover:data-[state=inactive]:text-slate-200 hover:bg-slate-800/50' : 'data-[state=active]:bg-teal-600 data-[state=active]:text-white data-[state=inactive]:text-slate-600 hover:data-[state=inactive]:text-slate-800 hover:bg-slate-100'}`}><Settings className="h-4 w-4" />Admin</TabsTrigger>}
+              <TabsTrigger id="tab-dashboard" value="dashboard" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-muted-foreground hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><LayoutDashboard className="h-4 w-4" />Inicio</TabsTrigger>
+              <TabsTrigger id="tab-calificaciones" value="calificaciones" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-muted-foreground hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><ClipboardList className="h-4 w-4" />Calificaciones</TabsTrigger>
+              <TabsTrigger id="tab-asistencia" value="asistencia" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-muted-foreground hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><CalendarDays className="h-4 w-4" />Asistencia</TabsTrigger>
+              <TabsTrigger value="estudiantes" aria-label="Ver estudiantes" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-muted-foreground hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><Users className="h-4 w-4" />Estudiantes</TabsTrigger>
+              <TabsTrigger value="boletas" aria-label="Ver boletas" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-muted-foreground hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><FileText className="h-4 w-4" />Boletas</TabsTrigger>
+              <TabsTrigger value="enlaces" aria-label="Enlaces institucionales" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-muted-foreground hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><Globe className="h-4 w-4" />Enlaces</TabsTrigger>
+              <TabsTrigger value="reportes" aria-label="Reportes de calificaciones" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-muted-foreground hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><BarChart3 className="h-4 w-4" />Reportes</TabsTrigger>
+              {isAdmin(usuario.rol) && <TabsTrigger value="admin" aria-label="Administración" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-muted-foreground hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><Settings className="h-4 w-4" />Admin</TabsTrigger>}
             </motion.div>
           </TabsList>
           <div className="flex items-center gap-2 ml-auto">
             <ContextualHelp section={activeTab} darkMode={darkMode} />
             {autoSaveStatus === "saving" && (
-              <span className={`text-xs flex items-center gap-1 ${darkMode ? 'text-amber-400' : 'text-amber-600'}`}>
+              <span className="text-xs flex items-center gap-1 text-amber-600 dark:text-amber-400">
                 <RefreshCw className="h-3 w-3 animate-spin" />
                 <span className="hidden sm:inline">Guardando...</span>
               </span>
             )}
             {autoSaveStatus === "saved" && (
-              <span className={`text-xs flex items-center gap-1 ${darkMode ? 'text-green-400' : 'text-green-600'}`}>
+              <span className="text-xs flex items-center gap-1 text-green-600 dark:text-green-400">
                 <span className="hidden sm:inline">Guardado</span>
                 <span className="sm:hidden">✓</span>
               </span>
@@ -2351,7 +2351,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                 </CardContent>
               </Card>
             ) : (
-              <Card className={`shadow-lg border ${darkMode ? 'bg-[#1e293b] border-slate-700 text-white' : 'bg-white border-slate-200'}`}>
+              <Card className="shadow-lg border bg-card border-border">
                 <CardContent className="p-4 sm:p-5">
                   <div className="space-y-4">
                     {/* Fila de selectores */}
@@ -2394,7 +2394,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                     </div>
                     
                     {/* Separador visual */}
-                    <div className={`border-t ${darkMode ? 'border-slate-700' : 'border-slate-200'}`} />
+                    <div className="border-t border-border" />
                     
                     {/* Fila de config y botones */}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
@@ -2417,7 +2417,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                         </div>
                       )}
                       <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 w-full sm:w-auto">
-                        <Button size="sm" aria-label={saving ? "Guardando calificaciones" : "Guardar todas las calificaciones"} className={`h-9 sm:h-10 px-2 sm:px-4 font-semibold text-xs sm:text-sm gap-1 sm:gap-2 ${darkMode ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white'}`} onClick={handleGuardarTodo} disabled={saving}>
+                        <Button size="sm" aria-label={saving ? "Guardando calificaciones" : "Guardar todas las calificaciones"} className="h-9 sm:h-10 px-2 sm:px-4 font-semibold text-xs sm:text-sm gap-1 sm:gap-2 bg-primary hover:bg-primary/90 text-primary-foreground" onClick={handleGuardarTodo} disabled={saving}>
                           <Save className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                           <span className="hidden sm:inline">{saving ? 'Guardando...' : 'Guardar Todo'}</span>
                           <span className="sm:hidden">{saving ? '...' : 'Guardar'}</span>
@@ -2434,7 +2434,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                           <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                           <span className="hidden sm:inline">Importar</span>
                         </Button>
-                        <Button size="sm" variant={promedioDecimal ? "default" : "outline"} className={`h-9 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm gap-1 sm:gap-2 ${promedioDecimal ? (darkMode ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white') : (darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : '')}`} onClick={() => setPromedioDecimal(!promedioDecimal)} title={promedioDecimal ? "Mostrar promedio sin decimales" : "Mostrar promedio con decimales"}>
+                        <Button size="sm" variant={promedioDecimal ? "default" : "outline"} className="h-9 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm gap-1 sm:gap-2" onClick={() => setPromedioDecimal(!promedioDecimal)} title={promedioDecimal ? "Mostrar promedio sin decimales" : "Mostrar promedio con decimales"}>
                           <Hash className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                         </Button>
                         {isAdmin(usuario.rol) && (
@@ -2453,10 +2453,8 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
             {gradoSeleccionado && asignaturaSeleccionada && trimestreSeleccionado && (
               <>
                 {/* Barra de estado de digitación */}
-                <div className={`flex flex-wrap items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-lg border text-xs sm:text-sm ${
-                  darkMode ? 'bg-slate-800/80 border-slate-700 text-slate-300' : 'bg-white border-slate-200 text-slate-600'
-                }`}>
-                  <span className="font-medium text-slate-400 dark:text-slate-500 text-[10px] sm:text-xs uppercase tracking-wider">Digitación</span>
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-lg border border-border bg-muted/50 text-muted-foreground text-xs sm:text-sm">
+                  <span className="font-medium text-muted-foreground/60 text-[10px] sm:text-xs uppercase tracking-wider">Digitación</span>
                   <div className="flex items-center gap-1">
                     <span className="inline-block w-2 h-2 rounded-full bg-emerald-500" />
                     <span className="text-xs sm:text-sm font-semibold text-emerald-600 dark:text-emerald-400">{estadosCompletitud.completo}</span>
@@ -2502,10 +2500,8 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                 </div>
 
                 {/* Marco Normativo Legend */}
-                <div className={`flex flex-wrap items-center gap-1.5 sm:gap-3 px-2 sm:px-4 py-2 rounded-lg border text-[10px] sm:text-xs ${
-                  darkMode ? 'bg-slate-800/80 border-slate-700 text-slate-300' : 'bg-white border-slate-200 text-slate-600'
-                }`}>
-                  <span className="font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 hidden sm:inline">Marco Normativo</span>
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-3 px-2 sm:px-4 py-2 rounded-lg border border-border bg-muted/50 text-muted-foreground text-[10px] sm:text-xs">
+                  <span className="font-semibold uppercase tracking-wider text-muted-foreground/60 hidden sm:inline">Marco Normativo</span>
                   <span className={`inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-md font-semibold whitespace-nowrap ${
                     darkMode ? 'bg-red-900/60 text-red-200 ring-1 ring-red-600' : 'bg-red-100 text-red-800 ring-1 ring-red-300'
                   }`}>
@@ -2524,7 +2520,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                 </div>
 
                 {/* Barra de herramientas: Búsqueda, Filtro, Exportar */}
-                <Card className={`shadow-sm border ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'bg-white border-slate-200'}`}>
+                <Card className="shadow-sm border bg-card border-border">
                   <CardContent className="p-2 sm:p-3">
                     <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                       {/* Búsqueda */}
@@ -2569,7 +2565,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                 </Card>
 
                 {/* Tabla de calificaciones */}
-                <Card className={`shadow-xl border overflow-hidden ${darkMode ? 'bg-[#1e293b] border-slate-700 text-white' : 'bg-white border-slate-200'}`}>
+                <Card className="shadow-xl border overflow-hidden bg-card border-border">
                   <CardContent className="p-0">
                     <div className="table-scroll-container">
                       <table className="w-full text-sm sm:text-base font-medium border-collapse">
@@ -2691,7 +2687,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                         <tbody>
                           {sectionLoading ? (
                             Array.from({ length: 5 }).map((_, idx) => (
-                              <tr key={`skel-${idx}`} className={idx % 2 === 0 ? (darkMode ? 'bg-[#1e293b]' : '') : (darkMode ? 'bg-slate-800/50' : 'bg-slate-50/50')}>
+                              <tr key={`skel-${idx}`} className={idx % 2 === 0 ? 'bg-card' : 'bg-muted/30'}>
                                 <td className="p-2 text-center"><Skeleton className={`h-4 w-6 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
                                 <td className="p-2"><Skeleton className={`h-4 w-40 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
                                 <td className="p-2"><Skeleton className={`h-8 w-16 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
@@ -2797,25 +2793,25 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
 
           {/* Estudiantes */}
           <TabsContent value="estudiantes" className="mt-3">
-            <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
-              <CardHeader className={`py-3 px-4 flex-row items-center justify-between space-y-0 ${darkMode ? 'border-slate-700' : ''}`}>
-                <div><CardTitle className="text-base">Lista de Estudiantes</CardTitle><CardDescription className={`text-sm sm:text-base font-medium ${darkMode ? 'text-slate-400' : ''}`}>Gestiona los estudiantes por grado</CardDescription></div>
+            <Card className="shadow-sm bg-card border-border">
+              <CardHeader className="py-3 px-4 flex-row items-center justify-between space-y-0 border-border">
+                <div><CardTitle className="text-base">Lista de Estudiantes</CardTitle><CardDescription className="text-sm sm:text-base font-medium text-muted-foreground">Gestiona los estudiantes por grado</CardDescription></div>
                 {(isAdmin(usuario.rol) || (usuario.rol === "docente" || usuario.rol === "docente-orientador")) && (
                   <div className="flex gap-2">
                     <Dialog open={listaDialogOpen} onOpenChange={setListaDialogOpen}>
                       <DialogTrigger asChild><Button size="sm" variant="outline" className={`h-10 text-xs sm:text-sm ${darkMode ? 'border-slate-600 text-slate-300 hover:bg-slate-700' : ''}`}><ListPlus className="h-5 w-5 mr-1" />Lista</Button></DialogTrigger>
-                      <DialogContent className={`max-w-md ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
+                      <DialogContent className="max-w-md bg-card border-border">
                         <DialogHeader><DialogTitle>Agregar Lista de Estudiantes</DialogTitle><DialogDescription>Ingresa los nombres de los estudiantes, uno por línea. Opcional: agrega correo separado por coma (Nombre, correo@email.com).</DialogDescription></DialogHeader>
                         <div className="space-y-2"><Label>Un nombre por línea</Label><textarea className={`w-full h-48 p-2 text-sm border rounded-md ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} value={listaEstudiantes} onChange={e => setListaEstudiantes(e.target.value)} placeholder="Apellido, Nombre&#10;Apellido, Nombre, correo@email.com&#10;..." /></div>
-                        <DialogFooter><Button variant="outline" size="sm" onClick={() => { setListaDialogOpen(false); setListaEstudiantes(""); }}>Cancelar</Button><Button size="sm" onClick={handleAddMultipleEstudiantes} className="bg-teal-600">Agregar {listaEstudiantes.split('\n').filter(n => n.trim()).length}</Button></DialogFooter>
+                        <DialogFooter><Button variant="outline" size="sm" onClick={() => { setListaDialogOpen(false); setListaEstudiantes(""); }}>Cancelar</Button><Button size="sm" onClick={handleAddMultipleEstudiantes} className="bg-primary">Agregar {listaEstudiantes.split('\n').filter(n => n.trim()).length}</Button></DialogFooter>
                       </DialogContent>
                     </Dialog>
                     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                      <DialogTrigger asChild><Button size="sm" className={`h-10 text-xs sm:text-sm ${darkMode ? 'bg-teal-600 hover:bg-teal-500' : 'bg-teal-600'}`}><Plus className="h-5 w-5 mr-1" />Uno</Button></DialogTrigger>
-                      <DialogContent className={`max-w-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
+                      <DialogTrigger asChild><Button size="sm" className={`h-10 text-xs sm:text-sm ${darkMode ? 'bg-primary hover:bg-primary' : 'bg-primary'}`}><Plus className="h-5 w-5 mr-1" />Uno</Button></DialogTrigger>
+                      <DialogContent className="max-w-sm bg-card border-border">
                         <DialogHeader><DialogTitle>Agregar Estudiante</DialogTitle><DialogDescription>Ingresa el nombre completo y correo (opcional) del nuevo estudiante.</DialogDescription></DialogHeader>
                         <div className="space-y-2"><Label>Nombre completo</Label><Input value={nuevoEstudiante.nombre} onChange={e => setNuevoEstudiante(prev => ({ ...prev, nombre: e.target.value }))} placeholder="Apellidos, Nombres" /><Label>Correo electrónico (opcional)</Label><Input value={nuevoEstudiante.email} onChange={e => setNuevoEstudiante(prev => ({ ...prev, email: e.target.value }))} placeholder="correo@ejemplo.com" type="email" /></div>
-                        <DialogFooter><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Cancelar</Button><Button size="sm" onClick={handleAddEstudiante} className="bg-teal-600">Guardar</Button></DialogFooter>
+                        <DialogFooter><Button variant="outline" size="sm" onClick={() => setDialogOpen(false)}>Cancelar</Button><Button size="sm" onClick={handleAddEstudiante} className="bg-primary">Guardar</Button></DialogFooter>
                       </DialogContent>
                     </Dialog>
                   </div>
@@ -2853,7 +2849,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35, ease: "easeOut" }}
             >
-              <Card className={`shadow-md border-0 overflow-hidden ${darkMode ? 'bg-[#1e293b]' : 'bg-gradient-to-br from-white to-slate-50/60'}`}>
+              <Card className={`shadow-md border-0 overflow-hidden ${darkMode ? 'bg-card' : 'bg-gradient-to-br from-white to-slate-50/60'}`}>
                 <div className={`h-1 w-full ${darkMode ? 'bg-gradient-to-r from-teal-500 to-emerald-400' : 'bg-gradient-to-r from-teal-600 to-emerald-500'}`} />
                 <CardHeader className={`pb-3 px-5 ${darkMode ? '' : ''}`}>
                   <div className="flex items-center gap-2.5">
@@ -2948,7 +2944,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                                   }}
                                   className={`px-3 py-1 rounded-full text-xs font-medium border transition-all duration-150 ${
                                     isSelected
-                                      ? (darkMode ? 'bg-teal-600/20 text-teal-300 border-teal-500/50 shadow-sm' : 'bg-teal-50 text-teal-700 border-teal-300 shadow-sm')
+                                      ? (darkMode ? 'bg-primary/20 text-teal-300 border-teal-500/50 shadow-sm' : 'bg-teal-50 text-teal-700 border-teal-300 shadow-sm')
                                       : (darkMode ? 'bg-slate-800 text-slate-400 border-slate-600 hover:border-slate-500 hover:text-slate-300' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:text-slate-700')
                                   }`}
                                 >
@@ -3046,12 +3042,12 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
             isAdmin(usuario.rol) && (
               <TabsContent value="admin" className="mt-3 space-y-3 sm:space-y-4">
                 {/* Gestión de Usuarios */}
-                <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
-                  <CardHeader className={`py-3 px-4 flex-row items-center justify-between space-y-0 ${darkMode ? 'border-slate-700' : ''}`}>
-                    <div><CardTitle className="text-sm sm:text-base">Gestión de Usuarios</CardTitle><CardDescription className={`text-xs ${darkMode ? 'text-slate-400' : ''}`}>Crea y administra usuarios del sistema</CardDescription></div>
+                <Card className="shadow-sm bg-card border-border">
+                  <CardHeader className="py-3 px-4 flex-row items-center justify-between space-y-0 border-border">
+                    <div><CardTitle className="text-sm sm:text-base">Gestión de Usuarios</CardTitle><CardDescription className="text-xs text-muted-foreground">Crea y administra usuarios del sistema</CardDescription></div>
                     <Dialog open={userDialogOpen} onOpenChange={setUserDialogOpen}>
-                      <DialogTrigger asChild><Button size="sm" className={`h-7 text-xs ${darkMode ? 'bg-teal-600 hover:bg-teal-500' : 'bg-teal-600'}`} onClick={() => { setEditUsuarioId(null); setNuevoUsuario({ email: "", password: "", nombre: "", rol: "docente", materiasAsignadas: [] }); }}><UserPlus className="h-3.5 w-3.5 mr-1" />Nuevo Usuario</Button></DialogTrigger>
-                      <DialogContent className={`max-w-lg max-h-[90vh] overflow-y-auto ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
+                      <DialogTrigger asChild><Button size="sm" className={`h-7 text-xs ${darkMode ? 'bg-primary hover:bg-primary' : 'bg-primary'}`} onClick={() => { setEditUsuarioId(null); setNuevoUsuario({ email: "", password: "", nombre: "", rol: "docente", materiasAsignadas: [] }); }}><UserPlus className="h-3.5 w-3.5 mr-1" />Nuevo Usuario</Button></DialogTrigger>
+                      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto bg-card border-border">
                         <DialogHeader><DialogTitle>{editUsuarioId ? "Editar Usuario" : "Crear Usuario"}</DialogTitle><DialogDescription>Completa la información del usuario del sistema.</DialogDescription></DialogHeader>
                         <div className="space-y-3">
                           <div><Label className="text-xs">Nombre</Label><Input value={nuevoUsuario.nombre} onChange={e => setNuevoUsuario({ ...nuevoUsuario, nombre: e.target.value })} placeholder="Nombre completo" /></div>
@@ -3101,7 +3097,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                             </div>
                           </div>
                         </div>
-                        <DialogFooter><Button variant="outline" size="sm" onClick={() => setUserDialogOpen(false)}>Cancelar</Button><Button size="sm" onClick={handleAddUsuario} className="bg-teal-600">{editUsuarioId ? "Guardar" : "Crear"}</Button></DialogFooter>
+                        <DialogFooter><Button variant="outline" size="sm" onClick={() => setUserDialogOpen(false)}>Cancelar</Button><Button size="sm" onClick={handleAddUsuario} className="bg-primary">{editUsuarioId ? "Guardar" : "Crear"}</Button></DialogFooter>
                       </DialogContent>
                     </Dialog>
                   </CardHeader>
@@ -3119,7 +3115,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                                   {u.rol === "admin" ? "Admin" : u.rol === "admin-directora" ? "Directora" : u.rol === "admin-codirectora" ? "Codirectora" : u.rol === "docente-orientador" ? "Docente-Orient." : "Docente"}
                                 </Badge>
                               </TableCell>
-                              <TableCell><Badge variant={u.activo ? "default" : "destructive"} className={`text-[10px] ${u.activo ? (darkMode ? 'bg-teal-600' : 'bg-teal-600') : ''}`}>{u.activo ? "Activo" : "Inactivo"}</Badge></TableCell>
+                              <TableCell><Badge variant={u.activo ? "default" : "destructive"} className={`text-[10px] ${u.activo ? (darkMode ? 'bg-primary' : 'bg-primary') : ''}`}>{u.activo ? "Activo" : "Inactivo"}</Badge></TableCell>
                               <TableCell>
                                 <div className="space-y-0.5">
                                   {u.materias && u.materias.length > 0 && (
@@ -3145,8 +3141,8 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                 </Card>
 
                 {/* Info de Grados */}
-                <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
-                  <CardHeader className={`py-3 px-4 ${darkMode ? 'border-slate-700' : ''}`}><CardTitle className="text-sm sm:text-base">Grados Registrados</CardTitle></CardHeader>
+                <Card className="shadow-sm bg-card border-border">
+                  <CardHeader className="py-3 px-4 border-border"><CardTitle className="text-sm sm:text-base">Grados Registrados</CardTitle></CardHeader>
                   <CardContent className="pt-0">
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
                       {grados.map(g => {
@@ -3166,9 +3162,9 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                 </Card>
 
                 {/* Configuración del Sistema - Año Escolar */}
-                <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
-                  <CardHeader className={`py-3 px-4 flex-row items-center justify-between space-y-0 ${darkMode ? 'border-slate-700' : ''}`}>
-                    <div><CardTitle className="text-sm sm:text-base">Año Escolar</CardTitle><CardDescription className={`text-xs ${darkMode ? 'text-slate-400' : ''}`}>Configure el año lectivo actual del sistema</CardDescription></div>
+                <Card className="shadow-sm bg-card border-border">
+                  <CardHeader className="py-3 px-4 flex-row items-center justify-between space-y-0 border-border">
+                    <div><CardTitle className="text-sm sm:text-base">Año Escolar</CardTitle><CardDescription className="text-xs text-muted-foreground">Configure el año lectivo actual del sistema</CardDescription></div>
                     <Dialog open={añoDialogOpen} onOpenChange={setAñoDialogOpen}>
                       <DialogTrigger asChild>
                         <Button size="sm" variant="outline" className={`h-7 text-xs ${darkMode ? 'border-slate-600 text-slate-300 hover:bg-slate-700' : ''}`}>
@@ -3176,7 +3172,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                           Cambiar Año
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className={`max-w-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
+                      <DialogContent className="max-w-sm bg-card border-border">
                         <DialogHeader><DialogTitle>Cambiar Año Escolar</DialogTitle><DialogDescription>El nuevo año solo mostrará datos correspondientes a ese período.</DialogDescription></DialogHeader>
                         <div className="space-y-3">
                           <div>
@@ -3196,7 +3192,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                         </div>
                         <DialogFooter>
                           <Button variant="outline" size="sm" onClick={() => setAñoDialogOpen(false)}>Cancelar</Button>
-                          <Button size="sm" onClick={handleCambiarAño} disabled={añoLoading} className="bg-teal-600">
+                          <Button size="sm" onClick={handleCambiarAño} disabled={añoLoading} className="bg-primary">
                             {añoLoading ? "Guardando..." : "Cambiar"}
                           </Button>
                         </DialogFooter>
@@ -3240,10 +3236,10 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                 />
 
                 {/* Panel de Auditoría */}
-                <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
-                  <CardHeader className={`py-3 px-4 ${darkMode ? 'border-slate-700' : ''}`}>
+                <Card className="shadow-sm bg-card border-border">
+                  <CardHeader className="py-3 px-4 border-border">
                     <CardTitle className="text-sm sm:text-base">Historial de Auditoría</CardTitle>
-                    <CardDescription className={`text-xs ${darkMode ? 'text-slate-400' : ''}`}>Registro de quién digitó o borró calificaciones</CardDescription>
+                    <CardDescription className="text-xs text-muted-foreground">Registro de quién digitó o borró calificaciones</CardDescription>
                   </CardHeader>
                   <CardContent className="pt-0 space-y-3">
                     <div className="flex flex-wrap gap-2 items-center">
@@ -3303,7 +3299,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                                   <td className="p-2 whitespace-nowrap">{new Date(log.createdAt).toLocaleString('es-DO')}</td>
                                   <td className="p-2 font-medium">{log.usuario?.nombre || 'Desconocido'}</td>
                                   <td className="p-2">
-                                    <Badge variant={log.accion === 'DELETE' ? 'destructive' : 'default'} className={`text-[10px] ${log.accion === 'DELETE' ? '' : (darkMode ? 'bg-teal-600' : 'bg-teal-600')}`}>
+                                    <Badge variant={log.accion === 'DELETE' ? 'destructive' : 'default'} className={`text-[10px] ${log.accion === 'DELETE' ? '' : (darkMode ? 'bg-primary' : 'bg-primary')}`}>
                                       {log.accion === 'DELETE' ? 'Borró' : 'Digitó'}
                                     </Badge>
                                   </td>
@@ -3363,7 +3359,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
 
       {/* Dialogs */}
       <Dialog open={configDialogOpen} onOpenChange={setConfigDialogOpen}>
-        <DialogContent className={`max-w-sm mx-4 ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
+        <DialogContent className="max-w-sm mx-4 bg-card border-border">
           <DialogHeader><DialogTitle className="text-base">Configurar Actividades</DialogTitle><DialogDescription className="text-sm">Define cuántas actividades y sus porcentajes por trimestre.</DialogDescription></DialogHeader>
           {editConfig && <div className="space-y-3">
             <div><Label className="text-sm">Actividades Cotidianas</Label><div className="flex items-center gap-2 mt-1"><Input type="number" min="1" max="10" value={editConfig.numActividadesCotidianas} onChange={e => setEditConfig({ ...editConfig, numActividadesCotidianas: parseInt(e.target.value) || 1 })} className={`w-16 h-11 text-base ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-sm">u.</span><Input type="number" min="0" max="100" value={editConfig.porcentajeAC} onChange={e => setEditConfig({ ...editConfig, porcentajeAC: parseFloat(e.target.value) || 0 })} className={`w-16 h-11 text-base ml-auto ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-sm">%</span></div></div>
@@ -3375,12 +3371,12 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
               <Label htmlFor="aplicarATodas" className="text-sm font-medium">Aplicar a todas las materias de este grado</Label>
             </div>
           </div>}
-          <DialogFooter className="flex-row gap-2 sm:gap-0"><Button variant="outline" size="sm" className="flex-1 sm:flex-initial" onClick={() => setConfigDialogOpen(false)} disabled={configLoading}>Cancelar</Button><Button size="sm" className="flex-1 sm:flex-initial bg-teal-600" onClick={async () => { setConfigLoading(true); try { await handleSaveConfig(); } finally { setConfigLoading(false); }}} disabled={configLoading}>{configLoading ? "Guardando..." : "Guardar"}</Button></DialogFooter>
+          <DialogFooter className="flex-row gap-2 sm:gap-0"><Button variant="outline" size="sm" className="flex-1 sm:flex-initial" onClick={() => setConfigDialogOpen(false)} disabled={configLoading}>Cancelar</Button><Button size="sm" className="flex-1 sm:flex-initial bg-primary" onClick={async () => { setConfigLoading(true); try { await handleSaveConfig(); } finally { setConfigLoading(false); }}} disabled={configLoading}>{configLoading ? "Guardando..." : "Guardar"}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 
       <Dialog open={importDialogOpen} onOpenChange={setImportDialogOpen}>
-        <DialogContent className={`max-w-lg ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
+        <DialogContent className="max-w-lg bg-card border-border">
           <DialogHeader><DialogTitle>Importar Calificaciones</DialogTitle><DialogDescription>Carga un archivo CSV con las notas de los estudiantes.</DialogDescription></DialogHeader>
           <div className="space-y-3">
             <div className="flex gap-2">
@@ -3391,15 +3387,15 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
             {importData && <pre className={`p-2 rounded max-h-32 overflow-auto text-[10px] ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>{importData.slice(0, 500)}</pre>}
             <p className={`text-[10px] ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Primera fila: Estudiante, AC1, AC2... AI1... Examen. Filas siguientes: datos.</p>
           </div>
-          <DialogFooter><Button variant="outline" size="sm" onClick={() => { setImportDialogOpen(false); setImportData(""); }} disabled={importLoading}>Cancelar</Button><Button size="sm" onClick={async () => { setImportLoading(true); try { await handleImport(); } finally { setImportLoading(false); }}} disabled={!importData || importLoading} className="bg-teal-600">{importLoading ? "Importando..." : "Importar"}</Button></DialogFooter>
+          <DialogFooter><Button variant="outline" size="sm" onClick={() => { setImportDialogOpen(false); setImportData(""); }} disabled={importLoading}>Cancelar</Button><Button size="sm" onClick={async () => { setImportLoading(true); try { await handleImport(); } finally { setImportLoading(false); }}} disabled={!importData || importLoading} className="bg-primary">{importLoading ? "Importando..." : "Importar"}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Dialogo para borrar calificaciones */}
       <Dialog open={borrarCalifDialogOpen} onOpenChange={setBorrarCalifDialogOpen}>
-        <DialogContent className={`sm:max-w-[400px] ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
+        <DialogContent className="sm:max-w-[400px] bg-card border-border">
           <DialogHeader>
-            <DialogTitle className="text-red-600 flex items-center gap-2"><Trash2 className="h-5 w-5" />Borrar Calificaciones</DialogTitle>
+            <DialogTitle className="text-destructive flex items-center gap-2"><Trash2 className="h-5 w-5" />Borrar Calificaciones</DialogTitle>
             <DialogDescription>
               {borrarCalifTipo === "grado"
                 ? `Esto borrará TODAS las calificaciones del grado "${estudiantes[0]?.nombre ? 'seleccionado' : ''}" en la materia y trimestre seleccionados. Esta acción no se puede deshacer.`
@@ -3417,7 +3413,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
 
       {/* Dialogo para restablecer contraseña */}
       <Dialog open={resetPasswordDialogOpen} onOpenChange={setResetPasswordDialogOpen}>
-        <DialogContent className={`sm:max-w-[400px] ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
+        <DialogContent className="sm:max-w-[400px] bg-card border-border">
           <DialogHeader>
             <DialogTitle>Restablecer Contraseña</DialogTitle>
             <DialogDescription>Nueva contraseña para: <strong>{resetPasswordUser?.nombre}</strong></DialogDescription>
@@ -3434,7 +3430,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setResetPasswordDialogOpen(false)}>Cancelar</Button>
-            <Button onClick={handleResetPassword} disabled={resetPasswordLoading || !resetPasswordForm.password} className="bg-teal-600">
+            <Button onClick={handleResetPassword} disabled={resetPasswordLoading || !resetPasswordForm.password} className="bg-primary">
               {resetPasswordLoading ? "Guardando..." : "Guardar"}
             </Button>
           </DialogFooter>
@@ -3443,7 +3439,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
 
       {/* Dialogo de perfil de usuario */}
       <Dialog open={perfilDialogOpen} onOpenChange={setPerfilDialogOpen}>
-        <DialogContent className={`max-w-md ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
+        <DialogContent className="max-w-md bg-card border-border">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2"><User className="h-5 w-5" /> Mi Perfil</DialogTitle>
             <DialogDescription>Información de tu cuenta y asignaciones.</DialogDescription>
@@ -3492,7 +3488,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
               )}
           </div>
           <DialogFooter>
-            <Button onClick={() => setPerfilDialogOpen(false)} className="bg-teal-600">Cerrar</Button>
+            <Button onClick={() => setPerfilDialogOpen(false)} className="bg-primary">Cerrar</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -3512,21 +3508,21 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
         </>
       )}
 
-      <footer className={`py-2 text-center text-xs hidden md:block ${darkMode ? 'bg-[#1e293b] text-slate-500' : 'bg-slate-800 text-slate-400'}`}>© 2026 Centro Escolar Católico San José de la Montaña</footer>
+      <footer className="py-2 text-center text-xs hidden md:block bg-card text-muted-foreground">© 2026 Centro Escolar Católico San José de la Montaña</footer>
 
       {/* Bottom Nav Accordion para Móviles */}
-      <nav className={`md:hidden fixed bottom-0 left-0 right-0 z-50 safe-area-bottom ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'bg-white border-slate-200'}`} aria-label="Navegación principal">
-        <button onClick={() => setMenuAbierto(!menuAbierto)} className={`w-full flex items-center justify-center gap-2 py-3 px-4 border-t transition-colors ${darkMode ? 'border-slate-700 text-slate-300 hover:bg-slate-800' : 'border-slate-200 text-slate-700 hover:bg-slate-50'}`} aria-label="Abrir menú de navegación">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 safe-area-bottom bg-card border-border" aria-label="Navegación principal">
+        <button onClick={() => setMenuAbierto(!menuAbierto)} className="w-full flex items-center justify-center gap-2 py-3 px-4 border-t border-border text-foreground hover:bg-muted transition-colors" aria-label="Abrir menú de navegación">
           <Menu className="h-5 w-5" />
           <span className="text-sm font-medium">{navItems.find(i => i.value === activeTab)?.label || 'Menú'}</span>
           <ChevronUp className={`h-4 w-4 transition-transform ${menuAbierto ? 'rotate-0' : 'rotate-180'}`} />
         </button>
         <AnimatePresence>
           {menuAbierto && (
-            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className={`overflow-hidden border-t ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
-              <div className={`grid grid-cols-4 gap-1 p-2 ${darkMode ? 'bg-slate-900' : 'bg-slate-50'}`}>
+            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden border-t border-border">
+              <div className="grid grid-cols-4 gap-1 p-2 bg-muted">
                 {navItems.map((item) => (
-                  <button key={item.value} onClick={() => { setActiveTab(item.value); saveUserState({ activeTab: item.value }); setMenuAbierto(false); }} aria-label={`Ir a ${item.label}`} className={`flex flex-col items-center justify-center py-3 px-1 rounded-xl transition-colors min-h-[56px] ${activeTab === item.value ? (darkMode ? "text-teal-400 bg-slate-800 ring-1 ring-teal-600" : "text-teal-700 bg-teal-50 ring-1 ring-teal-300") : (darkMode ? "text-slate-400 hover:bg-slate-800" : "text-slate-500 hover:bg-white")}`}>
+                  <button key={item.value} onClick={() => { setActiveTab(item.value); saveUserState({ activeTab: item.value }); setMenuAbierto(false); }} aria-label={`Ir a ${item.label}`} className={`flex flex-col items-center justify-center py-3 px-1 rounded-xl transition-colors min-h-[56px] ${activeTab === item.value ? "text-primary bg-primary/10 ring-1 ring-primary" : "text-muted-foreground hover:bg-accent"}`}>
                     <item.icon className="h-5 w-5 mb-1" />
                     <span className="text-[10px] leading-tight font-medium">{item.label}</span>
                   </button>
