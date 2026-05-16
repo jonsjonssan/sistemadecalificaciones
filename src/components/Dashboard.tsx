@@ -234,10 +234,10 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
   return (
     <div className="space-y-4 pb-8">
       <div className="animate-fade-slide-up">
-        <h2 className="font-display text-xl sm:text-2xl tracking-tight" style={{ color: darkMode ? 'oklch(0.95 0.005 75)' : 'oklch(0.13 0.015 45)' }}>
+        <h2 className="font-display text-xl sm:text-2xl tracking-tight text-foreground">
           Hola, {usuario.nombre}
         </h2>
-        <p className={`text-sm sm:text-base mt-1 ${darkMode ? 'text-amber-200/40' : 'text-amber-700/50'}`}>
+        <p className="text-sm sm:text-base mt-1 text-muted-foreground">
           {usuario.rol === "admin"
             ? "Bienvenido al panel de administración del sistema."
             : "Te damos la bienvenida al ciclo escolar."}
@@ -248,10 +248,10 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {loading ? (
             <>
-              <StatCard loading title="Total Estudiantes" value={0} subtitle="" icon={Users} iconColor="" iconBg="" accentColor="" darkMode />
-              <StatCard loading title="Grados Activos" value={0} subtitle="" icon={School} iconColor="" iconBg="" accentColor="" darkMode />
-              <StatCard loading title="Asignaturas" value={0} subtitle="" icon={BookOpen} iconColor="" iconBg="" accentColor="" darkMode />
-              <StatCard loading title="Docentes" value={0} subtitle="" icon={GraduationCap} iconColor="" iconBg="" accentColor="" darkMode />
+              <StatCard loading title="Total Estudiantes" value={0} subtitle="" icon={Users} iconColor="text-primary" iconBg="bg-primary/10" accentColor="bg-primary" darkMode />
+              <StatCard loading title="Grados Activos" value={0} subtitle="" icon={School} iconColor="text-primary" iconBg="bg-primary/10" accentColor="bg-primary" darkMode />
+              <StatCard loading title="Asignaturas" value={0} subtitle="" icon={BookOpen} iconColor="text-primary" iconBg="bg-primary/10" accentColor="bg-primary" darkMode />
+              <StatCard loading title="Docentes" value={0} subtitle="" icon={GraduationCap} iconColor="text-primary" iconBg="bg-primary/10" accentColor="bg-primary" darkMode />
             </>
           ) : (
             <>
@@ -261,9 +261,9 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                   value={totalEstudiantesVisibles}
                   subtitle="Registrados"
                   icon={Users}
-                  iconColor={darkMode ? "text-amber-400" : "text-amber-600"}
-                  iconBg={darkMode ? "bg-amber-900/20" : "bg-amber-50"}
-                  accentColor="bg-amber-500"
+                  iconColor="text-primary"
+                  iconBg="bg-primary/10"
+                  accentColor="bg-primary"
                   darkMode={darkMode}
                   delay={0}
                   action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.totalEstudiantes} />}
@@ -276,9 +276,9 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                   value={gradosVisibles.length}
                   subtitle="Secciones"
                   icon={School}
-                  iconColor={darkMode ? "text-amber-400" : "text-amber-600"}
-                  iconBg={darkMode ? "bg-amber-900/20" : "bg-amber-50"}
-                  accentColor="bg-amber-500"
+                  iconColor="text-primary"
+                  iconBg="bg-primary/10"
+                  accentColor="bg-primary"
                   darkMode={darkMode}
                   delay={0.1}
                   action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.gradosActivos} />}
@@ -291,9 +291,9 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                   value={totalAsignaturasVisibles}
                   subtitle="Impartidas"
                   icon={BookOpen}
-                  iconColor={darkMode ? "text-amber-400" : "text-amber-600"}
-                  iconBg={darkMode ? "bg-amber-900/20" : "bg-amber-50"}
-                  accentColor="bg-amber-500"
+                  iconColor="text-primary"
+                  iconBg="bg-primary/10"
+                  accentColor="bg-primary"
                   darkMode={darkMode}
                   delay={0.2}
                   action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.asignaturas} />}
@@ -306,9 +306,9 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                   value={totalDocentes}
                   subtitle="Activos"
                   icon={GraduationCap}
-                  iconColor={darkMode ? "text-amber-400" : "text-amber-600"}
-                  iconBg={darkMode ? "bg-amber-900/20" : "bg-amber-50"}
-                  accentColor="bg-amber-500"
+                  iconColor="text-primary"
+                  iconBg="bg-primary/10"
+                  accentColor="bg-primary"
                   darkMode={darkMode}
                   delay={0.3}
                   action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.docentes} />}
@@ -322,11 +322,11 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
       {/* Promedio Institucional */}
       {esDirectiva && (
         <div className="animate-fade-slide-up" style={{ animationDelay: '0.1s' }}>
-          <Card className={`shadow-sm overflow-hidden ${darkMode ? 'bg-[#16181c] border-white/5' : 'bg-white border-amber-900/10'}`}>
-            <div className="h-px bg-gradient-to-r from-amber-500/40 via-amber-300/20 to-transparent w-full" />
+          <Card className="shadow-sm overflow-hidden bg-card border-border">
+            <div className="h-px bg-gradient-to-r from-primary/30 via-primary/10 to-transparent w-full" />
             <CardHeader className="pb-3 flex flex-row items-center justify-between">
-              <CardTitle className={`font-display text-sm sm:text-base flex items-center gap-2 ${darkMode ? 'text-amber-200/90' : 'text-[#2d2a24]'}`}>
-                <Target className="h-4 w-4 text-amber-500" />
+              <CardTitle className="font-display text-sm sm:text-base flex items-center gap-2 text-card-foreground">
+                <Target className="h-4 w-4 text-primary" />
                 Rendimiento Institucional
               </CardTitle>
               <MathInfoButton darkMode={darkMode} explanation={mathExplanations.rendimientoInstitucional} />
@@ -337,20 +337,17 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                   <PromedioCircular valor={promInstitucional} darkMode={darkMode} />
                 </div>
                 <div className="sm:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {promPorCiclo.map(c => {
-                    const d = getCicloDark({ nombre: c.nombre } as CicloAsignaturas);
-                    return (
-                      <div key={c.nombre} className={`rounded-sm border p-3 text-center ${darkMode ? 'bg-white/[0.02] border-white/10' : 'bg-amber-50/30 border-amber-900/10'}`}>
-                        <p className={`font-display text-xs mb-1 ${darkMode ? 'text-amber-200/60' : 'text-[#2d2a24]/60'}`}>{c.nombre}</p>
-                        <p className={`text-2xl font-semibold font-mono ${c.prom != null && Math.round(c.prom) >= 5 ? (darkMode ? 'text-amber-300' : 'text-amber-700') : (darkMode ? 'text-red-400' : 'text-red-600')}`}>
-                          {c.prom != null ? c.prom.toFixed(2) : "—"}
-                        </p>
-                        <p className={`text-[10px] font-medium ${darkMode ? 'text-white/30' : 'text-amber-900/40'}`}>
-                          {c.prom != null && Math.round(c.prom) >= 5 ? 'Sobre umbral' : c.prom != null ? 'Bajo umbral' : 'Sin datos'}
-                        </p>
-                      </div>
-                    );
-                  })}
+                  {promPorCiclo.map(c => (
+                    <div key={c.nombre} className="rounded-sm border border-border p-3 text-center bg-muted/30">
+                      <p className="font-display text-xs mb-1 text-muted-foreground/70">{c.nombre}</p>
+                      <p className={`text-2xl font-semibold font-mono ${c.prom != null && Math.round(c.prom) >= 5 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                        {c.prom != null ? c.prom.toFixed(2) : "—"}
+                      </p>
+                      <p className="text-[10px] font-medium text-muted-foreground/50">
+                        {c.prom != null && Math.round(c.prom) >= 5 ? 'Sobre umbral' : c.prom != null ? 'Bajo umbral' : 'Sin datos'}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </CardContent>
@@ -379,8 +376,8 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
       {esDirectiva && todasAsignaturasList.length > 0 && (
         <div className="animate-fade-slide-up" style={{ animationDelay: '0.3s' }}>
           <div className="flex items-center gap-2 mb-3">
-            <h3 className={`font-display text-base ${darkMode ? 'text-amber-200/80' : 'text-[#2d2a24]'}`}>
-              <BookOpen className="h-4 w-4 inline mr-2 text-amber-500" />
+            <h3 className="font-display text-base text-foreground">
+              <BookOpen className="h-4 w-4 inline mr-2 text-primary" />
               Asignaturas por Ciclo
             </h3>
             <MathInfoButton darkMode={darkMode} explanation={mathExplanations.asignaturasPorCiclo} />
@@ -415,20 +412,20 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
-        <Card className={`lg:col-span-2 xl:col-span-3 shadow-sm overflow-hidden flex flex-col ${darkMode ? 'bg-[#16181c] border-white/5' : 'bg-white border-amber-900/10'}`}>
-          <CardHeader className={`flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b gap-4 ${darkMode ? 'bg-white/[0.02] border-white/5' : 'bg-amber-50/30 border-amber-900/10'}`}>
+        <Card className="lg:col-span-2 xl:col-span-3 shadow-sm overflow-hidden flex flex-col bg-card border-border">
+          <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-border gap-4 bg-muted/30">
             <div>
-              <CardTitle className={`font-display text-sm sm:text-base flex items-center gap-2 ${darkMode ? 'text-amber-200/90' : 'text-[#2d2a24]'}`}>
-                <TrendingUp className="h-4 w-4 text-amber-500" />
+              <CardTitle className="font-display text-sm sm:text-base flex items-center gap-2 text-card-foreground">
+                <TrendingUp className="h-4 w-4 text-primary" />
                 Rendimiento Académico
               </CardTitle>
-              <CardDescription className={`text-xs sm:text-sm ${darkMode ? 'text-amber-200/40' : 'text-amber-900/40'}`}>
+              <CardDescription className="text-xs sm:text-sm text-muted-foreground">
                 {esDocente ? `Estadísticas de ${gradosVisibles[0]?.numero}° ${gradosVisibles[0]?.seccion}` : 'Promedios por categoría'}
               </CardDescription>
             </div>
             {!esDocente && (
               <Select value={selectedGradoId} onValueChange={setSelectedGradoId}>
-                <SelectTrigger className={`w-full sm:w-[180px] h-9 text-xs sm:text-sm font-medium ${darkMode ? 'bg-white/5 border-white/10 text-white' : 'bg-white border-amber-200'}`}>
+                <SelectTrigger className="w-full sm:w-[180px] h-9 text-xs sm:text-sm font-medium bg-background border-border text-foreground">
                   <SelectValue placeholder="Seleccionar grado" />
                 </SelectTrigger>
                 <SelectContent>
@@ -531,16 +528,16 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
 
         <div className="flex flex-col gap-3 sm:gap-4 lg:col-span-1 xl:col-span-1">
           {(usuario.rol === "docente" || usuario.rol === "docente-orientador") && asignaturasAsignadas && asignaturasAsignadas.length > 0 && (
-            <Card className={`shadow-sm ${darkMode ? 'bg-[#16181c] border-white/5' : 'bg-white border-amber-900/10'}`}>
-              <CardHeader className={`py-3 px-4 border-b ${darkMode ? 'border-white/5' : 'border-amber-900/10'}`}>
-                <CardTitle className={`font-display text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-amber-200/50' : 'text-amber-700/50'}`}>Mis Asignaturas</CardTitle>
+            <Card className="shadow-sm bg-card border-border">
+              <CardHeader className="py-3 px-4 border-b border-border">
+                <CardTitle className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Mis Asignaturas</CardTitle>
               </CardHeader>
               <CardContent className="p-3 max-h-[200px] overflow-y-auto">
                 <div className="space-y-1.5">
                   {asignaturasAsignadas.map(m => (
-                    <div key={m.id} className={`p-2 text-xs flex justify-between items-center ${darkMode ? 'bg-white/[0.02] border border-white/5' : 'bg-amber-50/30 border border-amber-900/10'}`}>
-                      <span className={`font-medium truncate mr-2 ${darkMode ? 'text-amber-200/70' : 'text-[#2d2a24]/80'}`}>{m.nombre}</span>
-                      <span className={`font-mono text-[10px] ${darkMode ? 'text-amber-300/50' : 'text-amber-700/50'}`}>{m.grado?.numero}°{m.grado?.seccion}</span>
+                    <div key={m.id} className="p-2 text-xs flex justify-between items-center bg-muted/30 border border-border rounded-sm">
+                      <span className="font-medium truncate mr-2 text-foreground/80">{m.nombre}</span>
+                      <span className="font-mono text-[10px] text-muted-foreground/60">{m.grado?.numero}°{m.grado?.seccion}</span>
                     </div>
                   ))}
                 </div>
@@ -548,31 +545,31 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
             </Card>
           )}
 
-          <Card className={`shadow-sm flex-1 ${darkMode ? 'bg-[#16181c] border-white/5' : 'bg-white border-amber-900/10'}`}>
-            <CardHeader className={`py-3 px-4 border-b ${darkMode ? 'border-white/5' : 'border-amber-900/10'}`}>
-              <CardTitle className={`font-display text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-amber-200/50' : 'text-amber-700/50'}`}>Gestión Rápida</CardTitle>
+          <Card className="shadow-sm flex-1 bg-card border-border">
+            <CardHeader className="py-3 px-4 border-b border-border">
+              <CardTitle className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Gestión Rápida</CardTitle>
             </CardHeader>
             <CardContent className="p-3 sm:p-4 space-y-2">
-              <div className={`p-3 flex items-center gap-3 cursor-pointer group transition-all ${darkMode ? 'bg-white/[0.02] border border-white/5 hover:bg-white/[0.04]' : 'bg-amber-50/30 border border-amber-900/10 hover:bg-amber-50/60'}`} onClick={() => (window as any).setActiveTab?.('calificaciones')}>
-                <div className={`p-2 shrink-0 group-hover:scale-105 transition-transform ${darkMode ? 'bg-amber-900/20 text-amber-400' : 'bg-amber-100 text-amber-700'}`}><ClipboardList className="h-5 w-5" /></div>
+              <div className="p-3 flex items-center gap-3 cursor-pointer group transition-all bg-muted/20 border border-border hover:bg-muted/40 rounded-sm" onClick={() => (window as any).setActiveTab?.('calificaciones')}>
+                <div className="p-2 shrink-0 group-hover:scale-105 transition-transform bg-primary/10 text-primary rounded-sm"><ClipboardList className="h-5 w-5" /></div>
                 <div>
-                  <h4 className={`text-sm font-semibold ${darkMode ? 'text-amber-200/80' : 'text-[#2d2a24]'}`}>Pasar Notas</h4>
-                  <p className={`text-[11px] ${darkMode ? 'text-amber-300/50' : 'text-amber-700/50'}`}>Calificaciones</p>
+                  <h4 className="text-sm font-semibold text-foreground">Pasar Notas</h4>
+                  <p className="text-[11px] text-muted-foreground/60">Calificaciones</p>
                 </div>
               </div>
-              <div className={`p-3 flex items-center gap-3 cursor-pointer group transition-all ${darkMode ? 'bg-white/[0.02] border border-white/5 hover:bg-white/[0.04]' : 'bg-amber-50/30 border border-amber-900/10 hover:bg-amber-50/60'}`} onClick={() => (window as any).setActiveTab?.('asistencia')}>
-                <div className={`p-2 shrink-0 group-hover:scale-105 transition-transform ${darkMode ? 'bg-amber-900/20 text-amber-400' : 'bg-amber-100 text-amber-700'}`}><CalendarDays className="h-5 w-5" /></div>
+              <div className="p-3 flex items-center gap-3 cursor-pointer group transition-all bg-muted/20 border border-border hover:bg-muted/40 rounded-sm" onClick={() => (window as any).setActiveTab?.('asistencia')}>
+                <div className="p-2 shrink-0 group-hover:scale-105 transition-transform bg-primary/10 text-primary rounded-sm"><CalendarDays className="h-5 w-5" /></div>
                 <div>
-                  <h4 className={`text-sm font-semibold ${darkMode ? 'text-amber-200/80' : 'text-[#2d2a24]'}`}>Asistencia</h4>
-                  <p className={`text-[11px] ${darkMode ? 'text-amber-300/50' : 'text-amber-700/50'}`}>Control diario</p>
+                  <h4 className="text-sm font-semibold text-foreground">Asistencia</h4>
+                  <p className="text-[11px] text-muted-foreground/60">Control diario</p>
                 </div>
               </div>
               {usuario.rol === "admin" && (
-                <div className={`p-3 flex items-center gap-3 cursor-pointer group transition-all ${darkMode ? 'bg-white/[0.02] border border-white/5 hover:bg-white/[0.04]' : 'bg-amber-50/30 border border-amber-900/10 hover:bg-amber-50/60'}`} onClick={() => (window as any).setActiveTab?.('admin')}>
-                  <div className={`p-2 shrink-0 group-hover:scale-105 transition-transform ${darkMode ? 'bg-amber-900/20 text-amber-400' : 'bg-amber-100 text-amber-700'}`}><GraduationCap className="h-5 w-5" /></div>
+                <div className="p-3 flex items-center gap-3 cursor-pointer group transition-all bg-muted/20 border border-border hover:bg-muted/40 rounded-sm" onClick={() => (window as any).setActiveTab?.('admin')}>
+                  <div className="p-2 shrink-0 group-hover:scale-105 transition-transform bg-primary/10 text-primary rounded-sm"><GraduationCap className="h-5 w-5" /></div>
                   <div>
-                    <h4 className={`text-sm font-semibold ${darkMode ? 'text-amber-200/80' : 'text-[#2d2a24]'}`}>Docentes</h4>
-                    <p className={`text-[11px] ${darkMode ? 'text-amber-300/50' : 'text-amber-700/50'}`}>Administración</p>
+                    <h4 className="text-sm font-semibold text-foreground">Docentes</h4>
+                    <p className="text-[11px] text-muted-foreground/60">Administración</p>
                   </div>
                 </div>
               )}
