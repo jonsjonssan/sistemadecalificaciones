@@ -243,12 +243,13 @@ const savedTipoAsistencia = localStorage.getItem("ss_tipoAsistencia");
 
   // Cargar observaciones desde la base de datos cuando cambia grado/trimestre
   useEffect(() => {
-    if (!gradoSeleccionado || !trimestreSeleccionado) return;
+    if (!gradoSeleccionado) return;
+    const effectiveTrimestre = trimestreSeleccionado || "1";
     const grado = gradosFiltrados.find(g => g.id === gradoSeleccionado);
     if (!grado) return;
     const año = grado.año || new Date().getFullYear();
     const controller = new AbortController();
-    fetch(`/api/observaciones?gradoId=${gradoSeleccionado}&trimestre=${trimestreSeleccionado}&año=${año}`, {
+    fetch(`/api/observaciones?gradoId=${gradoSeleccionado}&trimestre=${effectiveTrimestre}&año=${año}`, {
       credentials: "include",
       signal: controller.signal,
     })
@@ -526,7 +527,8 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
       return updated;
     });
     // Persistir todos los campos manuales en la BD (debounce 300ms)
-    if (gradoSeleccionado && trimestreSeleccionado) {
+    if (gradoSeleccionado) {
+      const effectiveTrimestre = trimestreSeleccionado || "1";
       const existing = observacionesSaveTimersRef.current.get(estudianteId);
       if (existing) clearTimeout(existing);
       const timer = setTimeout(async () => {
@@ -541,7 +543,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
             body: JSON.stringify({
               estudianteId,
               gradoId: gradoSeleccionado,
-              trimestre: trimestreSeleccionado,
+              trimestre: effectiveTrimestre,
               año,
               asistencias: currentData.asistencias ?? "",
               inasistencias: currentData.inasistencias ?? "",
@@ -2006,7 +2008,8 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
   useEffect(() => {
     const flushPendingObservaciones = () => {
       const data = asistenciaManualDataRef.current;
-      if (!gradoSeleccionado || !trimestreSeleccionado) return;
+      if (!gradoSeleccionado) return;
+      const effectiveTrimestre = trimestreSeleccionado || "1";
       const grado = gradosFiltrados.find(g => g.id === gradoSeleccionado);
       const año = grado?.año || new Date().getFullYear();
       for (const [estudianteId, entry] of Object.entries(data)) {
@@ -2014,7 +2017,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
         const blob = new Blob([JSON.stringify({
           estudianteId,
           gradoId: gradoSeleccionado,
-          trimestre: trimestreSeleccionado,
+          trimestre: effectiveTrimestre,
           año,
           asistencias: entry.asistencias ?? "",
           inasistencias: entry.inasistencias ?? "",
