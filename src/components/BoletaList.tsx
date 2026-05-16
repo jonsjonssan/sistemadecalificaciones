@@ -1419,6 +1419,37 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
                   </div>
                 </div>
               )}
+              {(() => {
+                const attData = resumenAsistencia.find((r: any) => r.id === est.id);
+                if (!attData || (attData.asistencias === 0 && attData.ausencias === 0 && attData.tardanzas === 0 && attData.justificadas === 0)) return null;
+                return (
+                  <div className="mt-2 border-t pt-2">
+                    <div className="text-[10px] font-semibold mb-1 text-blue-600 dark:text-blue-400">ASISTENCIA REGISTRADA EN EL SISTEMA</div>
+                    <div className="grid grid-cols-5 gap-1 text-xs mb-2">
+                      <div className="bg-blue-50 dark:bg-blue-900/20 rounded p-1 text-center">
+                        <div className="text-[9px] text-slate-500">Asistencias</div>
+                        <div className="font-bold text-blue-700 dark:text-blue-300 text-sm">{attData.asistencias ?? 0}</div>
+                      </div>
+                      <div className="bg-red-50 dark:bg-red-900/20 rounded p-1 text-center">
+                        <div className="text-[9px] text-slate-500">Inasistencias</div>
+                        <div className="font-bold text-red-700 dark:text-red-300 text-sm">{attData.ausencias ?? 0}</div>
+                      </div>
+                      <div className="bg-amber-50 dark:bg-amber-900/20 rounded p-1 text-center">
+                        <div className="text-[9px] text-slate-500">Tardanzas</div>
+                        <div className="font-bold text-amber-700 dark:text-amber-300 text-sm">{attData.tardanzas ?? 0}</div>
+                      </div>
+                      <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded p-1 text-center">
+                        <div className="text-[9px] text-slate-500">Justificadas</div>
+                        <div className="font-bold text-emerald-700 dark:text-emerald-300 text-sm">{attData.justificadas ?? 0}</div>
+                      </div>
+                      <div className="bg-slate-50 dark:bg-slate-800/40 rounded p-1 text-center">
+                        <div className="text-[9px] text-slate-500">Total</div>
+                        <div className="font-bold text-slate-700 dark:text-slate-300 text-sm">{attData.total ?? 0}</div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
               <div className="mt-2 border-t pt-2">
                 <label className="text-[10px] block text-slate-500 font-medium">Observaciones</label>
                 <textarea value={asistenciaManualData[est.id]?.observaciones || ''} onChange={(e) => onAsistenciaManualChange?.(est.id, 'observaciones', e.target.value)} className="w-full h-14 text-xs border rounded dark:bg-slate-700 dark:border-slate-600 p-1 resize-none" placeholder="Escriba observaciones para la boleta..." />
