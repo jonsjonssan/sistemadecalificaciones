@@ -396,7 +396,7 @@ export function SystemThresholdsCard({
 
         {/* ===== ACCIONES ===== */}
         <div className="flex items-center gap-2 pt-1">
-          <Button size="sm" onClick={onSave} disabled={loading} className="bg-teal-600 hover:bg-teal-700">
+          <Button size="sm" onClick={onSave} disabled={loading} className="bg-emerald-600 hover:bg-emerald-700">
             {loading ? "Guardando..." : "Guardar Umbrales"}
           </Button>
           <Button size="sm" variant="outline" onClick={onReset}>

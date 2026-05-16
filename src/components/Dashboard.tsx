@@ -55,16 +55,16 @@ interface CicloAsignaturas {
 }
 
 const CICLOS: CicloAsignaturas[] = [
-  { nombre: "Primer Ciclo", grados: [2, 3], color: "text-teal-600", colorBg: "bg-teal-50", colorBorder: "border-teal-200", iconColor: "text-teal-500", ringColor: "#14b8a6" },
-  { nombre: "Segundo Ciclo", grados: [4, 5, 6], color: "text-blue-600", colorBg: "bg-blue-50", colorBorder: "border-blue-200", iconColor: "text-blue-500", ringColor: "#3b82f6" },
-  { nombre: "Tercer Ciclo", grados: [7, 8, 9], color: "text-violet-600", colorBg: "bg-violet-50", colorBorder: "border-violet-200", iconColor: "text-violet-500", ringColor: "#8b5cf6" },
+  { nombre: "Primer Ciclo", grados: [2, 3], color: "text-emerald-600 dark:text-emerald-400", colorBg: "bg-emerald-50 dark:bg-emerald-900/20", colorBorder: "border-emerald-200 dark:border-emerald-800", iconColor: "text-emerald-500 dark:text-emerald-400", ringColor: "oklch(0.56 0.15 155)" },
+  { nombre: "Segundo Ciclo", grados: [4, 5, 6], color: "text-amber-600 dark:text-amber-400", colorBg: "bg-amber-50 dark:bg-amber-900/20", colorBorder: "border-amber-200 dark:border-amber-800", iconColor: "text-amber-500 dark:text-amber-400", ringColor: "oklch(0.65 0.12 85)" },
+  { nombre: "Tercer Ciclo", grados: [7, 8, 9], color: "text-primary dark:text-primary", colorBg: "bg-primary/5 dark:bg-primary/10", colorBorder: "border-primary/20 dark:border-primary/30", iconColor: "text-primary dark:text-primary", ringColor: "oklch(0.28 0.055 160)" },
 ];
 
 function getCicloDark(ciclo: CicloAsignaturas) {
   const map: Record<string, { bg: string; border: string; icon: string }> = {
-    "Primer Ciclo": { bg: "bg-teal-900/20", border: "border-teal-800", icon: "text-teal-400" },
-    "Segundo Ciclo": { bg: "bg-blue-900/20", border: "border-blue-800", icon: "text-blue-400" },
-    "Tercer Ciclo": { bg: "bg-violet-900/20", border: "border-violet-800", icon: "text-violet-400" },
+    "Primer Ciclo": { bg: "bg-emerald-900/20", border: "border-emerald-800", icon: "text-emerald-400" },
+    "Segundo Ciclo": { bg: "bg-amber-900/20", border: "border-amber-800", icon: "text-amber-400" },
+    "Tercer Ciclo": { bg: "bg-primary/10", border: "border-primary/30", icon: "text-primary" },
   };
   return map[ciclo.nombre] || { bg: "bg-slate-800", border: "border-slate-700", icon: "text-slate-400" };
 }
@@ -178,9 +178,9 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
   })).filter(g => g.estudiantes > 0);
 
   const categoryChartData = selectedStats ? [
-    { name: "Cotidianas", valor: selectedStats.promedios.cotidiana, color: "#0d9488" },
-    { name: "Integradoras", valor: selectedStats.promedios.integradora, color: "#0891b2" },
-    { name: "Exámenes", valor: selectedStats.promedios.examen, color: "#4f46e5" }
+    { name: "Cotidianas", valor: selectedStats.promedios.cotidiana, color: darkMode ? "oklch(0.56 0.15 155)" : "oklch(0.44 0.13 155)" },
+    { name: "Integradoras", valor: selectedStats.promedios.integradora, color: darkMode ? "oklch(0.65 0.12 85)" : "oklch(0.60 0.10 85)" },
+    { name: "Exámenes", valor: selectedStats.promedios.examen, color: darkMode ? "oklch(0.28 0.055 160)" : "oklch(0.28 0.055 160)" }
   ] : [];
 
   // Promedio por ciclo para la tarjeta institucional — basado en materias seleccionadas
@@ -232,324 +232,66 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
   }
 
   return (
-    <div className="space-y-4 pb-8">
-      <div className="animate-fade-slide-up">
-        <h2 className="font-display text-xl sm:text-2xl tracking-tight text-foreground">
-          Hola, {usuario.nombre}
-        </h2>
-        <p className="text-sm sm:text-base mt-1 text-muted-foreground">
-          {usuario.rol === "admin"
-            ? "Bienvenido al panel de administración del sistema."
-            : "Te damos la bienvenida al ciclo escolar."}
-        </p>
+    <div className="pb-8">
+      {/* Header bar — spans all panels */}
+      <div className="flex items-center justify-between mb-6 animate-fade-slide-up">
+        <div>
+          <h2 className="font-display text-xl sm:text-2xl tracking-tight text-foreground">
+            Hola, {usuario.nombre}
+          </h2>
+          <p className="text-sm sm:text-base mt-1 text-muted-foreground">
+            {usuario.rol === "admin"
+              ? "Panel de administración del sistema."
+              : "Bienvenido al ciclo escolar."}
+          </p>
+        </div>
+        {esDirectiva && configuracion && (
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-sm bg-primary/5 border border-primary/10 text-xs text-muted-foreground">
+            <CalendarDays className="h-3.5 w-3.5 text-primary" />
+            Año Escolar {configuracion.añoEscolar}
+          </div>
+        )}
       </div>
 
-      {usuario.rol === "admin" && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          {loading ? (
-            <>
-              <StatCard loading title="Total Estudiantes" value={0} subtitle="" icon={Users} iconColor="text-accent" iconBg="bg-accent" accentColor="bg-accent" darkMode />
-              <StatCard loading title="Grados Activos" value={0} subtitle="" icon={School} iconColor="text-accent" iconBg="bg-accent" accentColor="bg-accent" darkMode />
-              <StatCard loading title="Asignaturas" value={0} subtitle="" icon={BookOpen} iconColor="text-accent" iconBg="bg-accent" accentColor="bg-accent" darkMode />
-              <StatCard loading title="Docentes" value={0} subtitle="" icon={GraduationCap} iconColor="text-accent" iconBg="bg-accent" accentColor="bg-accent" darkMode />
-            </>
-          ) : (
-            <>
-              <div className="animate-fade-slide-up" style={{ animationDelay: '0s' }}>
-                <StatCard
-                  title="Total Estudiantes"
-                  value={totalEstudiantesVisibles}
-                  subtitle="Registrados"
-                  icon={Users}
-                  iconColor="text-accent"
-                  iconBg="bg-accent"
-                  accentColor="bg-accent"
-                  darkMode={darkMode}
-                  delay={0}
-                  action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.totalEstudiantes} />}
-                />
-              </div>
+      {/* Three-panel grid layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr_240px] gap-4">
 
-              <div className="animate-fade-slide-up" style={{ animationDelay: '0.1s' }}>
-                <StatCard
-                  title="Grados Activos"
-                  value={gradosVisibles.length}
-                  subtitle="Secciones"
-                  icon={School}
-                  iconColor="text-accent"
-                  iconBg="bg-accent"
-                  accentColor="bg-accent"
-                  darkMode={darkMode}
-                  delay={0.1}
-                  action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.gradosActivos} />}
-                />
-              </div>
-
-              <div className="animate-fade-slide-up" style={{ animationDelay: '0.2s' }}>
-                <StatCard
-                  title="Asignaturas"
-                  value={totalAsignaturasVisibles}
-                  subtitle="Impartidas"
-                  icon={BookOpen}
-                  iconColor="text-accent"
-                  iconBg="bg-accent"
-                  accentColor="bg-accent"
-                  darkMode={darkMode}
-                  delay={0.2}
-                  action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.asignaturas} />}
-                />
-              </div>
-
-              <div className="animate-fade-slide-up" style={{ animationDelay: '0.3s' }}>
-                <StatCard
-                  title="Docentes"
-                  value={totalDocentes}
-                  subtitle="Activos"
-                  icon={GraduationCap}
-                  iconColor="text-accent"
-                  iconBg="bg-accent"
-                  accentColor="bg-accent"
-                  darkMode={darkMode}
-                  delay={0.3}
-                  action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.docentes} />}
-                />
-              </div>
-            </>
-          )}
-        </div>
-      )}
-
-      {/* Promedio Institucional */}
-      {esDirectiva && (
-        <div className="animate-fade-slide-up" style={{ animationDelay: '0.1s' }}>
-          <Card className="shadow-sm overflow-hidden bg-card border-border">
-            <div className="h-px bg-gradient-to-r from-primary/30 via-primary/10 to-transparent w-full" />
-            <CardHeader className="pb-3 flex flex-row items-center justify-between">
-              <CardTitle className="font-display text-sm sm:text-base flex items-center gap-2 text-card-foreground">
-                <Target className="h-4 w-4 text-accent" />
-                Rendimiento Institucional
-              </CardTitle>
-              <MathInfoButton darkMode={darkMode} explanation={mathExplanations.rendimientoInstitucional} />
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-center">
-                <div className="flex justify-center">
-                  <PromedioCircular valor={promInstitucional} darkMode={darkMode} />
-                </div>
-                <div className="sm:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {promPorCiclo.map(c => (
-                    <div key={c.nombre} className="rounded-sm border border-border p-3 text-center bg-muted/30">
-                      <p className="font-display text-xs mb-1 text-muted-foreground/70">{c.nombre}</p>
-                      <p className={`text-2xl font-semibold font-mono ${c.prom != null && Math.round(c.prom) >= 5 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
-                        {c.prom != null ? c.prom.toFixed(2) : "—"}
-                      </p>
-                      <p className="text-[10px] font-medium text-muted-foreground/50">
-                        {c.prom != null && Math.round(c.prom) >= 5 ? 'Sobre umbral' : c.prom != null ? 'Bajo umbral' : 'Sin datos'}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Promedio por Categoría */}
-      {esDirectiva && evolutionChartData.length > 0 && (
-        <div className="animate-fade-slide-up" style={{ animationDelay: '0.2s' }}>
-          <GradeChart
-            data={evolutionChartData}
-            title="Promedio por Categoría"
-            description="Promedio institucional por tipo de actividad"
-            icon={TrendingUp}
-            showArea
-            showTarget
-            darkMode={darkMode}
-            height={280}
-            action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.promedioPorCategoria} />}
-          />
-        </div>
-      )}
-
-      {/* Asignaturas por Ciclo */}
-      {esDirectiva && todasAsignaturasList.length > 0 && (
-        <div className="animate-fade-slide-up" style={{ animationDelay: '0.3s' }}>
-          <div className="flex items-center gap-2 mb-3">
-            <h3 className="font-display text-base text-foreground">
-              <BookOpen className="h-4 w-4 inline mr-2 text-accent" />
-              Asignaturas por Ciclo
-            </h3>
-            <MathInfoButton darkMode={darkMode} explanation={mathExplanations.asignaturasPorCiclo} />
-          </div>
-          <CiclosSection asignaturas={todasAsignaturasList} stats={stats} grados={grados} darkMode={darkMode} selectedMaterias={selectedMaterias} setSelectedMaterias={setSelectedMaterias} />
-          {esDirectiva && (
-            <div className="mt-4">
-              <Button
-                size="sm"
-                onClick={() => setInformeOpen(true)}
-                className={`w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm`}
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                Generar Informe Técnico Pedagógico-Didáctico
-              </Button>
+        {/* ===== PANEL 1: Stats + Gestión Rápida ===== */}
+        <div className="space-y-4">
+          {usuario.rol === "admin" && (
+            <div className="space-y-3">
+              {loading ? (
+                <>
+                  <StatCard loading title="Total Estudiantes" value={0} subtitle="" icon={Users} iconColor="text-accent" iconBg="bg-accent" accentColor="bg-accent" darkMode />
+                  <StatCard loading title="Grados Activos" value={0} subtitle="" icon={School} iconColor="text-accent" iconBg="bg-accent" accentColor="bg-accent" darkMode />
+                  <StatCard loading title="Asignaturas" value={0} subtitle="" icon={BookOpen} iconColor="text-accent" iconBg="bg-accent" accentColor="bg-accent" darkMode />
+                  <StatCard loading title="Docentes" value={0} subtitle="" icon={GraduationCap} iconColor="text-accent" iconBg="bg-accent" accentColor="bg-accent" darkMode />
+                </>
+              ) : (
+                <>
+                  <div className="animate-fade-slide-up" style={{ animationDelay: '0s' }}>
+                    <StatCard title="Total Estudiantes" value={totalEstudiantesVisibles} subtitle="Registrados" icon={Users} iconColor="text-accent" iconBg="bg-accent" accentColor="bg-accent" darkMode={darkMode} delay={0} action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.totalEstudiantes} />} />
+                  </div>
+                  <div className="animate-fade-slide-up" style={{ animationDelay: '0.1s' }}>
+                    <StatCard title="Grados Activos" value={gradosVisibles.length} subtitle="Secciones" icon={School} iconColor="text-accent" iconBg="bg-accent" accentColor="bg-accent" darkMode={darkMode} delay={0.1} action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.gradosActivos} />} />
+                  </div>
+                  <div className="animate-fade-slide-up" style={{ animationDelay: '0.2s' }}>
+                    <StatCard title="Asignaturas" value={totalAsignaturasVisibles} subtitle="Impartidas" icon={BookOpen} iconColor="text-accent" iconBg="bg-accent" accentColor="bg-accent" darkMode={darkMode} delay={0.2} action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.asignaturas} />} />
+                  </div>
+                  <div className="animate-fade-slide-up" style={{ animationDelay: '0.3s' }}>
+                    <StatCard title="Docentes" value={totalDocentes} subtitle="Activos" icon={GraduationCap} iconColor="text-accent" iconBg="bg-accent" accentColor="bg-accent" darkMode={darkMode} delay={0.3} action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.docentes} />} />
+                  </div>
+                </>
+              )}
             </div>
           )}
-        </div>
-      )}
 
-      {/* Dialog de Informe */}
-      {esDirectiva && configuracion && (
-        <InformeTecnicoDialog
-          open={informeOpen}
-          onOpenChange={setInformeOpen}
-          darkMode={darkMode}
-          usuario={{ nombre: usuario.nombre, rol: usuario.rol }}
-          configuracion={configuracion}
-          stats={stats}
-          grados={grados}
-        />
-      )}
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
-        <Card className="lg:col-span-2 xl:col-span-3 shadow-sm overflow-hidden flex flex-col bg-card border-border">
-          <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-border gap-4 bg-muted/30">
-            <div>
-              <CardTitle className="font-display text-sm sm:text-base flex items-center gap-2 text-card-foreground">
-                <TrendingUp className="h-4 w-4 text-accent" />
-                Rendimiento Académico
-              </CardTitle>
-              <CardDescription className="text-xs sm:text-sm text-muted-foreground">
-                {esDocente ? `Estadísticas de ${gradosVisibles[0]?.numero}° ${gradosVisibles[0]?.seccion}` : 'Promedios por categoría'}
-              </CardDescription>
-            </div>
-            {!esDocente && (
-              <Select value={selectedGradoId} onValueChange={setSelectedGradoId}>
-                <SelectTrigger className="w-full sm:w-[180px] h-9 text-xs sm:text-sm font-medium bg-background border-border text-foreground">
-                  <SelectValue placeholder="Seleccionar grado" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all" className="text-xs sm:text-sm font-medium">Vista General</SelectItem>
-                  {stats.map(s => (
-                    <SelectItem key={s.gradoId} value={s.gradoId} className="text-xs sm:text-sm font-medium">
-                      {s.nombre}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          </CardHeader>
-          <CardContent className="p-3 sm:p-4 md:p-6 flex-1">
-            {selectedGradoIdEfectivo === "all" ? (
-              <div className="h-[200px] sm:h-[250px] md:h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={popChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={darkMode ? "#334155" : "#E2E8F0"} />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: darkMode ? '#94a3b8' : '#64748b' }} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: darkMode ? '#94a3b8' : '#64748b' }} />
-                    <Tooltip cursor={{ fill: darkMode ? '#334155' : '#f1f5f9' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '11px', backgroundColor: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#e8e8e8' : '#111' }} />
-                    <Bar dataKey="estudiantes" name="N° Estudiantes" fill="#0d9488" radius={[4, 4, 0, 0]} barSize={30} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            ) : selectedStats ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 items-start h-full">
-                <div className="h-[200px] sm:h-[250px] w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={categoryChartData} layout="vertical" margin={{ top: 0, right: 30, left: 40, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={darkMode ? "#334155" : "#E2E8F0"} />
-                      <XAxis type="number" domain={[0, 10]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: darkMode ? '#94a3b8' : '#64748b' }} />
-                      <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: darkMode ? '#94a3b8' : '#64748b' }} width={80} />
-                    <Tooltip cursor={{ fill: darkMode ? '#334155' : '#f1f5f9' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '11px', backgroundColor: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#e8e8e8' : '#111' }} />
-                      <Bar dataKey="valor" name="Promedio" radius={[0, 4, 4, 0]} barSize={25}>
-                        {categoryChartData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 gap-3 sm:gap-4">
-                  <div className={`p-3 sm:p-4 rounded-xl border ${darkMode ? 'bg-teal-900/20 border-teal-800/60' : 'bg-teal-50/50 border-teal-100'}`}>
-                    <h4 className={`text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2 ${darkMode ? 'text-teal-400' : 'text-teal-700'}`}>
-                      <Trophy className="h-4 w-4 text-amber-500" /> Cuadro de Honor
-                    </h4>
-                    <div className="space-y-2">
-                      {selectedStats.topEstudiantes.length > 0 ? selectedStats.topEstudiantes.map((est, i) => (
-                        <div key={est.id} className="flex items-center justify-between text-xs sm:text-sm gap-2">
-                          <span className={`flex-1 truncate ${darkMode ? 'text-slate-400' : 'text-slate-700'}`} title={`${i + 1}. ${est.nombre}`}>{i + 1}. {est.nombre}</span>
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            {est.estado === "CONDICIONADO" && (
-                              <Badge variant="secondary" className="text-[9px] py-0 h-4 px-1 bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/50 dark:text-amber-400 dark:border-amber-700">C</Badge>
-                            )}
-                            {est.estado === "REPROBADO" && (
-                              <Badge variant="destructive" className="text-[9px] py-0 h-4 px-1">R</Badge>
-                            )}
-                            <Badge variant="outline" className={`shrink-0 py-0 h-5 text-xs ${darkMode ? 'bg-slate-800 text-teal-400 border-teal-700' : 'bg-white text-teal-700 border-teal-200'}`}>
-                              {est.promedio.toFixed(1)}
-                            </Badge>
-                          </div>
-                        </div>
-                        )) : <p className="text-xs text-muted-foreground">Sin datos</p>}
-                    </div>
-                  </div>
-                  <div className={`p-3 sm:p-4 rounded-xl border ${darkMode ? 'bg-red-900/20 border-red-800/60' : 'bg-red-50/50 border-red-100'}`}>
-                    <h4 className={`text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2 ${darkMode ? 'text-red-400' : 'text-red-700'}`}>
-                      <AlertTriangle className="h-4 w-4 text-red-500" /> Alertas
-                    </h4>
-                    <div className="space-y-2">
-                      {selectedStats.alertas.length > 0 ? selectedStats.alertas.map((est, i) => (
-                        <div key={est.id} className="flex items-center justify-between text-xs sm:text-sm gap-2">
-                          <span className={`flex-1 truncate ${darkMode ? 'text-slate-400' : 'text-slate-700'}`} title={est.nombre}>{est.nombre}</span>
-                          <div className="flex items-center gap-1.5 shrink-0">
-                            {est.estado === "CONDICIONADO" && (
-                              <Badge variant="secondary" className="text-[9px] py-0 h-4 px-1 bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/50 dark:text-amber-400 dark:border-amber-700">C</Badge>
-                            )}
-                            {est.estado === "REPROBADO" && (
-                              <Badge variant="destructive" className="text-[9px] py-0 h-4 px-1">R</Badge>
-                            )}
-                            <Badge variant={est.estado === "REPROBADO" ? "destructive" : "secondary"} className={`shrink-0 font-bold py-0 h-5 text-xs ${est.estado === "CONDICIONADO" ? 'bg-amber-500 text-white' : est.estado === "REPROBADO" ? 'bg-red-500 text-white' : 'bg-red-500 text-white'}`}>
-                              {est.promedio.toFixed(1)}
-                            </Badge>
-                          </div>
-                        </div>
-                        )) : <p className="text-xs text-muted-foreground">Sin alertas</p>}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className={`h-[200px] sm:h-[250px] flex items-center justify-center`}>
-                <Skeleton className={`h-32 w-3/4 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <div className="flex flex-col gap-3 sm:gap-4 lg:col-span-1 xl:col-span-1">
-          {(usuario.rol === "docente" || usuario.rol === "docente-orientador") && asignaturasAsignadas && asignaturasAsignadas.length > 0 && (
-            <Card className="shadow-sm bg-card border-border">
-              <CardHeader className="py-3 px-4 border-b border-border">
-                <CardTitle className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Mis Asignaturas</CardTitle>
-              </CardHeader>
-              <CardContent className="p-3 max-h-[200px] overflow-y-auto">
-                <div className="space-y-1.5">
-                  {asignaturasAsignadas.map(m => (
-                    <div key={m.id} className="p-2 text-xs flex justify-between items-center bg-muted/30 border border-border rounded-sm">
-                      <span className="font-medium truncate mr-2 text-foreground/80">{m.nombre}</span>
-                      <span className="font-mono text-[10px] text-muted-foreground/60">{m.grado?.numero}°{m.grado?.seccion}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          <Card className="shadow-sm flex-1 bg-card border-border">
+          {/* Gestión Rápida */}
+          <Card className="shadow-sm bg-card border-border">
             <CardHeader className="py-3 px-4 border-b border-border">
               <CardTitle className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Gestión Rápida</CardTitle>
             </CardHeader>
-            <CardContent className="p-3 sm:p-4 space-y-2">
+            <CardContent className="p-3 space-y-2">
               <div className="p-3 flex items-center gap-3 cursor-pointer group transition-all bg-muted/20 border border-border hover:bg-muted/40 rounded-sm" onClick={() => (window as any).setActiveTab?.('calificaciones')}>
                 <div className="p-2 shrink-0 group-hover:scale-105 transition-transform bg-accent text-accent-foreground rounded-sm"><ClipboardList className="h-5 w-5" /></div>
                 <div>
@@ -576,7 +318,257 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
             </CardContent>
           </Card>
         </div>
+
+        {/* ===== PANEL 2: Rendimiento ===== */}
+        <div className="space-y-4">
+          {/* Promedio Institucional */}
+          {esDirectiva && (
+            <div className="animate-fade-slide-up" style={{ animationDelay: '0.1s' }}>
+              <Card className="shadow-sm overflow-hidden bg-card border-border">
+                <div className="h-px bg-gradient-to-r from-primary/30 via-primary/10 to-transparent w-full" />
+                <CardHeader className="pb-3 flex flex-row items-center justify-between">
+                  <CardTitle className="font-display text-sm flex items-center gap-2 text-card-foreground">
+                    <Target className="h-4 w-4 text-accent" />
+                    Rendimiento Institucional
+                  </CardTitle>
+                  <MathInfoButton darkMode={darkMode} explanation={mathExplanations.rendimientoInstitucional} />
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+                    <div className="flex justify-center">
+                      <PromedioCircular valor={promInstitucional} darkMode={darkMode} />
+                    </div>
+                    <div className="grid grid-cols-1 gap-3">
+                      {promPorCiclo.map(c => (
+                        <div key={c.nombre} className="rounded-sm border border-border p-3 text-center bg-muted/30">
+                          <p className="font-display text-xs mb-1 text-muted-foreground/70">{c.nombre}</p>
+                          <p className={`text-2xl font-semibold font-mono ${c.prom != null && Math.round(c.prom) >= 5 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                            {c.prom != null ? c.prom.toFixed(2) : "—"}
+                          </p>
+                          <p className="text-[10px] font-medium text-muted-foreground/50">
+                            {c.prom != null && Math.round(c.prom) >= 5 ? 'Sobre umbral' : c.prom != null ? 'Bajo umbral' : 'Sin datos'}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Promedio por Categoría */}
+          {esDirectiva && evolutionChartData.length > 0 && (
+            <div className="animate-fade-slide-up" style={{ animationDelay: '0.2s' }}>
+              <GradeChart data={evolutionChartData} title="Promedio por Categoría" description="Promedio institucional por tipo de actividad" icon={TrendingUp} showArea showTarget darkMode={darkMode} height={260} action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.promedioPorCategoria} />} />
+            </div>
+          )}
+
+          {/* Rendimiento Académico */}
+          <Card className="shadow-sm overflow-hidden flex flex-col bg-card border-border">
+            <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-border gap-4 bg-muted/30">
+              <div>
+                <CardTitle className="font-display text-sm flex items-center gap-2 text-card-foreground">
+                  <TrendingUp className="h-4 w-4 text-accent" />
+                  Rendimiento Académico
+                </CardTitle>
+                <CardDescription className="text-xs text-muted-foreground">
+                  {esDocente ? `Estadísticas de ${gradosVisibles[0]?.numero}° ${gradosVisibles[0]?.seccion}` : 'Promedios por categoría'}
+                </CardDescription>
+              </div>
+              {!esDocente && (
+                <Select value={selectedGradoId} onValueChange={setSelectedGradoId}>
+                  <SelectTrigger className="w-full sm:w-[160px] h-8 text-xs bg-background border-border text-foreground">
+                    <SelectValue placeholder="Seleccionar grado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all" className="text-xs">Vista General</SelectItem>
+                    {stats.map(s => (
+                      <SelectItem key={s.gradoId} value={s.gradoId} className="text-xs">{s.nombre}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </CardHeader>
+            <CardContent className="p-3 sm:p-4 flex-1">
+              {selectedGradoIdEfectivo === "all" ? (
+                <div className="h-[200px] sm:h-[250px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={popChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={darkMode ? "#1a3a2a" : "#E2E8F0"} />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: darkMode ? '#94a3b8' : '#64748b' }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: darkMode ? '#94a3b8' : '#64748b' }} />
+                      <Tooltip cursor={{ fill: darkMode ? '#1a3a2a' : '#f1f5f9' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '11px', backgroundColor: darkMode ? '#0a1a10' : '#fff', color: darkMode ? '#e8e8e8' : '#111' }} />
+                      <Bar dataKey="estudiantes" name="N° Estudiantes" fill="var(--color-primary, oklch(0.28 0.055 160))" radius={[4, 4, 0, 0]} barSize={30} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : selectedStats ? (
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="h-[180px] sm:h-[220px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={categoryChartData} layout="vertical" margin={{ top: 0, right: 20, left: 40, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={darkMode ? "#1a3a2a" : "#E2E8F0"} />
+                        <XAxis type="number" domain={[0, 10]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: darkMode ? '#94a3b8' : '#64748b' }} />
+                        <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: darkMode ? '#94a3b8' : '#64748b' }} width={70} />
+                        <Tooltip cursor={{ fill: darkMode ? '#1a3a2a' : '#f1f5f9' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '11px', backgroundColor: darkMode ? '#0a1a10' : '#fff', color: darkMode ? '#e8e8e8' : '#111' }} />
+                        <Bar dataKey="valor" name="Promedio" radius={[0, 4, 4, 0]} barSize={22}>
+                          {categoryChartData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className={`p-3 rounded-xl border ${darkMode ? 'bg-emerald-900/20 border-emerald-800/60' : 'bg-emerald-50/50 border-emerald-100'}`}>
+                      <h4 className={`text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2 ${darkMode ? 'text-emerald-400' : 'text-emerald-700'}`}>
+                        <Trophy className="h-4 w-4 text-amber-500" /> Cuadro de Honor
+                      </h4>
+                      <div className="space-y-2">
+                        {selectedStats.topEstudiantes.length > 0 ? selectedStats.topEstudiantes.map((est, i) => (
+                          <div key={est.id} className="flex items-center justify-between text-xs gap-2">
+                            <span className={`flex-1 truncate ${darkMode ? 'text-slate-400' : 'text-slate-700'}`} title={`${i + 1}. ${est.nombre}`}>{i + 1}. {est.nombre}</span>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              {est.estado === "CONDICIONADO" && (
+                                <Badge variant="secondary" className="text-[9px] py-0 h-4 px-1 bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/50 dark:text-amber-400 dark:border-amber-700">C</Badge>
+                              )}
+                              {est.estado === "REPROBADO" && (
+                                <Badge variant="destructive" className="text-[9px] py-0 h-4 px-1">R</Badge>
+                              )}
+                              <Badge variant="outline" className={`shrink-0 py-0 h-5 text-xs ${darkMode ? 'bg-slate-800 text-emerald-400 border-emerald-700' : 'bg-white text-emerald-700 border-emerald-200'}`}>
+                                {est.promedio.toFixed(1)}
+                              </Badge>
+                            </div>
+                          </div>
+                        )) : <p className="text-xs text-muted-foreground">Sin datos</p>}
+                      </div>
+                    </div>
+                    <div className={`p-3 rounded-xl border ${darkMode ? 'bg-red-900/20 border-red-800/60' : 'bg-red-50/50 border-red-100'}`}>
+                      <h4 className={`text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2 ${darkMode ? 'text-red-400' : 'text-red-700'}`}>
+                        <AlertTriangle className="h-4 w-4 text-red-500" /> Alertas
+                      </h4>
+                      <div className="space-y-2">
+                        {selectedStats.alertas.length > 0 ? selectedStats.alertas.map((est, i) => (
+                          <div key={est.id} className="flex items-center justify-between text-xs gap-2">
+                            <span className={`flex-1 truncate ${darkMode ? 'text-slate-400' : 'text-slate-700'}`} title={est.nombre}>{est.nombre}</span>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              {est.estado === "CONDICIONADO" && (
+                                <Badge variant="secondary" className="text-[9px] py-0 h-4 px-1 bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/50 dark:text-amber-400 dark:border-amber-700">C</Badge>
+                              )}
+                              {est.estado === "REPROBADO" && (
+                                <Badge variant="destructive" className="text-[9px] py-0 h-4 px-1">R</Badge>
+                              )}
+                              <Badge variant={est.estado === "REPROBADO" ? "destructive" : "secondary"} className={`shrink-0 font-bold py-0 h-5 text-xs ${est.estado === "CONDICIONADO" ? 'bg-amber-500 text-white' : 'bg-red-500 text-white'}`}>
+                                {est.promedio.toFixed(1)}
+                              </Badge>
+                            </div>
+                          </div>
+                        )) : <p className="text-xs text-muted-foreground">Sin alertas</p>}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="h-[200px] flex items-center justify-center">
+                  <Skeleton className={`h-32 w-3/4 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Asignaturas por Ciclo */}
+          {esDirectiva && todasAsignaturasList.length > 0 && (
+            <div className="animate-fade-slide-up" style={{ animationDelay: '0.3s' }}>
+              <div className="flex items-center gap-2 mb-3">
+                <h3 className="font-display text-base text-foreground">
+                  <BookOpen className="h-4 w-4 inline mr-2 text-accent" />
+                  Asignaturas por Ciclo
+                </h3>
+                <MathInfoButton darkMode={darkMode} explanation={mathExplanations.asignaturasPorCiclo} />
+              </div>
+              <CiclosSection asignaturas={todasAsignaturasList} stats={stats} grados={grados} darkMode={darkMode} selectedMaterias={selectedMaterias} setSelectedMaterias={setSelectedMaterias} />
+              {esDirectiva && (
+                <div className="mt-3">
+                  <Button size="sm" onClick={() => setInformeOpen(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm">
+                    <FileText className="h-4 w-4 mr-2" />
+                    Generar Informe Técnico
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* ===== PANEL 3: Asignaturas + Contexto ===== */}
+        <div className="space-y-4">
+          {(usuario.rol === "docente" || usuario.rol === "docente-orientador") && asignaturasAsignadas && asignaturasAsignadas.length > 0 && (
+            <Card className="shadow-sm bg-card border-border">
+              <CardHeader className="py-3 px-4 border-b border-border">
+                <CardTitle className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Mis Asignaturas</CardTitle>
+              </CardHeader>
+              <CardContent className="p-3 max-h-[220px] overflow-y-auto">
+                <div className="space-y-1.5">
+                  {asignaturasAsignadas.map(m => (
+                    <div key={m.id} className="p-2 text-xs flex justify-between items-center bg-muted/30 border border-border rounded-sm">
+                      <span className="font-medium truncate mr-2 text-foreground/80">{m.nombre}</span>
+                      <span className="font-mono text-[10px] text-muted-foreground/60">{m.grado?.numero}°{m.grado?.seccion}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Información del Año */}
+          <Card className="shadow-sm bg-card border-border">
+            <CardHeader className="py-3 px-4 border-b border-border">
+              <CardTitle className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Información</CardTitle>
+            </CardHeader>
+            <CardContent className="p-3 space-y-2">
+              <div className="p-2.5 text-xs bg-muted/30 border border-border rounded-sm space-y-1.5">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground/60">Rol</span>
+                  <span className="font-semibold text-foreground capitalize">{usuario.rol === "admin" ? "Administrador" : usuario.rol === "docente-orientador" ? "Docente Orientador" : "Docente"}</span>
+                </div>
+                {configuracion && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground/60">Año Escolar</span>
+                    <span className="font-semibold text-foreground">{configuracion.añoEscolar}</span>
+                  </div>
+                )}
+                {configuracion?.umbralAprobado && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground/60">Umbral Aprobado</span>
+                    <span className="font-semibold text-foreground">{configuracion.umbralAprobado}</span>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Stats rápidos para docentes */}
+          {esDocente && (
+            <div className="space-y-2">
+              <StatCard title="Estudiantes" value={totalEstudiantesVisibles} subtitle="En su clase" icon={Users} iconColor="text-emerald-500" iconBg="bg-emerald-100 dark:bg-emerald-900/30" accentColor="bg-emerald-500" darkMode={darkMode} delay={0} />
+              <StatCard title="Asignaturas" value={totalAsignaturasVisibles} subtitle="Asignadas" icon={BookOpen} iconColor="text-emerald-500" iconBg="bg-emerald-100 dark:bg-emerald-900/30" accentColor="bg-emerald-500" darkMode={darkMode} delay={0.1} />
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Dialog de Informe */}
+      {esDirectiva && configuracion && (
+        <InformeTecnicoDialog
+          open={informeOpen}
+          onOpenChange={setInformeOpen}
+          darkMode={darkMode}
+          usuario={{ nombre: usuario.nombre, rol: usuario.rol }}
+          configuracion={configuracion}
+          stats={stats}
+          grados={grados}
+        />
+      )}
     </div>
   );
 });

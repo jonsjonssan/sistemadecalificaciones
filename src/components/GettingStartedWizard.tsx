@@ -38,9 +38,9 @@ const steps = [
           Este sistema te permite gestionar calificaciones, asistencia y estudiantes de manera eficiente.
         </p>
         {role === "admin" ? (
-          <div className="p-3 bg-teal-50 dark:bg-teal-900/30 rounded-lg border border-teal-200 dark:border-teal-800">
-            <p className="text-sm font-medium text-teal-800 dark:text-teal-400">Como Administrador</p>
-            <p className="text-xs text-teal-700 dark:text-teal-400 mt-1">
+          <div className="p-3 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg border border-emerald-200 dark:border-emerald-800">
+            <p className="text-sm font-medium text-emerald-800 dark:text-emerald-400">Como Administrador</p>
+            <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-1">
               Puedes gestionar usuarios, grados, materias y ver estadísticas generales del sistema.
             </p>
           </div>
@@ -66,19 +66,19 @@ const steps = [
         </p>
         <ul className="space-y-2 text-sm">
           <li className="flex items-start gap-2">
-            <CheckCircle2 className="h-4 w-4 text-teal-600 mt-0.5 shrink-0" />
+            <CheckCircle2 className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
             <span>Total de estudiantes, grados y asignaturas</span>
           </li>
           <li className="flex items-start gap-2">
-            <CheckCircle2 className="h-4 w-4 text-teal-600 mt-0.5 shrink-0" />
+            <CheckCircle2 className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
             <span>Gráficos de rendimiento académico</span>
           </li>
           <li className="flex items-start gap-2">
-            <CheckCircle2 className="h-4 w-4 text-teal-600 mt-0.5 shrink-0" />
+            <CheckCircle2 className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
             <span>Cuadro de Honor y Alertas de estudiantes</span>
           </li>
           <li className="flex items-start gap-2">
-            <CheckCircle2 className="h-4 w-4 text-teal-600 mt-0.5 shrink-0" />
+            <CheckCircle2 className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
             <span>Accesos rápidos a las funciones más usadas</span>
           </li>
         </ul>
@@ -96,19 +96,19 @@ const steps = [
         </p>
         <div className="space-y-3">
           <div className="flex items-start gap-3">
-            <Badge className="bg-teal-600 shrink-0 mt-0.5">1</Badge>
+            <Badge className="bg-emerald-600 shrink-0 mt-0.5">1</Badge>
             <p className="text-sm">Selecciona el <strong>Grado</strong> y la <strong>Asignatura</strong></p>
           </div>
           <div className="flex items-start gap-3">
-            <Badge className="bg-teal-600 shrink-0 mt-0.5">2</Badge>
+            <Badge className="bg-emerald-600 shrink-0 mt-0.5">2</Badge>
             <p className="text-sm">Elige el <strong>Trimestre</strong> (I, II o III)</p>
           </div>
           <div className="flex items-start gap-3">
-            <Badge className="bg-teal-600 shrink-0 mt-0.5">3</Badge>
+            <Badge className="bg-emerald-600 shrink-0 mt-0.5">3</Badge>
             <p className="text-sm">Ingresa las notas en la tabla (0-10)</p>
           </div>
           <div className="flex items-start gap-3">
-            <Badge className="bg-teal-600 shrink-0 mt-0.5">4</Badge>
+            <Badge className="bg-emerald-600 shrink-0 mt-0.5">4</Badge>
             <p className="text-sm">Presiona <strong>Guardar</strong> para almacenar todo</p>
           </div>
         </div>
@@ -170,19 +170,19 @@ const steps = [
         </p>
         <ul className="space-y-2 text-sm">
           <li className="flex items-start gap-2">
-            <CheckCircle2 className="h-4 w-4 text-teal-600 mt-0.5 shrink-0" />
+            <CheckCircle2 className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
             <span>Agregar estudiantes individualmente</span>
           </li>
           <li className="flex items-start gap-2">
-            <CheckCircle2 className="h-4 w-4 text-teal-600 mt-0.5 shrink-0" />
+            <CheckCircle2 className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
             <span>Importar lista completa de estudiantes</span>
           </li>
           <li className="flex items-start gap-2">
-            <CheckCircle2 className="h-4 w-4 text-teal-600 mt-0.5 shrink-0" />
+            <CheckCircle2 className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
             <span>Reordenar estudiantes arrastrando</span>
           </li>
           <li className="flex items-start gap-2">
-            <CheckCircle2 className="h-4 w-4 text-teal-600 mt-0.5 shrink-0" />
+            <CheckCircle2 className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
             <span>Editar información de cada estudiante</span>
           </li>
         </ul>
@@ -200,15 +200,15 @@ const steps = [
         </p>
         <ul className="space-y-2 text-sm">
           <li className="flex items-start gap-2">
-            <CheckCircle2 className="h-4 w-4 text-teal-600 mt-0.5 shrink-0" />
+            <CheckCircle2 className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
             <span>Selecciona grado y trimestre</span>
           </li>
           <li className="flex items-start gap-2">
-            <CheckCircle2 className="h-4 w-4 text-teal-600 mt-0.5 shrink-0" />
+            <CheckCircle2 className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
             <span>Revisa las calificaciones de cada estudiante</span>
           </li>
           <li className="flex items-start gap-2">
-            <CheckCircle2 className="h-4 w-4 text-teal-600 mt-0.5 shrink-0" />
+            <CheckCircle2 className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" />
             <span>Imprime o exporta las boletas</span>
           </li>
         </ul>
@@ -290,8 +290,8 @@ export default function GettingStartedWizard({ open, onClose, darkMode, userRole
         <DialogHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${darkMode ? 'bg-teal-900/50' : 'bg-teal-50'}`}>
-                <Icon className={`h-5 w-5 ${darkMode ? 'text-teal-400' : 'text-teal-600'}`} />
+              <div className={`p-2 rounded-lg ${darkMode ? 'bg-emerald-900/50' : 'bg-emerald-50'}`}>
+                <Icon className={`h-5 w-5 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
               </div>
               <div>
                 <DialogTitle className="text-lg">{steps[currentStep].title}</DialogTitle>
@@ -370,7 +370,7 @@ export default function GettingStartedWizard({ open, onClose, darkMode, userRole
             <Button
               size="sm"
               onClick={handleNext}
-              className={`text-sm ${darkMode ? 'bg-teal-600 hover:bg-teal-500' : 'bg-teal-600'}`}
+              className={`text-sm ${darkMode ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-emerald-600'}`}
             >
               {currentStep === steps.length - 1 ? "Finalizar" : "Siguiente"}
               {currentStep < steps.length - 1 && <ChevronRight className="h-4 w-4 ml-1" />}

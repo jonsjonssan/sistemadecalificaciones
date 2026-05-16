@@ -80,7 +80,7 @@ export function StatCard({
               <p
                 className={cn(
                   "text-sm font-medium",
-                  darkMode ? "text-slate-400" : "text-slate-600"
+                  darkMode ? "text-slate-300" : "text-green-800"
                 )}
               >
                 {title}
@@ -101,7 +101,7 @@ export function StatCard({
             <p
               className={cn(
                 "text-2xl font-bold tracking-tight",
-                darkMode ? "text-white" : "text-slate-800"
+                  darkMode ? "text-white" : "text-green-900"
               )}
             >
               {value}
@@ -123,8 +123,8 @@ export function StatCard({
                   "flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full",
                   trend.positive !== false
                     ? darkMode
-                      ? "text-emerald-400 bg-emerald-900/30"
-                      : "text-emerald-700 bg-emerald-50"
+                    ? "text-emerald-400 bg-emerald-900/30"
+                    : "text-emerald-700 bg-emerald-50"
                     : darkMode
                     ? "text-red-400 bg-red-900/30"
                     : "text-red-700 bg-red-50"

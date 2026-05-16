@@ -328,7 +328,7 @@ export default function InformeTecnicoDialog({
       <DialogContent className={`max-w-md ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
         <DialogHeader>
           <DialogTitle className={`flex items-center gap-2 ${darkMode ? 'text-white' : ''}`}>
-            <FileText className="h-5 w-5 text-teal-600" />
+            <FileText className="h-5 w-5 text-emerald-600" />
             Generar Informe Técnico
           </DialogTitle>
           <DialogDescription className={darkMode ? 'text-slate-400' : ''}>
@@ -351,11 +351,11 @@ export default function InformeTecnicoDialog({
             </Select>
           </div>
 
-          <div className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-teal-50 border-teal-100'}`}>
-            <p className={`text-xs font-medium ${darkMode ? 'text-slate-400' : 'text-teal-800'}`}>
+          <div className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-emerald-50 border-emerald-100'}`}>
+            <p className={`text-xs font-medium ${darkMode ? 'text-slate-400' : 'text-emerald-800'}`}>
               📄 El informe incluirá:
             </p>
-            <ul className={`text-xs mt-2 space-y-1 ${darkMode ? 'text-slate-400' : 'text-teal-700'}`}>
+            <ul className={`text-xs mt-2 space-y-1 ${darkMode ? 'text-slate-400' : 'text-emerald-700'}`}>
               <li>• Resumen general del sistema</li>
               <li>• Rendimiento por ciclo (Primer, Segundo, Tercer)</li>
               <li>• Cuadro de Honor (estudiantes destacados)</li>
@@ -369,7 +369,7 @@ export default function InformeTecnicoDialog({
           <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} className={darkMode ? 'border-slate-600 text-slate-400' : ''}>
             Cancelar
           </Button>
-          <Button size="sm" onClick={generarInforme} disabled={generando} className="bg-teal-600 hover:bg-teal-700">
+          <Button size="sm" onClick={generarInforme} disabled={generando} className="bg-emerald-600 hover:bg-emerald-700">
             {generando ? (
               <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generando...</>
             ) : (

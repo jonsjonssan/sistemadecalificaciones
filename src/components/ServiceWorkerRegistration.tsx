@@ -72,11 +72,11 @@ export function ServiceWorkerRegistration() {
 
   if (updateAvailable) {
     return (
-      <div className="fixed bottom-4 right-4 z-50 rounded-lg bg-teal-600 px-4 py-3 text-white shadow-lg">
+      <div className="fixed bottom-4 right-4 z-50 rounded-lg bg-emerald-600 px-4 py-3 text-white shadow-lg">
         <p className="text-sm font-medium">Nueva versión disponible</p>
         <button
           onClick={handleUpdate}
-          className="mt-2 rounded-md bg-white px-3 py-1 text-xs font-medium text-teal-600 hover:bg-teal-50 transition-colors"
+          className="mt-2 rounded-md bg-white px-3 py-1 text-xs font-medium text-emerald-600 hover:bg-emerald-50 transition-colors"
         >
           Actualizar ahora
         </button>

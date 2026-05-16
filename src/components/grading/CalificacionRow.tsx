@@ -192,11 +192,11 @@ function NotaInput({ value, onChange, darkMode, hasError, onBlur, onNavigate, in
         className={`grade-input w-full text-center border rounded px-0.5 transition-all ${darkMode
           ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400"
           : "bg-white border-slate-300 text-slate-900"
-          } ${hasError ? "border-red-500 bg-red-50 dark:bg-red-900/20" : ""} focus:ring-1 focus:ring-teal-500 focus:border-teal-500 ${
+          } ${hasError ? "border-red-500 bg-red-50 dark:bg-red-900/20" : ""} focus:ring-emerald-500 focus:border-emerald-500 ${
             isActive
               ? darkMode
-                ? "ring-2 ring-teal-500 border-teal-500 shadow-[0_0_8px_rgba(20,184,166,0.4)]"
-                : "ring-2 ring-teal-500 border-teal-500 shadow-[0_0_8px_rgba(20,184,166,0.3)]"
+                ? "ring-2 ring-emerald-500 border-emerald-500 shadow-[0_0_8px_rgba(101,203,86,0.4)]"
+                : "ring-2 ring-emerald-500 border-emerald-500 shadow-[0_0_8px_rgba(101,203,86,0.3)]"
               : ""
           }`}
         placeholder="-"
@@ -208,12 +208,12 @@ function NotaInput({ value, onChange, darkMode, hasError, onBlur, onNavigate, in
         <>
           <div className={`absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full transition-opacity duration-200 ${
             isActive
-              ? "bg-teal-400 opacity-100"
-              : "bg-teal-500 opacity-40 group-hover:opacity-100"
+              ? "bg-emerald-400 opacity-100"
+              : "bg-emerald-500 opacity-40 group-hover:opacity-100"
           }`} />
           {/* Tooltip mini al hacer hover */}
           <div className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-            <div className={`px-1 py-0.5 rounded text-[9px] font-medium whitespace-nowrap ${darkMode ? "bg-slate-600 text-teal-400" : "bg-white text-teal-700 border border-teal-200 shadow-sm"}`}>
+            <div className={`px-1 py-0.5 rounded text-[9px] font-medium whitespace-nowrap ${darkMode ? "bg-slate-600 text-emerald-400" : "bg-white text-emerald-700 border border-emerald-200 shadow-sm"}`}>
               Historial
             </div>
           </div>

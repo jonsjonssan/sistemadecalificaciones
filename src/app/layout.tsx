@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Sora, DM_Serif_Display, JetBrains_Mono } from "next/font/google";
+import { Sora, Syne, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -14,10 +14,10 @@ const sora = Sora({
   weight: ["400", "500", "600", "700"],
 });
 
-const dmSerifDisplay = DM_Serif_Display({
+const syne = Syne({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["400"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -31,7 +31,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   viewportFit: "cover",
-  themeColor: "#2b7a5c",
+  themeColor: "#1a3a2a",
 };
 
 export const metadata: Metadata = {
@@ -58,7 +58,7 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body
-        className={`${sora.variable} ${dmSerifDisplay.variable} ${jetbrainsMono.variable} antialiased bg-background text-foreground font-body`}
+        className={`${sora.variable} ${syne.variable} ${jetbrainsMono.variable} antialiased bg-background text-foreground font-body`}
       >
         <ErrorBoundary>
           <QueryProvider>

@@ -362,7 +362,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
                     }}
                     className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium transition-all border ${
                       activa
-                        ? (darkMode ? "bg-teal-900/40 border-teal-600 text-teal-400" : "bg-teal-50 border-teal-300 text-teal-700")
+                        ? (darkMode ? "bg-emerald-900/40 border-emerald-600 text-emerald-400" : "bg-emerald-50 border-emerald-300 text-emerald-700")
                         : (darkMode ? "bg-slate-800 border-slate-600 text-slate-500 line-through opacity-60" : "bg-slate-100 border-slate-300 text-slate-400 line-through opacity-60")
                     }`}
                   >

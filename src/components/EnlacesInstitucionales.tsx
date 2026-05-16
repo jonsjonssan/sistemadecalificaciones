@@ -83,7 +83,7 @@ export default function EnlacesInstitucionales({ darkMode }: { darkMode: boolean
     <Card className={`shadow-sm ${darkMode ? "bg-[#1e293b] border-slate-700" : ""}`}>
       <CardHeader className="pb-3 sm:pb-4">
         <CardTitle className="text-base sm:text-lg flex items-center gap-2">
-          <Globe className="h-5 w-5 text-teal-600" />
+          <Globe className="h-5 w-5 text-emerald-600" />
           Enlaces Institucionales
         </CardTitle>
         <CardDescription className={`text-xs sm:text-sm ${darkMode ? "text-slate-400" : ""}`}>
@@ -101,14 +101,14 @@ export default function EnlacesInstitucionales({ darkMode }: { darkMode: boolean
               className={`group flex items-start gap-3 rounded-lg border p-3.5 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${
                 darkMode
                   ? "border-slate-700 hover:border-slate-600 hover:bg-slate-800/50"
-                  : "border-slate-200 hover:border-teal-200 hover:bg-teal-50/50"
+                  : "border-slate-200 hover:border-emerald-200 hover:bg-emerald-50/50"
               }`}
             >
               <div
                 className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors ${
                   darkMode
-                    ? "bg-teal-600/20 text-teal-400 group-hover:bg-teal-600/30"
-                    : "bg-teal-100 text-teal-700 group-hover:bg-teal-200"
+                    ? "bg-emerald-600/20 text-emerald-400 group-hover:bg-emerald-600/30"
+                    : "bg-emerald-100 text-emerald-700 group-hover:bg-emerald-200"
                 }`}
               >
                 {enlace.icono}

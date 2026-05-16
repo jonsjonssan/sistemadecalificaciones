@@ -30,10 +30,10 @@ export function SectionHeader({
         <div
           className={cn(
             "h-9 w-9 rounded-lg flex items-center justify-center",
-            darkMode ? "bg-teal-900/30" : "bg-teal-50"
+            darkMode ? "bg-emerald-900/30" : "bg-emerald-50"
           )}
         >
-          <Icon className="h-5 w-5 text-teal-500" />
+          <Icon className="h-5 w-5 text-emerald-500" />
         </div>
         <div>
           <h2

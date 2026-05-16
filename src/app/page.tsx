@@ -2616,10 +2616,10 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                               {configActual.tieneExamen && (
                                 <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-amber-900/60 border-slate-600 text-amber-400' : 'bg-amber-50 border-slate-500 text-amber-700'}`}>Prom Ex</th>
                               )}
-                              <th className={`w-14 p-2 text-center font-semibold border-l border-b cursor-pointer select-none ${darkMode ? 'border-slate-600' : 'border-slate-500'} ${mostrarRecuperacion ? (darkMode ? 'bg-teal-800/40' : 'bg-teal-100') : ''}`} onClick={() => { const next = !mostrarRecuperacion; setMostrarRecuperacion(next); if (typeof window !== "undefined") localStorage.setItem("ss_mostrarRecuperacion", JSON.stringify(next)); }} title={mostrarRecuperacion ? "Desactivar columna Recuperación" : "Activar columna Recuperación"}>
+                              <th className={`w-14 p-2 text-center font-semibold border-l border-b cursor-pointer select-none ${darkMode ? 'border-slate-600' : 'border-slate-500'} ${mostrarRecuperacion ? (darkMode ? 'bg-emerald-800/40' : 'bg-emerald-100') : ''}`} onClick={() => { const next = !mostrarRecuperacion; setMostrarRecuperacion(next); if (typeof window !== "undefined") localStorage.setItem("ss_mostrarRecuperacion", JSON.stringify(next)); }} title={mostrarRecuperacion ? "Desactivar columna Recuperación" : "Activar columna Recuperación"}>
                                 <div className="flex items-center justify-center gap-0.5">
                                   <span>Rec.</span>
-                                  <span className={`text-[8px] transition-all ${mostrarRecuperacion ? 'opacity-100 text-teal-400' : 'opacity-40'}`}>●</span>
+                                  <span className={`text-[8px] transition-all ${mostrarRecuperacion ? 'opacity-100 text-emerald-400' : 'opacity-40'}`}>●</span>
                                 </div>
                               </th>
                               <th
@@ -2665,10 +2665,10 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                                 </div>
                               </th>
                               <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-amber-900/60 border-slate-600 text-amber-400' : 'bg-amber-50 border-slate-500 text-amber-700'}`}>Prom Ex</th>
-                              <th className={`w-14 p-2 text-center font-semibold border-l border-b cursor-pointer select-none ${darkMode ? 'border-slate-600' : 'border-slate-500'} ${mostrarRecuperacion ? (darkMode ? 'bg-teal-800/40' : 'bg-teal-100') : ''}`} onClick={() => { const next = !mostrarRecuperacion; setMostrarRecuperacion(next); if (typeof window !== "undefined") localStorage.setItem("ss_mostrarRecuperacion", JSON.stringify(next)); }} title={mostrarRecuperacion ? "Desactivar columna Recuperación" : "Activar columna Recuperación"}>
+                              <th className={`w-14 p-2 text-center font-semibold border-l border-b cursor-pointer select-none ${darkMode ? 'border-slate-600' : 'border-slate-500'} ${mostrarRecuperacion ? (darkMode ? 'bg-emerald-800/40' : 'bg-emerald-100') : ''}`} onClick={() => { const next = !mostrarRecuperacion; setMostrarRecuperacion(next); if (typeof window !== "undefined") localStorage.setItem("ss_mostrarRecuperacion", JSON.stringify(next)); }} title={mostrarRecuperacion ? "Desactivar columna Recuperación" : "Activar columna Recuperación"}>
                                 <div className="flex items-center justify-center gap-0.5">
                                   <span>Rec.</span>
-                                  <span className={`text-[8px] transition-all ${mostrarRecuperacion ? 'opacity-100 text-teal-400' : 'opacity-40'}`}>●</span>
+                                  <span className={`text-[8px] transition-all ${mostrarRecuperacion ? 'opacity-100 text-emerald-400' : 'opacity-40'}`}>●</span>
                                 </div>
                               </th>
                               <th
@@ -2850,10 +2850,10 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
               transition={{ duration: 0.35, ease: "easeOut" }}
             >
               <Card className={`shadow-md border-0 overflow-hidden ${darkMode ? 'bg-card' : 'bg-gradient-to-br from-white to-slate-50/60'}`}>
-                <div className={`h-1 w-full ${darkMode ? 'bg-gradient-to-r from-teal-500 to-emerald-400' : 'bg-gradient-to-r from-teal-600 to-emerald-500'}`} />
+                <div className={`h-1 w-full ${darkMode ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : 'bg-gradient-to-r from-emerald-600 to-emerald-500'}`} />
                 <CardHeader className={`pb-3 px-5 ${darkMode ? '' : ''}`}>
                   <div className="flex items-center gap-2.5">
-                    <div className={`p-2 rounded-lg ${darkMode ? 'bg-teal-900/40 text-teal-400' : 'bg-teal-50 text-teal-700'}`}>
+                    <div className={`p-2 rounded-lg ${darkMode ? 'bg-emerald-900/40 text-emerald-400' : 'bg-emerald-50 text-emerald-700'}`}>
                       <FileText className="h-4 w-4" />
                     </div>
                     <div>
@@ -2944,7 +2944,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                                   }}
                                   className={`px-3 py-1 rounded-full text-xs font-medium border transition-all duration-150 ${
                                     isSelected
-                                      ? (darkMode ? 'bg-primary/20 text-teal-400 border-teal-500/50 shadow-sm' : 'bg-teal-50 text-teal-700 border-teal-300 shadow-sm')
+                                      ? (darkMode ? 'bg-primary/20 text-emerald-400 border-emerald-500/50 shadow-sm' : 'bg-emerald-50 text-emerald-700 border-emerald-300 shadow-sm')
                                       : (darkMode ? 'bg-slate-800 text-slate-400 border-slate-600 hover:border-slate-500 hover:text-slate-400' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:text-slate-700')
                                   }`}
                                 >
@@ -3201,9 +3201,9 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                   </CardHeader>
                   <CardContent className="pt-0">
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
-                      <div className={`flex-1 p-4 rounded-lg border ${darkMode ? 'bg-teal-900/30 border-teal-800' : 'bg-teal-50 border-teal-200'}`}>
-                        <p className={`text-2xl font-bold ${darkMode ? 'text-teal-400' : 'text-teal-700'}`}>{configuracion?.añoEscolar || 2026}</p>
-                        <p className={`text-xs ${darkMode ? 'text-teal-400' : 'text-teal-600'}`}>Año lectivo actual</p>
+                      <div className={`flex-1 p-4 rounded-lg border ${darkMode ? 'bg-emerald-900/30 border-emerald-800' : 'bg-emerald-50 border-emerald-200'}`}>
+                        <p className={`text-2xl font-bold ${darkMode ? 'text-emerald-400' : 'text-emerald-700'}`}>{configuracion?.añoEscolar || 2026}</p>
+                        <p className={`text-xs ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>Año lectivo actual</p>
                       </div>
                       <div className={`flex-1 p-4 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50'}`}>
                         <p className={`text-lg font-medium ${darkMode ? 'text-white' : ''}`}>{grados.length}</p>
@@ -3365,9 +3365,9 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
             <div><Label className="text-sm">Actividades Cotidianas</Label><div className="flex items-center gap-2 mt-1"><Input type="number" min="1" max="10" value={editConfig.numActividadesCotidianas} onChange={e => setEditConfig({ ...editConfig, numActividadesCotidianas: parseInt(e.target.value) || 1 })} className={`w-16 h-11 text-base ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-sm">u.</span><Input type="number" min="0" max="100" value={editConfig.porcentajeAC} onChange={e => setEditConfig({ ...editConfig, porcentajeAC: parseFloat(e.target.value) || 0 })} className={`w-16 h-11 text-base ml-auto ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-sm">%</span></div></div>
             <div><Label className="text-sm">Actividades Integradoras</Label><div className="flex items-center gap-2 mt-1"><Input type="number" min="1" max="10" value={editConfig.numActividadesIntegradoras} onChange={e => setEditConfig({ ...editConfig, numActividadesIntegradoras: parseInt(e.target.value) || 1 })} className={`w-16 h-11 text-base ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-sm">u.</span><Input type="number" min="0" max="100" value={editConfig.porcentajeAI} onChange={e => setEditConfig({ ...editConfig, porcentajeAI: parseFloat(e.target.value) || 0 })} className={`w-16 h-11 text-base ml-auto ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-sm">%</span></div></div>
             <div className="flex items-center justify-between"><Label className="text-sm">Examen</Label><div className="flex items-center gap-2"><input type="checkbox" checked={editConfig.tieneExamen} onChange={e => setEditConfig({ ...editConfig, tieneExamen: e.target.checked })} className="h-5 w-5" />{editConfig.tieneExamen && <><Input type="number" min="0" max="100" value={editConfig.porcentajeExamen} onChange={e => setEditConfig({ ...editConfig, porcentajeExamen: parseFloat(e.target.value) || 0 })} className={`w-16 h-11 text-base ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-sm">%</span></>}</div></div>
-            <div className={`p-3 rounded-lg text-sm flex justify-between ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}><span>Total:</span><span className={`font-bold ${Math.abs(editConfig.porcentajeAC + editConfig.porcentajeAI + (editConfig.tieneExamen ? editConfig.porcentajeExamen : 0) - 100) > 0.1 ? 'text-red-500' : (darkMode ? 'text-teal-400' : 'text-teal-600')}`}>{(editConfig.porcentajeAC + editConfig.porcentajeAI + (editConfig.tieneExamen ? editConfig.porcentajeExamen : 0)).toFixed(1)}%</span></div>
+            <div className={`p-3 rounded-lg text-sm flex justify-between ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}><span>Total:</span><span className={`font-bold ${Math.abs(editConfig.porcentajeAC + editConfig.porcentajeAI + (editConfig.tieneExamen ? editConfig.porcentajeExamen : 0) - 100) > 0.1 ? 'text-red-500' : (darkMode ? 'text-emerald-400' : 'text-emerald-600')}`}>{(editConfig.porcentajeAC + editConfig.porcentajeAI + (editConfig.tieneExamen ? editConfig.porcentajeExamen : 0)).toFixed(1)}%</span></div>
             <div className={`flex items-center gap-2 mt-4 pt-4 border-t ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
-              <input type="checkbox" id="aplicarATodas" checked={configAplicarATodas} onChange={e => setConfigAplicarATodas(e.target.checked)} className="h-5 w-5 text-teal-600" />
+              <input type="checkbox" id="aplicarATodas" checked={configAplicarATodas} onChange={e => setConfigAplicarATodas(e.target.checked)} className="h-5 w-5 text-emerald-600" />
               <Label htmlFor="aplicarATodas" className="text-sm font-medium">Aplicar a todas las materias de este grado</Label>
             </div>
           </div>}
@@ -3465,7 +3465,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                 <p className={`text-xs mb-1 ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Grados como Tutor</p>
                 <div className="flex flex-wrap gap-1">
                   {usuario.gradosAsignados.map((g: any) => (
-                    <Badge key={g.id} variant="outline" className={darkMode ? 'bg-teal-900/30 text-teal-400 border-teal-700' : 'bg-teal-50'}>{g.numero}° "{g.seccion}"</Badge>
+                    <Badge key={g.id} variant="outline" className={darkMode ? 'bg-emerald-900/30 text-emerald-400 border-emerald-700' : 'bg-emerald-50'}>{g.numero}° "{g.seccion}"</Badge>
                   ))}
                 </div>
               </div>

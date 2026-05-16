@@ -166,7 +166,7 @@ export default function BatchActions({ gradoId, materiaId, trimestre, estudiante
       <DialogContent className={`max-w-lg ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5 text-teal-600" />
+            <Users className="h-5 w-5 text-emerald-600" />
             Acciones por Lote
           </DialogTitle>
           <DialogDescription>
@@ -191,7 +191,7 @@ export default function BatchActions({ gradoId, materiaId, trimestre, estudiante
                   key={est.id}
                   className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-colors ${
                     selectedStudents.includes(est.id)
-                      ? (darkMode ? 'bg-teal-900/30 border border-teal-800' : 'bg-teal-50 border border-teal-200')
+                      ? (darkMode ? 'bg-emerald-900/30 border border-emerald-800' : 'bg-emerald-50 border border-emerald-200')
                       : (darkMode ? 'hover:bg-slate-700' : 'hover:bg-slate-50')
                   }`}
                 >
@@ -266,7 +266,7 @@ export default function BatchActions({ gradoId, materiaId, trimestre, estudiante
             size="sm" 
             onClick={handleExecute} 
             disabled={loading || !action || selectedStudents.length === 0}
-            className="bg-teal-600"
+            className="bg-emerald-600"
           >
             {loading ? (
               <>

@@ -92,7 +92,7 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode, umbralA
       <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
         <CardHeader className="pb-3">
           <CardTitle className={`text-base flex items-center gap-2 ${darkMode ? 'text-white' : 'text-slate-800'}`}>
-            <BarChart3 className="h-5 w-5 text-teal-600" />
+            <BarChart3 className="h-5 w-5 text-emerald-600" />
             Análisis Predictivo Avanzado
           </CardTitle>
           <CardDescription className={`text-sm ${darkMode ? 'text-slate-400' : ''}`}>
@@ -112,7 +112,7 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode, umbralA
               label="Promedio General"
               value={data.resumen?.promedioGeneral?.toFixed(1) || "-"}
               icon={BarChart3}
-              color="text-teal-600"
+              color="text-emerald-600"
               darkMode={darkMode}
             />
             <StatCard
@@ -408,7 +408,7 @@ function SectionCard({ title, subtitle, icon: Icon, expanded, onToggle, count, d
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Icon className={`h-5 w-5 ${darkMode ? 'text-teal-400' : 'text-teal-600'}`} />
+            <Icon className={`h-5 w-5 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
             <div>
               <CardTitle className={`text-sm ${darkMode ? 'text-white' : 'text-slate-800'}`}>{title}</CardTitle>
               <CardDescription className={`text-xs ${darkMode ? 'text-slate-400' : ''}`}>{subtitle}</CardDescription>

@@ -113,7 +113,7 @@ export function EstudiantesTable({ estudiantes, darkMode, isAdmin, loading = fal
                   <TableCell className={`font-medium ${darkMode ? 'text-white' : ''} break-words`}>{est.nombre}</TableCell>
                   <TableCell className={`hidden sm:table-cell ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{est.email || "—"}</TableCell>
                   <TableCell className="text-center">
-                    <Badge variant={est.activo ? "default" : "secondary"} className={`text-xs sm:text-sm font-medium h-5 ${est.activo ? (darkMode ? 'bg-teal-600' : '') : ''}`}>
+                    <Badge variant={est.activo ? "default" : "secondary"} className={`text-xs sm:text-sm font-medium h-5 ${est.activo ? (darkMode ? 'bg-emerald-600' : '') : ''}`}>
                       {est.activo ? "Activo" : "Inactivo"}
                     </Badge>
                   </TableCell>
@@ -212,7 +212,7 @@ function SortableEstudianteRow({ est, idx, total, darkMode, onMoveUp, onMoveDown
 
   if (editing) {
     return (
-      <TableRow ref={setNodeRef} style={style} className={`${darkMode ? 'border-slate-700' : ''} bg-teal-900/20`}>
+      <TableRow ref={setNodeRef} style={style} className={`${darkMode ? 'border-slate-700' : ''} bg-emerald-900/20`}>
         <TableCell className={`text-center font-medium ${darkMode ? 'text-white' : ''}`}>{est.numero}</TableCell>
         <TableCell>
           <Input
@@ -232,7 +232,7 @@ function SortableEstudianteRow({ est, idx, total, darkMode, onMoveUp, onMoveDown
           />
         </TableCell>
         <TableCell className="text-center">
-          <Badge variant="default" className={`text-xs sm:text-sm font-medium h-5 ${darkMode ? 'bg-teal-600' : ''}`}>
+          <Badge variant="default" className={`text-xs sm:text-sm font-medium h-5 ${darkMode ? 'bg-emerald-600' : ''}`}>
             Activo
           </Badge>
         </TableCell>
@@ -248,7 +248,7 @@ function SortableEstudianteRow({ est, idx, total, darkMode, onMoveUp, onMoveDown
         </TableCell>
         <TableCell className="text-center">
           <div className="flex items-center justify-center gap-1">
-            <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-teal-500 hover:text-teal-400" onClick={handleSave} disabled={saving}>
+            <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-emerald-500 hover:text-emerald-400" onClick={handleSave} disabled={saving}>
               <Save className="h-4 w-4" />
             </Button>
             <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-red-500 hover:text-red-400" onClick={handleCancel} disabled={saving}>
@@ -261,7 +261,7 @@ function SortableEstudianteRow({ est, idx, total, darkMode, onMoveUp, onMoveDown
   }
 
   return (
-    <TableRow ref={setNodeRef} style={style} className={`${darkMode ? 'border-slate-700' : ''} ${isDragging ? 'bg-teal-900/30' : ''}`}>
+    <TableRow ref={setNodeRef} style={style} className={`${darkMode ? 'border-slate-700' : ''} ${isDragging ? 'bg-emerald-900/30' : ''}`}>
       <TableCell className={`text-center font-medium ${darkMode ? 'text-white' : ''}`}>{est.numero}</TableCell>
       <TableCell className={`flex items-center gap-2 ${darkMode ? 'text-white' : ''}`}>
         <button aria-label={`Arrastrar para reordenar a ${est.nombre}`} {...attributes} {...listeners} className={`cursor-grab active:cursor-grabbing p-1 rounded hover:bg-slate-700 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -271,16 +271,16 @@ function SortableEstudianteRow({ est, idx, total, darkMode, onMoveUp, onMoveDown
       </TableCell>
       <TableCell className={darkMode ? 'text-slate-400' : 'text-slate-500'}>{est.email || "—"}</TableCell>
       <TableCell className="text-center">
-        <Badge variant={est.activo ? "default" : "secondary"} className={`text-xs sm:text-sm font-medium h-5 ${est.activo ? (darkMode ? 'bg-teal-600' : '') : ''}`}>
+        <Badge variant={est.activo ? "default" : "secondary"} className={`text-xs sm:text-sm font-medium h-5 ${est.activo ? (darkMode ? 'bg-emerald-600' : '') : ''}`}>
           {est.activo ? "Activo" : "Inactivo"}
         </Badge>
       </TableCell>
       <TableCell className="text-center">
         <div className="flex items-center justify-center gap-1">
-          <Button size="sm" variant="ghost" aria-label="Mover arriba" className={`h-6 w-6 p-0 ${idx === 0 ? 'opacity-30 cursor-not-allowed' : ''} ${darkMode ? 'text-slate-400 hover:text-teal-400' : 'text-slate-500 hover:text-teal-600'}`} onClick={onMoveUp} disabled={idx === 0}>
+          <Button size="sm" variant="ghost" aria-label="Mover arriba" className={`h-6 w-6 p-0 ${idx === 0 ? 'opacity-30 cursor-not-allowed' : ''} ${darkMode ? 'text-slate-400 hover:text-emerald-400' : 'text-slate-500 hover:text-emerald-600'}`} onClick={onMoveUp} disabled={idx === 0}>
             <ChevronUp className="h-4 w-4" />
           </Button>
-          <Button size="sm" variant="ghost" aria-label="Mover abajo" className={`h-6 w-6 p-0 ${idx === total - 1 ? 'opacity-30 cursor-not-allowed' : ''} ${darkMode ? 'text-slate-400 hover:text-teal-400' : 'text-slate-500 hover:text-teal-600'}`} onClick={onMoveDown} disabled={idx === total - 1}>
+          <Button size="sm" variant="ghost" aria-label="Mover abajo" className={`h-6 w-6 p-0 ${idx === total - 1 ? 'opacity-30 cursor-not-allowed' : ''} ${darkMode ? 'text-slate-400 hover:text-emerald-400' : 'text-slate-500 hover:text-emerald-600'}`} onClick={onMoveDown} disabled={idx === total - 1}>
             <ChevronDown className="h-4 w-4" />
           </Button>
         </div>

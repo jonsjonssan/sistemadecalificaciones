@@ -51,7 +51,7 @@ function CustomTooltip({ active, payload, darkMode, showTarget }: { active?: boo
         </p>
         <div className="space-y-0.5">
           <p className="text-xs flex items-center gap-1">
-            <span className="h-2 w-2 rounded-full bg-teal-500 inline-block" />
+            <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
             <span className={darkMode ? "text-slate-400" : "text-slate-600"}>Promedio:</span>
             <span className={cn("font-bold", darkMode ? "text-white" : "text-slate-800")}>
               {data.value.toFixed(2)}
@@ -59,7 +59,7 @@ function CustomTooltip({ active, payload, darkMode, showTarget }: { active?: boo
           </p>
           {showTarget && data.target && (
             <p className="text-xs flex items-center gap-1">
-              <span className="h-2 w-2 rounded-full bg-amber-500 inline-block" />
+              <span className="h-2 w-2 rounded-full bg-accent inline-block" />
               <span className={darkMode ? "text-slate-400" : "text-slate-600"}>Meta:</span>
               <span className={cn("font-bold", darkMode ? "text-white" : "text-slate-800")}>
                 {data.target.toFixed(2)}
@@ -80,8 +80,8 @@ export function GradeChart({
   icon: Icon,
   showArea = true,
   showTarget = true,
-  color = "#14b8a6",
-  targetColor = "#f59e0b",
+  color = "oklch(0.56 0.15 155)",
+  targetColor = "oklch(0.65 0.12 85)",
   darkMode: propDarkMode,
   height = 300,
   action,
@@ -97,7 +97,7 @@ export function GradeChart({
   const textColor = darkMode ? "#94a3b8" : "#64748b";
 
   const TrendIcon = trend > 0 ? TrendingUp : trend < 0 ? TrendingDown : Minus;
-  const trendColor = trend > 0 ? "text-emerald-500" : trend < 0 ? "text-red-500" : darkMode ? "text-slate-400" : "text-slate-500";
+  const trendColor = trend > 0 ? "text-emerald-600 dark:text-emerald-400" : trend < 0 ? "text-red-500" : darkMode ? "text-slate-400" : "text-slate-500";
 
   return (
     <motion.div
@@ -115,12 +115,12 @@ export function GradeChart({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               {Icon && (
-                <div className={cn("h-8 w-8 rounded-full flex items-center justify-center", darkMode ? "bg-primary/20" : "bg-teal-50")}>
-                  <Icon className="h-4 w-4 text-teal-500" />
+                <div className={cn("h-8 w-8 rounded-full flex items-center justify-center", darkMode ? "bg-accent/20" : "bg-emerald-50")}>
+                  <Icon className="h-4 w-4 text-emerald-500" />
                 </div>
               )}
               <div>
-                <CardTitle className={cn("text-sm sm:text-base", darkMode ? "text-slate-400" : "text-slate-700")}>
+                <CardTitle className={cn("text-sm sm:text-base", darkMode ? "text-slate-300" : "text-green-800")}>
                   {title}
                 </CardTitle>
                 {description && (

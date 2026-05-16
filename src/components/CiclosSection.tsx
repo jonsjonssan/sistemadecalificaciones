@@ -16,16 +16,16 @@ interface CicloAsignaturas {
 }
 
 const CICLOS: CicloAsignaturas[] = [
-  { nombre: "Primer Ciclo", grados: [2, 3], color: "text-teal-600", colorBg: "bg-teal-50", colorBorder: "border-teal-200", iconColor: "text-teal-500", ringColor: "#14b8a6" },
-  { nombre: "Segundo Ciclo", grados: [4, 5, 6], color: "text-blue-600", colorBg: "bg-blue-50", colorBorder: "border-blue-200", iconColor: "text-blue-500", ringColor: "#3b82f6" },
-  { nombre: "Tercer Ciclo", grados: [7, 8, 9], color: "text-violet-600", colorBg: "bg-violet-50", colorBorder: "border-violet-200", iconColor: "text-violet-500", ringColor: "#8b5cf6" },
+  { nombre: "Primer Ciclo", grados: [2, 3], color: "text-emerald-600", colorBg: "bg-emerald-50", colorBorder: "border-emerald-200", iconColor: "text-emerald-500", ringColor: "oklch(0.56 0.15 155)" },
+  { nombre: "Segundo Ciclo", grados: [4, 5, 6], color: "text-amber-600", colorBg: "bg-amber-50", colorBorder: "border-amber-200", iconColor: "text-amber-500", ringColor: "oklch(0.65 0.12 85)" },
+  { nombre: "Tercer Ciclo", grados: [7, 8, 9], color: "text-primary", colorBg: "bg-primary/10", colorBorder: "border-primary/20", iconColor: "text-primary", ringColor: "oklch(0.28 0.055 160)" },
 ];
 
 function getCicloDark(ciclo: CicloAsignaturas) {
   const map: Record<string, { bg: string; border: string; icon: string }> = {
-    "Primer Ciclo": { bg: "bg-teal-900/20", border: "border-teal-800", icon: "text-teal-400" },
-    "Segundo Ciclo": { bg: "bg-blue-900/20", border: "border-blue-800", icon: "text-blue-400" },
-    "Tercer Ciclo": { bg: "bg-violet-900/20", border: "border-violet-800", icon: "text-violet-400" },
+    "Primer Ciclo": { bg: "bg-emerald-900/20", border: "border-emerald-800", icon: "text-emerald-400" },
+    "Segundo Ciclo": { bg: "bg-amber-900/20", border: "border-amber-800", icon: "text-amber-400" },
+    "Tercer Ciclo": { bg: "bg-primary/10", border: "border-primary/30", icon: "text-primary" },
   };
   return map[ciclo.nombre] || { bg: "bg-slate-800", border: "border-slate-700", icon: "text-slate-400" };
 }
@@ -162,7 +162,7 @@ export const CiclosSection = memo(function CiclosSection({
                   <Book className={`h-4 w-4 ${darkMode ? d.icon : ciclo.iconColor}`} />
                 </div>
                 <div>
-                  <CardTitle className={`text-sm font-semibold ${darkMode ? 'text-slate-400' : 'text-slate-700'}`}>{ciclo.nombre}</CardTitle>
+                  <CardTitle className={`text-sm font-semibold ${darkMode ? 'text-slate-300' : 'text-green-800'}`}>{ciclo.nombre}</CardTitle>
                   <CardDescription className="text-xs text-muted-foreground">
                     {porGrado.map(g => `${g.grado}°${g.seccion}`).join(", ")} · {totalMaterias} asignaturas · {totalEstudiantesCiclo} estudiantes
                   </CardDescription>
@@ -186,7 +186,7 @@ export const CiclosSection = memo(function CiclosSection({
                   </div>
                   <div className="text-center col-span-2 sm:col-span-1">
                     <p className="text-xs text-muted-foreground">Promedio Ciclo</p>
-                    <p className={`text-lg font-bold ${promCiclo != null && Math.round(promCiclo) >= 5 ? (darkMode ? 'text-teal-400' : 'text-teal-600') : (darkMode ? 'text-red-400' : 'text-red-600')}`}>
+                    <p className={`text-lg font-bold ${promCiclo != null && Math.round(promCiclo) >= 5 ? (darkMode ? 'text-emerald-400' : 'text-emerald-600') : (darkMode ? 'text-red-400' : 'text-red-600')}`}>
                       {promCiclo != null ? promCiclo.toFixed(2) : "N/A"}
                     </p>
                   </div>
@@ -202,7 +202,7 @@ export const CiclosSection = memo(function CiclosSection({
                       if (e.target.checked) selectAllMaterias(allMateriaIds);
                       else deselectAllMaterias(allMateriaIds);
                     }}
-                    className="rounded border-slate-300 text-teal-600 focus:ring-teal-500 h-4 w-4"
+                    className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 h-4 w-4"
                   />
                   <label htmlFor={`select-all-${ciclo.nombre}`} className={`text-xs font-semibold cursor-pointer ${darkMode ? 'text-slate-400' : 'text-slate-700'}`}>
                     {allSelected ? "Deseleccionar todas" : someSelected ? "Seleccionar restantes" : "Seleccionar todas"} las asignaturas
@@ -218,7 +218,7 @@ export const CiclosSection = memo(function CiclosSection({
                           <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                             {grupo.grado}° "{grupo.seccion}"
                           </h4>
-                          <Badge variant={grupo.promedio != null && Math.round(grupo.promedio) >= 5 ? "default" : "destructive"} className={`text-[10px] h-5 ${grupo.promedio != null && Math.round(grupo.promedio) >= 5 ? (darkMode ? 'bg-teal-600' : 'bg-teal-600') : ''}`}>
+                          <Badge variant={grupo.promedio != null && Math.round(grupo.promedio) >= 5 ? "default" : "destructive"} className={`text-[10px] h-5 ${grupo.promedio != null && Math.round(grupo.promedio) >= 5 ? (darkMode ? 'bg-emerald-600' : 'bg-emerald-600') : ''}`}>
                             {grupo.promedio != null ? grupo.promedio.toFixed(1) : "N/A"}
                           </Badge>
                         </div>
@@ -236,7 +236,7 @@ export const CiclosSection = memo(function CiclosSection({
                                   type="checkbox"
                                   checked={isSelected}
                                   onChange={() => toggleMateria(mat.id)}
-                                  className="rounded border-slate-300 text-teal-600 focus:ring-teal-500 h-3 w-3 shrink-0"
+                                  className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 h-3 w-3 shrink-0"
                                 />
                                 <span className={`flex-1 truncate ${isSelected ? (darkMode ? 'text-slate-200' : 'text-slate-800') : (darkMode ? 'text-slate-500 line-through' : 'text-slate-400 line-through')}`} title={mat.nombre}>
                                   {mat.nombre}

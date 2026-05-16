@@ -76,7 +76,7 @@ export function NetworkStatusIndicator() {
         <div
           className={`fixed bottom-4 left-4 z-50 flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium shadow-lg transition-all animate-in fade-in slide-in-from-bottom-4 ${
             isOnline
-              ? "bg-gradient-to-r from-teal-500 to-green-500 text-white"
+              ? "bg-gradient-to-r from-emerald-500 to-green-500 text-white"
               : "bg-gradient-to-r from-red-500 to-orange-500 text-white"
           }`}
         >

@@ -1338,13 +1338,13 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
           ))}
         </div>
       )}
-      <div className={`flex flex-wrap items-center gap-2 p-2 rounded-lg border ${darkMode ? 'bg-slate-800/60 border-slate-700' : 'bg-teal-50/60 border-teal-200'}`}>
-        <span className={`text-xs font-semibold uppercase tracking-wider mr-1 ${darkMode ? 'text-slate-400' : 'text-teal-700'}`}>
+      <div className={`flex flex-wrap items-center gap-2 p-2 rounded-lg border ${darkMode ? 'bg-slate-800/60 border-slate-700' : 'bg-emerald-50/60 border-emerald-200'}`}>
+        <span className={`text-xs font-semibold uppercase tracking-wider mr-1 ${darkMode ? 'text-slate-400' : 'text-emerald-700'}`}>
           Imprimir en Lote
         </span>
         <Button
           size="sm"
-          className={`h-8 text-xs font-bold px-3 ${darkMode ? 'bg-teal-600 hover:bg-teal-500 text-white' : 'bg-teal-600 hover:bg-teal-700 text-white'}`}
+          className={`h-8 text-xs font-bold px-3 ${darkMode ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white'}`}
           onClick={imprimirTodas}
           disabled={loadingAsistencia || !estudiantes.length}
         >
@@ -1353,7 +1353,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
         <Button
           size="sm"
           variant="outline"
-          className={`h-8 text-xs font-bold px-3 ${darkMode ? 'border-teal-600 text-teal-400 hover:bg-teal-900/30' : 'border-teal-300 text-teal-700 hover:bg-teal-50'}`}
+          className={`h-8 text-xs font-bold px-3 ${darkMode ? 'border-emerald-600 text-emerald-400 hover:bg-emerald-900/30' : 'border-emerald-300 text-emerald-700 hover:bg-emerald-50'}`}
           onClick={imprimirTodasAnual}
           disabled={loadingAnual || !estudiantes.length}
         >
@@ -1374,12 +1374,12 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
         return (
           <Card key={est.id} className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
             <div className={`p-2.5 flex items-center justify-between cursor-pointer ${darkMode ? 'hover:bg-slate-800' : 'hover:bg-slate-50'}`} onClick={() => setExpandedBoleta(open ? null : est.id)}>
-              <div className="flex items-center gap-2"><span className={`text-xs w-5 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>{est.numero}</span><span className={`text-xs sm:text-sm font-medium ${darkMode ? 'text-white' : ''}`}>{est.nombre}</span><Badge variant={prom !== null && prom >= ua ? "default" : prom !== null && prom >= uc ? "secondary" : "destructive"} className={`text-[10px] h-5 ${prom !== null && prom >= ua ? (darkMode ? 'bg-teal-600' : 'bg-teal-600') : prom !== null && prom >= uc ? (darkMode ? 'bg-amber-600' : 'bg-amber-600') : ''}`}>Prom: {prom !== null ? prom.toFixed(2) : "N/A"}</Badge></div>
+              <div className="flex items-center gap-2"><span className={`text-xs w-5 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>{est.numero}</span><span className={`text-xs sm:text-sm font-medium ${darkMode ? 'text-white' : ''}`}>{est.nombre}</span><Badge variant={prom !== null && prom >= ua ? "default" : prom !== null && prom >= uc ? "secondary" : "destructive"} className={`text-[10px] h-5 ${prom !== null && prom >= ua ? (darkMode ? 'bg-emerald-600' : 'bg-emerald-600') : prom !== null && prom >= uc ? (darkMode ? 'bg-amber-600' : 'bg-amber-600') : ''}`}>Prom: {prom !== null ? prom.toFixed(2) : "N/A"}</Badge></div>
               <div className="flex items-center gap-1">
                 <Button size="sm" variant="ghost" title="Anual con Recuperación" className={`h-6 px-2 text-xs ${darkMode ? 'text-amber-400' : 'text-amber-600'}`} onClick={e => { e.stopPropagation(); imprimirAnualConRecuperacion(est.id); }}>
                   <FileText className="h-3.5 w-3.5 mr-1" />Anual + Recup.
                 </Button>
-                <Button size="sm" variant="ghost" title="Consolidado Anual" className={`h-6 px-2 text-xs ${darkMode ? 'text-teal-400' : 'text-teal-600'}`} onClick={e => { e.stopPropagation(); imprimirAnual(est.id); }}>
+                <Button size="sm" variant="ghost" title="Consolidado Anual" className={`h-6 px-2 text-xs ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} onClick={e => { e.stopPropagation(); imprimirAnual(est.id); }}>
                   <FileText className="h-3.5 w-3.5 mr-1" />Anual
                 </Button>
                 <Button size="sm" variant="ghost" title="Imprimir Trimestre" className={`h-6 px-2 text-xs ${darkMode ? 'text-slate-400' : ''}`} onClick={e => { e.stopPropagation(); imprimir(est.id); }}>
@@ -1391,10 +1391,10 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
                 {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
               </div>
             </div>
-            {open && <div className={`border-t p-2 ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50'}`}><Table className="text-xs"><TableHeader><TableRow className={`h-7 ${darkMode ? 'bg-slate-700' : 'bg-slate-100'}`}><TableHead>Asignatura</TableHead><TableHead className="text-center">Prom. A.C.</TableHead><TableHead className="text-center">Prom. A.I.</TableHead><TableHead className="text-center">Examen</TableHead>{mostrarRecuperacion && <TableHead className="text-center">Recup.</TableHead>}<TableHead className="text-center font-bold">Promedio</TableHead></TableRow></TableHeader><TableBody>{materias.map(m => { const c = califs.find(x => x.materiaId === m.id); const estadoMat = c?.promedioFinal !== null && c?.promedioFinal !== undefined ? (c.promedioFinal < uc ? 'REPROBADO' : c.promedioFinal < ua ? 'CONDICIONADO' : 'APROBADO') : 'PENDIENTE'; return <TableRow key={m.id} className={`h-7 ${darkMode ? 'border-slate-700' : ''}`}><TableCell className={`font-medium ${darkMode ? 'text-white' : ''}`}>{m.nombre}</TableCell><TableCell className="text-center">{c?.calificacionAC != null ? (c.calificacionAC * pctAC).toFixed(2) : "-"}</TableCell><TableCell className="text-center">{c?.calificacionAI != null ? (c.calificacionAI * pctAI).toFixed(2) : "-"}</TableCell><TableCell className="text-center">{c?.examenTrimestral != null ? (c.examenTrimestral * pctEx).toFixed(2) : "-"}</TableCell>{mostrarRecuperacion && <TableCell className="text-center">{c?.recuperacion !== null && c?.recuperacion !== undefined ? c.recuperacion.toFixed(2) : "-"}</TableCell>}<TableCell className="text-center"><Badge variant={c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= ua ? "default" : c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= uc ? "secondary" : "destructive"} className={`text-[10px] ${c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= ua ? 'bg-teal-600' : c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= uc ? 'bg-amber-600' : ''}`}>{c?.promedioFinal !== null && c?.promedioFinal !== undefined ? c.promedioFinal.toFixed(2) : "-"}</Badge></TableCell></TableRow>;         })}</TableBody></Table>
+            {open && <div className={`border-t p-2 ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50'}`}><Table className="text-xs"><TableHeader><TableRow className={`h-7 ${darkMode ? 'bg-slate-700' : 'bg-slate-100'}`}><TableHead>Asignatura</TableHead><TableHead className="text-center">Prom. A.C.</TableHead><TableHead className="text-center">Prom. A.I.</TableHead><TableHead className="text-center">Examen</TableHead>{mostrarRecuperacion && <TableHead className="text-center">Recup.</TableHead>}<TableHead className="text-center font-bold">Promedio</TableHead></TableRow></TableHeader><TableBody>{materias.map(m => { const c = califs.find(x => x.materiaId === m.id); const estadoMat = c?.promedioFinal !== null && c?.promedioFinal !== undefined ? (c.promedioFinal < uc ? 'REPROBADO' : c.promedioFinal < ua ? 'CONDICIONADO' : 'APROBADO') : 'PENDIENTE'; return <TableRow key={m.id} className={`h-7 ${darkMode ? 'border-slate-700' : ''}`}><TableCell className={`font-medium ${darkMode ? 'text-white' : ''}`}>{m.nombre}</TableCell><TableCell className="text-center">{c?.calificacionAC != null ? (c.calificacionAC * pctAC).toFixed(2) : "-"}</TableCell><TableCell className="text-center">{c?.calificacionAI != null ? (c.calificacionAI * pctAI).toFixed(2) : "-"}</TableCell><TableCell className="text-center">{c?.examenTrimestral != null ? (c.examenTrimestral * pctEx).toFixed(2) : "-"}</TableCell>{mostrarRecuperacion && <TableCell className="text-center">{c?.recuperacion !== null && c?.recuperacion !== undefined ? c.recuperacion.toFixed(2) : "-"}</TableCell>}<TableCell className="text-center"><Badge variant={c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= ua ? "default" : c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= uc ? "secondary" : "destructive"} className={`text-[10px] ${c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= ua ? 'bg-emerald-600' : c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= uc ? 'bg-amber-600' : ''}`}>{c?.promedioFinal !== null && c?.promedioFinal !== undefined ? c.promedioFinal.toFixed(2) : "-"}</Badge></TableCell></TableRow>;         })}</TableBody></Table>
               {asistenciaManualHabilitado && (
                 <div className="mt-2 border-t pt-2">
-                  <div className="text-xs font-semibold mb-1.5 text-teal-600 dark:text-teal-400">REGISTRO DE ASISTENCIA MANUAL</div>
+                  <div className="text-xs font-semibold mb-1.5 text-emerald-600 dark:text-emerald-400">REGISTRO DE ASISTENCIA MANUAL</div>
                   <div className="grid grid-cols-5 gap-1.5">
                     <div>
                       <label className="text-[10px] block text-slate-500">Asistencias</label>

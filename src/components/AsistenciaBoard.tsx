@@ -749,12 +749,12 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
   const tardyCount = Object.values(asistencias).filter(e => e === "tarde").length;
 
   return (
-    <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-teal-100'}`}>
+    <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : 'border-emerald-100'}`}>
       <CardHeader className={`pb-3 border-b ${darkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50/50'}`}>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex flex-col gap-1">
             <CardTitle className={`text-lg font-bold flex items-center gap-2 ${darkMode ? 'text-white' : 'text-slate-800'}`}>
-              <CalendarDays className="h-5 w-5 text-teal-600" />
+              <CalendarDays className="h-5 w-5 text-emerald-600" />
               Control de Asistencia
             </CardTitle>
             <CardDescription className={`text-sm font-medium ${darkMode ? 'text-slate-400' : ''}`}>Registro y visualización histórica</CardDescription>
@@ -818,7 +818,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
               </div>
 
               <Button
-                className={`h-10 text-white w-full sm:w-auto px-6 font-bold text-xs sm:text-sm ${darkMode ? 'bg-teal-600 hover:bg-teal-500' : 'bg-teal-600 hover:bg-teal-700'}`}
+                className={`h-10 text-white w-full sm:w-auto px-6 font-bold text-xs sm:text-sm ${darkMode ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-emerald-600 hover:bg-emerald-700'}`}
                 onClick={handleSave}
                 disabled={saving || activeStudents.length === 0 || asistenciaBloqueada}
               >
@@ -882,7 +882,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                       <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
                         Estudiantes
                       </span>
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${darkMode ? 'bg-teal-900/60 text-teal-400' : 'bg-teal-100 text-teal-700'}`}>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${darkMode ? 'bg-emerald-900/60 text-emerald-400' : 'bg-emerald-100 text-emerald-700'}`}>
                         {activeStudents.length}
                       </span>
                     </div>
@@ -987,7 +987,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                             <div className="flex items-center gap-2">
                               {est.nombre}
                               {savingByStudent[est.id] && (
-                                <RefreshCw className="h-3 w-3 text-teal-500 animate-spin" />
+                                <RefreshCw className="h-3 w-3 text-emerald-500 animate-spin" />
                               )}
                               {!savingByStudent[est.id] && savedByStudent[est.id] && (
                                 <span className="text-green-500 text-xs">✓</span>
@@ -1084,7 +1084,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                 <Button size="sm" variant="outline" className={`h-9 text-xs font-bold flex-1 sm:flex-initial ${darkMode ? 'border-purple-700 text-purple-400 hover:bg-purple-900/30' : 'border-purple-200 text-purple-700 hover:bg-purple-50'}`} onClick={() => downloadPDFAnual()} disabled={true} title="Selecciona un estudiante de la tabla para generar su PDF anual">
                   <Download className="h-4 w-4 mr-2" /> PDF Año
                 </Button>
-                <Button size="sm" variant="outline" className={`h-9 text-xs font-bold flex-1 sm:flex-initial ${darkMode ? 'border-teal-700 text-teal-400 hover:bg-teal-900/30' : 'border-teal-200 text-teal-700 hover:bg-teal-50'}`} onClick={exportCSV} disabled={!gradoId}>
+                <Button size="sm" variant="outline" className={`h-9 text-xs font-bold flex-1 sm:flex-initial ${darkMode ? 'border-emerald-700 text-emerald-400 hover:bg-emerald-900/30' : 'border-emerald-200 text-emerald-700 hover:bg-emerald-50'}`} onClick={exportCSV} disabled={!gradoId}>
                   <Download className="h-4 w-4 mr-2" /> CSV
                 </Button>
               </div>
@@ -1096,7 +1096,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                   <TableRow className={darkMode ? 'bg-slate-800' : 'bg-slate-50'}>
                     <TableHead className="w-10 text-center">N°</TableHead>
                     <TableHead className="min-w-[120px] sm:min-w-[140px]">Estudiante</TableHead>
-                    <TableHead className="text-center font-bold text-teal-600">Asist.</TableHead>
+                    <TableHead className="text-center font-bold text-emerald-600">Asist.</TableHead>
                     <TableHead className="text-center font-bold text-amber-600">Tard.</TableHead>
                     <TableHead className="text-center font-bold text-red-600">Aus.</TableHead>
                     <TableHead className="text-center">Total</TableHead>
@@ -1143,7 +1143,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                                   )}
                                 </div>
                               </TableCell>
-                              <TableCell className="text-center text-teal-700 font-medium">{r.asistencias}</TableCell>
+                              <TableCell className="text-center text-emerald-700 font-medium">{r.asistencias}</TableCell>
                               <TableCell className="text-center text-amber-700 font-medium">{r.tardanzas}</TableCell>
                               <TableCell className="text-center text-red-700 font-medium">{r.ausencias}</TableCell>
                               <TableCell className="text-center font-bold">{r.total}</TableCell>
@@ -1163,14 +1163,14 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                                 <TableCell colSpan={7} className="py-4 px-4">
                                   <div className="space-y-4">
                                     {r.fechasPresente && r.fechasPresente.length > 0 && (
-                                      <div className={`rounded-lg p-3 ${darkMode ? 'bg-teal-900/20 border border-teal-800/50' : 'bg-teal-50 border border-teal-200'}`}>
+                                      <div className={`rounded-lg p-3 ${darkMode ? 'bg-emerald-900/20 border border-emerald-800/50' : 'bg-emerald-50 border border-emerald-200'}`}>
                                         <div className="flex items-center justify-between mb-2">
-                                          <span className={`font-semibold text-sm ${darkMode ? 'text-teal-400' : 'text-teal-700'}`}>✓ Asistencias</span>
-                                          <span className={`text-xs px-2 py-0.5 rounded-full ${darkMode ? 'bg-teal-900/40 text-teal-400' : 'bg-teal-100 text-teal-700'}`}>{r.fechasPresente.length} días</span>
+                                          <span className={`font-semibold text-sm ${darkMode ? 'text-emerald-400' : 'text-emerald-700'}`}>✓ Asistencias</span>
+                                          <span className={`text-xs px-2 py-0.5 rounded-full ${darkMode ? 'bg-emerald-900/40 text-emerald-400' : 'bg-emerald-100 text-emerald-700'}`}>{r.fechasPresente.length} días</span>
                                         </div>
                                         <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
                                           {r.fechasPresente.map((fecha, i) => (
-                                            <span key={i} className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-mono ${darkMode ? 'bg-teal-900/40 text-teal-400 border border-teal-700/30' : 'bg-white text-teal-700 border border-teal-200 shadow-sm'}`}>
+                                            <span key={i} className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-mono ${darkMode ? 'bg-emerald-900/40 text-emerald-400 border border-emerald-700/30' : 'bg-white text-emerald-700 border border-emerald-200 shadow-sm'}`}>
                                               {fecha}
                                               <button
                                                 onClick={(e) => {
@@ -1179,8 +1179,8 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                                                 }}
                                                 disabled={deletingDate === fecha}
                                                 className={`ml-1 p-0.5 rounded transition-colors ${darkMode
-                                                  ? 'text-teal-400 hover:text-red-400 hover:bg-red-900/30'
-                                                  : 'text-teal-600 hover:text-red-600 hover:bg-red-50'
+                                                  ? 'text-emerald-400 hover:text-red-400 hover:bg-red-900/30'
+                                                  : 'text-emerald-600 hover:text-red-600 hover:bg-red-50'
                                                   } ${deletingDate === fecha ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                 title={`Eliminar asistencia del ${fecha}`}
                                               >

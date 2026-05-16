@@ -198,10 +198,10 @@ export function HistorialCalificacionPopup({
         <div className="flex items-center gap-2">
           <div
             className={`flex items-center justify-center w-7 h-7 rounded-lg ${
-              darkMode ? "bg-teal-900/40" : "bg-teal-50"
+              darkMode ? "bg-emerald-900/40" : "bg-emerald-50"
             }`}
           >
-            <RotateCcw className="h-3.5 w-3.5 text-teal-500" />
+            <RotateCcw className="h-3.5 w-3.5 text-emerald-500" />
           </div>
           <div className="flex flex-col">
             <span className="text-sm font-semibold leading-tight">
@@ -234,7 +234,7 @@ export function HistorialCalificacionPopup({
           <span className={`text-[10px] font-semibold uppercase tracking-wider ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
             Valor actual
           </span>
-          <span className={`inline-flex items-center justify-center min-w-[48px] px-2.5 py-0.5 rounded-md text-sm font-bold font-mono ${darkMode ? "bg-teal-900/30 text-teal-400 ring-1 ring-teal-700/40" : "bg-teal-50 text-teal-700 ring-1 ring-teal-200"}`}>
+          <span className={`inline-flex items-center justify-center min-w-[48px] px-2.5 py-0.5 rounded-md text-sm font-bold font-mono ${darkMode ? "bg-emerald-900/30 text-emerald-400 ring-1 ring-emerald-700/40" : "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"}`}>
             {formatValor(valorActual)}
           </span>
         </div>
@@ -244,7 +244,7 @@ export function HistorialCalificacionPopup({
       <div className="flex-1 overflow-y-auto">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-10 gap-3">
-            <div className="h-7 w-7 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
+            <div className="h-7 w-7 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
             <p
               className={`text-xs ${
                 darkMode ? "text-slate-400" : "text-slate-500"
@@ -295,7 +295,7 @@ export function HistorialCalificacionPopup({
                 >
                   Registro
                 </span>
-                <span className="text-sm font-bold text-teal-600 dark:text-teal-400">
+                <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
                   {posLabel}
                 </span>
               </div>
@@ -323,7 +323,7 @@ export function HistorialCalificacionPopup({
                   onClick={() => setIndex(i)}
                   className={`h-2 rounded-full transition-all ${
                     i === index
-                      ? "w-5 bg-teal-500"
+                      ? "w-5 bg-emerald-500"
                       : darkMode
                       ? "w-2 bg-slate-600 hover:bg-slate-500"
                       : "w-2 bg-slate-300 hover:bg-slate-400"
@@ -347,8 +347,8 @@ export function HistorialCalificacionPopup({
                   <div
                     className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
                       darkMode
-                        ? "bg-teal-900/40 text-teal-300"
-                        : "bg-teal-100 text-teal-700"
+                        ? "bg-emerald-900/40 text-emerald-300"
+                        : "bg-emerald-100 text-emerald-700"
                     }`}
                   >
                     {current.usuarioNombre
@@ -416,8 +416,8 @@ export function HistorialCalificacionPopup({
                 <div
                   className={`flex items-center justify-center w-8 h-8 rounded-full ${
                     darkMode
-                      ? "bg-teal-900/30 text-teal-400"
-                      : "bg-teal-50 text-teal-600"
+                      ? "bg-emerald-900/30 text-emerald-400"
+                      : "bg-emerald-50 text-emerald-600"
                   }`}
                 >
                   <ArrowRightLeft className="h-4 w-4" />
@@ -478,8 +478,8 @@ export function HistorialCalificacionPopup({
                     className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left transition-colors text-xs ${
                       i === index
                         ? darkMode
-                          ? "bg-teal-900/20 text-teal-300 ring-1 ring-teal-700/40"
-                          : "bg-teal-50 text-teal-700 ring-1 ring-teal-200"
+                          ? "bg-emerald-900/20 text-emerald-300 ring-1 ring-emerald-700/40"
+                          : "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
                         : darkMode
                         ? "hover:bg-slate-700/50 text-slate-300"
                         : "hover:bg-slate-100 text-slate-600"
@@ -489,8 +489,8 @@ export function HistorialCalificacionPopup({
                       className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
                         i === index
                           ? darkMode
-                            ? "bg-teal-700 text-white"
-                            : "bg-teal-600 text-white"
+                            ? "bg-emerald-700 text-white"
+                            : "bg-emerald-600 text-white"
                           : darkMode
                           ? "bg-slate-700 text-slate-400"
                           : "bg-slate-200 text-slate-500"

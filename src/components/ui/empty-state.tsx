@@ -70,7 +70,7 @@ export function EmptyState({
             <Button
               onClick={onAction}
               size="sm"
-              className="bg-teal-600 hover:bg-teal-700 text-white"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
             >
               {actionLabel}
             </Button>

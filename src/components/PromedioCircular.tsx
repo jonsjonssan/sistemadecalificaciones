@@ -13,8 +13,8 @@ export const PromedioCircular = memo(function PromedioCircular({ valor, darkMode
   const normalizedRadius = radius - stroke;
   const circumference = normalizedRadius * 2 * Math.PI;
   const strokeDashoffset = valor != null ? circumference - (valor / 10) * circumference : circumference;
-  const tealColor = darkMode ? "oklch(0.60 0.22 160)" : "oklch(0.42 0.16 160)";
-  const redColor = darkMode ? "oklch(0.60 0.22 25)" : "oklch(0.52 0.20 25)";
+  const tealColor = darkMode ? "oklch(0.65 0.12 155)" : "oklch(0.44 0.13 155)";
+  const redColor = darkMode ? "oklch(0.58 0.22 28)" : "oklch(0.52 0.20 28)";
   const color = valor != null && Math.round(valor) >= 5 ? tealColor : redColor;
 
   return (
@@ -50,7 +50,7 @@ export const PromedioCircular = memo(function PromedioCircular({ valor, darkMode
         </div>
       </div>
       <div className="mt-2 flex items-center gap-1">
-        <span className={`text-xs font-medium ${valor != null && Math.round(valor) >= 5 ? 'text-teal-500' : valor != null ? 'text-red-500' : ''}`}>
+        <span className={`text-xs font-medium ${valor != null && Math.round(valor) >= 5 ? 'text-emerald-500' : valor != null ? 'text-red-500' : ''}`}>
           {valor != null && Math.round(valor) >= 5 ? '✓ Aprobado' : valor != null ? '⚠ En riesgo' : 'Sin datos'}
         </span>
       </div>

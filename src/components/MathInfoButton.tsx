@@ -46,10 +46,10 @@ export function MathInfoModal({ isOpen, onClose, darkMode, explanation }: MathIn
           <div className="flex items-center gap-3">
             <div
               className={`flex items-center justify-center w-9 h-9 rounded-xl ${
-                darkMode ? "bg-teal-900/40" : "bg-teal-50"
+                darkMode ? "bg-emerald-900/40" : "bg-emerald-50"
               }`}
             >
-              <Calculator className="h-5 w-5 text-teal-500" />
+              <Calculator className="h-5 w-5 text-emerald-500" />
             </div>
             <div>
               <h3 className="text-sm font-bold">{explanation.title}</h3>
@@ -99,8 +99,8 @@ export function MathInfoModal({ isOpen, onClose, darkMode, explanation }: MathIn
             <div
               className={`font-mono text-sm px-3 py-2 rounded-lg text-center ${
                 darkMode
-                  ? "bg-slate-900/60 text-teal-400 border border-teal-800/50"
-                  : "bg-white text-teal-700 border border-teal-200"
+                  ? "bg-slate-900/60 text-emerald-400 border border-emerald-800/50"
+                  : "bg-white text-emerald-700 border border-emerald-200"
               }`}
             >
               {explanation.formula}
@@ -118,8 +118,8 @@ export function MathInfoModal({ isOpen, onClose, darkMode, explanation }: MathIn
                   <div
                     className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold mt-0.5 ${
                       darkMode
-                        ? "bg-teal-900/40 text-teal-400"
-                        : "bg-teal-100 text-teal-700"
+                        ? "bg-emerald-900/40 text-emerald-400"
+                        : "bg-emerald-100 text-emerald-700"
                     }`}
                   >
                     {i + 1}
@@ -199,8 +199,8 @@ export function MathInfoButton({ darkMode, explanation, size = "sm" }: MathInfoB
             : "w-6 h-6"
         } ${
           darkMode
-            ? "bg-slate-700 hover:bg-slate-600 text-slate-400 hover:text-teal-400"
-            : "bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-teal-600"
+            ? "bg-slate-700 hover:bg-slate-600 text-slate-400 hover:text-emerald-400"
+            : "bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-emerald-600"
         }`}
         title="Ver proceso de cálculo matemático"
       >
