@@ -255,12 +255,7 @@ const savedTipoAsistencia = localStorage.getItem("ss_tipoAsistencia");
           const updated = { ...prev };
           for (const [estudianteId, observaciones] of Object.entries(data as Record<string, string>)) {
             updated[estudianteId] = {
-              ...updated[estudianteId],
-              asistencias: updated[estudianteId]?.asistencias || '',
-              inasistencias: updated[estudianteId]?.inasistencias || '',
-              tardanzas: updated[estudianteId]?.tardanzas || '',
-              justificadas: updated[estudianteId]?.justificadas || '',
-              totalDias: updated[estudianteId]?.totalDias || '',
+              ...(updated[estudianteId] || {}),
               observaciones: observaciones,
             };
           }
