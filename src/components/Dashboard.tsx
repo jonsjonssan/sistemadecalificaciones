@@ -248,10 +248,10 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {loading ? (
             <>
-              <StatCard loading title="Total Estudiantes" value={0} subtitle="" icon={Users} iconColor="text-primary" iconBg="bg-primary/10" accentColor="bg-primary" darkMode />
-              <StatCard loading title="Grados Activos" value={0} subtitle="" icon={School} iconColor="text-primary" iconBg="bg-primary/10" accentColor="bg-primary" darkMode />
-              <StatCard loading title="Asignaturas" value={0} subtitle="" icon={BookOpen} iconColor="text-primary" iconBg="bg-primary/10" accentColor="bg-primary" darkMode />
-              <StatCard loading title="Docentes" value={0} subtitle="" icon={GraduationCap} iconColor="text-primary" iconBg="bg-primary/10" accentColor="bg-primary" darkMode />
+              <StatCard loading title="Total Estudiantes" value={0} subtitle="" icon={Users} iconColor="text-accent" iconBg="bg-accent" accentColor="bg-accent" darkMode />
+              <StatCard loading title="Grados Activos" value={0} subtitle="" icon={School} iconColor="text-accent" iconBg="bg-accent" accentColor="bg-accent" darkMode />
+              <StatCard loading title="Asignaturas" value={0} subtitle="" icon={BookOpen} iconColor="text-accent" iconBg="bg-accent" accentColor="bg-accent" darkMode />
+              <StatCard loading title="Docentes" value={0} subtitle="" icon={GraduationCap} iconColor="text-accent" iconBg="bg-accent" accentColor="bg-accent" darkMode />
             </>
           ) : (
             <>
@@ -261,9 +261,9 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                   value={totalEstudiantesVisibles}
                   subtitle="Registrados"
                   icon={Users}
-                  iconColor="text-primary"
-                  iconBg="bg-primary/10"
-                  accentColor="bg-primary"
+                  iconColor="text-accent"
+                  iconBg="bg-accent"
+                  accentColor="bg-accent"
                   darkMode={darkMode}
                   delay={0}
                   action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.totalEstudiantes} />}
@@ -276,9 +276,9 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                   value={gradosVisibles.length}
                   subtitle="Secciones"
                   icon={School}
-                  iconColor="text-primary"
-                  iconBg="bg-primary/10"
-                  accentColor="bg-primary"
+                  iconColor="text-accent"
+                  iconBg="bg-accent"
+                  accentColor="bg-accent"
                   darkMode={darkMode}
                   delay={0.1}
                   action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.gradosActivos} />}
@@ -291,9 +291,9 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                   value={totalAsignaturasVisibles}
                   subtitle="Impartidas"
                   icon={BookOpen}
-                  iconColor="text-primary"
-                  iconBg="bg-primary/10"
-                  accentColor="bg-primary"
+                  iconColor="text-accent"
+                  iconBg="bg-accent"
+                  accentColor="bg-accent"
                   darkMode={darkMode}
                   delay={0.2}
                   action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.asignaturas} />}
@@ -306,9 +306,9 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                   value={totalDocentes}
                   subtitle="Activos"
                   icon={GraduationCap}
-                  iconColor="text-primary"
-                  iconBg="bg-primary/10"
-                  accentColor="bg-primary"
+                  iconColor="text-accent"
+                  iconBg="bg-accent"
+                  accentColor="bg-accent"
                   darkMode={darkMode}
                   delay={0.3}
                   action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.docentes} />}
@@ -326,7 +326,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
             <div className="h-px bg-gradient-to-r from-primary/30 via-primary/10 to-transparent w-full" />
             <CardHeader className="pb-3 flex flex-row items-center justify-between">
               <CardTitle className="font-display text-sm sm:text-base flex items-center gap-2 text-card-foreground">
-                <Target className="h-4 w-4 text-primary" />
+                <Target className="h-4 w-4 text-accent" />
                 Rendimiento Institucional
               </CardTitle>
               <MathInfoButton darkMode={darkMode} explanation={mathExplanations.rendimientoInstitucional} />
@@ -377,7 +377,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
         <div className="animate-fade-slide-up" style={{ animationDelay: '0.3s' }}>
           <div className="flex items-center gap-2 mb-3">
             <h3 className="font-display text-base text-foreground">
-              <BookOpen className="h-4 w-4 inline mr-2 text-primary" />
+              <BookOpen className="h-4 w-4 inline mr-2 text-accent" />
               Asignaturas por Ciclo
             </h3>
             <MathInfoButton darkMode={darkMode} explanation={mathExplanations.asignaturasPorCiclo} />
@@ -416,7 +416,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
           <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-border gap-4 bg-muted/30">
             <div>
               <CardTitle className="font-display text-sm sm:text-base flex items-center gap-2 text-card-foreground">
-                <TrendingUp className="h-4 w-4 text-primary" />
+                <TrendingUp className="h-4 w-4 text-accent" />
                 Rendimiento Académico
               </CardTitle>
               <CardDescription className="text-xs sm:text-sm text-muted-foreground">
@@ -551,14 +551,14 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
             </CardHeader>
             <CardContent className="p-3 sm:p-4 space-y-2">
               <div className="p-3 flex items-center gap-3 cursor-pointer group transition-all bg-muted/20 border border-border hover:bg-muted/40 rounded-sm" onClick={() => (window as any).setActiveTab?.('calificaciones')}>
-                <div className="p-2 shrink-0 group-hover:scale-105 transition-transform bg-primary/10 text-primary rounded-sm"><ClipboardList className="h-5 w-5" /></div>
+                <div className="p-2 shrink-0 group-hover:scale-105 transition-transform bg-accent text-accent-foreground rounded-sm"><ClipboardList className="h-5 w-5" /></div>
                 <div>
                   <h4 className="text-sm font-semibold text-foreground">Pasar Notas</h4>
                   <p className="text-[11px] text-muted-foreground/60">Calificaciones</p>
                 </div>
               </div>
               <div className="p-3 flex items-center gap-3 cursor-pointer group transition-all bg-muted/20 border border-border hover:bg-muted/40 rounded-sm" onClick={() => (window as any).setActiveTab?.('asistencia')}>
-                <div className="p-2 shrink-0 group-hover:scale-105 transition-transform bg-primary/10 text-primary rounded-sm"><CalendarDays className="h-5 w-5" /></div>
+                <div className="p-2 shrink-0 group-hover:scale-105 transition-transform bg-accent text-accent-foreground rounded-sm"><CalendarDays className="h-5 w-5" /></div>
                 <div>
                   <h4 className="text-sm font-semibold text-foreground">Asistencia</h4>
                   <p className="text-[11px] text-muted-foreground/60">Control diario</p>
@@ -566,7 +566,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
               </div>
               {usuario.rol === "admin" && (
                 <div className="p-3 flex items-center gap-3 cursor-pointer group transition-all bg-muted/20 border border-border hover:bg-muted/40 rounded-sm" onClick={() => (window as any).setActiveTab?.('admin')}>
-                  <div className="p-2 shrink-0 group-hover:scale-105 transition-transform bg-primary/10 text-primary rounded-sm"><GraduationCap className="h-5 w-5" /></div>
+                  <div className="p-2 shrink-0 group-hover:scale-105 transition-transform bg-accent text-accent-foreground rounded-sm"><GraduationCap className="h-5 w-5" /></div>
                   <div>
                     <h4 className="text-sm font-semibold text-foreground">Docentes</h4>
                     <p className="text-[11px] text-muted-foreground/60">Administración</p>
