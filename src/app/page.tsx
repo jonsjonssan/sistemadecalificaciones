@@ -534,7 +534,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
         const año = grado?.año || new Date().getFullYear();
         const currentData = asistenciaManualDataRef.current[estudianteId] || {};
         try {
-          await fetch("/api/observaciones", {
+          const res = await fetch("/api/observaciones", {
             method: "POST",
             credentials: "include",
             headers: { "Content-Type": "application/json" },
@@ -551,6 +551,10 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
               observaciones: currentData.observaciones ?? "",
             }),
           });
+          if (!res.ok) {
+            const errBody = await res.json().catch(() => ({ error: "Error desconocido" }));
+            console.error("API observaciones error:", res.status, errBody);
+          }
         } catch (err) {
           console.error("Error guardando datos manuales en BD:", err);
         }
