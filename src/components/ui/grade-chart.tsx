@@ -118,21 +118,13 @@ export function GradeChart({
                 <div className={cn("h-8 w-8 rounded-full flex items-center justify-center", darkMode ? "bg-primary/20" : "bg-teal-50")}>
                   <Icon className="h-4 w-4 text-teal-500" />
                 </div>
-                <div>
-                  <CardTitle className={cn("text-sm sm:text-base", darkMode ? "text-slate-400" : "text-slate-700")}>
-                    {title}
-                  </CardTitle>
-                  {description && (
-                    <CardDescription className="text-xs text-muted-foreground">
-                      {description}
-                    </CardDescription>
-                  )}
+              )}
               <div>
-                <CardTitle className={cn("text-sm sm:text-base", darkMode ? "text-slate-200" : "text-slate-700")}>
+                <CardTitle className={cn("text-sm sm:text-base", darkMode ? "text-slate-400" : "text-slate-700")}>
                   {title}
                 </CardTitle>
                 {description && (
-                  <CardDescription className={cn("text-xs", darkMode ? "text-slate-500" : "text-slate-400")}>
+                  <CardDescription className="text-xs text-muted-foreground">
                     {description}
                   </CardDescription>
                 )}

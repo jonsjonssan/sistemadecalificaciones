@@ -59,7 +59,10 @@ export function MathInfoModal({ isOpen, onClose, darkMode, explanation }: MathIn
                 }`}
               >
                 Proceso de cálculo
-              </p>
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
           <button
@@ -113,32 +116,9 @@ export function MathInfoModal({ isOpen, onClose, darkMode, explanation }: MathIn
 
           {/* Steps */}
           <div className="space-y-2">
-            <p
-              className={`text-[10px] font-semibold uppercase tracking-wider ${
-                    "text-muted-foreground"
-                  }
-                >
-                  Pasos del cálculo
-                </p>
-                <div className="space-y-2">
-                  {explanation.steps.map((step, i) => (
-                    <div key={i} className="flex items-start gap-3">
-                      <div
-                        className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold mt-0.5 ${
-                          darkMode
-                            ? "bg-teal-900/40 text-teal-400"
-                            : "bg-teal-100 text-teal-700"
-                        }`}
-                      >
-                        {i + 1}
-                      </div>
-                      <p
-                        className={`text-sm leading-relaxed pt-0.5 ${
-                          darkMode ? "text-slate-400" : "text-slate-600"
-                        }`}
-                      >
-                        {step}
-                      </p>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Pasos del cálculo
+            </p>
             <div className="space-y-2">
               {explanation.steps.map((step, i) => (
                 <div key={i} className="flex items-start gap-3">
@@ -153,7 +133,7 @@ export function MathInfoModal({ isOpen, onClose, darkMode, explanation }: MathIn
                   </div>
                   <p
                     className={`text-sm leading-relaxed pt-0.5 ${
-                      darkMode ? "text-slate-300" : "text-slate-600"
+                      darkMode ? "text-slate-400" : "text-slate-600"
                     }`}
                   >
                     {step}
