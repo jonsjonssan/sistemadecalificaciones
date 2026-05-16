@@ -610,7 +610,17 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     .resumen-item { text-align: center; }
     .resumen-item .valor { font-size: 16pt; font-weight: bold; color: #059669; }
     .resumen-item.reprobado .valor { color: #dc2626; }
+    .resumen-item.condicionado .valor { color: #d97706; }
     .resumen-item .etiqueta { font-size: 9pt; color: #666; }
+    
+    .seccion-asistencia { margin: 15px 0; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; }
+    .seccion-asistencia-header { background: #f8fafc; padding: 6px 10px; border-bottom: 1px solid #ddd; font-weight: bold; font-size: 9pt; display: flex; justify-content: space-between; }
+    .asistencia-grid { display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px; text-align: center; }
+    .asistencia-item .n { font-size: 12pt; font-weight: bold; }
+    .asistencia-item .l { font-size: 8pt; color: #666; text-transform: uppercase; }
+    .asistencia-asist { color: #059669; }
+    .asistencia-aus { color: #dc2626; }
+    .asistencia-tard { color: #d97706; }
     
     .firmas { display: flex; justify-content: space-between; margin-top: 40px; padding-top: 20px; }
     .firma { text-align: center; width: 45%; }
