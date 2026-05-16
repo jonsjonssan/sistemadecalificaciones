@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo, useDeferredValue, startTransition } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import dynamic from "next/dynamic";
+import { SuspenseTab } from "@/components/SuspenseWrapper";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -283,6 +285,7 @@ const savedTipoAsistencia = localStorage.getItem("ss_tipoAsistencia");
 
   // Búsqueda, filtro y ordenamiento
   const [busquedaEstudiante, setBusquedaEstudiante] = useState("");
+  const busquedaDeferred = useDeferredValue(busquedaEstudiante);
   const [filtroEstado, setFiltroEstado] = useState<string>("todos");
   const [sortColumn, setSortColumn] = useState<string>("");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
@@ -1400,8 +1403,8 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
 
     let filtered = [...estudiantes];
 
-    if (busquedaEstudiante.trim()) {
-      const query = busquedaEstudiante.toLowerCase();
+    if (busquedaDeferred.trim()) {
+      const query = busquedaDeferred.toLowerCase();
       filtered = filtered.filter(e => e.nombre.toLowerCase().includes(query));
     }
 
@@ -1448,7 +1451,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
     }
 
     return filtered;
-  }, [estudiantes, calificaciones, configActual, configuracion, busquedaEstudiante, filtroEstado, sortColumn, sortDirection, asignaturaSeleccionada, trimestreSeleccionado]);
+  }, [estudiantes, calificaciones, configActual, configuracion, busquedaDeferred, filtroEstado, sortColumn, sortDirection, asignaturaSeleccionada, trimestreSeleccionado]);
 
   const estadosCompletitud = useMemo(() =>
     contarEstados(estudiantes, calificaciones, asignaturaSeleccionada, parseInt(trimestreSeleccionado), configActual),
@@ -2523,7 +2526,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                           <Input
                             placeholder="Buscar..."
                             value={busquedaEstudiante}
-                            onChange={(e) => setBusquedaEstudiante(e.target.value)}
+                            onChange={(e) => startTransition(() => setBusquedaEstudiante(e.target.value))}
                             className={`pl-8 sm:pl-9 h-9 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}
                           />
                         </div>

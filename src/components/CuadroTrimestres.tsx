@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback, useEffect } from "react";
+import React, { useState, useMemo, useCallback, useEffect, memo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
@@ -29,7 +29,7 @@ interface CuadroTrimestresProps {
   umbralAprobado?: number;
 }
 
-export default function CuadroTrimestres({ gradoId, gradoNumero, gradoSeccion, gradoAño, asignaturas, estudiantes, darkMode, umbralCondicionado = 4.5, umbralAprobado = 6.5 }: CuadroTrimestresProps) {
+const CuadroTrimestres = memo(function CuadroTrimestres({ gradoId, gradoNumero, gradoSeccion, gradoAño, asignaturas, estudiantes, darkMode, umbralCondicionado = 4.5, umbralAprobado = 6.5 }: CuadroTrimestresProps) {
   const [asignaturaCuadroId, setAsignaturaCuadroId] = useState("");
   const [calificaciones, setCalificaciones] = useState<CalificacionRow[]>([]);
   const [recuperacionesAnuales, setRecuperacionesAnuales] = useState<Map<string, number>>(new Map());
@@ -345,4 +345,6 @@ export default function CuadroTrimestres({ gradoId, gradoNumero, gradoSeccion, g
       </CardContent>
     </Card>
   );
-}
+});
+
+export default CuadroTrimestres;

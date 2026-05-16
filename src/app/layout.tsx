@@ -6,6 +6,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ClientComponents } from "@/components/ClientComponents";
+import { QueryProvider } from "@/lib/query-provider";
 
 const nunito = Nunito({
   variable: "--font-nunito",
@@ -47,15 +48,17 @@ export default function RootLayout({
         className={`${nunito.variable} antialiased bg-background text-foreground`}
       >
         <ErrorBoundary>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="light"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-            <ClientComponents />
-          </ThemeProvider>
+          <QueryProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="light"
+              enableSystem
+              disableTransitionOnChange
+            >
+              {children}
+              <ClientComponents />
+            </ThemeProvider>
+          </QueryProvider>
         </ErrorBoundary>
         <Toaster />
         <SpeedInsights />

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback, useEffect } from "react";
+import React, { useState, useMemo, useCallback, useEffect, memo } from "react";
 import { Grado, Estudiante, Asignatura } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -74,7 +74,7 @@ interface ReporteCalificacionesProps {
   umbralAprobado?: number;
 }
 
-export default function ReporteCalificaciones({ grados, darkMode, todasAsignaturas, umbralCondicionado = 4.5, umbralAprobado = 6.5 }: ReporteCalificacionesProps) {
+const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, darkMode, todasAsignaturas, umbralCondicionado = 4.5, umbralAprobado = 6.5 }: ReporteCalificacionesProps) {
   const [gradoId, setGradoId] = useState("");
   const [trimestre, setTrimestre] = useState("1");
   const [estudiantes, setEstudiantes] = useState<Estudiante[]>([]);
@@ -504,4 +504,6 @@ export default function ReporteCalificaciones({ grados, darkMode, todasAsignatur
       )}
     </div>
   );
-}
+});
+
+export default ReporteCalificaciones;
