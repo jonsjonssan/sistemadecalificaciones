@@ -257,10 +257,14 @@ const savedTipoAsistencia = localStorage.getItem("ss_tipoAsistencia");
         if (!data || controller.signal.aborted) return;
         setAsistenciaManualData(prev => {
           const updated = { ...prev };
-          for (const [estudianteId, observaciones] of Object.entries(data as Record<string, string>)) {
+          for (const [estudianteId, entry] of Object.entries(data as Record<string, { asistencias: string; inasistencias: string; tardanzas: string; justificadas: string; totalDias: string; observaciones: string }>)) {
             updated[estudianteId] = {
-              ...(updated[estudianteId] || {}),
-              observaciones: observaciones,
+              asistencias: entry.asistencias ?? prev[estudianteId]?.asistencias ?? '',
+              inasistencias: entry.inasistencias ?? prev[estudianteId]?.inasistencias ?? '',
+              tardanzas: entry.tardanzas ?? prev[estudianteId]?.tardanzas ?? '',
+              justificadas: entry.justificadas ?? prev[estudianteId]?.justificadas ?? '',
+              totalDias: entry.totalDias ?? prev[estudianteId]?.totalDias ?? '',
+              observaciones: entry.observaciones ?? prev[estudianteId]?.observaciones ?? '',
             };
           }
           return updated;
@@ -521,13 +525,14 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
       }
       return updated;
     });
-    // Persistir observaciones en la base de datos (debounce 300ms, se guarda también al cerrar página)
-    if (field === 'observaciones' && gradoSeleccionado && trimestreSeleccionado) {
+    // Persistir todos los campos manuales en la BD (debounce 300ms)
+    if (gradoSeleccionado && trimestreSeleccionado) {
       const existing = observacionesSaveTimersRef.current.get(estudianteId);
       if (existing) clearTimeout(existing);
       const timer = setTimeout(async () => {
         const grado = gradosFiltrados.find(g => g.id === gradoSeleccionado);
         const año = grado?.año || new Date().getFullYear();
+        const currentData = asistenciaManualDataRef.current[estudianteId] || {};
         try {
           await fetch("/api/observaciones", {
             method: "POST",
@@ -538,11 +543,16 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
               gradoId: gradoSeleccionado,
               trimestre: trimestreSeleccionado,
               año,
-              observaciones: value,
+              asistencias: currentData.asistencias ?? "",
+              inasistencias: currentData.inasistencias ?? "",
+              tardanzas: currentData.tardanzas ?? "",
+              justificadas: currentData.justificadas ?? "",
+              totalDias: currentData.totalDias ?? "",
+              observaciones: currentData.observaciones ?? "",
             }),
           });
         } catch (err) {
-          console.error("Error guardando observacion en BD:", err);
+          console.error("Error guardando datos manuales en BD:", err);
         }
       }, 300);
       observacionesSaveTimersRef.current.set(estudianteId, timer);
@@ -1996,17 +2006,20 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
       const grado = gradosFiltrados.find(g => g.id === gradoSeleccionado);
       const año = grado?.año || new Date().getFullYear();
       for (const [estudianteId, entry] of Object.entries(data)) {
-        const obs = entry?.observaciones?.trim();
-        if (obs) {
-          const blob = new Blob([JSON.stringify({
-            estudianteId,
-            gradoId: gradoSeleccionado,
-            trimestre: trimestreSeleccionado,
-            año,
-            observaciones: obs,
-          })], { type: "application/json" });
-          navigator.sendBeacon("/api/observaciones", blob);
-        }
+        if (!entry) continue;
+        const blob = new Blob([JSON.stringify({
+          estudianteId,
+          gradoId: gradoSeleccionado,
+          trimestre: trimestreSeleccionado,
+          año,
+          asistencias: entry.asistencias ?? "",
+          inasistencias: entry.inasistencias ?? "",
+          tardanzas: entry.tardanzas ?? "",
+          justificadas: entry.justificadas ?? "",
+          totalDias: entry.totalDias ?? "",
+          observaciones: entry.observaciones ?? "",
+        })], { type: "application/json" });
+        navigator.sendBeacon("/api/observaciones", blob);
       }
     };
 

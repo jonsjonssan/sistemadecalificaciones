@@ -255,6 +255,11 @@ model ObservacionBoleta {
   trimestre     Int
   año           Int
   observaciones String   @default("")
+  asistencias   String   @default("")
+  inasistencias String   @default("")
+  tardanzas     String   @default("")
+  justificadas  String   @default("")
+  totalDias     String   @default("")
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
