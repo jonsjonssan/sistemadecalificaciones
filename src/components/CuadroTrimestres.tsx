@@ -245,10 +245,10 @@ const CuadroTrimestres = memo(function CuadroTrimestres({ gradoId, gradoNumero, 
           </div>
           {asignaturaCuadroId && (
             <>
-              <Button size="sm" variant="outline" onClick={exportarCuadroCSV} className={`h-11 sm:h-12 text-sm ${darkMode ? "bg-slate-800 border-white/30 text-white hover:bg-white/10" : ""}`}>
+              <Button size="sm" variant="outline" onClick={exportarCuadroCSV} className={`h-11 sm:h-12 text-sm ${darkMode ? "bg-card border-white/30 text-white hover:bg-white/10" : ""}`}>
                 <Download className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Excel (CSV)</span>
               </Button>
-              <Button size="sm" variant="outline" onClick={exportarCuadroPDF} className={`h-11 sm:h-12 text-sm ${darkMode ? "bg-slate-800 border-white/30 text-white hover:bg-white/10" : ""}`}>
+              <Button size="sm" variant="outline" onClick={exportarCuadroPDF} className={`h-11 sm:h-12 text-sm ${darkMode ? "bg-card border-white/30 text-white hover:bg-white/10" : ""}`}>
                 <FileText className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">PDF</span>
               </Button>
             </>

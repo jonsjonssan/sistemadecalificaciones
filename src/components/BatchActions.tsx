@@ -158,7 +158,7 @@ export default function BatchActions({ gradoId, materiaId, trimestre, estudiante
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline" className={`h-10 text-sm ${darkMode ? 'bg-slate-800 border-white/30 text-white hover:bg-white/10' : ''}`}>
+        <Button size="sm" variant="outline" className={`h-10 text-sm ${darkMode ? 'bg-card border-white/30 text-white hover:bg-white/10' : ''}`}>
           <Users className="h-4 w-4 mr-1" />
           Acciones por Lote
         </Button>

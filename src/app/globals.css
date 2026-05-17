@@ -581,18 +581,20 @@
     background-size: 200% 100%;
   }
 
-  /* ── TEXT READABILITY: white glow for dark-on-dark in dark mode ── */
-  .dark .text-slate-200,
-  .dark .text-slate-300,
-  .dark .text-slate-400 {
-    text-shadow: 0 0 1px oklch(1 0 0 / 0.55), 0 0 3px oklch(1 0 0 / 0.25);
-  }
+}
 
-  /* ── TEXT READABILITY: green glow for near-black text in light mode ── */
-  :root:not(.dark) .text-slate-800,
-  :root:not(.dark) .text-slate-900 {
-    text-shadow: 0 0 1px oklch(0.64 0.17 155 / 0.25), 0 0 2px oklch(0.64 0.17 155 / 0.1);
-  }
+/* ── TEXT READABILITY: white text + thin black stroke for dark-on-dark in dark mode ── */
+.dark .text-slate-200,
+.dark .text-slate-300,
+.dark .text-slate-400 {
+  color: oklch(1 0 0) !important;
+  -webkit-text-stroke: 0.5px oklch(0 0 0 / 0.5);
+}
+
+/* ── TEXT READABILITY: green glow for near-black text in light mode ── */
+:root:not(.dark) .text-slate-800,
+:root:not(.dark) .text-slate-900 {
+  text-shadow: 0 0 1px oklch(0.64 0.17 155 / 0.25), 0 0 2px oklch(0.64 0.17 155 / 0.1);
 }
 
 @media (max-width: 480px) {

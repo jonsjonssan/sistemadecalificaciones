@@ -813,7 +813,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                 <Label className={`text-xs sm:text-sm font-bold mb-1 block ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>Fecha</Label>
                 <input
                   type="date"
-                  className={`flex h-10 w-full rounded-md border px-3 py-1 text-xs sm:text-sm font-medium shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 ${darkMode ? 'bg-slate-800 border-slate-700 text-white focus-visible:ring-slate-400' : 'bg-white border-slate-200 focus-visible:ring-slate-950'}`}
+                  className={`flex h-10 w-full rounded-md border px-3 py-1 text-xs sm:text-sm font-medium shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 ${darkMode ? 'bg-card border-white/30 text-white focus-visible:ring-slate-400' : 'bg-white border-slate-200 focus-visible:ring-slate-950'}`}
                   value={fecha}
                   onChange={e => setFecha(e.target.value)}
                   max={new Date().toISOString().split('T')[0]}
