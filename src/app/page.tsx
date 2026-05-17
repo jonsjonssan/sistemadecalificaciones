@@ -2569,10 +2569,10 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                   <CardContent className="p-0">
                     <div className="table-scroll-container">
                       <table className="w-full text-sm sm:text-base font-medium border-collapse">
-                        <thead><tr className={darkMode ? 'bg-gradient-to-r from-slate-700 to-slate-600 text-white' : 'bg-gradient-to-r from-slate-700 to-slate-600 text-white'}>
-                          <th className={`w-10 p-2 text-center font-semibold sticky-col shadow-right left-0 z-20 border-r border-b ${darkMode ? 'bg-slate-700 border-slate-600' : 'bg-slate-700 border-slate-500'}`}>N°</th>
+                        <thead><tr className={darkMode ? 'bg-gradient-to-r from-slate-200 to-slate-300 text-white' : 'bg-gradient-to-r from-slate-700 to-slate-600 text-white'}>
+                          <th className={`w-10 p-2 text-center font-semibold sticky-col shadow-right left-0 z-20 border-r border-b ${darkMode ? 'bg-slate-200 border-slate-400' : 'bg-slate-700 border-slate-500'}`}>N°</th>
                           <th
-                            className={`min-w-[140px] sm:min-w-[180px] p-2 text-left font-semibold sticky-col shadow-right left-10 z-20 border-r border-b cursor-pointer hover:bg-slate-600 transition-colors ${darkMode ? 'bg-slate-700 border-slate-600' : 'bg-slate-700 border-slate-500'}`}
+                            className={`min-w-[140px] sm:min-w-[180px] p-2 text-left font-semibold sticky-col shadow-right left-10 z-20 border-r border-b cursor-pointer hover:bg-slate-600 transition-colors ${darkMode ? 'bg-slate-200 border-slate-400' : 'bg-slate-700 border-slate-500'}`}
                             onClick={() => handleSort('nombre')}
                           >
                             <div className="flex items-center gap-1">

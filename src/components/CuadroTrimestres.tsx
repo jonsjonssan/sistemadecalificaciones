@@ -269,14 +269,14 @@ const CuadroTrimestres = memo(function CuadroTrimestres({ gradoId, gradoNumero, 
             <div className="overflow-x-auto">
               <table className="w-full text-xs sm:text-sm font-medium border-collapse">
                 <thead>
-                  <tr className={darkMode ? "bg-gradient-to-r from-emerald-700 to-emerald-600 text-white" : "bg-gradient-to-r from-emerald-600 to-emerald-500 text-white"}>
-                    <th className="w-10 p-2 text-center font-semibold border-r border-b border-emerald-500">N°</th>
-                    <th className="min-w-[180px] p-2 text-left font-semibold border-r border-b border-emerald-500">Nombre de estudiantes</th>
-                    <th className="p-2 text-center font-semibold border-r border-b border-emerald-500">1° T</th>
-                    <th className="p-2 text-center font-semibold border-r border-b border-emerald-500">2° T</th>
-                    <th className="p-2 text-center font-semibold border-r border-b border-emerald-500">3° T</th>
-                    <th className="p-2 text-center font-semibold border-r border-b border-emerald-500">PF</th>
-                    <th className="p-2 text-center font-semibold border-b border-emerald-500">RECUPERACIÓN ANUAL</th>
+                  <tr className={darkMode ? "bg-gradient-to-r from-emerald-200 to-emerald-300 text-white" : "bg-gradient-to-r from-emerald-600 to-emerald-500 text-white"}>
+                    <th className="w-10 p-2 text-center font-semibold border-r border-b border-emerald-300">N°</th>
+                    <th className="min-w-[180px] p-2 text-left font-semibold border-r border-b border-emerald-300">Nombre de estudiantes</th>
+                    <th className="p-2 text-center font-semibold border-r border-b border-emerald-300">1° T</th>
+                    <th className="p-2 text-center font-semibold border-r border-b border-emerald-300">2° T</th>
+                    <th className="p-2 text-center font-semibold border-r border-b border-emerald-300">3° T</th>
+                    <th className="p-2 text-center font-semibold border-r border-b border-emerald-300">PF</th>
+                    <th className="p-2 text-center font-semibold border-b border-emerald-300">RECUPERACIÓN ANUAL</th>
                   </tr>
                 </thead>
                 <tbody>

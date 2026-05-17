@@ -434,11 +434,11 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
               <div className="overflow-x-auto">
                 <table className="w-full text-xs sm:text-sm font-medium border-collapse">
                   <thead>
-                    <tr className={darkMode ? "bg-gradient-to-r from-slate-700 to-slate-600 text-white" : "bg-gradient-to-r from-slate-700 to-slate-600 text-white"}>
-                      <th className="w-10 p-2 text-center font-semibold sticky left-0 z-20 border-r border-b bg-slate-700 border-slate-500">N°</th>
-                      <th className="min-w-[140px] sm:min-w-[160px] p-2 text-left font-semibold sticky left-10 z-20 border-r border-b bg-slate-700 border-slate-500">Estudiante</th>
+                    <tr className={darkMode ? "bg-gradient-to-r from-slate-200 to-slate-300 text-white" : "bg-gradient-to-r from-slate-700 to-slate-600 text-white"}>
+                      <th className={`w-10 p-2 text-center font-semibold sticky left-0 z-20 border-r border-b ${darkMode ? 'bg-slate-200 border-slate-400' : 'bg-slate-700 border-slate-500'}`}>N°</th>
+                      <th className={`min-w-[140px] sm:min-w-[160px] p-2 text-left font-semibold sticky left-10 z-20 border-r border-b ${darkMode ? 'bg-slate-200 border-slate-400' : 'bg-slate-700 border-slate-500'}`}>Estudiante</th>
                        {materiasFiltradas.map(mat => (
-                        <th key={mat.id} className={`p-2 text-center font-semibold border-r border-b ${darkMode ? "border-slate-600 bg-slate-700" : "border-slate-500 bg-slate-700"}`}
+                        <th key={mat.id} className={`p-2 text-center font-semibold border-r border-b ${darkMode ? "border-slate-400 bg-slate-200" : "border-slate-500 bg-slate-700"}`}
                           style={{ writingMode: "vertical-rl", minWidth: "2.5rem", maxWidth: "3rem" }}>
                           <div className="rotate-180 whitespace-nowrap text-[10px] sm:text-xs py-1">{mat.nombre}</div>
                         </th>

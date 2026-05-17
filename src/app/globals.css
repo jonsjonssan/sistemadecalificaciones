@@ -281,8 +281,8 @@
 }
 
 .dark {
-  --white: #060708;              /* fondo ≡ app bg */
-  --black: #F5F5F7;              /* texto ppal */
+  --white: #F5F5F7;              /* texto claro ≡ foreground */
+  --black: #060708;              /* fondo oscuro ≡ background */
 
   /* ── SEMANTIC (DARK) ── */
   --background:         #060708;
