@@ -608,6 +608,18 @@
   text-shadow: 0 0 1px oklch(0.64 0.17 155 / 0.25), 0 0 2px oklch(0.64 0.17 155 / 0.1);
 }
 
+/* ── LIGHT MODE: all text → negro profundo —─ */
+:root:not(.dark) .text-slate-400,
+:root:not(.dark) .text-slate-500,
+:root:not(.dark) .text-slate-600,
+:root:not(.dark) .text-slate-700,
+:root:not(.dark) .text-slate-800 {
+  color: oklch(0.15 0.02 264.542) !important;
+}
+:root:not(.dark) .text-muted-foreground {
+  color: oklch(0.2 0.02 264.542) !important;
+}
+
 @media (max-width: 480px) {
   body { font-size: 16px; }
   .mobile-header { @apply py-1.5; }

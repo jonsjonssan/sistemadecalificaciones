@@ -880,12 +880,12 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
               </div>
             ) : (
               <div className={`rounded-md border overflow-hidden table-scroll-container relative ${darkMode ? 'border-slate-700' : ''}`}>
-                  <div className={`flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 px-2 sm:px-4 py-2 sm:py-3 border-b ${darkMode ? 'bg-gradient-to-r from-slate-800 to-slate-750 border-slate-700' : 'bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200'}`}>
+                  <div className={`flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 px-2 sm:px-4 py-2 sm:py-3 border-b ${darkMode ? 'bg-gradient-to-r from-slate-800/25 to-slate-750/25 border-slate-700' : 'bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200'}`}>
                     <div className="flex items-center gap-2">
-                      <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-black' : 'text-slate-500'}`}>
+                      <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-white' : 'text-slate-500'}`}>
                         Estudiantes
                       </span>
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${darkMode ? 'bg-emerald-900/60 text-black' : 'bg-emerald-100 text-emerald-700'}`}>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${darkMode ? 'bg-emerald-900/60 text-white' : 'bg-emerald-100 text-emerald-700'}`}>
                         {activeStudents.length}
                       </span>
                     </div>
@@ -940,7 +940,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                     </div>
                   </div>
                 <Table className="text-xs sm:text-sm font-medium">
-                  <TableHeader className={darkMode ? 'bg-gradient-to-r from-slate-800 to-slate-750' : 'bg-gradient-to-r from-slate-100 to-slate-50'}>
+                  <TableHeader className={darkMode ? 'bg-gradient-to-r from-slate-800/25 to-slate-750/25' : 'bg-gradient-to-r from-slate-100 to-slate-50'}>
                     <TableRow>
                       <TableHead className="w-12 text-center sticky-col left-0 z-20 shadow-right font-bold text-xs uppercase tracking-wider">N°</TableHead>
                       <TableHead className="sticky-col left-12 z-20 shadow-right min-w-[140px] sm:min-w-[180px] font-bold text-xs uppercase tracking-wider">Estudiante</TableHead>
