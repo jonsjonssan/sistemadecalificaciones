@@ -34,7 +34,7 @@ interface EstudiantesTableProps {
 const SkeletonRows = ({ darkMode, isAdmin }: { darkMode: boolean; isAdmin: boolean }) => (
   <>
     {Array.from({ length: 5 }).map((_, idx) => (
-      <TableRow key={`skeleton-${idx}`} className={idx % 2 === 0 ? (darkMode ? 'bg-[#18181C]' : '') : (darkMode ? 'bg-slate-800/50' : 'bg-slate-50/50')}>
+      <TableRow key={`skeleton-${idx}`} className={idx % 2 === 0 ? (darkMode ? 'bg-[#121E32]' : '') : (darkMode ? 'bg-slate-800/50' : 'bg-slate-50/50')}>
         <TableCell className="text-center"><Skeleton className={`h-4 w-6 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
         <TableCell><Skeleton className={`h-4 w-48 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
         <TableCell><Skeleton className={`h-4 w-40 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
