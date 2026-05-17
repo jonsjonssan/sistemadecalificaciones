@@ -158,12 +158,12 @@ export default function BatchActions({ gradoId, materiaId, trimestre, estudiante
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline" className={`h-10 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : ''}`}>
+        <Button size="sm" variant="outline" className={`h-10 text-sm ${darkMode ? 'bg-slate-800 border-white/30 text-white hover:bg-white/10' : ''}`}>
           <Users className="h-4 w-4 mr-1" />
           Acciones por Lote
         </Button>
       </DialogTrigger>
-      <DialogContent className={`max-w-lg ${darkMode ? 'bg-[#0E1726] border-slate-700' : ''}`}>
+      <DialogContent className={`max-w-lg ${darkMode ? 'bg-card border-slate-700' : ''}`}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Users className="h-5 w-5 text-emerald-600" />
@@ -210,7 +210,7 @@ export default function BatchActions({ gradoId, materiaId, trimestre, estudiante
           <div>
             <Label className="text-sm font-medium mb-2 block">2. Seleccionar Acción</Label>
             <Select value={action} onValueChange={setAction}>
-              <SelectTrigger className={`h-10 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}>
+              <SelectTrigger className={`h-10 ${darkMode ? 'bg-card border-white/30 text-white' : ''}`}>
                 <SelectValue placeholder="Elige una acción..." />
               </SelectTrigger>
               <SelectContent>
@@ -233,7 +233,7 @@ export default function BatchActions({ gradoId, materiaId, trimestre, estudiante
                 value={value}
                 onChange={e => setValue(e.target.value)}
                 placeholder="Ej: 8.5"
-                className={`h-10 ${darkMode ? 'bg-slate-700 border-slate-600 text-emerald-200' : ''}`}
+                className={`h-10 ${darkMode ? 'bg-slate-700 border-white/30 text-emerald-200' : ''}`}
               />
             </div>
           )}

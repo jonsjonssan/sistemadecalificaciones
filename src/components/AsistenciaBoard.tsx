@@ -752,8 +752,8 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
   const tardyCount = Object.values(asistencias).filter(e => e === "tarde").length;
 
   return (
-    <Card className={`shadow-sm ${darkMode ? 'bg-[#0E1726] border-slate-700' : 'border-emerald-100'}`}>
-      <CardHeader className={`pb-3 border-b ${darkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50/50'}`}>
+    <Card className={`shadow-sm ${darkMode ? 'bg-card border-slate-700' : 'border-emerald-100'}`}>
+      <CardHeader className={`pb-3 border-b ${darkMode ? 'bg-muted border-white/20' : 'bg-slate-50/50'}`}>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex flex-col gap-1">
             <CardTitle className={`text-lg font-bold flex items-center gap-2 ${darkMode ? 'text-white' : 'text-slate-800'}`}>
@@ -792,11 +792,11 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                 <div className="text-sm font-medium">{puedeSobrescribir ? 'Ya existe asistencia para esta fecha. Puedes modificarla libremente.' : 'Ya existe un registro de asistencia para esta fecha y grado. No se puede modificar.'}</div>
               </div>
             )}
-            <div className={`flex flex-wrap items-end gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl border ${darkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50'}`}>
+            <div className={`flex flex-wrap items-end gap-2 sm:gap-3 p-2 sm:p-3 rounded-xl border ${darkMode ? 'bg-muted border-white/20' : 'bg-slate-50'}`}>
               <div className="flex-1 min-w-[150px] sm:min-w-[200px]">
-                <Label className={`text-xs sm:text-sm font-bold mb-1 block ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Grado</Label>
+                <Label className={`text-xs sm:text-sm font-bold mb-1 block ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>Grado</Label>
                 <Select value={gradoId} onValueChange={handleGradoChange}>
-                  <SelectTrigger className={`h-10 text-xs sm:text-sm font-medium ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white'}`}>
+                  <SelectTrigger className={`h-10 text-xs sm:text-sm font-medium ${darkMode ? 'bg-card border-white/30 text-white' : 'bg-white'}`}>
                     <SelectValue placeholder="Seleccione Grado" />
                   </SelectTrigger>
                   <SelectContent>
@@ -810,10 +810,10 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
               </div>
 
               <div className="min-w-[100px] sm:min-w-[120px] flex-1 sm:flex-none">
-                <Label className={`text-xs sm:text-sm font-bold mb-1 block ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Fecha</Label>
+                <Label className={`text-xs sm:text-sm font-bold mb-1 block ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>Fecha</Label>
                 <input
                   type="date"
-                  className={`flex h-10 w-full rounded-md border px-3 py-1 text-xs sm:text-sm font-medium shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 ${darkMode ? 'bg-slate-800 border-slate-600 text-white focus-visible:ring-slate-400' : 'bg-white border-slate-200 focus-visible:ring-slate-950'}`}
+                  className={`flex h-10 w-full rounded-md border px-3 py-1 text-xs sm:text-sm font-medium shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 ${darkMode ? 'bg-slate-800 border-slate-700 text-white focus-visible:ring-slate-400' : 'bg-white border-slate-200 focus-visible:ring-slate-950'}`}
                   value={fecha}
                   onChange={e => setFecha(e.target.value)}
                   max={new Date().toISOString().split('T')[0]}
@@ -865,7 +865,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                   </TableHeader>
                   <TableBody>
                     {Array.from({ length: 5 }).map((_, idx) => (
-                      <TableRow key={`skeleton-${idx}`} className={idx % 2 === 0 ? (darkMode ? 'bg-[#0E1726]' : '') : (darkMode ? 'bg-[#1A2331]' : 'bg-slate-50/50')}>
+                      <TableRow key={`skeleton-${idx}`} className={idx % 2 === 0 ? (darkMode ? 'bg-card' : '') : (darkMode ? 'bg-muted' : 'bg-slate-50/50')}>
                         <TableCell className="text-center"><Skeleton className={`h-4 w-6 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
                         <TableCell><Skeleton className={`h-4 w-40 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
                         <TableCell className="text-center"><Skeleton className={`h-8 w-32 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
@@ -875,14 +875,14 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                 </Table>
               </div>
             ) : activeStudents.length === 0 ? (
-              <div className={`py-12 text-center ${darkMode ? 'text-slate-400 bg-slate-800/50' : 'text-slate-500 bg-slate-50'} rounded-lg border border-dashed ${darkMode ? 'border-slate-700' : 'border-slate-100'}`}>
+              <div className={`py-12 text-center ${darkMode ? 'text-slate-300 bg-slate-800/50' : 'text-slate-500 bg-slate-50'} rounded-lg border border-dashed ${darkMode ? 'border-slate-700' : 'border-slate-100'}`}>
                 Seleccione un grado para tomar asistencia.
               </div>
             ) : (
               <div className={`rounded-md border overflow-hidden table-scroll-container relative ${darkMode ? 'border-slate-700' : ''}`}>
                   <div className={`flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 px-2 sm:px-4 py-2 sm:py-3 border-b ${darkMode ? 'bg-gradient-to-r from-slate-800 to-slate-750 border-slate-700' : 'bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200'}`}>
                     <div className="flex items-center gap-2">
-                      <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                      <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>
                         Estudiantes
                       </span>
                       <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${darkMode ? 'bg-emerald-900/60 text-emerald-400' : 'bg-emerald-100 text-emerald-700'}`}>
@@ -921,7 +921,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                         size="sm"
                         variant="outline"
                         disabled={asistenciaBloqueada}
-                        className={`flex-1 sm:flex-none h-9 text-xs font-semibold px-2 sm:px-4 ${darkMode ? 'border-slate-600 text-slate-400 hover:bg-slate-800' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                        className={`flex-1 sm:flex-none h-9 text-xs font-semibold px-2 sm:px-4 ${darkMode ? 'border-white/30 text-white hover:bg-slate-800' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}
                         onClick={() => {
                           if (asistenciaBloqueada) return;
                           setAsistencias({});
@@ -951,8 +951,8 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                     {activeStudents.map((est, idx) => {
                       const estado = asistencias[est.id];
                       const evenRow = idx % 2 === 0;
-                      const rowBg = evenRow ? (darkMode ? 'bg-[#0E1726]' : '') : (darkMode ? 'bg-[#1A2331]' : 'bg-slate-50/50');
-                      const stickyBg = evenRow ? (darkMode ? 'bg-[#0E1726]' : 'bg-white') : (darkMode ? 'bg-[#1A2331]' : 'bg-slate-50/50');
+                      const rowBg = evenRow ? (darkMode ? 'bg-card' : '') : (darkMode ? 'bg-muted' : 'bg-slate-50/50');
+                      const stickyBg = evenRow ? (darkMode ? 'bg-card' : 'bg-white') : (darkMode ? 'bg-muted' : 'bg-slate-50/50');
 
                       const getEstadoBadgeClass = (e: string) => {
                         if (!e) return darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-400';
@@ -999,7 +999,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                           </TableCell>
                           <TableCell className="text-center">
                             <Select value={estado || ""} onValueChange={(val) => handleEstadoChange(est.id, val)} disabled={asistenciaBloqueada}>
-                              <SelectTrigger className={`h-10 sm:h-9 w-full min-w-[130px] sm:w-44 text-xs sm:text-sm font-medium ${getEstadoBadgeClass(estado || "")} ${darkMode ? 'bg-slate-800 border-slate-600' : 'bg-white border-slate-200'}`}>
+                              <SelectTrigger className={`h-10 sm:h-9 w-full min-w-[130px] sm:w-44 text-xs sm:text-sm font-medium ${getEstadoBadgeClass(estado || "")} ${darkMode ? 'bg-card border-white/30' : 'bg-white border-slate-200'}`}>
                                 <SelectValue placeholder={asistenciaBloqueada ? "Bloqueado" : "Seleccionar..."} />
                               </SelectTrigger>
                               <SelectContent>
@@ -1043,7 +1043,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                 <div className="flex items-center gap-2">
-                  <Label className={`text-xs sm:text-sm font-bold ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Rango:</Label>
+                  <Label className={`text-xs sm:text-sm font-bold ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>Rango:</Label>
                   <div className={`flex p-0.5 rounded-md ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>
                     <Button
                       size="sm" variant="ghost"
@@ -1066,7 +1066,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                     type="month"
                     value={selectedMonth}
                     onChange={(e) => setSelectedMonth(e.target.value)}
-                    className={`flex h-7 rounded-md border px-2 text-xs font-medium ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-slate-200'}`}
+                    className={`flex h-7 rounded-md border px-2 text-xs font-medium ${darkMode ? 'bg-card border-white/30 text-white' : 'bg-white border-slate-200'}`}
                   />
                 )}
                 {summaryRange === "all" && (
@@ -1076,7 +1076,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                     onChange={(e) => setSelectedYear(e.target.value)}
                     min="2020"
                     max="2030"
-                    className={`flex h-7 rounded-md border px-2 text-xs font-medium w-20 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-slate-200'}`}
+                    className={`flex h-7 rounded-md border px-2 text-xs font-medium w-20 ${darkMode ? 'bg-card border-white/30 text-white' : 'bg-white border-slate-200'}`}
                   />
                 )}
               </div>
@@ -1109,7 +1109,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                 <TableBody>
                   {loading ? (
                     Array.from({ length: 5 }).map((_, idx) => (
-                      <TableRow key={`skeleton-${idx}`} className={idx % 2 === 0 ? (darkMode ? 'bg-[#0E1726]' : '') : (darkMode ? 'bg-[#1A2331]' : 'bg-slate-50/50')}>
+                      <TableRow key={`skeleton-${idx}`} className={idx % 2 === 0 ? (darkMode ? 'bg-card' : '') : (darkMode ? 'bg-muted' : 'bg-slate-50/50')}>
                         <TableCell className="text-center"><Skeleton className={`h-4 w-6 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
                         <TableCell><Skeleton className={`h-4 w-40 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
                         <TableCell className="text-center"><Skeleton className={`h-4 w-8 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
@@ -1162,7 +1162,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                               </TableCell>
                             </TableRow>
                             {isExpanded && (
-                              <TableRow className={darkMode ? 'bg-[#1A2331]' : 'bg-slate-50'}>
+                              <TableRow className={darkMode ? 'bg-muted' : 'bg-slate-50'}>
                                 <TableCell colSpan={7} className="py-4 px-4">
                                   <div className="space-y-4">
                                     {r.fechasPresente && r.fechasPresente.length > 0 && (
@@ -1309,7 +1309,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
       </CardContent>
 
       <Dialog open={bloqueoDialogOpen} onOpenChange={setBloqueoDialogOpen}>
-        <DialogContent className={`max-w-sm ${darkMode ? 'bg-[#0E1726] border-slate-700' : ''}`}>
+        <DialogContent className={`max-w-sm ${darkMode ? 'bg-card border-slate-700' : ''}`}>
           <DialogHeader>
             <DialogTitle className={`flex items-center gap-2 ${darkMode ? 'text-white' : ''}`}>
               <Lock className={`h-5 w-5 ${puedeSobrescribir ? 'text-blue-500' : 'text-amber-500'}`} />
@@ -1328,7 +1328,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
-            <Button size="sm" variant="outline" onClick={() => { setBloqueoDialogOpen(false); if (!puedeSobrescribir) setAsistenciaBloqueada(true); }} className={darkMode ? 'border-slate-600 text-slate-400' : ''}>
+            <Button size="sm" variant="outline" onClick={() => { setBloqueoDialogOpen(false); if (!puedeSobrescribir) setAsistenciaBloqueada(true); }} className={darkMode ? 'border-white/30 text-white' : ''}>
               {puedeSobrescribir ? 'Cancelar' : 'Entendido'}
             </Button>
             {puedeSobrescribir && (

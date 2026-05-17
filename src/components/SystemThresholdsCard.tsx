@@ -77,8 +77,8 @@ export function SystemThresholdsCard({
   const greenWidth = rangeTotal > 0 ? Math.max(0, Math.min(100, ((max - ua) / rangeTotal) * 100)) : 0;
 
   const textMuted = darkMode ? "text-slate-500" : "text-slate-400";
-  const inputBase = `text-center border-0 border-b rounded-none px-0 focus-visible:ring-0 focus-visible:border-b-2 transition-colors ${darkMode ? "bg-transparent border-slate-600 text-white focus-visible:border-slate-400" : "bg-transparent border-slate-300 text-slate-900 focus-visible:border-slate-500"}`;
-  const inputSmall = `text-center border-0 border-b rounded-none px-0 focus-visible:ring-0 focus-visible:border-b-2 transition-colors text-sm ${darkMode ? "bg-transparent border-slate-600 text-white focus-visible:border-slate-400" : "bg-transparent border-slate-300 text-slate-900 focus-visible:border-slate-500"}`;
+  const inputBase = `text-center border-0 border-b rounded-none px-0 focus-visible:ring-0 focus-visible:border-b-2 transition-colors ${darkMode ? "bg-transparent border-white/30 text-white focus-visible:border-slate-400" : "bg-transparent border-slate-300 text-slate-900 focus-visible:border-slate-500"}`;
+  const inputSmall = `text-center border-0 border-b rounded-none px-0 focus-visible:ring-0 focus-visible:border-b-2 transition-colors text-sm ${darkMode ? "bg-transparent border-white/30 text-white focus-visible:border-slate-400" : "bg-transparent border-slate-300 text-slate-900 focus-visible:border-slate-500"}`;
 
   const commitMin = (val: string) => {
     if (val === "" || val === ".") { setRawMin(String(min)); return; }
@@ -141,7 +141,7 @@ export function SystemThresholdsCard({
   };
 
   return (
-    <Card className={`shadow-sm ${darkMode ? "bg-[#0E1726] border-slate-700" : ""}`}>
+    <Card className={`shadow-sm ${darkMode ? "bg-card border-slate-700" : ""}`}>
       <CardHeader className={`py-3 px-4 ${darkMode ? "border-slate-700" : ""}`}>
         <CardTitle className="text-sm sm:text-base">Umbrales del Sistema</CardTitle>
         <CardDescription className={`text-xs ${darkMode ? "text-slate-400" : ""}`}>
@@ -200,11 +200,11 @@ export function SystemThresholdsCard({
         {/* ===== RANGOS EDITABLES ===== */}
         <div className="space-y-4">
           {/* REPROBADO */}
-          <div className={`rounded-xl border p-3 ${darkMode ? "bg-slate-800/60 border-slate-700" : "bg-slate-50 border-slate-200"} ${!umbrales.usarIntervaloReprobado ? "opacity-50" : ""}`}>
+          <div className={`rounded-xl border p-3 ${darkMode ? "bg-muted border-white/20" : "bg-slate-50 border-slate-200"} ${!umbrales.usarIntervaloReprobado ? "opacity-50" : ""}`}>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-[#f43f5e]" />
-                <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-400" : "text-slate-700"}`}>Reprobado</span>
+                <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-200" : "text-slate-700"}`}>Reprobado</span>
               </div>
               <label className="flex items-center gap-1 cursor-pointer text-[10px]">
                 <input
@@ -250,11 +250,11 @@ export function SystemThresholdsCard({
           </div>
 
           {/* CONDICIONADO */}
-          <div className={`rounded-xl border p-3 ${darkMode ? "bg-slate-800/60 border-slate-700" : "bg-slate-50 border-slate-200"} ${!umbrales.usarIntervaloCondicionado ? "opacity-50" : ""}`}>
+          <div className={`rounded-xl border p-3 ${darkMode ? "bg-muted border-white/20" : "bg-slate-50 border-slate-200"} ${!umbrales.usarIntervaloCondicionado ? "opacity-50" : ""}`}>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-[#f59e0b]" />
-                <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-400" : "text-slate-700"}`}>Condicionado</span>
+                <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-200" : "text-slate-700"}`}>Condicionado</span>
               </div>
               <label className="flex items-center gap-1 cursor-pointer text-[10px]">
                 <input
@@ -300,11 +300,11 @@ export function SystemThresholdsCard({
           </div>
 
           {/* APROBADO */}
-          <div className={`rounded-xl border p-3 ${darkMode ? "bg-slate-800/60 border-slate-700" : "bg-slate-50 border-slate-200"} ${!umbrales.usarIntervaloAprobado ? "opacity-50" : ""}`}>
+          <div className={`rounded-xl border p-3 ${darkMode ? "bg-muted border-white/20" : "bg-slate-50 border-slate-200"} ${!umbrales.usarIntervaloAprobado ? "opacity-50" : ""}`}>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-[#10b981]" />
-                <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-400" : "text-slate-700"}`}>Aprobado</span>
+                <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-200" : "text-slate-700"}`}>Aprobado</span>
               </div>
               <label className="flex items-center gap-1 cursor-pointer text-[10px]">
                 <input
@@ -351,7 +351,7 @@ export function SystemThresholdsCard({
         </div>
 
         {/* ===== UMBRAL RECUPERACIÓN ===== */}
-        <div className={`rounded-xl border p-3 text-center ${darkMode ? "bg-slate-800/60 border-slate-700" : "bg-slate-50 border-slate-200"}`}>
+        <div className={`rounded-xl border p-3 text-center ${darkMode ? "bg-muted border-white/20" : "bg-slate-50 border-slate-200"}`}>
           <div className={`text-[10px] font-semibold uppercase tracking-wider ${textMuted}`}>UMBRAL RECUPERACIÓN (RECUPERACIÓN ANUAL)</div>
           <div className="flex items-center justify-center gap-1 mt-2">
             <span className={`text-sm ${darkMode ? "text-slate-500" : "text-slate-400"}`}>≥</span>
@@ -369,10 +369,10 @@ export function SystemThresholdsCard({
         </div>
 
         {/* ===== HISTORIAL ===== */}
-        <div className={`rounded-xl border p-3 ${darkMode ? "bg-slate-800/60 border-slate-700" : "bg-slate-50 border-slate-200"}`}>
+        <div className={`rounded-xl border p-3 ${darkMode ? "bg-muted border-white/20" : "bg-slate-50 border-slate-200"}`}>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <Label className={`text-xs font-semibold ${darkMode ? "text-slate-400" : "text-slate-700"}`}>
+              <Label className={`text-xs font-semibold ${darkMode ? "text-slate-200" : "text-slate-700"}`}>
                 Límite Historial por Celda
               </Label>
               <p className={`text-[10px] ${darkMode ? "text-slate-500" : "text-slate-500"}`}>

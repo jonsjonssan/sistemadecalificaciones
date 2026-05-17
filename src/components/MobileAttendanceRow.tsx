@@ -65,7 +65,7 @@ export default function MobileAttendanceRow({ estudiante, estado, onEstadoChange
       case "justificada":
         return { icon: FileQuestion, color: "text-blue-600", bg: darkMode ? "bg-blue-900/30 border-blue-800" : "bg-blue-50 border-blue-200", label: "Justificada" };
       default:
-        return { icon: Check, color: "text-slate-600", bg: darkMode ? "bg-slate-800 border-slate-700" : "bg-slate-50 border-slate-200", label: "Sin marcar" };
+        return { icon: Check, color: "text-slate-600", bg: darkMode ? "bg-card border-white/30" : "bg-slate-50 border-slate-200", label: "Sin marcar" };
     }
   };
 
@@ -82,7 +82,7 @@ export default function MobileAttendanceRow({ estudiante, estado, onEstadoChange
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Badge variant="outline" className={`text-xs w-8 h-6 flex items-center justify-center ${darkMode ? 'border-slate-600 text-slate-400' : 'border-slate-300 text-slate-500'}`}>
+          <Badge variant="outline" className={`text-xs w-8 h-6 flex items-center justify-center ${darkMode ? 'border-white/30 text-white' : 'border-slate-300 text-slate-500'}`}>
             {estudiante.numero}
           </Badge>
           <div>

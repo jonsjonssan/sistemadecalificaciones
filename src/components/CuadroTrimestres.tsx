@@ -227,13 +227,13 @@ const CuadroTrimestres = memo(function CuadroTrimestres({ gradoId, gradoNumero, 
   }
 
   return (
-    <Card className={`shadow-xl border overflow-hidden mt-4 ${darkMode ? "bg-[#0E1726] border-slate-700 text-white" : "bg-white border-slate-200"}`}>
+    <Card className={`shadow-xl border overflow-hidden mt-4 ${darkMode ? "bg-card border-slate-700 text-white" : "bg-white border-slate-200"}`}>
       <CardContent className="p-3">
         <div className="flex flex-wrap items-end gap-3 mb-3">
           <div className="flex-1 min-w-[180px]">
-            <Label className={`text-sm font-medium mb-1 block ${darkMode ? "text-slate-400" : ""}`}>Asignatura para cuadro de trimestres</Label>
+            <Label className={`text-sm font-medium mb-1 block ${darkMode ? "text-slate-200" : ""}`}>Asignatura para cuadro de trimestres</Label>
             <Select value={asignaturaCuadroId} onValueChange={setAsignaturaCuadroId}>
-              <SelectTrigger className={`h-11 sm:h-12 text-sm ${darkMode ? "bg-slate-800 border-slate-600 text-white" : ""}`}>
+              <SelectTrigger className={`h-11 sm:h-12 text-sm ${darkMode ? "bg-card border-white/30 text-white" : ""}`}>
                 <SelectValue placeholder="Seleccionar asignatura" />
               </SelectTrigger>
               <SelectContent>
@@ -245,10 +245,10 @@ const CuadroTrimestres = memo(function CuadroTrimestres({ gradoId, gradoNumero, 
           </div>
           {asignaturaCuadroId && (
             <>
-              <Button size="sm" variant="outline" onClick={exportarCuadroCSV} className={`h-11 sm:h-12 text-sm ${darkMode ? "bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700" : ""}`}>
+              <Button size="sm" variant="outline" onClick={exportarCuadroCSV} className={`h-11 sm:h-12 text-sm ${darkMode ? "bg-slate-800 border-white/30 text-white hover:bg-white/10" : ""}`}>
                 <Download className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Excel (CSV)</span>
               </Button>
-              <Button size="sm" variant="outline" onClick={exportarCuadroPDF} className={`h-11 sm:h-12 text-sm ${darkMode ? "bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700" : ""}`}>
+              <Button size="sm" variant="outline" onClick={exportarCuadroPDF} className={`h-11 sm:h-12 text-sm ${darkMode ? "bg-slate-800 border-white/30 text-white hover:bg-white/10" : ""}`}>
                 <FileText className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">PDF</span>
               </Button>
             </>
@@ -282,8 +282,8 @@ const CuadroTrimestres = memo(function CuadroTrimestres({ gradoId, gradoNumero, 
                 <tbody>
                   {datosCuadroTrimestres.map((d, idx) => {
                     const rowBg = idx % 2 === 0
-                      ? (darkMode ? "bg-[#0E1726]" : "bg-white")
-                      : (darkMode ? "bg-[#1A2331]" : "bg-slate-50/50");
+                      ? (darkMode ? "bg-card" : "bg-white")
+                      : (darkMode ? "bg-muted" : "bg-slate-50/50");
                     const cellBorder = darkMode ? "border-slate-700" : "border-slate-200";
                     const colorNota = (n: number | null) => {
                       if (n === null) return darkMode ? "text-slate-500" : "text-slate-400";
@@ -326,7 +326,7 @@ const CuadroTrimestres = memo(function CuadroTrimestres({ gradoId, gradoNumero, 
                             }}
                             className={`w-16 text-center text-xs sm:text-sm rounded border px-1 py-0.5 outline-none focus:ring-2 focus:ring-emerald-500 ${
                               darkMode
-                                ? "bg-slate-700 border-slate-600 text-emerald-200 placeholder-slate-500"
+                                ? "bg-slate-700 border-white/30 text-emerald-200 placeholder-slate-500"
                                 : "bg-white border-slate-300 text-slate-800 placeholder-slate-400"
                             }`}
                             placeholder="—"

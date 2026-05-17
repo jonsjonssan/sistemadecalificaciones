@@ -262,7 +262,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
 
   if (!grados || grados.length === 0) {
     return (
-      <Card className={`shadow-sm border ${darkMode ? "bg-[#0E1726] border-slate-700 text-white" : "bg-white border-slate-200"}`}>
+      <Card className={`shadow-sm border ${darkMode ? "bg-card border-slate-700 text-white" : "bg-white border-slate-200"}`}>
         <CardContent className="p-6 text-center text-slate-500">No hay grados disponibles.</CardContent>
       </Card>
     );
@@ -271,10 +271,10 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
   return (
     <div className="space-y-3">
       {/* Leyenda normativa */}
-      <Card className={`shadow-sm border ${darkMode ? "bg-[#0E1726] border-slate-700 text-white" : "bg-white border-slate-200"}`}>
+      <Card className={`shadow-sm border ${darkMode ? "bg-card border-slate-700 text-white" : "bg-white border-slate-200"}`}>
         <CardContent className="p-3">
           <div className="flex flex-wrap items-center gap-3 text-xs">
-            <span className="font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 text-[10px]">Marco Normativo</span>
+            <span className="font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-200 text-[10px]">Marco Normativo</span>
             <div className="flex items-center gap-1.5">
               <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold ${getRangoColor("reprobado", darkMode)}`}>
                 <AlertTriangle className="h-3 w-3" /> 0 – {(umbralCondicionado - 0.01).toFixed(2)}
@@ -303,13 +303,13 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
       </Card>
 
       {/* Selectores */}
-      <Card className={`shadow-sm border ${darkMode ? "bg-[#0E1726] border-slate-700" : "bg-white border-slate-200"}`}>
+      <Card className={`shadow-sm border ${darkMode ? "bg-card border-slate-700" : "bg-white border-slate-200"}`}>
         <CardContent className="p-2 sm:p-3">
           <div className="flex flex-wrap items-end gap-2 sm:gap-3">
             <div className="flex-1 min-w-[140px]">
-              <Label className={`text-sm font-medium mb-1 block ${darkMode ? "text-slate-400" : ""}`}>Grado</Label>
+              <Label className={`text-sm font-medium mb-1 block ${darkMode ? "text-slate-200" : ""}`}>Grado</Label>
               <Select value={gradoId} onValueChange={handleGradoChange}>
-                <SelectTrigger className={`h-11 sm:h-12 text-sm ${darkMode ? "bg-slate-800 border-slate-600 text-white" : ""}`}>
+                <SelectTrigger className={`h-11 sm:h-12 text-sm ${darkMode ? "bg-card border-white/30 text-white" : ""}`}>
                   <SelectValue placeholder="Seleccionar grado" />
                 </SelectTrigger>
                 <SelectContent>
@@ -320,9 +320,9 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
               </Select>
             </div>
             <div className="w-20 sm:w-28">
-              <Label className={`text-sm font-medium mb-1 block ${darkMode ? "text-slate-400" : ""}`}>Trimestre</Label>
+              <Label className={`text-sm font-medium mb-1 block ${darkMode ? "text-slate-200" : ""}`}>Trimestre</Label>
               <Select value={trimestre} onValueChange={setTrimestre}>
-                <SelectTrigger className={`h-11 sm:h-12 text-sm ${darkMode ? "bg-slate-800 border-slate-600 text-white" : ""}`}>
+                <SelectTrigger className={`h-11 sm:h-12 text-sm ${darkMode ? "bg-card border-white/30 text-white" : ""}`}>
                   <SelectValue placeholder="Seleccionar trimestre" />
                 </SelectTrigger>
                 <SelectContent>
@@ -334,10 +334,10 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
             </div>
             {gradoId && (
               <>
-                <Button size="sm" variant="outline" onClick={exportarCSV} className={`h-11 sm:h-12 text-sm ${darkMode ? "bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700" : ""}`}>
+                <Button size="sm" variant="outline" onClick={exportarCSV} className={`h-11 sm:h-12 text-sm ${darkMode ? "bg-slate-800 border-white/30 text-white hover:bg-white/10" : ""}`}>
                   <Download className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Excel (CSV)</span>
                 </Button>
-                <Button size="sm" variant="outline" onClick={exportarPDF} className={`h-11 sm:h-12 text-sm ${darkMode ? "bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700" : ""}`}>
+                <Button size="sm" variant="outline" onClick={exportarPDF} className={`h-11 sm:h-12 text-sm ${darkMode ? "bg-slate-800 border-white/30 text-white hover:bg-white/10" : ""}`}>
                   <FileText className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">PDF</span>
                 </Button>
               </>
@@ -363,7 +363,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
                     className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium transition-all border ${
                       activa
                         ? (darkMode ? "bg-emerald-900/40 border-emerald-600 text-emerald-400" : "bg-emerald-50 border-emerald-300 text-emerald-700")
-                        : (darkMode ? "bg-slate-800 border-slate-600 text-slate-500 line-through opacity-60" : "bg-slate-100 border-slate-300 text-slate-400 line-through opacity-60")
+                        : (darkMode ? "bg-muted border-white/20 text-slate-500 line-through opacity-60" : "bg-slate-100 border-slate-300 text-slate-400 line-through opacity-60")
                     }`}
                   >
                     {activa ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
@@ -378,11 +378,11 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
 
       {/* Contenido */}
       {!gradoId ? (
-        <Card className={`shadow-sm border ${darkMode ? "bg-[#0E1726] border-slate-700 text-white" : "bg-white border-slate-200"}`}>
+        <Card className={`shadow-sm border ${darkMode ? "bg-card border-slate-700 text-white" : "bg-white border-slate-200"}`}>
           <CardContent className="p-6 text-center text-slate-500">Selecciona un grado y trimestre para ver el reporte.</CardContent>
         </Card>
       ) : loading ? (
-        <Card className={`shadow-sm border ${darkMode ? "bg-[#0E1726] border-slate-700" : "bg-white border-slate-200"}`}>
+        <Card className={`shadow-sm border ${darkMode ? "bg-card border-slate-700" : "bg-white border-slate-200"}`}>
           <CardContent className="p-3">
             <div className="space-y-2">
               <Skeleton className={`h-4 w-48 ${darkMode ? "bg-slate-700" : "bg-slate-200"}`} />
@@ -393,7 +393,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
           </CardContent>
         </Card>
       ) : error ? (
-        <Card className={`shadow-sm border ${darkMode ? "bg-[#0E1726] border-slate-700" : "bg-white border-slate-200"}`}>
+        <Card className={`shadow-sm border ${darkMode ? "bg-card border-slate-700" : "bg-white border-slate-200"}`}>
           <CardContent className="p-4 text-center text-red-500">{error}</CardContent>
         </Card>
       ) : (
@@ -402,7 +402,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
           <div className={`flex flex-wrap gap-3 px-4 py-2.5 rounded-lg border text-sm ${
             darkMode ? "bg-slate-800/80 border-slate-700 text-slate-400" : "bg-white border-slate-200 text-slate-600"
           }`}>
-            <span className="font-medium text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider">Resumen</span>
+            <span className="font-medium text-slate-500 dark:text-slate-200 text-xs uppercase tracking-wider">Resumen</span>
             <div className="flex items-center gap-1.5">
               <span className="inline-block w-2 h-2 rounded-full bg-emerald-500" />
               <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">{conteo.aprobado}</span>
@@ -429,7 +429,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
           </div>
 
           {/* Tabla */}
-          <Card className={`shadow-xl border overflow-hidden ${darkMode ? "bg-[#0E1726] border-slate-700 text-white" : "bg-white border-slate-200"}`}>
+          <Card className={`shadow-xl border overflow-hidden ${darkMode ? "bg-card border-slate-700 text-white" : "bg-white border-slate-200"}`}>
             <CardContent className="p-0">
               <div className="overflow-x-auto">
                 <table className="w-full text-xs sm:text-sm font-medium border-collapse">
@@ -448,8 +448,8 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
                   <tbody>
                     {estudiantes.map((est, idx) => {
                       const rowBg = idx % 2 === 0
-                        ? (darkMode ? "bg-[#0E1726]" : "bg-white")
-                        : (darkMode ? "bg-[#1A2331]" : "bg-slate-50/50");
+                        ? (darkMode ? "bg-card" : "bg-white")
+                        : (darkMode ? "bg-muted" : "bg-slate-50/50");
                       const cellBorder = darkMode ? "border-slate-700" : "border-slate-200";
 
                       return (
@@ -486,7 +486,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
                   const promedio = notas.length > 0 ? notas.reduce((a, b) => a + b, 0) / notas.length : null;
                   const rango = getRangoNota(promedio, umbralCondicionado, umbralAprobado);
                   return (
-                    <div key={mat.id} className={`flex items-center gap-2 px-3 py-2 rounded-lg ${darkMode ? "bg-slate-700/50 border border-slate-600" : "bg-slate-100 border border-slate-200"}`}>
+                    <div key={mat.id} className={`flex items-center gap-2 px-3 py-2 rounded-lg ${darkMode ? "bg-muted border border-white/20" : "bg-slate-100 border border-slate-200"}`}>
                       <span className={`text-xs font-medium ${darkMode ? "text-slate-400" : "text-slate-600"}`}>
                         {mat.nombre}
                       </span>

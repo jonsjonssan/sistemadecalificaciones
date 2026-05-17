@@ -34,7 +34,7 @@ interface EstudiantesTableProps {
 const SkeletonRows = ({ darkMode, isAdmin }: { darkMode: boolean; isAdmin: boolean }) => (
   <>
     {Array.from({ length: 5 }).map((_, idx) => (
-      <TableRow key={`skeleton-${idx}`} className={idx % 2 === 0 ? (darkMode ? 'bg-[#0E1726]' : '') : (darkMode ? 'bg-[#1A2331]' : 'bg-slate-50/50')}>
+      <TableRow key={`skeleton-${idx}`} className={idx % 2 === 0 ? (darkMode ? 'bg-card' : '') : (darkMode ? 'bg-muted' : 'bg-slate-50/50')}>
         <TableCell className="text-center"><Skeleton className={`h-4 w-6 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
         <TableCell><Skeleton className={`h-4 w-48 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
         <TableCell><Skeleton className={`h-4 w-40 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
@@ -111,9 +111,9 @@ export function EstudiantesTable({ estudiantes, darkMode, isAdmin, loading = fal
                 <TableRow key={est.id} className={darkMode ? 'border-slate-700' : ''}>
                   <TableCell className={`text-center font-medium ${darkMode ? 'text-white' : ''}`}>{est.numero}</TableCell>
                   <TableCell className={`font-medium ${darkMode ? 'text-white' : ''} break-words`}>{est.nombre}</TableCell>
-                  <TableCell className={`hidden sm:table-cell ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{est.email || "—"}</TableCell>
+                  <TableCell className={`hidden sm:table-cell ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>{est.email || "—"}</TableCell>
                   <TableCell className="text-center">
-                    <Badge variant={est.activo ? "default" : "secondary"} className={`text-xs sm:text-sm font-medium h-5 ${est.activo ? (darkMode ? 'bg-emerald-600' : '') : ''}`}>
+<Badge variant={est.activo ? "default" : "secondary"} className={`text-xs sm:text-sm font-medium h-5 ${est.activo ? (darkMode ? 'bg-emerald-600 text-white' : '') : ''}`}>
                       {est.activo ? "Activo" : "Inactivo"}
                     </Badge>
                   </TableCell>
@@ -219,7 +219,7 @@ function SortableEstudianteRow({ est, idx, total, darkMode, onMoveUp, onMoveDown
             value={editNombre}
             onChange={e => setEditNombre(e.target.value)}
             placeholder="Nombre completo"
-            className={`h-8 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}
+            className={`h-8 text-sm ${darkMode ? 'bg-card border-white/30 text-white' : ''}`}
           />
         </TableCell>
         <TableCell>
@@ -228,11 +228,11 @@ function SortableEstudianteRow({ est, idx, total, darkMode, onMoveUp, onMoveDown
             onChange={e => setEditEmail(e.target.value)}
             placeholder="correo@ejemplo.com"
             type="email"
-            className={`h-8 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}
+            className={`h-8 text-sm ${darkMode ? 'bg-card border-white/30 text-white' : ''}`}
           />
         </TableCell>
         <TableCell className="text-center">
-          <Badge variant="default" className={`text-xs sm:text-sm font-medium h-5 ${darkMode ? 'bg-emerald-600' : ''}`}>
+          <Badge variant="default" className={`text-xs sm:text-sm font-medium h-5 ${darkMode ? 'bg-emerald-600 text-white' : ''}`}>
             Activo
           </Badge>
         </TableCell>
@@ -277,10 +277,10 @@ function SortableEstudianteRow({ est, idx, total, darkMode, onMoveUp, onMoveDown
       </TableCell>
       <TableCell className="text-center">
         <div className="flex items-center justify-center gap-1">
-          <Button size="sm" variant="ghost" aria-label="Mover arriba" className={`h-6 w-6 p-0 ${idx === 0 ? 'opacity-30 cursor-not-allowed' : ''} ${darkMode ? 'text-slate-400 hover:text-emerald-400' : 'text-slate-500 hover:text-emerald-600'}`} onClick={onMoveUp} disabled={idx === 0}>
+          <Button size="sm" variant="ghost" aria-label="Mover arriba" className={`h-6 w-6 p-0 ${idx === 0 ? 'opacity-30 cursor-not-allowed' : ''} ${darkMode ? 'text-slate-300 hover:text-emerald-400' : 'text-slate-500 hover:text-emerald-600'}`} onClick={onMoveUp} disabled={idx === 0}>
             <ChevronUp className="h-4 w-4" />
           </Button>
-          <Button size="sm" variant="ghost" aria-label="Mover abajo" className={`h-6 w-6 p-0 ${idx === total - 1 ? 'opacity-30 cursor-not-allowed' : ''} ${darkMode ? 'text-slate-400 hover:text-emerald-400' : 'text-slate-500 hover:text-emerald-600'}`} onClick={onMoveDown} disabled={idx === total - 1}>
+          <Button size="sm" variant="ghost" aria-label="Mover abajo" className={`h-6 w-6 p-0 ${idx === total - 1 ? 'opacity-30 cursor-not-allowed' : ''} ${darkMode ? 'text-slate-300 hover:text-emerald-400' : 'text-slate-500 hover:text-emerald-600'}`} onClick={onMoveDown} disabled={idx === total - 1}>
             <ChevronDown className="h-4 w-4" />
           </Button>
         </div>

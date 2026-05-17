@@ -54,7 +54,7 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode, umbralA
 
   if (loading) {
     return (
-      <Card className={`shadow-sm ${darkMode ? 'bg-[#0E1726] border-slate-700' : ''}`}>
+      <Card className={`shadow-sm ${darkMode ? 'bg-card border-slate-700' : ''}`}>
         <CardHeader>
           <Skeleton className={`h-5 w-48 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
         </CardHeader>
@@ -71,7 +71,7 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode, umbralA
 
   if (!data) {
     return (
-      <Card className={`shadow-sm ${darkMode ? 'bg-[#0E1726] border-slate-700' : ''}`}>
+      <Card className={`shadow-sm ${darkMode ? 'bg-card border-slate-700' : ''}`}>
         <CardContent className="p-6 text-center">
           <BarChart3 className={`h-12 w-12 mx-auto mb-3 ${darkMode ? 'text-slate-600' : 'text-slate-300'}`} />
           <p className={`text-sm ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -89,7 +89,7 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode, umbralA
   return (
     <div className="space-y-4">
       {/* Resumen General */}
-      <Card className={`shadow-sm ${darkMode ? 'bg-[#0E1726] border-slate-700' : ''}`}>
+      <Card className={`shadow-sm ${darkMode ? 'bg-card border-slate-700' : ''}`}>
         <CardHeader className="pb-3">
           <CardTitle className={`text-base flex items-center gap-2 ${darkMode ? 'text-white' : 'text-slate-800'}`}>
             <BarChart3 className="h-5 w-5 text-emerald-600" />
@@ -148,7 +148,7 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode, umbralA
           {data.tendencias && data.tendencias.length > 0 ? (
             <div className="space-y-2">
               {data.tendencias.slice(0, 10).map((t: any, i: number) => (
-                <div key={i} className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+                <div key={i} className={`p-3 rounded-lg border ${darkMode ? 'bg-card border-white/30' : 'bg-slate-50 border-slate-200'}`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       {t.tendencia === "mejorando" ? (
@@ -159,7 +159,7 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode, umbralA
                         <MinusCircle className="h-4 w-4 text-blue-600" />
                       )}
                       <span className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-slate-800'}`}>{t.nombre}</span>
-                      <Badge variant="outline" className={`text-[10px] ${darkMode ? 'border-slate-600 text-slate-400' : ''}`}>
+                      <Badge variant="outline" className={`text-[10px] ${darkMode ? 'border-white/30 text-white' : ''}`}>
                         {t.grado}
                       </Badge>
                     </div>
@@ -193,7 +193,7 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode, umbralA
           {data.correlaciones && data.correlaciones.length > 0 ? (
             <div className="space-y-2">
               {data.correlaciones.slice(0, 10).map((c: any, i: number) => (
-                <div key={i} className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+                <div key={i} className={`p-3 rounded-lg border ${darkMode ? 'bg-card border-white/30' : 'bg-slate-50 border-slate-200'}`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <CalendarX className="h-4 w-4 text-amber-600" />
@@ -229,13 +229,13 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode, umbralA
               {data.asignaturasCriticas.slice(0, 10).map((a: any, i: number) => (
                 <div key={i} className={`p-3 rounded-lg border ${a.nivel === "critico" ? (darkMode ? 'bg-red-900/20 border-red-800' : 'bg-red-50 border-red-200') :
                   a.nivel === "preocupante" ? (darkMode ? 'bg-amber-900/20 border-amber-800' : 'bg-amber-50 border-amber-200') :
-                    (darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200')
+                    (darkMode ? 'bg-card border-white/30' : 'bg-slate-50 border-slate-200')
                   }`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <BookOpen className={`h-4 w-4 ${a.nivel === "critico" ? 'text-red-600' : a.nivel === "preocupante" ? 'text-amber-600' : 'text-blue-600'}`} />
                       <span className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-slate-800'}`}>{a.materiaNombre}</span>
-                      <Badge variant="outline" className={`text-[10px] ${darkMode ? 'border-slate-600 text-slate-400' : ''}`}>
+                      <Badge variant="outline" className={`text-[10px] ${darkMode ? 'border-white/30 text-white' : ''}`}>
                         {a.grado}
                       </Badge>
                     </div>
@@ -269,7 +269,7 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode, umbralA
           {data.predicciones && data.predicciones.length > 0 ? (
             <div className="space-y-2">
               {data.predicciones.filter((p: any) => p.probabilidadReprobacion > 30).slice(0, 10).map((p: any, i: number) => (
-                <div key={i} className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+                <div key={i} className={`p-3 rounded-lg border ${darkMode ? 'bg-card border-white/30' : 'bg-slate-50 border-slate-200'}`}>
                   <div className="flex items-center justify-between mb-2">
                     <span className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-slate-800'}`}>{p.nombre}</span>
                     <Badge variant={p.nivel === "muy_alto" || p.nivel === "alto" ? "destructive" : p.nivel === "medio" ? "outline" : "secondary"} className="text-[10px]">
@@ -352,7 +352,7 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode, umbralA
                 <div key={i} className={`p-4 rounded-lg border ${r.tipo === "urgente" ? (darkMode ? 'bg-red-900/20 border-red-800' : 'bg-red-50 border-red-200') :
                   r.tipo === "academica" ? (darkMode ? 'bg-amber-900/20 border-amber-800' : 'bg-amber-50 border-amber-200') :
                     r.tipo === "asistencia" ? (darkMode ? 'bg-blue-900/20 border-blue-800' : 'bg-blue-50 border-blue-200') :
-                      (darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200')
+                      (darkMode ? 'bg-card border-white/30' : 'bg-slate-50 border-slate-200')
                   }`}>
                   <div className="flex items-start gap-3">
                     <Lightbulb className={`h-5 w-5 mt-0.5 shrink-0 ${r.tipo === "urgente" ? 'text-red-600' :
@@ -389,7 +389,7 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode, umbralA
 
 function StatCard({ label, value, icon: Icon, color, darkMode }: any) {
   return (
-    <div className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+    <div className={`p-3 rounded-lg border ${darkMode ? 'bg-card border-white/30' : 'bg-slate-50 border-slate-200'}`}>
       <div className="flex items-center gap-2 mb-1">
         <Icon className={`h-4 w-4 ${color}`} />
         <span className={`text-[10px] uppercase tracking-wide ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{label}</span>
@@ -401,7 +401,7 @@ function StatCard({ label, value, icon: Icon, color, darkMode }: any) {
 
 function SectionCard({ title, subtitle, icon: Icon, expanded, onToggle, count, darkMode, children }: any) {
   return (
-    <Card className={`shadow-sm ${darkMode ? 'bg-[#0E1726] border-slate-700' : ''}`}>
+    <Card className={`shadow-sm ${darkMode ? 'bg-card border-slate-700' : ''}`}>
       <CardHeader
         className={`pb-3 cursor-pointer hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors ${darkMode ? 'border-slate-700' : ''}`}
         onClick={onToggle}
@@ -416,7 +416,7 @@ function SectionCard({ title, subtitle, icon: Icon, expanded, onToggle, count, d
           </div>
           <div className="flex items-center gap-2">
             {count > 0 && (
-              <Badge variant="outline" className={`text-[10px] ${darkMode ? 'border-slate-600 text-slate-400' : ''}`}>
+              <Badge variant="outline" className={`text-[10px] ${darkMode ? 'border-white/30 text-white' : ''}`}>
                 {count}
               </Badge>
             )}

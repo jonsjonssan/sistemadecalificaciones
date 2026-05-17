@@ -40,7 +40,7 @@ export function MathInfoModal({ isOpen, onClose, darkMode, explanation }: MathIn
         {/* Header */}
         <div
           className={`flex items-center justify-between px-5 py-4 border-b ${
-            darkMode ? "border-slate-600 bg-slate-800/50" : "border-slate-100 bg-slate-50"
+            darkMode ? "border-white/30 bg-card" : "border-slate-100 bg-slate-50"
           }`}
         >
           <div className="flex items-center gap-3">
@@ -85,7 +85,7 @@ export function MathInfoModal({ isOpen, onClose, darkMode, explanation }: MathIn
           <div
             className={`rounded-xl border p-4 ${
               darkMode
-                ? "bg-slate-800/60 border-slate-700"
+                ? "bg-muted border-white/20"
                 : "bg-slate-50 border-slate-200"
             }`}
           >
@@ -167,7 +167,7 @@ export function MathInfoModal({ isOpen, onClose, darkMode, explanation }: MathIn
         <div
           className={`px-5 py-3 border-t text-center ${
             darkMode
-              ? "border-slate-600 bg-slate-800/30 text-slate-500"
+              ? "border-white/30 bg-muted text-slate-500"
               : "border-slate-100 bg-slate-50 text-slate-400"
           }`}
         >

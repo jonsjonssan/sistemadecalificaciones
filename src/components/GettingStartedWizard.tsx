@@ -286,7 +286,7 @@ export default function GettingStartedWizard({ open, onClose, darkMode, userRole
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className={`max-w-lg ${darkMode ? 'bg-[#0E1726] border-slate-700' : ''}`}>
+      <DialogContent className={`max-w-lg ${darkMode ? 'bg-card border-slate-700' : ''}`}>
         <DialogHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -310,7 +310,7 @@ export default function GettingStartedWizard({ open, onClose, darkMode, userRole
             Paso {currentStep + 1} de {steps.length}
           </p>
 
-          <div className={`p-4 rounded-lg border ${darkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-200'}`}>
+          <div className={`p-4 rounded-lg border ${darkMode ? 'bg-muted border-white/20' : 'bg-slate-50 border-slate-200'}`}>
             {steps[currentStep].content(userRole)}
           </div>
 

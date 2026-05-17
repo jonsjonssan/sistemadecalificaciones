@@ -325,7 +325,7 @@ export default function InformeTecnicoDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={`max-w-md ${darkMode ? 'bg-[#0E1726] border-slate-700' : ''}`}>
+      <DialogContent className={`max-w-md ${darkMode ? 'bg-card border-slate-700' : ''}`}>
         <DialogHeader>
           <DialogTitle className={`flex items-center gap-2 ${darkMode ? 'text-white' : ''}`}>
             <FileText className="h-5 w-5 text-emerald-600" />
@@ -338,9 +338,9 @@ export default function InformeTecnicoDialog({
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label className={darkMode ? 'text-slate-400' : ''}>Seleccionar Trimestre</Label>
+            <Label className={darkMode ? 'text-slate-200' : ''}>Seleccionar Trimestre</Label>
             <Select value={trimestre} onValueChange={setTrimestre}>
-              <SelectTrigger className={darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}>
+              <SelectTrigger className={darkMode ? 'bg-card border-white/30 text-white' : ''}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -351,7 +351,7 @@ export default function InformeTecnicoDialog({
             </Select>
           </div>
 
-          <div className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-emerald-50 border-emerald-100'}`}>
+          <div className={`p-3 rounded-lg border ${darkMode ? 'bg-card border-white/30' : 'bg-emerald-50 border-emerald-100'}`}>
             <p className={`text-xs font-medium ${darkMode ? 'text-slate-400' : 'text-emerald-800'}`}>
               📄 El informe incluirá:
             </p>
@@ -366,7 +366,7 @@ export default function InformeTecnicoDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} className={darkMode ? 'border-slate-600 text-slate-400' : ''}>
+          <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} className={darkMode ? 'border-white/30 text-white' : ''}>
             Cancelar
           </Button>
           <Button size="sm" onClick={generarInforme} disabled={generando} className="bg-emerald-600 hover:bg-emerald-700">

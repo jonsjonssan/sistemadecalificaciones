@@ -1321,7 +1321,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
       {(loadingAsistencia || loadingAnual) && (
         <div className="space-y-2 mb-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <Card key={i} className={`shadow-sm ${darkMode ? 'bg-[#0E1726] border-slate-700' : ''}`}>
+            <Card key={i} className={`shadow-sm ${darkMode ? 'bg-card border-slate-700' : ''}`}>
               <div className="p-2.5 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Skeleton className={`h-3 w-5 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
@@ -1338,8 +1338,8 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
           ))}
         </div>
       )}
-      <div className={`flex flex-wrap items-center gap-2 p-2 rounded-lg border ${darkMode ? 'bg-slate-800/60 border-slate-700' : 'bg-emerald-50/60 border-emerald-200'}`}>
-        <span className={`text-xs font-semibold uppercase tracking-wider mr-1 ${darkMode ? 'text-slate-400' : 'text-emerald-700'}`}>
+      <div className={`flex flex-wrap items-center gap-2 p-2 rounded-lg border ${darkMode ? 'bg-muted border-white/20' : 'bg-emerald-50/60 border-emerald-200'}`}>
+        <span className={`text-xs font-semibold uppercase tracking-wider mr-1 ${darkMode ? 'text-slate-200' : 'text-emerald-700'}`}>
           Imprimir en Lote
         </span>
         <Button
@@ -1372,9 +1372,9 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
       {(estudiantes || []).map(est => {
         const califs = getCalifs(est.id), prom = calcProm(califs), open = expandedBoleta === est.id;
         return (
-          <Card key={est.id} className={`shadow-sm ${darkMode ? 'bg-[#0E1726] border-slate-700' : ''}`}>
+          <Card key={est.id} className={`shadow-sm ${darkMode ? 'bg-card border-slate-700' : ''}`}>
             <div className={`p-2.5 flex items-center justify-between cursor-pointer ${darkMode ? 'hover:bg-slate-800' : 'hover:bg-slate-50'}`} onClick={() => setExpandedBoleta(open ? null : est.id)}>
-              <div className="flex items-center gap-2"><span className={`text-xs w-5 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>{est.numero}</span><span className={`text-xs sm:text-sm font-medium ${darkMode ? 'text-white' : ''}`}>{est.nombre}</span><Badge variant={prom !== null && prom >= ua ? "default" : prom !== null && prom >= uc ? "secondary" : "destructive"} className={`text-[10px] h-5 ${prom !== null && prom >= ua ? (darkMode ? 'bg-emerald-600' : 'bg-emerald-600') : prom !== null && prom >= uc ? (darkMode ? 'bg-amber-600' : 'bg-amber-600') : ''}`}>Prom: {prom !== null ? prom.toFixed(2) : "N/A"}</Badge></div>
+              <div className="flex items-center gap-2"><span className={`text-xs w-5 ${darkMode ? 'text-slate-300' : 'text-slate-400'}`}>{est.numero}</span><span className={`text-xs sm:text-sm font-medium ${darkMode ? 'text-white' : ''}`}>{est.nombre}</span><Badge variant={prom !== null && prom >= ua ? "default" : prom !== null && prom >= uc ? "secondary" : "destructive"} className={`text-[10px] h-5 ${prom !== null && prom >= ua ? (darkMode ? 'bg-emerald-600 text-white' : 'bg-emerald-600 text-white') : prom !== null && prom >= uc ? (darkMode ? 'bg-amber-600 text-white' : 'bg-amber-600 text-white') : ''}`}>Prom: {prom !== null ? prom.toFixed(2) : "N/A"}</Badge></div>
               <div className="flex items-center gap-1">
                 <Button size="sm" variant="ghost" title="Anual con Recuperación" className={`h-6 px-2 text-xs ${darkMode ? 'text-amber-400' : 'text-amber-600'}`} onClick={e => { e.stopPropagation(); imprimirAnualConRecuperacion(est.id); }}>
                   <FileText className="h-3.5 w-3.5 mr-1" />Anual + Recup.
@@ -1382,7 +1382,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
                 <Button size="sm" variant="ghost" title="Consolidado Anual" className={`h-6 px-2 text-xs ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} onClick={e => { e.stopPropagation(); imprimirAnual(est.id); }}>
                   <FileText className="h-3.5 w-3.5 mr-1" />Anual
                 </Button>
-                <Button size="sm" variant="ghost" title="Imprimir Trimestre" className={`h-6 px-2 text-xs ${darkMode ? 'text-slate-400' : ''}`} onClick={e => { e.stopPropagation(); imprimir(est.id); }}>
+                <Button size="sm" variant="ghost" title="Imprimir Trimestre" className={`h-6 px-2 text-xs ${darkMode ? 'text-slate-300' : ''}`} onClick={e => { e.stopPropagation(); imprimir(est.id); }}>
                   <Printer className="h-3 w-3 mr-1" />Boleta
                 </Button>
                 <Button size="sm" variant="ghost" title="Descargar Word" className={`h-6 px-2 text-xs ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} onClick={e => { e.stopPropagation(); descargarWord(est.id); }}>
@@ -1391,30 +1391,30 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
                 {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
               </div>
             </div>
-            {open && <div className={`border-t p-2 ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50'}`}><Table className="text-xs"><TableHeader><TableRow className={`h-7 ${darkMode ? 'bg-slate-700' : 'bg-slate-100'}`}><TableHead>Asignatura</TableHead><TableHead className="text-center">Prom. A.C.</TableHead><TableHead className="text-center">Prom. A.I.</TableHead><TableHead className="text-center">Examen</TableHead>{mostrarRecuperacion && <TableHead className="text-center">Recup.</TableHead>}<TableHead className="text-center font-bold">Promedio</TableHead></TableRow></TableHeader><TableBody>{materias.map(m => { const c = califs.find(x => x.materiaId === m.id); const estadoMat = c?.promedioFinal !== null && c?.promedioFinal !== undefined ? (c.promedioFinal < uc ? 'REPROBADO' : c.promedioFinal < ua ? 'CONDICIONADO' : 'APROBADO') : 'PENDIENTE'; return <TableRow key={m.id} className={`h-7 ${darkMode ? 'border-slate-700' : ''}`}><TableCell className={`font-medium ${darkMode ? 'text-white' : ''}`}>{m.nombre}</TableCell><TableCell className="text-center">{c?.calificacionAC != null ? (c.calificacionAC * pctAC).toFixed(2) : "-"}</TableCell><TableCell className="text-center">{c?.calificacionAI != null ? (c.calificacionAI * pctAI).toFixed(2) : "-"}</TableCell><TableCell className="text-center">{c?.examenTrimestral != null ? (c.examenTrimestral * pctEx).toFixed(2) : "-"}</TableCell>{mostrarRecuperacion && <TableCell className="text-center">{c?.recuperacion !== null && c?.recuperacion !== undefined ? c.recuperacion.toFixed(2) : "-"}</TableCell>}<TableCell className="text-center"><Badge variant={c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= ua ? "default" : c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= uc ? "secondary" : "destructive"} className={`text-[10px] ${c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= ua ? 'bg-emerald-600' : c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= uc ? 'bg-amber-600' : ''}`}>{c?.promedioFinal !== null && c?.promedioFinal !== undefined ? c.promedioFinal.toFixed(2) : "-"}</Badge></TableCell></TableRow>;         })}</TableBody></Table>
+            {open && <div className={`border-t p-2 ${darkMode ? 'bg-card border-white/30' : 'bg-slate-50'}`}><Table className="text-xs"><TableHeader><TableRow className={`h-7 ${darkMode ? 'bg-slate-700' : 'bg-slate-100'}`}><TableHead>Asignatura</TableHead><TableHead className="text-center">Prom. A.C.</TableHead><TableHead className="text-center">Prom. A.I.</TableHead><TableHead className="text-center">Examen</TableHead>{mostrarRecuperacion && <TableHead className="text-center">Recup.</TableHead>}<TableHead className="text-center font-bold">Promedio</TableHead></TableRow></TableHeader><TableBody>{materias.map(m => { const c = califs.find(x => x.materiaId === m.id); const estadoMat = c?.promedioFinal !== null && c?.promedioFinal !== undefined ? (c.promedioFinal < uc ? 'REPROBADO' : c.promedioFinal < ua ? 'CONDICIONADO' : 'APROBADO') : 'PENDIENTE'; return <TableRow key={m.id} className={`h-7 ${darkMode ? 'border-slate-700' : ''}`}><TableCell className={`font-medium ${darkMode ? 'text-white' : ''}`}>{m.nombre}</TableCell><TableCell className="text-center">{c?.calificacionAC != null ? (c.calificacionAC * pctAC).toFixed(2) : "-"}</TableCell><TableCell className="text-center">{c?.calificacionAI != null ? (c.calificacionAI * pctAI).toFixed(2) : "-"}</TableCell><TableCell className="text-center">{c?.examenTrimestral != null ? (c.examenTrimestral * pctEx).toFixed(2) : "-"}</TableCell>{mostrarRecuperacion && <TableCell className="text-center">{c?.recuperacion !== null && c?.recuperacion !== undefined ? c.recuperacion.toFixed(2) : "-"}</TableCell>}<TableCell className="text-center"><Badge variant={c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= ua ? "default" : c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= uc ? "secondary" : "destructive"} className={`text-[10px] ${c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= ua ? 'bg-emerald-600' : c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= uc ? 'bg-amber-600' : ''}`}>{c?.promedioFinal !== null && c?.promedioFinal !== undefined ? c.promedioFinal.toFixed(2) : "-"}</Badge></TableCell></TableRow>;         })}</TableBody></Table>
               {asistenciaManualHabilitado && (
                 <div className="mt-2 border-t pt-2">
                   <div className="text-xs font-semibold mb-1.5 text-emerald-600 dark:text-emerald-400">REGISTRO DE ASISTENCIA MANUAL</div>
                   <div className="grid grid-cols-5 gap-1.5">
                     <div>
-                      <label className="text-[10px] block text-slate-500">Asistencias</label>
-                      <input type="text" inputMode="numeric" value={asistenciaManualData[est.id]?.asistencias || ''} onChange={(e) => onAsistenciaManualChange?.(est.id, 'asistencias', e.target.value)} className="w-full h-7 text-xs text-center border rounded dark:bg-slate-700 dark:border-slate-600" />
+                      <label className={`text-[10px] block ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>Asistencias</label>
+                      <input type="text" inputMode="numeric" value={asistenciaManualData[est.id]?.asistencias || ''} onChange={(e) => onAsistenciaManualChange?.(est.id, 'asistencias', e.target.value)} className="w-full h-7 text-xs text-center border rounded dark:bg-slate-700 dark:border-slate-700" />
                     </div>
                     <div>
-                      <label className="text-[10px] block text-slate-500">Inasistencias</label>
-                      <input type="text" inputMode="numeric" value={asistenciaManualData[est.id]?.inasistencias || ''} onChange={(e) => onAsistenciaManualChange?.(est.id, 'inasistencias', e.target.value)} className="w-full h-7 text-xs text-center border rounded dark:bg-slate-700 dark:border-slate-600" />
+                      <label className={`text-[10px] block ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>Inasistencias</label>
+                      <input type="text" inputMode="numeric" value={asistenciaManualData[est.id]?.inasistencias || ''} onChange={(e) => onAsistenciaManualChange?.(est.id, 'inasistencias', e.target.value)} className="w-full h-7 text-xs text-center border rounded dark:bg-slate-700 dark:border-slate-700" />
                     </div>
                     <div>
-                      <label className="text-[10px] block text-slate-500">Tardanzas</label>
-                      <input type="text" inputMode="numeric" value={asistenciaManualData[est.id]?.tardanzas || ''} onChange={(e) => onAsistenciaManualChange?.(est.id, 'tardanzas', e.target.value)} className="w-full h-7 text-xs text-center border rounded dark:bg-slate-700 dark:border-slate-600" />
+                      <label className={`text-[10px] block ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>Tardanzas</label>
+                      <input type="text" inputMode="numeric" value={asistenciaManualData[est.id]?.tardanzas || ''} onChange={(e) => onAsistenciaManualChange?.(est.id, 'tardanzas', e.target.value)} className="w-full h-7 text-xs text-center border rounded dark:bg-slate-700 dark:border-slate-700" />
                     </div>
                     <div>
-                      <label className="text-[10px] block text-slate-500">Justificadas</label>
-                      <input type="text" inputMode="numeric" value={asistenciaManualData[est.id]?.justificadas || ''} onChange={(e) => onAsistenciaManualChange?.(est.id, 'justificadas', e.target.value)} className="w-full h-7 text-xs text-center border rounded dark:bg-slate-700 dark:border-slate-600" />
+                      <label className={`text-[10px] block ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>Justificadas</label>
+                      <input type="text" inputMode="numeric" value={asistenciaManualData[est.id]?.justificadas || ''} onChange={(e) => onAsistenciaManualChange?.(est.id, 'justificadas', e.target.value)} className="w-full h-7 text-xs text-center border rounded dark:bg-slate-700 dark:border-slate-700" />
                     </div>
                     <div>
-                      <label className="text-[10px] block text-slate-500">Total Días</label>
-                      <input type="text" inputMode="numeric" value={asistenciaManualData[est.id]?.totalDias || ''} onChange={(e) => onAsistenciaManualChange?.(est.id, 'totalDias', e.target.value)} className="w-full h-7 text-xs text-center border rounded dark:bg-slate-700 dark:border-slate-600" />
+                      <label className={`text-[10px] block ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>Total Días</label>
+                      <input type="text" inputMode="numeric" value={asistenciaManualData[est.id]?.totalDias || ''} onChange={(e) => onAsistenciaManualChange?.(est.id, 'totalDias', e.target.value)} className="w-full h-7 text-xs text-center border rounded dark:bg-slate-700 dark:border-slate-700" />
                     </div>
                   </div>
                 </div>
@@ -1427,23 +1427,23 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
                     <div className="text-[10px] font-semibold mb-1 text-blue-600 dark:text-blue-400">ASISTENCIA REGISTRADA EN EL SISTEMA</div>
                     <div className="grid grid-cols-5 gap-1 text-xs mb-2">
                       <div className="bg-blue-50 dark:bg-blue-900/20 rounded p-1 text-center">
-                        <div className="text-[9px] text-slate-500">Asistencias</div>
+                        <div className={`text-[9px] ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>Asistencias</div>
                         <div className="font-bold text-blue-700 dark:text-blue-300 text-sm">{attData.asistencias ?? 0}</div>
                       </div>
                       <div className="bg-red-50 dark:bg-red-900/20 rounded p-1 text-center">
-                        <div className="text-[9px] text-slate-500">Inasistencias</div>
+                        <div className={`text-[9px] ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>Inasistencias</div>
                         <div className="font-bold text-red-700 dark:text-red-300 text-sm">{attData.ausencias ?? 0}</div>
                       </div>
                       <div className="bg-amber-50 dark:bg-amber-900/20 rounded p-1 text-center">
-                        <div className="text-[9px] text-slate-500">Tardanzas</div>
+                        <div className={`text-[9px] ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>Tardanzas</div>
                         <div className="font-bold text-amber-700 dark:text-amber-300 text-sm">{attData.tardanzas ?? 0}</div>
                       </div>
                       <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded p-1 text-center">
-                        <div className="text-[9px] text-slate-500">Justificadas</div>
+                        <div className={`text-[9px] ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>Justificadas</div>
                         <div className="font-bold text-emerald-700 dark:text-emerald-300 text-sm">{attData.justificadas ?? 0}</div>
                       </div>
                       <div className="bg-slate-50 dark:bg-slate-800/40 rounded p-1 text-center">
-                        <div className="text-[9px] text-slate-500">Total</div>
+                        <div className={`text-[9px] ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>Total</div>
                         <div className="font-bold text-slate-700 dark:text-slate-300 text-sm">{attData.total ?? 0}</div>
                       </div>
                     </div>
@@ -1451,8 +1451,8 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
                 );
               })()}
               <div className="mt-2 border-t pt-2">
-                <label className="text-[10px] block text-slate-500 font-medium">Observaciones</label>
-                <textarea value={asistenciaManualData[est.id]?.observaciones || ''} onChange={(e) => onAsistenciaManualChange?.(est.id, 'observaciones', e.target.value)} className="w-full h-14 text-xs border rounded dark:bg-slate-700 dark:border-slate-600 p-1 resize-none" placeholder="Escriba observaciones para la boleta..." />
+                <label className={`text-[10px] block font-medium ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>Observaciones</label>
+                <textarea value={asistenciaManualData[est.id]?.observaciones || ''} onChange={(e) => onAsistenciaManualChange?.(est.id, 'observaciones', e.target.value)} className="w-full h-14 text-xs border rounded dark:bg-slate-700 dark:border-slate-700 p-1 resize-none" placeholder="Escriba observaciones para la boleta..." />
               </div>
               </div>}
           </Card>

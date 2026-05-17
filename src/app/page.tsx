@@ -2357,9 +2357,9 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                     {/* Fila de selectores */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div className="space-y-2">
-                        <Label className={`text-sm font-medium ${darkMode ? 'text-slate-400' : 'text-slate-700'}`}>Grado</Label>
+                        <Label className={`text-sm font-medium ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>Grado</Label>
                         <Select value={gradoSeleccionado || ""} onValueChange={(val) => { setGradoSeleccionado(val); setAsignaturaSeleccionada(""); saveUserState({ gradoSeleccionado: val }); }}>
-                          <SelectTrigger className={`h-11 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}>
+                          <SelectTrigger className={`h-11 text-sm ${darkMode ? 'bg-card border-white/30 text-white' : ''}`}>
                             <SelectValue placeholder="Seleccionar grado" />
                           </SelectTrigger>
                           <SelectContent>
@@ -2368,9 +2368,9 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label className={`text-sm font-medium ${darkMode ? 'text-slate-400' : 'text-slate-700'}`}>Asignatura</Label>
+                        <Label className={`text-sm font-medium ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>Asignatura</Label>
                         <Select value={asignaturaSeleccionada || ""} onValueChange={(val) => { setAsignaturaSeleccionada(val); saveUserState({ asignaturaSeleccionada: val }); }}>
-                          <SelectTrigger className={`h-11 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}>
+                          <SelectTrigger className={`h-11 text-sm ${darkMode ? 'bg-card border-white/30 text-white' : ''}`}>
                             <SelectValue placeholder="Seleccionar asignatura" />
                           </SelectTrigger>
                           <SelectContent>
@@ -2379,9 +2379,9 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                         </Select>
                       </div>
                       <div className="space-y-2">
-                        <Label className={`text-sm font-medium ${darkMode ? 'text-slate-400' : 'text-slate-700'}`}>Trimestre</Label>
+                        <Label className={`text-sm font-medium ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>Trimestre</Label>
                         <Select value={trimestreSeleccionado || ""} onValueChange={setTrimestreSeleccionado}>
-                          <SelectTrigger className={`h-11 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}>
+                          <SelectTrigger className={`h-11 text-sm ${darkMode ? 'bg-card border-white/30 text-white' : ''}`}>
                             <SelectValue placeholder="Seleccionar trimestre" />
                           </SelectTrigger>
                           <SelectContent>
@@ -2399,7 +2399,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                     {/* Fila de config y botones */}
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                       {configActual && (
-                        <div className={`flex items-center gap-2 sm:gap-3 text-xs font-medium px-2 sm:px-3 py-2 rounded-lg w-full sm:w-auto overflow-x-auto hide-scrollbar ${darkMode ? 'text-slate-400 bg-slate-800/60' : 'text-slate-600 bg-slate-50'}`}>
+                        <div className={`flex items-center gap-2 sm:gap-3 text-xs font-medium px-2 sm:px-3 py-2 rounded-lg w-full sm:w-auto overflow-x-auto hide-scrollbar ${darkMode ? 'text-slate-300 bg-slate-800/60' : 'text-slate-600 bg-slate-50'}`}>
                           <span className="flex items-center gap-1 whitespace-nowrap">
                             <span className={`w-2 h-2 rounded-full ${darkMode ? 'bg-blue-500' : 'bg-blue-600'}`} />
                             {configActual.numActividadesCotidianas} AC ({configActual.porcentajeAC}%)
@@ -2422,15 +2422,15 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                           <span className="hidden sm:inline">{saving ? 'Guardando...' : 'Guardar Todo'}</span>
                           <span className="sm:hidden">{saving ? '...' : 'Guardar'}</span>
                         </Button>
-                        <Button size="sm" variant="outline" className={`h-9 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm gap-1 sm:gap-2 ${darkMode ? 'bg-slate-100/10 border-border text-slate-400 hover:bg-slate-100/20' : ''}`} onClick={handleRefrescar} disabled={refreshing} title="Refrescar calificaciones">
+                        <Button size="sm" variant="outline" className={`h-9 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm gap-1 sm:gap-2 ${darkMode ? 'bg-slate-100/10 border-border text-slate-300 hover:bg-slate-100/20' : ''}`} onClick={handleRefrescar} disabled={refreshing} title="Refrescar calificaciones">
                           <RefreshCw className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${refreshing ? 'animate-spin' : ''}`} />
                           <span className="hidden sm:inline">{refreshing ? 'Refrescando...' : 'Refrescar'}</span>
                         </Button>
-                        <Button size="sm" variant="outline" className={`h-9 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm gap-1 sm:gap-2 ${darkMode ? 'bg-slate-100/10 border-border text-slate-400 hover:bg-slate-100/20' : ''}`} onClick={() => { setEditConfig(configActual); setConfigDialogOpen(true); }} title="Configurar actividades y porcentajes">
+                        <Button size="sm" variant="outline" className={`h-9 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm gap-1 sm:gap-2 ${darkMode ? 'bg-slate-100/10 border-border text-slate-300 hover:bg-slate-100/20' : ''}`} onClick={() => { setEditConfig(configActual); setConfigDialogOpen(true); }} title="Configurar actividades y porcentajes">
                           <Settings className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                           <span className="hidden sm:inline">Configurar</span>
                         </Button>
-                        <Button size="sm" variant="outline" className={`h-9 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm gap-1 sm:gap-2 ${darkMode ? 'bg-slate-100/10 border-border text-slate-400 hover:bg-slate-100/20' : ''}`} onClick={() => setImportDialogOpen(true)}>
+                        <Button size="sm" variant="outline" className={`h-9 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm gap-1 sm:gap-2 ${darkMode ? 'bg-slate-100/10 border-border text-slate-300 hover:bg-slate-100/20' : ''}`} onClick={() => setImportDialogOpen(true)}>
                           <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                           <span className="hidden sm:inline">Importar</span>
                         </Button>
@@ -2531,7 +2531,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                             placeholder="Buscar..."
                             value={busquedaEstudiante}
                             onChange={(e) => startTransition(() => setBusquedaEstudiante(e.target.value))}
-                            className={`pl-8 sm:pl-9 h-9 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}
+                            className={`pl-8 sm:pl-9 h-9 text-xs sm:text-sm ${darkMode ? 'bg-card border-white/30 text-white' : ''}`}
                           />
                         </div>
                       </div>
@@ -2539,7 +2539,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                       {/* Filtro por estado */}
                       <div className="order-3 sm:order-2">
                         <Select value={filtroEstado} onValueChange={setFiltroEstado}>
-                          <SelectTrigger className={`w-[130px] sm:w-[150px] h-9 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}>
+                          <SelectTrigger className={`w-[130px] sm:w-[150px] h-9 text-xs sm:text-sm ${darkMode ? 'bg-card border-white/30 text-white' : ''}`}>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -2552,12 +2552,12 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                       </div>
 
                       {/* Exportar PDF */}
-                      <Button size="sm" variant="outline" onClick={handleExportarPDF} className={`h-9 text-xs sm:text-sm px-2 sm:px-3 order-2 sm:order-3 ${darkMode ? 'bg-slate-800 border-slate-600' : ''}`}>
+                      <Button size="sm" variant="outline" onClick={handleExportarPDF} className={`h-9 text-xs sm:text-sm px-2 sm:px-3 order-2 sm:order-3 ${darkMode ? 'bg-card border-white/30' : ''}`}>
                         <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1" /> <span className="hidden sm:inline">PDF</span><span className="sm:hidden">PDF</span>
                       </Button>
 
                       {/* Exportar Excel */}
-                      <Button size="sm" variant="outline" onClick={handleExportarExcel} className={`h-9 text-xs sm:text-sm px-2 sm:px-3 order-4 ${darkMode ? 'bg-slate-800 border-slate-600' : ''}`}>
+                      <Button size="sm" variant="outline" onClick={handleExportarExcel} className={`h-9 text-xs sm:text-sm px-2 sm:px-3 order-4 ${darkMode ? 'bg-card border-white/30' : ''}`}>
                         <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1" /> <span className="hidden sm:inline">Excel</span><span className="sm:hidden">CSV</span>
                       </Button>
                     </div>
@@ -2751,7 +2751,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                           {sectionLoading ? <Skeleton className={`h-4 w-10 sm:h-5 sm:w-12 ${darkMode ? 'bg-emerald-800' : 'bg-emerald-200'}`} /> : (promedioGrado !== null ? promedioGrado.toFixed(2) : "—")}
                         </div>
                       </div>
-                      <div className={`flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg ${darkMode ? 'bg-slate-700/50 border border-slate-600' : 'bg-slate-100 border border-slate-200'}`}>
+                      <div className={`flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg ${darkMode ? 'bg-muted border border-white/20' : 'bg-slate-100 border border-slate-200'}`}>
                         <div className="flex items-center gap-1">
                           <span className="inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-500" />
                           <span className={`text-[10px] sm:text-xs font-medium whitespace-nowrap ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
@@ -2799,10 +2799,10 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                 {(isAdmin(usuario.rol) || (usuario.rol === "docente" || usuario.rol === "docente-orientador")) && (
                   <div className="flex gap-2">
                     <Dialog open={listaDialogOpen} onOpenChange={setListaDialogOpen}>
-                      <DialogTrigger asChild><Button size="sm" variant="outline" className={`h-10 text-xs sm:text-sm ${darkMode ? 'border-slate-600 text-slate-400 hover:bg-slate-700' : ''}`}><ListPlus className="h-5 w-5 mr-1" />Lista</Button></DialogTrigger>
+                      <DialogTrigger asChild><Button size="sm" variant="outline" className={`h-10 text-xs sm:text-sm ${darkMode ? 'border-white/30 text-white hover:bg-white/10' : ''}`}><ListPlus className="h-5 w-5 mr-1" />Lista</Button></DialogTrigger>
                       <DialogContent className="max-w-md bg-card border-border">
                         <DialogHeader><DialogTitle>Agregar Lista de Estudiantes</DialogTitle><DialogDescription>Ingresa los nombres de los estudiantes, uno por línea. Opcional: agrega correo separado por coma (Nombre, correo@email.com).</DialogDescription></DialogHeader>
-                        <div className="space-y-2"><Label>Un nombre por línea</Label><textarea className={`w-full h-48 p-2 text-sm border rounded-md ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} value={listaEstudiantes} onChange={e => setListaEstudiantes(e.target.value)} placeholder="Apellido, Nombre&#10;Apellido, Nombre, correo@email.com&#10;..." /></div>
+                        <div className="space-y-2"><Label>Un nombre por línea</Label><textarea className={`w-full h-48 p-2 text-sm border rounded-md ${darkMode ? 'bg-card border-white/30 text-white' : ''}`} value={listaEstudiantes} onChange={e => setListaEstudiantes(e.target.value)} placeholder="Apellido, Nombre&#10;Apellido, Nombre, correo@email.com&#10;..." /></div>
                         <DialogFooter><Button variant="outline" size="sm" onClick={() => { setListaDialogOpen(false); setListaEstudiantes(""); }}>Cancelar</Button><Button size="sm" onClick={handleAddMultipleEstudiantes} className="bg-primary">Agregar {listaEstudiantes.split('\n').filter(n => n.trim()).length}</Button></DialogFooter>
                       </DialogContent>
                     </Dialog>
@@ -2820,10 +2820,10 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
               <CardContent className="pt-0">
                 <div className="mb-3 flex flex-col sm:flex-row gap-2 items-start sm:items-center justify-between">
                   <Select value={gradoSeleccionado} onValueChange={(val) => { setGradoSeleccionado(val); setAsignaturaSeleccionada(""); }}>
-                    <SelectTrigger className={`w-full md:w-[250px] h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue /></SelectTrigger>
+                    <SelectTrigger className={`w-full md:w-[250px] h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-card border-white/30 text-white' : ''}`}><SelectValue /></SelectTrigger>
                     <SelectContent>{gradosFiltrados.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}" ({g._count?.estudiantes || 0})</SelectItem>)}</SelectContent>
                   </Select>
-                  <Button size="sm" variant="outline" onClick={imprimirListadoEstudiantesPDF} className={`h-10 text-xs sm:text-sm ${darkMode ? 'border-slate-600 text-slate-400 hover:bg-slate-700' : ''}`}>
+                  <Button size="sm" variant="outline" onClick={imprimirListadoEstudiantesPDF} className={`h-10 text-xs sm:text-sm ${darkMode ? 'border-white/30 text-white hover:bg-white/10' : ''}`}>
                     <Printer className="h-4 w-4 mr-1" />Imprimir PDF
                   </Button>
                 </div>
@@ -2860,7 +2860,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                       <CardTitle className={`text-base font-semibold tracking-tight ${darkMode ? 'text-slate-100' : 'text-slate-800'}`}>
                         Generación de Boletas
                       </CardTitle>
-                      <CardDescription className={`text-xs mt-0.5 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                      <CardDescription className={`text-xs mt-0.5 ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>
                         Selecciona grado y trimestre para visualizar las boletas de calificaciones
                       </CardDescription>
                     </div>
@@ -2870,11 +2870,11 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                   <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-800/40 border-slate-700/50' : 'bg-white border-slate-200/70 shadow-sm'}`}>
                     <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                       <div className="flex-1">
-                        <Label className={`text-xs font-semibold uppercase tracking-wider mb-1.5 block ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                        <Label className={`text-xs font-semibold uppercase tracking-wider mb-1.5 block ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>
                           Grado
                         </Label>
                         <Select value={gradoSeleccionado} onValueChange={(val) => { setGradoSeleccionado(val); setAsignaturaSeleccionada(""); }}>
-                          <SelectTrigger className={`h-10 sm:h-11 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-slate-300'}`}>
+                          <SelectTrigger className={`h-10 sm:h-11 text-sm ${darkMode ? 'bg-card border-white/30 text-white' : 'bg-white border-slate-300'}`}>
                             <SelectValue placeholder="Seleccionar grado" />
                           </SelectTrigger>
                           <SelectContent>
@@ -2887,11 +2887,11 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                         </Select>
                       </div>
                       <div className="w-full sm:w-36">
-                        <Label className={`text-xs font-semibold uppercase tracking-wider mb-1.5 block ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                        <Label className={`text-xs font-semibold uppercase tracking-wider mb-1.5 block ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>
                           Trimestre
                         </Label>
                         <Select value={trimestreSeleccionado || ""} onValueChange={setTrimestreSeleccionado}>
-                          <SelectTrigger className={`h-10 sm:h-11 text-sm ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-slate-300'}`}>
+                          <SelectTrigger className={`h-10 sm:h-11 text-sm ${darkMode ? 'bg-card border-white/30 text-white' : 'bg-white border-slate-300'}`}>
                             <SelectValue placeholder="Trimestre" />
                           </SelectTrigger>
                           <SelectContent>
@@ -2909,11 +2909,11 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                       {(isAdmin(usuario.rol) || usuario?.rol === "docente-orientador") && (
                         <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-800/40 border-slate-700/50' : 'bg-white border-slate-200/70 shadow-sm'}`}>
                           <div className="flex items-center justify-between mb-3">
-                            <Label className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                            <Label className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>
                               Asignaturas en boleta
                             </Label>
                             <Select value={materiasEnBoleta.length === 0 ? "todas" : "personalizado"} onValueChange={(v) => { if (v === "todas") { setMateriasEnBoleta([]); if (typeof window !== "undefined") localStorage.setItem("ss_materiasBoleta", JSON.stringify([])); } }}>
-                              <SelectTrigger className={`w-36 h-8 text-xs ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-slate-300'}`}>
+                              <SelectTrigger className={`w-36 h-8 text-xs ${darkMode ? 'bg-card border-white/30 text-white' : 'bg-white border-slate-300'}`}>
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
@@ -2945,7 +2945,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                                   className={`px-3 py-1 rounded-full text-xs font-medium border transition-all duration-150 ${
                                     isSelected
                                       ? (darkMode ? 'bg-primary/20 text-emerald-400 border-emerald-500/50 shadow-sm' : 'bg-emerald-50 text-emerald-700 border-emerald-300 shadow-sm')
-                                      : (darkMode ? 'bg-slate-800 text-slate-400 border-slate-600 hover:border-slate-500 hover:text-slate-400' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:text-slate-700')
+                                      : (darkMode ? 'bg-muted text-slate-300 border-white/30 hover:border-white/50 hover:text-white' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:text-slate-700')
                                   }`}
                                 >
                                   {m.nombre}
@@ -2963,7 +2963,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                       )}
 
                       <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-800/40 border-slate-700/50' : 'bg-white border-slate-200/70 shadow-sm'}`}>
-                        <Label className={`text-xs font-semibold uppercase tracking-wider mb-3 block ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                        <Label className={`text-xs font-semibold uppercase tracking-wider mb-3 block ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>
                           Opciones de impresión
                         </Label>
                         <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
@@ -2979,11 +2979,11 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                             >
                               <div className="flex items-center gap-1.5">
                                 <RadioGroupItem value="letter" id="pp-letter" className="h-3.5 w-3.5" />
-                                <Label htmlFor="pp-letter" className={`text-xs cursor-pointer ${darkMode ? 'text-slate-400' : 'text-slate-700'}`}>Carta</Label>
+                                <Label htmlFor="pp-letter" className={`text-xs cursor-pointer ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>Carta</Label>
                               </div>
                               <div className="flex items-center gap-1.5">
                                 <RadioGroupItem value="a4" id="pp-a4" className="h-3.5 w-3.5" />
-                                <Label htmlFor="pp-a4" className={`text-xs cursor-pointer ${darkMode ? 'text-slate-400' : 'text-slate-700'}`}>A4</Label>
+                                <Label htmlFor="pp-a4" className={`text-xs cursor-pointer ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>A4</Label>
                               </div>
                             </RadioGroup>
                             <span className={`text-[10px] hidden sm:inline ${darkMode ? 'text-slate-600' : 'text-slate-400'}`}>
@@ -3000,7 +3000,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                               setAsistenciaManualHabilitado(v === "manual_digital");
                               localStorage.setItem("ss_tipoAsistencia", JSON.stringify(v));
                             }}>
-                              <SelectTrigger className={`w-40 h-8 text-xs ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-slate-300'}`}>
+                              <SelectTrigger className={`w-40 h-8 text-xs ${darkMode ? 'bg-card border-white/30 text-white' : 'bg-white border-slate-300'}`}>
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
@@ -3055,7 +3055,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                           <div><Label className="text-xs">Contraseña</Label><Input type="password" value={nuevoUsuario.password} onChange={e => setNuevoUsuario({ ...nuevoUsuario, password: e.target.value })} placeholder="••••••••" /></div>
                           <div><Label className="text-xs">Rol</Label>
                             <Select value={nuevoUsuario.rol} onValueChange={v => setNuevoUsuario({ ...nuevoUsuario, rol: v })}>
-                              <SelectTrigger className={`h-8 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}><SelectValue /></SelectTrigger>
+                              <SelectTrigger className={`h-8 ${darkMode ? 'bg-card border-white/30 text-white' : ''}`}><SelectValue /></SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="admin">Administrador</SelectItem>
                                 <SelectItem value="admin-directora">Administradora - Directora</SelectItem>
@@ -3111,7 +3111,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                               <TableCell className={`font-medium ${darkMode ? 'text-white' : ''}`}>{u.nombre}</TableCell>
                               <TableCell className={darkMode ? 'text-slate-400' : ''}>{u.email}</TableCell>
                               <TableCell>
-                                <Badge variant={isAdmin(u.rol) ? "default" : u.rol === "docente-orientador" ? "outline" : "secondary"} className={`text-[10px] ${isAdmin(u.rol) ? '' : (u.rol === "docente-orientador" ? (darkMode ? 'border-slate-600 text-slate-400' : '') : (darkMode ? 'bg-slate-700 text-slate-400' : ''))}`}>
+                                <Badge variant={isAdmin(u.rol) ? "default" : u.rol === "docente-orientador" ? "outline" : "secondary"} className={`text-[10px] ${isAdmin(u.rol) ? '' : (u.rol === "docente-orientador" ? (darkMode ? 'border-white/30 text-white' : '') : (darkMode ? 'bg-slate-700 text-slate-400' : ''))}`}>
                                   {u.rol === "admin" ? "Admin" : u.rol === "admin-directora" ? "Directora" : u.rol === "admin-codirectora" ? "Codirectora" : u.rol === "docente-orientador" ? "Docente-Orient." : "Docente"}
                                 </Badge>
                               </TableCell>
@@ -3151,7 +3151,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                           ? (docentesDelGrado.length === 1 ? docentesDelGrado[0] : `${docentesDelGrado.length} docentes`)
                           : "Sin docente";
                         return (
-                          <div key={g.id} className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50'}`}>
+                          <div key={g.id} className={`p-3 rounded-lg border ${darkMode ? 'bg-card border-white/30' : 'bg-slate-50'}`}>
                             <p className={`font-medium text-xs sm:text-sm ${darkMode ? 'text-white' : ''}`}>{g.numero}° "{g.seccion}"</p>
                             <p className={`text-[10px] ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>{g._count?.estudiantes || 0} estudiantes • {docentesTexto}</p>
                           </div>
@@ -3167,7 +3167,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                     <div><CardTitle className="text-sm sm:text-base">Año Escolar</CardTitle><CardDescription className="text-xs text-muted-foreground">Configure el año lectivo actual del sistema</CardDescription></div>
                     <Dialog open={añoDialogOpen} onOpenChange={setAñoDialogOpen}>
                       <DialogTrigger asChild>
-                        <Button size="sm" variant="outline" className={`h-7 text-xs ${darkMode ? 'border-slate-600 text-slate-400 hover:bg-slate-700' : ''}`}>
+                        <Button size="sm" variant="outline" className={`h-7 text-xs ${darkMode ? 'border-white/30 text-white hover:bg-white/10' : ''}`}>
                           <Calendar className="h-3.5 w-3.5 mr-1" />
                           Cambiar Año
                         </Button>
@@ -3183,7 +3183,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                               onChange={e => setNuevoAño(parseInt(e.target.value) || 2026)}
                               min={2020}
                               max={2100}
-                              className={`h-8 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}
+                              className={`h-8 ${darkMode ? 'bg-card border-white/30 text-white' : ''}`}
                             />
                           </div>
                           <p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>
@@ -3205,17 +3205,17 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                         <p className={`text-2xl font-bold ${darkMode ? 'text-emerald-400' : 'text-emerald-700'}`}>{configuracion?.añoEscolar || 2026}</p>
                         <p className={`text-xs ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>Año lectivo actual</p>
                       </div>
-                      <div className={`flex-1 p-4 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50'}`}>
+                      <div className={`flex-1 p-4 rounded-lg border ${darkMode ? 'bg-card border-white/30' : 'bg-slate-50'}`}>
                         <p className={`text-lg font-medium ${darkMode ? 'text-white' : ''}`}>{grados.length}</p>
                         <p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Grados activos</p>
                       </div>
-                      <div className={`flex-1 p-4 rounded-lg border ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50'}`}>
+                      <div className={`flex-1 p-4 rounded-lg border ${darkMode ? 'bg-card border-white/30' : 'bg-slate-50'}`}>
                         <p className={`text-lg font-medium ${darkMode ? 'text-white' : ''}`}>{todasAsignaturas.length}</p>
                         <p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Asignaturas</p>
                       </div>
                     </div>
                   </CardContent>
-                  <CardFooter className={`border-t justify-between py-3 px-4 flex-col sm:flex-row gap-2 ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-slate-50'}`}>
+                  <CardFooter className={`border-t justify-between py-3 px-4 flex-col sm:flex-row gap-2 ${darkMode ? 'bg-card border-white/30' : 'bg-slate-50'}`}>
                     <div className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Versión 1.2.0 | © 2026 CEC San José de la Montaña</div>
                     <Button variant="outline" size="sm" onClick={handleRepararAsignaciones} disabled={añoLoading} className="h-8 text-xs sm:text-sm w-full sm:w-auto">
                       <Settings className="h-4 w-4 mr-1" /> Reparar Asignaciones
@@ -3243,7 +3243,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                   </CardHeader>
                   <CardContent className="pt-0 space-y-3">
                     <div className="flex flex-wrap gap-2 items-center">
-                      <Button size="sm" variant="outline" className={`h-8 text-xs ${darkMode ? 'border-slate-600' : ''}`} onClick={loadAuditLogs} disabled={auditLoading}>
+                      <Button size="sm" variant="outline" className={`h-8 text-xs ${darkMode ? 'border-white/30 text-white' : ''}`} onClick={loadAuditLogs} disabled={auditLoading}>
                         <RefreshCw className={`h-3.5 w-3.5 mr-1 ${auditLoading ? 'animate-spin' : ''}`} /> Actualizar
                       </Button>
                       {isAdmin(usuario.rol) && (
@@ -3254,7 +3254,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                       <select
                         value={auditFilter.accion}
                         onChange={e => { setAuditFilter(f => ({ ...f, accion: e.target.value })); setAuditPage(1); }}
-                        className={`h-8 text-xs rounded border px-2 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-slate-300'}`}
+                        className={`h-8 text-xs rounded border px-2 ${darkMode ? 'bg-card border-white/30 text-white' : 'bg-white border-slate-300'}`}
                       >
                         <option value="">Todas las acciones</option>
                         <option value="UPDATE">Digitó</option>
@@ -3264,14 +3264,14 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                         type="date"
                         value={auditFilter.fechaDesde}
                         onChange={e => { setAuditFilter(f => ({ ...f, fechaDesde: e.target.value })); setAuditPage(1); }}
-                        className={`h-8 text-xs rounded border px-2 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-slate-300'}`}
+                        className={`h-8 text-xs rounded border px-2 ${darkMode ? 'bg-card border-white/30 text-white' : 'bg-white border-slate-300'}`}
                         placeholder="Desde"
                       />
                       <input
                         type="date"
                         value={auditFilter.fechaHasta}
                         onChange={e => { setAuditFilter(f => ({ ...f, fechaHasta: e.target.value })); setAuditPage(1); }}
-                        className={`h-8 text-xs rounded border px-2 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : 'bg-white border-slate-300'}`}
+                        className={`h-8 text-xs rounded border px-2 ${darkMode ? 'bg-card border-white/30 text-white' : 'bg-white border-slate-300'}`}
                         placeholder="Hasta"
                       />
                       {(auditFilter.accion || auditFilter.fechaDesde || auditFilter.fechaHasta) && (
@@ -3330,7 +3330,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                               pageNum = auditPage - 2 + i;
                             }
                             return (
-                              <Button key={pageNum} size="sm" variant={auditPage === pageNum ? "default" : "outline"} className={`h-7 w-7 text-xs p-0 ${auditPage === pageNum ? '' : (darkMode ? 'border-slate-600' : '')}`} onClick={() => setAuditPage(pageNum)}>
+                              <Button key={pageNum} size="sm" variant={auditPage === pageNum ? "default" : "outline"} className={`h-7 w-7 text-xs p-0 ${auditPage === pageNum ? '' : (darkMode ? 'border-white/30' : '')}`} onClick={() => setAuditPage(pageNum)}>
                                 {pageNum}
                               </Button>
                             );
@@ -3362,9 +3362,9 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
         <DialogContent className="max-w-sm mx-4 bg-card border-border">
           <DialogHeader><DialogTitle className="text-base">Configurar Actividades</DialogTitle><DialogDescription className="text-sm">Define cuántas actividades y sus porcentajes por trimestre.</DialogDescription></DialogHeader>
           {editConfig && <div className="space-y-3">
-            <div><Label className="text-sm">Actividades Cotidianas</Label><div className="flex items-center gap-2 mt-1"><Input type="number" min="1" max="10" value={editConfig.numActividadesCotidianas} onChange={e => setEditConfig({ ...editConfig, numActividadesCotidianas: parseInt(e.target.value) || 1 })} className={`w-16 h-11 text-base ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-sm">u.</span><Input type="number" min="0" max="100" value={editConfig.porcentajeAC} onChange={e => setEditConfig({ ...editConfig, porcentajeAC: parseFloat(e.target.value) || 0 })} className={`w-16 h-11 text-base ml-auto ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-sm">%</span></div></div>
-            <div><Label className="text-sm">Actividades Integradoras</Label><div className="flex items-center gap-2 mt-1"><Input type="number" min="1" max="10" value={editConfig.numActividadesIntegradoras} onChange={e => setEditConfig({ ...editConfig, numActividadesIntegradoras: parseInt(e.target.value) || 1 })} className={`w-16 h-11 text-base ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-sm">u.</span><Input type="number" min="0" max="100" value={editConfig.porcentajeAI} onChange={e => setEditConfig({ ...editConfig, porcentajeAI: parseFloat(e.target.value) || 0 })} className={`w-16 h-11 text-base ml-auto ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-sm">%</span></div></div>
-            <div className="flex items-center justify-between"><Label className="text-sm">Examen</Label><div className="flex items-center gap-2"><input type="checkbox" checked={editConfig.tieneExamen} onChange={e => setEditConfig({ ...editConfig, tieneExamen: e.target.checked })} className="h-5 w-5" />{editConfig.tieneExamen && <><Input type="number" min="0" max="100" value={editConfig.porcentajeExamen} onChange={e => setEditConfig({ ...editConfig, porcentajeExamen: parseFloat(e.target.value) || 0 })} className={`w-16 h-11 text-base ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`} /><span className="text-sm">%</span></>}</div></div>
+            <div><Label className="text-sm">Actividades Cotidianas</Label><div className="flex items-center gap-2 mt-1"><Input type="number" min="1" max="10" value={editConfig.numActividadesCotidianas} onChange={e => setEditConfig({ ...editConfig, numActividadesCotidianas: parseInt(e.target.value) || 1 })} className={`w-16 h-11 text-base ${darkMode ? 'bg-card border-white/30 text-white' : ''}`} /><span className="text-sm">u.</span><Input type="number" min="0" max="100" value={editConfig.porcentajeAC} onChange={e => setEditConfig({ ...editConfig, porcentajeAC: parseFloat(e.target.value) || 0 })} className={`w-16 h-11 text-base ml-auto ${darkMode ? 'bg-card border-white/30 text-white' : ''}`} /><span className="text-sm">%</span></div></div>
+            <div><Label className="text-sm">Actividades Integradoras</Label><div className="flex items-center gap-2 mt-1"><Input type="number" min="1" max="10" value={editConfig.numActividadesIntegradoras} onChange={e => setEditConfig({ ...editConfig, numActividadesIntegradoras: parseInt(e.target.value) || 1 })} className={`w-16 h-11 text-base ${darkMode ? 'bg-card border-white/30 text-white' : ''}`} /><span className="text-sm">u.</span><Input type="number" min="0" max="100" value={editConfig.porcentajeAI} onChange={e => setEditConfig({ ...editConfig, porcentajeAI: parseFloat(e.target.value) || 0 })} className={`w-16 h-11 text-base ml-auto ${darkMode ? 'bg-card border-white/30 text-white' : ''}`} /><span className="text-sm">%</span></div></div>
+            <div className="flex items-center justify-between"><Label className="text-sm">Examen</Label><div className="flex items-center gap-2"><input type="checkbox" checked={editConfig.tieneExamen} onChange={e => setEditConfig({ ...editConfig, tieneExamen: e.target.checked })} className="h-5 w-5" />{editConfig.tieneExamen && <><Input type="number" min="0" max="100" value={editConfig.porcentajeExamen} onChange={e => setEditConfig({ ...editConfig, porcentajeExamen: parseFloat(e.target.value) || 0 })} className={`w-16 h-11 text-base ${darkMode ? 'bg-card border-white/30 text-white' : ''}`} /><span className="text-sm">%</span></>}</div></div>
             <div className={`p-3 rounded-lg text-sm flex justify-between ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}><span>Total:</span><span className={`font-bold ${Math.abs(editConfig.porcentajeAC + editConfig.porcentajeAI + (editConfig.tieneExamen ? editConfig.porcentajeExamen : 0) - 100) > 0.1 ? 'text-red-500' : (darkMode ? 'text-emerald-400' : 'text-emerald-600')}`}>{(editConfig.porcentajeAC + editConfig.porcentajeAI + (editConfig.tieneExamen ? editConfig.porcentajeExamen : 0)).toFixed(1)}%</span></div>
             <div className={`flex items-center gap-2 mt-4 pt-4 border-t ${darkMode ? 'border-slate-700' : 'border-slate-200'}`}>
               <input type="checkbox" id="aplicarATodas" checked={configAplicarATodas} onChange={e => setConfigAplicarATodas(e.target.checked)} className="h-5 w-5 text-emerald-600" />
@@ -3380,8 +3380,8 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
           <DialogHeader><DialogTitle>Importar Calificaciones</DialogTitle><DialogDescription>Carga un archivo CSV con las notas de los estudiantes.</DialogDescription></DialogHeader>
           <div className="space-y-3">
             <div className="flex gap-2">
-              <Button size="sm" variant="outline" onClick={generateTemplate} className={`flex-1 text-xs ${darkMode ? 'border-slate-600 text-slate-400 hover:bg-slate-700' : ''}`}><Download className="h-3.5 w-3.5 mr-1" />Plantilla</Button>
-              <Button size="sm" variant="outline" onClick={() => document.querySelector<HTMLInputElement>('input[type="file"]')?.click()} className={`flex-1 text-xs ${darkMode ? 'border-slate-600 text-slate-400 hover:bg-slate-700' : ''}`}><Upload className="h-3.5 w-3.5 mr-1" />Cargar</Button>
+              <Button size="sm" variant="outline" onClick={generateTemplate} className={`flex-1 text-xs ${darkMode ? 'border-white/30 text-white hover:bg-white/10' : ''}`}><Download className="h-3.5 w-3.5 mr-1" />Plantilla</Button>
+              <Button size="sm" variant="outline" onClick={() => document.querySelector<HTMLInputElement>('input[type="file"]')?.click()} className={`flex-1 text-xs ${darkMode ? 'border-white/30 text-white hover:bg-white/10' : ''}`}><Upload className="h-3.5 w-3.5 mr-1" />Cargar</Button>
               <input type="file" accept=".csv,.txt" className="hidden" onChange={handleFileUpload} />
             </div>
             {importData && <pre className={`p-2 rounded max-h-32 overflow-auto text-[10px] ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>{importData.slice(0, 500)}</pre>}
@@ -3425,7 +3425,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
               value={resetPasswordForm.password}
               onChange={(e) => setResetPasswordForm({ password: e.target.value })}
               placeholder="Ingresa la nueva contraseña"
-              className={`mt-1 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}
+              className={`mt-1 ${darkMode ? 'bg-card border-white/30 text-white' : ''}`}
             />
           </div>
           <DialogFooter>
@@ -3476,7 +3476,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                 <p className={`text-xs mb-1 ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Materias Asignadas</p>
                 <div className="flex flex-wrap gap-1">
                   {usuario.asignaturasAsignadas.map((m: any) => (
-                    <Badge key={m.id} variant="outline" className={darkMode ? 'bg-slate-800 text-slate-400 border-slate-700' : ''}>{m.nombre} ({m.gradoNumero}°)</Badge>
+                    <Badge key={m.id} variant="outline" className={darkMode ? 'bg-slate-800 text-slate-200 border-slate-700' : ''}>{m.nombre} ({m.gradoNumero}°)</Badge>
                   ))}
                 </div>
               </div>

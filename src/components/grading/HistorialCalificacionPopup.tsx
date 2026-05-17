@@ -178,7 +178,7 @@ export function HistorialCalificacionPopup({
     <div
       className={`fixed z-50 rounded-xl shadow-2xl border overflow-hidden flex flex-col ${
         darkMode
-          ? "bg-[#0E1726] border-slate-600 text-white"
+          ? "bg-card border-white/30 text-white"
           : "bg-white border-slate-200 text-slate-900"
       }`}
       style={{
@@ -192,7 +192,7 @@ export function HistorialCalificacionPopup({
       {/* Header */}
       <div
         className={`flex items-center justify-between px-4 py-3 border-b ${
-          darkMode ? "border-slate-600 bg-slate-800/80" : "border-slate-200 bg-slate-50"
+          darkMode ? "border-white/30 bg-card" : "border-slate-200 bg-slate-50"
         }`}
       >
         <div className="flex items-center gap-2">
@@ -230,7 +230,7 @@ export function HistorialCalificacionPopup({
 
       {/* Valor actual */}
       {valorActual !== null && (
-        <div className={`px-4 py-2 border-b flex items-center justify-center gap-2 ${darkMode ? "border-slate-600 bg-slate-800/40" : "border-slate-200 bg-slate-50/60"}`}>
+        <div className={`px-4 py-2 border-b flex items-center justify-center gap-2 ${darkMode ? "border-white/30 bg-muted" : "border-slate-200 bg-slate-50/60"}`}>
           <span className={`text-[10px] font-semibold uppercase tracking-wider ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
             Valor actual
           </span>
@@ -337,7 +337,7 @@ export function HistorialCalificacionPopup({
             <div
               className={`rounded-xl border p-4 space-y-3 ${
                 darkMode
-                  ? "bg-slate-800/60 border-slate-700"
+                  ? "bg-muted border-white/20"
                   : "bg-slate-50 border-slate-200"
               }`}
             >
@@ -522,7 +522,7 @@ export function HistorialCalificacionPopup({
         <div
           className={`px-4 py-2.5 border-t flex items-center justify-between ${
             darkMode
-              ? "border-slate-600 bg-slate-800/80 text-slate-400"
+              ? "border-white/30 bg-muted text-slate-400"
               : "border-slate-200 bg-slate-50 text-slate-500"
           }`}
         >

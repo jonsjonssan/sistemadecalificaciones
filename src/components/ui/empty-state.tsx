@@ -32,7 +32,7 @@ export function EmptyState({
       <Card
         className={cn(
           "border-2 border-dashed shadow-sm",
-          darkMode ? "bg-[#0E1726] border-slate-700" : "bg-white border-slate-200"
+          darkMode ? "bg-card border-slate-700" : "bg-white border-slate-200"
         )}
       >
         <CardContent className="flex flex-col items-center justify-center py-12 px-4 text-center">

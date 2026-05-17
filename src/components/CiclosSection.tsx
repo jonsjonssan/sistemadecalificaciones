@@ -204,7 +204,7 @@ export const CiclosSection = memo(function CiclosSection({
                     }}
                     className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 h-4 w-4"
                   />
-                  <label htmlFor={`select-all-${ciclo.nombre}`} className={`text-xs font-semibold cursor-pointer ${darkMode ? 'text-slate-400' : 'text-slate-700'}`}>
+                  <label htmlFor={`select-all-${ciclo.nombre}`} className={`text-xs font-semibold cursor-pointer ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>
                     {allSelected ? "Deseleccionar todas" : someSelected ? "Seleccionar restantes" : "Seleccionar todas"} las asignaturas
                   </label>
                 </div>
@@ -213,12 +213,12 @@ export const CiclosSection = memo(function CiclosSection({
                   {promPorGrado.map(grupo => {
                     const stat = stats.find(s => s.gradoId === grupo.gradoId);
                     return (
-                      <div key={grupo.grado} className={`rounded-lg border p-3 ${darkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+                      <div key={grupo.grado} className={`rounded-lg border p-3 ${darkMode ? 'bg-card border-white/30' : 'bg-white border-slate-200'}`}>
                         <div className="flex items-center justify-between mb-2">
                           <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                             {grupo.grado}° "{grupo.seccion}"
                           </h4>
-                          <Badge variant={grupo.promedio != null && Math.round(grupo.promedio) >= 5 ? "default" : "destructive"} className={`text-[10px] h-5 ${grupo.promedio != null && Math.round(grupo.promedio) >= 5 ? (darkMode ? 'bg-emerald-600' : 'bg-emerald-600') : ''}`}>
+                          <Badge variant={grupo.promedio != null && Math.round(grupo.promedio) >= 5 ? "default" : "destructive"} className={`text-[10px] h-5 ${grupo.promedio != null && Math.round(grupo.promedio) >= 5 ? (darkMode ? 'bg-emerald-600 text-white' : 'bg-emerald-600 text-white') : ''}`}>
                             {grupo.promedio != null ? grupo.promedio.toFixed(1) : "N/A"}
                           </Badge>
                         </div>
