@@ -54,7 +54,7 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode, umbralA
 
   if (loading) {
     return (
-      <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
+      <Card className={`shadow-sm ${darkMode ? 'bg-[#121923] border-slate-700' : ''}`}>
         <CardHeader>
           <Skeleton className={`h-5 w-48 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
         </CardHeader>
@@ -71,7 +71,7 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode, umbralA
 
   if (!data) {
     return (
-      <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
+      <Card className={`shadow-sm ${darkMode ? 'bg-[#121923] border-slate-700' : ''}`}>
         <CardContent className="p-6 text-center">
           <BarChart3 className={`h-12 w-12 mx-auto mb-3 ${darkMode ? 'text-slate-600' : 'text-slate-300'}`} />
           <p className={`text-sm ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -89,7 +89,7 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode, umbralA
   return (
     <div className="space-y-4">
       {/* Resumen General */}
-      <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
+      <Card className={`shadow-sm ${darkMode ? 'bg-[#121923] border-slate-700' : ''}`}>
         <CardHeader className="pb-3">
           <CardTitle className={`text-base flex items-center gap-2 ${darkMode ? 'text-white' : 'text-slate-800'}`}>
             <BarChart3 className="h-5 w-5 text-emerald-600" />
@@ -401,7 +401,7 @@ function StatCard({ label, value, icon: Icon, color, darkMode }: any) {
 
 function SectionCard({ title, subtitle, icon: Icon, expanded, onToggle, count, darkMode, children }: any) {
   return (
-    <Card className={`shadow-sm ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
+    <Card className={`shadow-sm ${darkMode ? 'bg-[#121923] border-slate-700' : ''}`}>
       <CardHeader
         className={`pb-3 cursor-pointer hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors ${darkMode ? 'border-slate-700' : ''}`}
         onClick={onToggle}

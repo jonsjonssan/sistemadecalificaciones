@@ -310,9 +310,9 @@
   /* ── SEMANTIC (DARK) ── */
   --background:         oklch(0.12 0.01 264.542);
   --foreground:         oklch(0.96 0.005 264.542);
-  --card:               oklch(0.17 0.01 264.542);
+  --card:               #121923;
   --card-foreground:    oklch(0.96 0.005 264.542);
-  --popover:            oklch(0.17 0.01 264.542);
+  --popover:            #121923;
   --popover-foreground: oklch(0.96 0.005 264.542);
   --primary:            oklch(0.7 0.14 178.5);
   --primary-foreground: oklch(0.12 0.01 264.542);

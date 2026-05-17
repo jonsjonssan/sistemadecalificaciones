@@ -262,7 +262,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
 
   if (!grados || grados.length === 0) {
     return (
-      <Card className={`shadow-sm border ${darkMode ? "bg-[#1e293b] border-slate-700 text-white" : "bg-white border-slate-200"}`}>
+      <Card className={`shadow-sm border ${darkMode ? "bg-[#121923] border-slate-700 text-white" : "bg-white border-slate-200"}`}>
         <CardContent className="p-6 text-center text-slate-500">No hay grados disponibles.</CardContent>
       </Card>
     );
@@ -271,7 +271,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
   return (
     <div className="space-y-3">
       {/* Leyenda normativa */}
-      <Card className={`shadow-sm border ${darkMode ? "bg-[#1e293b] border-slate-700 text-white" : "bg-white border-slate-200"}`}>
+      <Card className={`shadow-sm border ${darkMode ? "bg-[#121923] border-slate-700 text-white" : "bg-white border-slate-200"}`}>
         <CardContent className="p-3">
           <div className="flex flex-wrap items-center gap-3 text-xs">
             <span className="font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 text-[10px]">Marco Normativo</span>
@@ -303,7 +303,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
       </Card>
 
       {/* Selectores */}
-      <Card className={`shadow-sm border ${darkMode ? "bg-[#1e293b] border-slate-700" : "bg-white border-slate-200"}`}>
+      <Card className={`shadow-sm border ${darkMode ? "bg-[#121923] border-slate-700" : "bg-white border-slate-200"}`}>
         <CardContent className="p-2 sm:p-3">
           <div className="flex flex-wrap items-end gap-2 sm:gap-3">
             <div className="flex-1 min-w-[140px]">
@@ -378,11 +378,11 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
 
       {/* Contenido */}
       {!gradoId ? (
-        <Card className={`shadow-sm border ${darkMode ? "bg-[#1e293b] border-slate-700 text-white" : "bg-white border-slate-200"}`}>
+        <Card className={`shadow-sm border ${darkMode ? "bg-[#121923] border-slate-700 text-white" : "bg-white border-slate-200"}`}>
           <CardContent className="p-6 text-center text-slate-500">Selecciona un grado y trimestre para ver el reporte.</CardContent>
         </Card>
       ) : loading ? (
-        <Card className={`shadow-sm border ${darkMode ? "bg-[#1e293b] border-slate-700" : "bg-white border-slate-200"}`}>
+        <Card className={`shadow-sm border ${darkMode ? "bg-[#121923] border-slate-700" : "bg-white border-slate-200"}`}>
           <CardContent className="p-3">
             <div className="space-y-2">
               <Skeleton className={`h-4 w-48 ${darkMode ? "bg-slate-700" : "bg-slate-200"}`} />
@@ -393,7 +393,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
           </CardContent>
         </Card>
       ) : error ? (
-        <Card className={`shadow-sm border ${darkMode ? "bg-[#1e293b] border-slate-700" : "bg-white border-slate-200"}`}>
+        <Card className={`shadow-sm border ${darkMode ? "bg-[#121923] border-slate-700" : "bg-white border-slate-200"}`}>
           <CardContent className="p-4 text-center text-red-500">{error}</CardContent>
         </Card>
       ) : (
@@ -429,7 +429,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
           </div>
 
           {/* Tabla */}
-          <Card className={`shadow-xl border overflow-hidden ${darkMode ? "bg-[#1e293b] border-slate-700 text-white" : "bg-white border-slate-200"}`}>
+          <Card className={`shadow-xl border overflow-hidden ${darkMode ? "bg-[#121923] border-slate-700 text-white" : "bg-white border-slate-200"}`}>
             <CardContent className="p-0">
               <div className="overflow-x-auto">
                 <table className="w-full text-xs sm:text-sm font-medium border-collapse">
@@ -448,7 +448,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
                   <tbody>
                     {estudiantes.map((est, idx) => {
                       const rowBg = idx % 2 === 0
-                        ? (darkMode ? "bg-[#1e293b]" : "bg-white")
+                        ? (darkMode ? "bg-[#121923]" : "bg-white")
                         : (darkMode ? "bg-slate-800/60" : "bg-slate-50/50");
                       const cellBorder = darkMode ? "border-slate-700" : "border-slate-200";
 

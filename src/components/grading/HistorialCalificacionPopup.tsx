@@ -178,7 +178,7 @@ export function HistorialCalificacionPopup({
     <div
       className={`fixed z-50 rounded-xl shadow-2xl border overflow-hidden flex flex-col ${
         darkMode
-          ? "bg-[#1e293b] border-slate-600 text-white"
+          ? "bg-[#121923] border-slate-600 text-white"
           : "bg-white border-slate-200 text-slate-900"
       }`}
       style={{

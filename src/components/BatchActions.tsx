@@ -163,7 +163,7 @@ export default function BatchActions({ gradoId, materiaId, trimestre, estudiante
           Acciones por Lote
         </Button>
       </DialogTrigger>
-      <DialogContent className={`max-w-lg ${darkMode ? 'bg-[#1e293b] border-slate-700' : ''}`}>
+      <DialogContent className={`max-w-lg ${darkMode ? 'bg-[#121923] border-slate-700' : ''}`}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Users className="h-5 w-5 text-emerald-600" />
