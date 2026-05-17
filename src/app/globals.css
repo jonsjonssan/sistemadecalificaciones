@@ -18,6 +18,8 @@
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar: var(--sidebar);
   --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+  --color-info: var(--info);
   --color-chart-4: var(--chart-4);
   --color-chart-3: var(--chart-3);
   --color-chart-2: var(--chart-2);
@@ -275,112 +277,113 @@
 .dark,
 .dark-theme,
 :is(.dark, .dark-theme) :where(.radix-themes:not(.light, .light-theme)) {
-  --color-background: #0B0E17;
+  --color-background: #060708;
 }
 
 .dark {
-  --white: oklch(0.060 0.012 265);  /* #0B0E17 — fondo ≡ app bg */
-  --black: oklch(0.955 0.005 260);  /* #F1F5F9 — texto ppal */
+  --white: #060708;              /* fondo ≡ app bg */
+  --black: #F5F5F7;              /* texto ppal */
 
   /* ── SEMANTIC (DARK) ── */
-  --background:        #0B0E17;      /* fondo — muy oscuro, azul marino profundo */
-  --foreground:        #F1F5F9;      /* texto ppal */
-  --card:              #0E1420;      /* tarjetas — apenas más claro que fondo */
-  --card-foreground:   #F1F5F9;
-  --popover:           #0E1420;
-  --popover-foreground:#F1F5F9;
-  --primary:           #3B82F6;      /* azul institucional */
-  --primary-foreground:#0B0E17;      /* texto oscuro sobre botón azul — 5.5:1 ✓ */
-  --secondary:         #121A28;      /* hover / surface-2 */
-  --secondary-foreground:#F1F5F9;
-  --muted:             #121A28;      /* secciones inactivas */
-  --muted-foreground:  #64748B;      /* texto terciario — 4.8:1 ✓ */
-  --accent:            #162D52;      /* hover sobre interactive */
-  --accent-foreground: #60A5FA;
-  --destructive:       #EF4444;
-  --border:            #1E293B;      /* bordes sutiles */
-  --input:             #1E293B;      /* borde de formularios */
-  --ring:              #3B82F6;
+  --background:         #060708;
+  --foreground:         #F5F5F7;
+  --card:               #15181D;
+  --card-foreground:    #F5F5F7;
+  --popover:            #15181D;
+  --popover-foreground: #F5F5F7;
+  --primary:            #FFFFFF;
+  --primary-foreground: #08090B;
+  --secondary:          #1A1E24;
+  --secondary-foreground: #F5F5F7;
+  --muted:              #0C0D0F;
+  --muted-foreground:   #9A9EAA;
+  --accent:             #111317;
+  --accent-foreground:  #D5D7DC;
+  --destructive:        #E5737A;
+  --border:             #252932;
+  --input:              #252932;
+  --ring:               #FFFFFF;
+  --info:               #73B5F0;
 
   /* ── CHARTS (DARK) ── */
-  --chart-1: #3B82F6;
-  --chart-2: #22C55E;
-  --chart-3: #F59E0B;
-  --chart-4: #A78BFA;
-  --chart-5: #EF4444;
+  --chart-1: #FFFFFF;
+  --chart-2: #D5D7DC;
+  --chart-3: #9A9EAA;
+  --chart-4: #6DD58C;
+  --chart-5: #F0C86B;
+  --chart-6: #E5737A;
 
   /* ── SIDEBAR (DARK) ── */
-  --sidebar: oklch(0.055 0.010 265);         /* #070C16 */
-  --sidebar-foreground: #F1F5F9;
-  --sidebar-primary: #3B82F6;
-  --sidebar-primary-foreground: oklch(0.055 0.010 265);
-  --sidebar-accent: #162D52;
-  --sidebar-accent-foreground: #60A5FA;
-  --sidebar-border: #1E293B;
-  --sidebar-ring: #3B82F6;
+  --sidebar: #050607;
+  --sidebar-foreground: #F5F5F7;
+  --sidebar-primary: #FFFFFF;
+  --sidebar-primary-foreground: #08090B;
+  --sidebar-accent: #111317;
+  --sidebar-accent-foreground: #D5D7DC;
+  --sidebar-border: #252932;
+  --sidebar-ring: #FFFFFF;
 
   /* ── SLATE (escala neutra — dark) ──
-       50‑300 = superficies de fondo a borde
-       400‑500 = ui oscura elevada / disabled
-       600‑900 = textos */
-  --slate-50:  #0B0E17;   /* app bg */
-  --slate-100: #0E1420;   /* card surface */
-  --slate-200: #121A28;   /* input / table bg */
-  --slate-300: #1E293B;   /* border */
-  --slate-400: #334155;   /* elevated surface */
-  --slate-500: #475569;   /* disabled */
-  --slate-600: #64748B;   /* muted text — 4.8:1 ✓ */
-  --slate-700: #94A3B8;   /* secondary text — 6.1:1 ✓ */
-  --slate-800: #CBD5E1;   /* body text — 7.9:1 ✓ */
-  --slate-900: #F1F5F9;   /* headings — 9.1:1 ✓✓ */
+       50-500 = superficies
+       600-900 = textos */
+  --slate-50:  #060708;
+  --slate-100: #0C0D0F;
+  --slate-200: #111317;
+  --slate-300: #15181D;
+  --slate-400: #1A1E24;
+  --slate-500: #252932;
+  --slate-600: #9A9EAA;
+  --slate-700: #D5D7DC;
+  --slate-800: #F5F5F7;
+  --slate-900: #F5F5F7;
 
-  /* ── EMERALD (verde éxito — dark) ── */
+  /* ── EMERALD (success — dark) ── */
   --emerald-50:  oklch(0.070 0.020 150);
   --emerald-100: oklch(0.090 0.030 150);
   --emerald-200: oklch(0.120 0.050 150);
   --emerald-300: oklch(0.200 0.090 150);
-  --emerald-400: oklch(0.560 0.180 150); /* #2ECB6A — 4.7:1 sobre card ✓ */
-  --emerald-500: oklch(0.660 0.190 148); /* #4ADE80 */
-  --emerald-600: #22C55E;
-  --emerald-700: oklch(0.720 0.170 148);
-  --emerald-800: oklch(0.840 0.120 148);
-  --emerald-900: oklch(0.940 0.060 148);
+  --emerald-400: #6DD58C;
+  --emerald-500: oklch(0.820 0.140 148);
+  --emerald-600: oklch(0.860 0.120 148);
+  --emerald-700: oklch(0.900 0.090 148);
+  --emerald-800: oklch(0.940 0.060 148);
+  --emerald-900: oklch(0.970 0.030 148);
 
-  /* ── AMBER (advertencia — dark) ── */
+  /* ── AMBER (warning — dark) ── */
   --amber-50: oklch(0.070 0.025 85);
   --amber-100: oklch(0.090 0.040 85);
   --amber-200: oklch(0.120 0.060 85);
   --amber-300: oklch(0.200 0.090 85);
-  --amber-400: oklch(0.560 0.150 85);
-  --amber-500: oklch(0.660 0.160 85);
-  --amber-600: #F59E0B;
-  --amber-700: oklch(0.720 0.150 82);
-  --amber-800: oklch(0.840 0.100 82);
-  --amber-900: oklch(0.940 0.050 82);
+  --amber-400: #F0C86B;
+  --amber-500: oklch(0.850 0.120 88);
+  --amber-600: oklch(0.880 0.100 88);
+  --amber-700: oklch(0.920 0.080 85);
+  --amber-800: oklch(0.950 0.050 85);
+  --amber-900: oklch(0.980 0.020 85);
 
-  /* ── BLUE (acento institucional — dark) ── */
+  /* ── BLUE (info — dark) ── */
   --blue-50:  oklch(0.060 0.020 260);
   --blue-100: oklch(0.080 0.035 260);
   --blue-200: oklch(0.110 0.055 260);
   --blue-300: oklch(0.180 0.080 260);
-  --blue-400: oklch(0.380 0.120 258);
-  --blue-500: oklch(0.550 0.170 258); /* #3B82F6 */
-  --blue-600: #60A5FA;
-  --blue-700: #93C5FD;
-  --blue-800: #BFDBFE;
-  --blue-900: #DBEAFE;
+  --blue-400: #73B5F0;
+  --blue-500: oklch(0.780 0.120 248);
+  --blue-600: oklch(0.840 0.100 248);
+  --blue-700: oklch(0.900 0.070 248);
+  --blue-800: oklch(0.940 0.040 248);
+  --blue-900: oklch(0.970 0.020 248);
 
-  /* ── RED (error — dark) ── */
+  /* ── RED (danger — dark) ── */
   --red-50: oklch(0.070 0.030 28);
   --red-100: oklch(0.090 0.050 28);
   --red-200: oklch(0.120 0.070 28);
   --red-300: oklch(0.200 0.110 28);
-  --red-400: oklch(0.560 0.200 28);
-  --red-500: oklch(0.660 0.200 28);
-  --red-600: #EF4444;
-  --red-700: oklch(0.720 0.180 26);
-  --red-800: oklch(0.840 0.140 26);
-  --red-900: oklch(0.940 0.080 26);
+  --red-400: #E5737A;
+  --red-500: oklch(0.680 0.180 24);
+  --red-600: oklch(0.750 0.160 24);
+  --red-700: oklch(0.820 0.130 24);
+  --red-800: oklch(0.900 0.090 24);
+  --red-900: oklch(0.960 0.040 24);
 
   /* ── VIOLET / LIME (solo charts) ── */
   --lime-50:  oklch(0.070 0.030 145);
@@ -492,15 +495,15 @@
     position: fixed;
     inset: 0;
     background-image:
-      radial-gradient(ellipse at 15% 20%, oklch(0.550 0.170 258 / 0.04) 0%, transparent 55%),
-      radial-gradient(ellipse at 85% 80%, oklch(0.180 0.080 260 / 0.04) 0%, transparent 50%);
+      radial-gradient(ellipse at 15% 20%, oklch(0.97 0.002 260 / 0.03) 0%, transparent 55%),
+      radial-gradient(ellipse at 85% 80%, oklch(0.97 0.002 260 / 0.02) 0%, transparent 50%);
     pointer-events: none;
     z-index: -1;
   }
   .dark .page-atmosphere::before {
     background-image:
-      radial-gradient(ellipse at 15% 20%, oklch(0.550 0.170 258 / 0.08) 0%, transparent 50%),
-      radial-gradient(ellipse at 85% 80%, oklch(0.180 0.080 260 / 0.08) 0%, transparent 50%);
+      radial-gradient(ellipse at 15% 20%, oklch(0.97 0.002 260 / 0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 85% 80%, oklch(0.97 0.002 260 / 0.03) 0%, transparent 50%);
   }
 
   @keyframes fade-slide-up {
@@ -541,7 +544,7 @@
     animation: shimmer 1.5s ease-in-out infinite;
   }
   .dark .skeleton-shimmer {
-    background: linear-gradient(90deg, #121A28 25%, #1E293B 50%, #121A28 75%);
+    background: linear-gradient(90deg, #0C0D0F 25%, #15181D 50%, #0C0D0F 75%);
     background-size: 200% 100%;
   }
 }
