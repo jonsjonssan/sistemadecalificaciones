@@ -275,19 +275,19 @@
 .dark,
 .dark-theme,
 :is(.dark, .dark-theme) :where(.radix-themes:not(.light, .light-theme)) {
-  --color-background: #000;
+  --color-background: oklch(0.070 0.006 160);
 }
 
 .dark {
-  --white: oklch(0 0 0);
+  --white: oklch(0.070 0.006 160);
   --black: oklch(0.90 0.008 150);
 
   /* ── SEMANTIC (DARK) ── */
-  --background:       oklch(0 0 0);
+  --background:       oklch(0.070 0.006 160);
   --foreground:       oklch(0.860 0.010 150);
-  --card:             oklch(0.080 0.006 160);
+  --card:             oklch(0.095 0.008 160);
   --card-foreground:  oklch(0.860 0.010 150);
-  --popover:          oklch(0.080 0.006 160);
+  --popover:          oklch(0.095 0.008 160);
   --popover-foreground: oklch(0.860 0.010 150);
   --primary:          oklch(0.600 0.200 158);
   --primary-foreground: oklch(0.080 0.010 160);
@@ -310,7 +310,7 @@
   --chart-5: oklch(0.580 0.220 28);
 
   /* ── SIDEBAR (DARK) ── */
-  --sidebar: oklch(0.040 0.005 160);
+  --sidebar: oklch(0.055 0.006 160);
   --sidebar-foreground: oklch(0.860 0.010 150);
   --sidebar-primary: oklch(0.600 0.200 158);
   --sidebar-primary-foreground: oklch(0.040 0.005 160);
@@ -320,10 +320,10 @@
   --sidebar-ring: oklch(0.600 0.200 158);
 
   /* ── SLATE (neutral gray — dark, 50=darkest 900=lightest) ── */
-  --slate-50:  oklch(0 0 0);
-  --slate-100: oklch(0.060 0.006 160);
-  --slate-200: oklch(0.100 0.008 160);
-  --slate-300: oklch(0.160 0.012 160);
+  --slate-50:  oklch(0.070 0.006 160);
+  --slate-100: oklch(0.085 0.008 160);
+  --slate-200: oklch(0.110 0.010 160);
+  --slate-300: oklch(0.150 0.012 160);
   --slate-400: oklch(0.280 0.016 160);
   --slate-500: oklch(0.420 0.018 160);
   --slate-600: oklch(0.560 0.018 150);
@@ -332,9 +332,9 @@
   --slate-900: oklch(0.880 0.010 150);
 
   /* ── EMERALD (Matrix green — dark, 50=darkest 900=lightest) ── */
-  --emerald-50:  oklch(0 0 0);
-  --emerald-100: oklch(0.060 0.015 160);
-  --emerald-200: oklch(0.100 0.030 160);
+  --emerald-50:  oklch(0.070 0.015 160);
+  --emerald-100: oklch(0.085 0.020 160);
+  --emerald-200: oklch(0.110 0.030 160);
   --emerald-300: oklch(0.160 0.060 160);
   --emerald-400: oklch(0.240 0.090 160);
   --emerald-500: oklch(0.340 0.130 158);
