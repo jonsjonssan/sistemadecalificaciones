@@ -821,7 +821,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
               </div>
 
               <Button
-                className={`h-10 text-white w-full sm:w-auto px-6 font-bold text-xs sm:text-sm ${darkMode ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-emerald-600 hover:bg-emerald-700'}`}
+                className={`h-10 w-full sm:w-auto px-6 font-bold text-xs sm:text-sm ${darkMode ? 'bg-emerald-600 hover:bg-emerald-500 text-black' : 'bg-emerald-600 hover:bg-emerald-700 text-white'}`}
                 onClick={handleSave}
                 disabled={saving || activeStudents.length === 0 || asistenciaBloqueada}
               >
@@ -829,7 +829,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                 {saving ? "Guardando..." : asistenciaBloqueada ? "Bloqueado" : "Guardar Lista"}
               </Button>
               <Button
-                className={`h-10 text-white w-full sm:w-auto px-4 font-bold text-xs sm:text-sm ${darkMode ? 'bg-red-700 hover:bg-red-600' : 'bg-red-600 hover:bg-red-700'}`}
+                className={`h-10 w-full sm:w-auto px-4 font-bold text-xs sm:text-sm ${darkMode ? 'bg-red-700 hover:bg-red-600 text-black' : 'bg-red-600 hover:bg-red-700 text-white'}`}
                 onClick={handleDelete}
                 disabled={deleting || activeStudents.length === 0}
               >

@@ -43,7 +43,7 @@ export const PromedioCircular = memo(function PromedioCircular({ valor, darkMode
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className={`text-3xl font-bold ${darkMode ? 'text-slate-100' : 'text-slate-800'}`}>
+          <span className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>
             {valor != null ? valor.toFixed(2) : "—"}
           </span>
           <span className="text-[10px] text-muted-foreground">de 10</span>

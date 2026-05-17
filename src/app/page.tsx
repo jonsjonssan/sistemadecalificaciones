@@ -2857,10 +2857,10 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                       <FileText className="h-4 w-4" />
                     </div>
                     <div>
-                      <CardTitle className={`text-base font-semibold tracking-tight ${darkMode ? 'text-slate-100' : 'text-slate-800'}`}>
-                        Generación de Boletas
-                      </CardTitle>
-                      <CardDescription className={`text-xs mt-0.5 ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>
+<CardTitle className={`text-base font-semibold tracking-tight ${darkMode ? 'text-white' : 'text-slate-800'}`}>
+      Generación de Boletas
+    </CardTitle>
+    <CardDescription className={`text-xs mt-0.5 ${darkMode ? 'text-white' : 'text-slate-500'}`}>
                         Selecciona grado y trimestre para visualizar las boletas de calificaciones
                       </CardDescription>
                     </div>
@@ -2944,7 +2944,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                                   }}
                                   className={`px-3 py-1 rounded-full text-xs font-medium border transition-all duration-150 ${
                                     isSelected
-                                      ? (darkMode ? 'bg-primary/20 text-emerald-400 border-emerald-500/50 shadow-sm' : 'bg-emerald-50 text-emerald-700 border-emerald-300 shadow-sm')
+                                      ? (darkMode ? 'bg-primary/20 text-emerald-400 border-emerald-500/50 shadow-sm text-stroke-black' : 'bg-emerald-50 text-emerald-700 border-emerald-300 shadow-sm')
                                       : (darkMode ? 'bg-muted text-slate-300 border-white/30 hover:border-white/50 hover:text-white' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:text-slate-700')
                                   }`}
                                 >
@@ -2963,7 +2963,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                       )}
 
                       <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-800/40 border-slate-700/50' : 'bg-white border-slate-200/70 shadow-sm'}`}>
-                        <Label className={`text-xs font-semibold uppercase tracking-wider mb-3 block ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>
+                        <Label className={`text-xs font-semibold uppercase tracking-wider mb-3 block ${darkMode ? 'text-white' : 'text-slate-500'}`}>
                           Opciones de impresión
                         </Label>
                         <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">

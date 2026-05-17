@@ -583,6 +583,14 @@
 
 }
 
+/* Thin black text-stroke for dark-mode table headers and selected green subject buttons */
+.dark thead th {
+  -webkit-text-stroke: 0.3px oklch(0 0 0 / 0.5);
+}
+.dark .text-stroke-black {
+  -webkit-text-stroke: 0.3px oklch(0 0 0 / 0.6);
+}
+
 /* ── TEXT READABILITY: white text + thin black stroke for dark-on-dark in dark mode ── */
 .dark .text-slate-200,
 .dark .text-slate-300,
