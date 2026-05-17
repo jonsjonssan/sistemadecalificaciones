@@ -865,7 +865,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                   </TableHeader>
                   <TableBody>
                     {Array.from({ length: 5 }).map((_, idx) => (
-                      <TableRow key={`skeleton-${idx}`} className={idx % 2 === 0 ? (darkMode ? 'bg-[#0E1726]' : '') : (darkMode ? 'bg-slate-800/50' : 'bg-slate-50/50')}>
+                      <TableRow key={`skeleton-${idx}`} className={idx % 2 === 0 ? (darkMode ? 'bg-[#0E1726]' : '') : (darkMode ? 'bg-[#1A2331]' : 'bg-slate-50/50')}>
                         <TableCell className="text-center"><Skeleton className={`h-4 w-6 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
                         <TableCell><Skeleton className={`h-4 w-40 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
                         <TableCell className="text-center"><Skeleton className={`h-8 w-32 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
@@ -951,8 +951,8 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                     {activeStudents.map((est, idx) => {
                       const estado = asistencias[est.id];
                       const evenRow = idx % 2 === 0;
-                      const rowBg = evenRow ? (darkMode ? 'bg-[#0E1726]' : '') : (darkMode ? 'bg-slate-800/50' : 'bg-slate-50/50');
-                      const stickyBg = evenRow ? (darkMode ? 'bg-[#0E1726]' : 'bg-white') : (darkMode ? 'bg-slate-800/50' : 'bg-slate-50/50');
+                      const rowBg = evenRow ? (darkMode ? 'bg-[#0E1726]' : '') : (darkMode ? 'bg-[#1A2331]' : 'bg-slate-50/50');
+                      const stickyBg = evenRow ? (darkMode ? 'bg-[#0E1726]' : 'bg-white') : (darkMode ? 'bg-[#1A2331]' : 'bg-slate-50/50');
 
                       const getEstadoBadgeClass = (e: string) => {
                         if (!e) return darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-400';
@@ -1109,7 +1109,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                 <TableBody>
                   {loading ? (
                     Array.from({ length: 5 }).map((_, idx) => (
-                      <TableRow key={`skeleton-${idx}`} className={idx % 2 === 0 ? (darkMode ? 'bg-[#0E1726]' : '') : (darkMode ? 'bg-slate-800/50' : 'bg-slate-50/50')}>
+                      <TableRow key={`skeleton-${idx}`} className={idx % 2 === 0 ? (darkMode ? 'bg-[#0E1726]' : '') : (darkMode ? 'bg-[#1A2331]' : 'bg-slate-50/50')}>
                         <TableCell className="text-center"><Skeleton className={`h-4 w-6 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
                         <TableCell><Skeleton className={`h-4 w-40 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
                         <TableCell className="text-center"><Skeleton className={`h-4 w-8 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
@@ -1132,7 +1132,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                         return (
                           <React.Fragment key={r.id}>
                             <TableRow
-                              className={`h-10 cursor-pointer transition-colors ${idx % 2 === 0 ? '' : (darkMode ? 'bg-slate-800/30' : 'bg-slate-50/30')} ${darkMode ? 'hover:bg-slate-700/50' : 'hover:bg-slate-100'}`}
+                              className={`h-10 cursor-pointer transition-colors ${idx % 2 === 0 ? '' : (darkMode ? 'bg-white/[0.03]' : 'bg-slate-50/30')} ${darkMode ? 'hover:bg-slate-700/50' : 'hover:bg-slate-100'}`}
                               onClick={() => setExpandedStudent(isExpanded ? null : r.id)}
                             >
                               <TableCell className={`text-center font-bold ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>{r.numero}</TableCell>
@@ -1162,7 +1162,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                               </TableCell>
                             </TableRow>
                             {isExpanded && (
-                              <TableRow className={darkMode ? 'bg-slate-800/50' : 'bg-slate-50'}>
+                              <TableRow className={darkMode ? 'bg-[#1A2331]' : 'bg-slate-50'}>
                                 <TableCell colSpan={7} className="py-4 px-4">
                                   <div className="space-y-4">
                                     {r.fechasPresente && r.fechasPresente.length > 0 && (

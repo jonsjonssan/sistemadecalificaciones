@@ -449,7 +449,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
                     {estudiantes.map((est, idx) => {
                       const rowBg = idx % 2 === 0
                         ? (darkMode ? "bg-[#0E1726]" : "bg-white")
-                        : (darkMode ? "bg-slate-800/60" : "bg-slate-50/50");
+                        : (darkMode ? "bg-[#1A2331]" : "bg-slate-50/50");
                       const cellBorder = darkMode ? "border-slate-700" : "border-slate-200";
 
                       return (

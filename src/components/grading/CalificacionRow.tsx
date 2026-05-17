@@ -190,7 +190,7 @@ function NotaInput({ value, onChange, darkMode, hasError, onBlur, onNavigate, in
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
         className={`grade-input w-full text-center border rounded px-0.5 transition-all ${darkMode
-          ? "bg-slate-700 border-slate-600 text-white placeholder-slate-400"
+          ? "bg-slate-800 border-slate-600 text-white placeholder-slate-400"
           : "bg-white border-slate-300 text-slate-900"
           } ${hasError ? "border-red-500 bg-red-50 dark:bg-red-900/20" : ""} focus:ring-emerald-500 focus:border-emerald-500 ${
             isActive
@@ -584,7 +584,7 @@ useEffect(() => {
       ? "bg-[#0E1726] hover:bg-slate-700/80"
       : "bg-white hover:bg-slate-50"
     : darkMode
-      ? "bg-slate-800/60 hover:bg-slate-700/80"
+      ? "bg-[#1A2331] hover:bg-slate-700/80"
       : "bg-slate-50/50 hover:bg-slate-100";
   const cellBorder = darkMode ? "border-slate-600/60" : "border-slate-200";
   const stickyBg = evenRow
@@ -592,7 +592,7 @@ useEffect(() => {
       ? "bg-[#0E1726]"
       : "bg-white"
     : darkMode
-      ? "bg-slate-800/60"
+      ? "bg-[#1A2331]"
       : "bg-slate-50/50";
   const promACBg = darkMode ? "bg-blue-900/50" : "bg-blue-50/70";
   const promAIBg = darkMode ? "bg-purple-900/50" : "bg-purple-50/70";
