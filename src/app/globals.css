@@ -590,6 +590,9 @@
 .dark .text-stroke-black {
   -webkit-text-stroke: 0.3px oklch(0 0 0 / 0.6);
 }
+.dark .text-stroke-white {
+  -webkit-text-stroke: 0.3px oklch(1 0 0 / 0.6);
+}
 
 /* ── TEXT READABILITY: white text + thin black stroke for dark-on-dark in dark mode ── */
 .dark .text-slate-200,

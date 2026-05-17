@@ -2501,7 +2501,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
 
                 {/* Marco Normativo Legend */}
                 <div className="flex flex-wrap items-center gap-1.5 sm:gap-3 px-2 sm:px-4 py-2 rounded-lg border border-border bg-muted/50 text-muted-foreground text-[10px] sm:text-xs">
-                  <span className="font-semibold uppercase tracking-wider text-muted-foreground/60 hidden sm:inline">Marco Normativo</span>
+                  <span className="font-semibold uppercase tracking-wider dark:text-white text-muted-foreground/60 hidden sm:inline">Marco Normativo</span>
                   <span className={`inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-md font-semibold whitespace-nowrap ${
                     darkMode ? 'bg-red-900/60 text-red-200 ring-1 ring-red-600' : 'bg-red-100 text-red-800 ring-1 ring-red-300'
                   }`}>
@@ -2944,7 +2944,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                                   }}
                                   className={`px-3 py-1 rounded-full text-xs font-medium border transition-all duration-150 ${
                                     isSelected
-                                      ? (darkMode ? 'bg-primary/20 text-emerald-400 border-emerald-500/50 shadow-sm text-stroke-black' : 'bg-emerald-50 text-emerald-700 border-emerald-300 shadow-sm')
+                                      ? (darkMode ? 'bg-primary/20 text-emerald-400 border-emerald-500/50 shadow-sm text-stroke-white' : 'bg-emerald-50 text-emerald-700 border-emerald-300 shadow-sm')
                                       : (darkMode ? 'bg-muted text-slate-300 border-white/30 hover:border-white/50 hover:text-white' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:text-slate-700')
                                   }`}
                                 >
@@ -2986,7 +2986,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                                 <Label htmlFor="pp-a4" className={`text-xs cursor-pointer ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>A4</Label>
                               </div>
                             </RadioGroup>
-                            <span className={`text-[10px] hidden sm:inline ${darkMode ? 'text-slate-600' : 'text-slate-400'}`}>
+                            <span className={`text-[10px] hidden sm:inline ${darkMode ? 'text-white' : 'text-slate-400'}`}>
                               {paperSize === "letter" ? "(215.9 × 279.4 mm)" : "(210 × 297 mm)"}
                             </span>
                           </div>
@@ -3104,7 +3104,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                   <CardContent className="pt-0">
                     <div className={`rounded border overflow-x-auto ${darkMode ? 'border-slate-700' : ''}`}>
                       <Table className="text-xs">
-                        <TableHeader><TableRow className={darkMode ? 'bg-slate-800' : 'bg-slate-100'}><TableHead className="h-8">Nombre</TableHead><TableHead>Email</TableHead><TableHead className="w-20">Rol</TableHead><TableHead className="w-20">Estado</TableHead><TableHead className="min-w-[200px]">Asignaciones</TableHead><TableHead className="w-20 text-center">Acciones</TableHead></TableRow></TableHeader>
+                        <TableHeader><TableRow className={darkMode ? 'bg-slate-700' : 'bg-slate-100'}><TableHead className="h-8">Nombre</TableHead><TableHead>Email</TableHead><TableHead className="w-20">Rol</TableHead><TableHead className="w-20">Estado</TableHead><TableHead className="min-w-[200px]">Asignaciones</TableHead><TableHead className="w-20 text-center">Acciones</TableHead></TableRow></TableHeader>
                         <TableBody>
                           {usuarios.map(u => (
                             <TableRow key={u.id} className={darkMode ? 'border-slate-700' : ''}>

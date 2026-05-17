@@ -274,29 +274,29 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
       <Card className={`shadow-sm border ${darkMode ? "bg-card border-slate-700 text-white" : "bg-white border-slate-200"}`}>
         <CardContent className="p-3">
           <div className="flex flex-wrap items-center gap-3 text-xs">
-            <span className="font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-200 text-[10px]">Marco Normativo</span>
+            <span className="font-semibold uppercase tracking-wider text-slate-500 dark:text-white text-[10px]">Marco Normativo</span>
             <div className="flex items-center gap-1.5">
               <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold ${getRangoColor("reprobado", darkMode)}`}>
                 <AlertTriangle className="h-3 w-3" /> 0 – {(umbralCondicionado - 0.01).toFixed(2)}
               </span>
-              <span className="text-slate-500 dark:text-slate-400">Reprobado (MINED + C.E.)</span>
+              <span className="text-slate-500 dark:text-white">Reprobado (MINED + C.E.)</span>
             </div>
             <div className={`h-4 w-px ${darkMode ? "bg-slate-600" : "bg-slate-300"}`} />
             <div className="flex items-center gap-1.5">
               <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold ${getRangoColor("condicionado", darkMode)}`}>
                 <HelpCircle className="h-3 w-3" /> {umbralCondicionado.toFixed(2)} – {(umbralAprobado - 0.01).toFixed(2)}
               </span>
-              <span className="text-slate-500 dark:text-slate-400">Condicionado (Aprueba MINED / Reprueba C.E.)</span>
+              <span className="text-slate-500 dark:text-white">Condicionado (Aprueba MINED / Reprueba C.E.)</span>
             </div>
             <div className={`h-4 w-px ${darkMode ? "bg-slate-600" : "bg-slate-300"}`} />
             <div className="flex items-center gap-1.5">
               <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold ${getRangoColor("aprobado", darkMode)}`}>
                 <CheckCircle2 className="h-3 w-3" /> ≥ {umbralAprobado.toFixed(2)}
               </span>
-              <span className="text-slate-500 dark:text-slate-400">Aprobado (MINED + C.E.)</span>
+              <span className="text-slate-500 dark:text-white">Aprobado (MINED + C.E.)</span>
             </div>
           </div>
-          <div className={`mt-2 pt-2 border-t text-[10px] leading-relaxed ${darkMode ? "border-slate-700 text-slate-500" : "border-slate-100 text-slate-400"}`}>
+          <div className={`mt-2 pt-2 border-t text-[10px] leading-relaxed ${darkMode ? "border-slate-700 text-white" : "border-slate-100 text-slate-400"}`}>
             Según el marco normativo del Ministerio de Educación (MINED), todo estudiante con calificación de <strong>5.00 en adelante aprueba</strong> el grado. El Centro Escolar Católico San José de la Montaña establece un estándar de excelencia de <strong>{umbralAprobado.toFixed(2)}</strong>. Los estudiantes entre <strong>{umbralCondicionado.toFixed(2)} y {(umbralAprobado - 0.01).toFixed(2)}</strong> aprueban según el MINED pero se consideran <em>condicionados</em> por el Centro Escolar. Los estudiantes con calificación menor a <strong>{umbralCondicionado.toFixed(2)}</strong> se consideran <em>reprobados</em>.
           </div>
         </CardContent>

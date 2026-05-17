@@ -882,10 +882,10 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
               <div className={`rounded-md border overflow-hidden table-scroll-container relative ${darkMode ? 'border-slate-700' : ''}`}>
                   <div className={`flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 px-2 sm:px-4 py-2 sm:py-3 border-b ${darkMode ? 'bg-gradient-to-r from-slate-800 to-slate-750 border-slate-700' : 'bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200'}`}>
                     <div className="flex items-center gap-2">
-                      <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>
+                      <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-black' : 'text-slate-500'}`}>
                         Estudiantes
                       </span>
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${darkMode ? 'bg-emerald-900/60 text-emerald-400' : 'bg-emerald-100 text-emerald-700'}`}>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${darkMode ? 'bg-emerald-900/60 text-black' : 'bg-emerald-100 text-emerald-700'}`}>
                         {activeStudents.length}
                       </span>
                     </div>
@@ -893,7 +893,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                       <Button
                         size="sm"
                         disabled={asistenciaBloqueada}
-                        className={`flex-1 sm:flex-none h-9 text-xs font-semibold px-3 sm:px-4 shadow-md transition-all duration-200 hover:shadow-lg ${darkMode ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white' : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white'}`}
+                        className={`flex-1 sm:flex-none h-9 text-xs font-semibold px-3 sm:px-4 shadow-md transition-all duration-200 hover:shadow-lg ${darkMode ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-black' : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white'}`}
                         onClick={() => {
                           if (asistenciaBloqueada) return;
                           const newAsistencias: Record<string, string> = {};
@@ -921,7 +921,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                         size="sm"
                         variant="outline"
                         disabled={asistenciaBloqueada}
-                        className={`flex-1 sm:flex-none h-9 text-xs font-semibold px-2 sm:px-4 ${darkMode ? 'border-white/30 text-white hover:bg-slate-800' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                        className={`flex-1 sm:flex-none h-9 text-xs font-semibold px-2 sm:px-4 ${darkMode ? 'border-white/30 text-black hover:bg-slate-800' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}
                         onClick={() => {
                           if (asistenciaBloqueada) return;
                           setAsistencias({});
