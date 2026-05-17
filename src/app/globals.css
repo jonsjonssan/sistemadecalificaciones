@@ -275,73 +275,73 @@
 .dark,
 .dark-theme,
 :is(.dark, .dark-theme) :where(.radix-themes:not(.light, .light-theme)) {
-  --color-background: oklch(0.070 0.006 160);
+  --color-background: #1D1B1B;
 }
 
 .dark {
-  --white: oklch(0.070 0.006 160);
+  --white: oklch(0.105 0.003 30);
   --black: oklch(0.90 0.008 150);
 
   /* ── SEMANTIC (DARK) ── */
-  --background:       oklch(0.070 0.006 160);
-  --foreground:       oklch(0.860 0.010 150);
-  --card:             oklch(0.095 0.008 160);
-  --card-foreground:  oklch(0.860 0.010 150);
-  --popover:          oklch(0.095 0.008 160);
-  --popover-foreground: oklch(0.860 0.010 150);
-  --primary:          oklch(0.600 0.200 158);
-  --primary-foreground: oklch(0.080 0.010 160);
-  --secondary:        oklch(0.100 0.010 160);
-  --secondary-foreground: oklch(0.860 0.010 150);
-  --muted:            oklch(0.100 0.010 160);
-  --muted-foreground: oklch(0.680 0.018 150);
-  --accent:           oklch(0.100 0.040 160);
-  --accent-foreground: oklch(0.750 0.160 155);
+  --background:       #1D1B1B;
+  --foreground:       oklch(0.900 0.010 150);
+  --card:             oklch(0.125 0.004 30);
+  --card-foreground:  oklch(0.900 0.010 150);
+  --popover:          oklch(0.125 0.004 30);
+  --popover-foreground: oklch(0.900 0.010 150);
+  --primary:          oklch(0.650 0.200 158);
+  --primary-foreground: oklch(0.105 0.003 30);
+  --secondary:        oklch(0.115 0.004 30);
+  --secondary-foreground: oklch(0.900 0.010 150);
+  --muted:            oklch(0.115 0.004 30);
+  --muted-foreground: oklch(0.700 0.018 150);
+  --accent:           oklch(0.115 0.035 160);
+  --accent-foreground: oklch(0.800 0.160 155);
   --destructive:      oklch(0.580 0.220 28);
-  --border:           oklch(0.200 0.016 160);
-  --input:            oklch(0.200 0.016 160);
-  --ring:             oklch(0.600 0.200 158);
+  --border:           oklch(0.220 0.008 30);
+  --input:            oklch(0.220 0.008 30);
+  --ring:             oklch(0.650 0.200 158);
 
   /* ── CHARTS (DARK) ── */
-  --chart-1: oklch(0.600 0.200 158);
-  --chart-2: oklch(0.620 0.180 158);
-  --chart-3: oklch(0.400 0.170 160);
-  --chart-4: oklch(0.750 0.160 155);
+  --chart-1: oklch(0.650 0.200 158);
+  --chart-2: oklch(0.680 0.180 158);
+  --chart-3: oklch(0.450 0.170 160);
+  --chart-4: oklch(0.800 0.160 155);
   --chart-5: oklch(0.580 0.220 28);
 
   /* ── SIDEBAR (DARK) ── */
-  --sidebar: oklch(0.055 0.006 160);
-  --sidebar-foreground: oklch(0.860 0.010 150);
-  --sidebar-primary: oklch(0.600 0.200 158);
-  --sidebar-primary-foreground: oklch(0.040 0.005 160);
-  --sidebar-accent: oklch(0.100 0.040 160);
-  --sidebar-accent-foreground: oklch(0.750 0.160 155);
-  --sidebar-border: oklch(0.120 0.012 160);
-  --sidebar-ring: oklch(0.600 0.200 158);
+  --sidebar: oklch(0.090 0.004 30);
+  --sidebar-foreground: oklch(0.900 0.010 150);
+  --sidebar-primary: oklch(0.650 0.200 158);
+  --sidebar-primary-foreground: oklch(0.090 0.004 30);
+  --sidebar-accent: oklch(0.115 0.035 160);
+  --sidebar-accent-foreground: oklch(0.800 0.160 155);
+  --sidebar-border: oklch(0.130 0.005 30);
+  --sidebar-ring: oklch(0.650 0.200 158);
 
-  /* ── SLATE (neutral gray — dark, 50=darkest 900=lightest) ── */
-  --slate-50:  oklch(0.070 0.006 160);
-  --slate-100: oklch(0.085 0.008 160);
-  --slate-200: oklch(0.110 0.010 160);
-  --slate-300: oklch(0.150 0.012 160);
-  --slate-400: oklch(0.280 0.016 160);
-  --slate-500: oklch(0.420 0.018 160);
-  --slate-600: oklch(0.560 0.018 150);
-  --slate-700: oklch(0.680 0.016 150);
-  --slate-800: oklch(0.780 0.014 150);
-  --slate-900: oklch(0.880 0.010 150);
+  /* ── SLATE (neutral warm-gray — dark) ── */
+  --slate-50:  #1D1B1B;
+  --slate-100: oklch(0.120 0.004 30);
+  --slate-200: oklch(0.140 0.005 30);
+  --slate-300: oklch(0.190 0.006 30);
+  --slate-400: oklch(0.350 0.008 30);
+  --slate-500: oklch(0.500 0.010 30);
+  --slate-600: oklch(0.640 0.012 28);
+  --slate-700: oklch(0.740 0.012 28);
+  --slate-800: oklch(0.820 0.010 28);
+  --slate-900: oklch(0.900 0.008 28);
 
-  /* ── EMERALD (Matrix green — dark, 50=darkest 900=lightest) ── */
-  --emerald-50:  oklch(0.070 0.015 160);
-  --emerald-100: oklch(0.085 0.020 160);
-  --emerald-200: oklch(0.110 0.030 160);
-  --emerald-300: oklch(0.160 0.060 160);
-  --emerald-400: oklch(0.240 0.090 160);
-  --emerald-500: oklch(0.340 0.130 158);
-  --emerald-600: oklch(0.460 0.160 158);
-  --emerald-700: oklch(0.580 0.180 158);
-  --emerald-800: oklch(0.680 0.180 155);
-  --emerald-900: oklch(0.820 0.140 150);
+  /* ── EMERALD (Matrix green — dark) ── */
+  --emerald-50:  oklch(0.105 0.015 160);
+  --emerald-100: oklch(0.120 0.020 160);
+  --emerald-200: oklch(0.145 0.030 160);
+  --emerald-300: oklch(0.200 0.060 160);
+  --emerald-400: oklch(0.320 0.100 158);
+  --emerald-500: oklch(0.440 0.140 158);
+  --emerald-600: oklch(0.560 0.175 158);
+  --emerald-700: oklch(0.660 0.185 156);
+  --emerald-800: oklch(0.740 0.175 155);
+  --emerald-900: oklch(0.860 0.140 150);
 
   --lime-50: oklch(0.08 0.03 155);
   --lime-100: oklch(0.11 0.05 155);
