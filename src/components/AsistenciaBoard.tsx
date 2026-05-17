@@ -698,8 +698,11 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
 
     setDeletingDate(fechaAEliminar);
     try {
+      // Convertir DD/MM/YYYY a YYYY-MM-DD para que new Date() lo interprete correctamente
+      const [dia, mes, anio] = fechaAEliminar.split('/');
+      const fechaISO = `${anio}-${mes}-${dia}`;
       const params = new URLSearchParams({
-        fecha: `${fechaAEliminar}T00:00:00.000Z`,
+        fecha: `${fechaISO}T00:00:00.000Z`,
         gradoId,
         estudianteId
       });
