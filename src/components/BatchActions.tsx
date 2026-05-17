@@ -233,7 +233,7 @@ export default function BatchActions({ gradoId, materiaId, trimestre, estudiante
                 value={value}
                 onChange={e => setValue(e.target.value)}
                 placeholder="Ej: 8.5"
-                className={`h-10 ${darkMode ? 'bg-slate-800 border-slate-600 text-white' : ''}`}
+                className={`h-10 ${darkMode ? 'bg-slate-700 border-slate-600 text-emerald-200' : ''}`}
               />
             </div>
           )}

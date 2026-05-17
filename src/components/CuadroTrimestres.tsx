@@ -326,7 +326,7 @@ const CuadroTrimestres = memo(function CuadroTrimestres({ gradoId, gradoNumero, 
                             }}
                             className={`w-16 text-center text-xs sm:text-sm rounded border px-1 py-0.5 outline-none focus:ring-2 focus:ring-emerald-500 ${
                               darkMode
-                                ? "bg-slate-800 border-slate-600 text-white placeholder-slate-500"
+                                ? "bg-slate-700 border-slate-600 text-emerald-200 placeholder-slate-500"
                                 : "bg-white border-slate-300 text-slate-800 placeholder-slate-400"
                             }`}
                             placeholder="—"

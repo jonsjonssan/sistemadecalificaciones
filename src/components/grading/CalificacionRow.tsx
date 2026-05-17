@@ -190,7 +190,7 @@ function NotaInput({ value, onChange, darkMode, hasError, onBlur, onNavigate, in
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
         className={`grade-input w-full text-center border rounded px-0.5 transition-all ${darkMode
-          ? "bg-slate-800 border-slate-600 text-white placeholder-slate-400"
+          ? "bg-slate-700 border-slate-600 text-emerald-200 placeholder-slate-500"
           : "bg-white border-slate-300 text-slate-900"
           } ${hasError ? "border-red-500 bg-red-50 dark:bg-red-900/20" : ""} focus:ring-emerald-500 focus:border-emerald-500 ${
             isActive
