@@ -2570,9 +2570,9 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                     <div className="table-scroll-container">
                       <table className="w-full text-sm sm:text-base font-medium border-collapse">
                         <thead><tr className={darkMode ? 'bg-gradient-to-r from-slate-200 to-slate-300 text-white' : 'bg-gradient-to-r from-slate-700 to-slate-600 text-white'}>
-                          <th className={`w-10 p-2 text-center font-semibold sticky-col shadow-right left-0 z-20 border-r border-b ${darkMode ? 'bg-slate-200 border-slate-400' : 'bg-slate-700 border-slate-500'}`}>N°</th>
+                          <th className={`w-10 p-2 text-center font-semibold sticky-col shadow-right left-0 z-20 border-r border-b ${darkMode ? 'bg-slate-200 border-slate-400 text-black' : 'bg-slate-700 border-slate-500'}`}>N°</th>
                           <th
-                            className={`min-w-[140px] sm:min-w-[180px] p-2 text-left font-semibold sticky-col shadow-right left-10 z-20 border-r border-b cursor-pointer hover:bg-slate-600 transition-colors ${darkMode ? 'bg-slate-200 border-slate-400' : 'bg-slate-700 border-slate-500'}`}
+                            className={`min-w-[140px] sm:min-w-[180px] p-2 text-left font-semibold sticky-col shadow-right left-10 z-20 border-r border-b cursor-pointer hover:bg-slate-600 transition-colors ${darkMode ? 'bg-slate-200 border-slate-400 text-black' : 'bg-slate-700 border-slate-500'}`}
                             onClick={() => handleSort('nombre')}
                           >
                             <div className="flex items-center gap-1">
@@ -2944,7 +2944,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                                   }}
                                   className={`px-3 py-1 rounded-full text-xs font-medium border transition-all duration-150 ${
                                     isSelected
-                                      ? (darkMode ? 'bg-primary/20 text-emerald-400 border-emerald-500/50 shadow-sm text-stroke-white' : 'bg-emerald-50 text-emerald-700 border-emerald-300 shadow-sm')
+                                      ? (darkMode ? 'bg-primary/20 text-black border-emerald-500/50 shadow-sm' : 'bg-emerald-50 text-emerald-700 border-emerald-300 shadow-sm')
                                       : (darkMode ? 'bg-muted text-slate-300 border-white/30 hover:border-white/50 hover:text-white' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:text-slate-700')
                                   }`}
                                 >
@@ -2953,7 +2953,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                               );
                             })}
                           </div>
-                          <div className={`mt-2 text-[10px] ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                          <div className={`mt-2 text-[10px] ${darkMode ? 'text-white' : 'text-slate-400'}`}>
                             {materiasEnBoleta.length === 0
                               ? 'Todas las asignaturas están seleccionadas'
                               : `${materiasEnBoleta.length} de ${todasAsignaturas.filter(m => m.gradoId === gradoSeleccionado).length} asignaturas seleccionadas`
@@ -3104,7 +3104,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                   <CardContent className="pt-0">
                     <div className={`rounded border overflow-x-auto ${darkMode ? 'border-slate-700' : ''}`}>
                       <Table className="text-xs">
-                        <TableHeader><TableRow className={darkMode ? 'bg-slate-700' : 'bg-slate-100'}><TableHead className="h-8">Nombre</TableHead><TableHead>Email</TableHead><TableHead className="w-20">Rol</TableHead><TableHead className="w-20">Estado</TableHead><TableHead className="min-w-[200px]">Asignaciones</TableHead><TableHead className="w-20 text-center">Acciones</TableHead></TableRow></TableHeader>
+                        <TableHeader><TableRow className={darkMode ? 'bg-slate-700/25' : 'bg-slate-100'}><TableHead className="h-8">Nombre</TableHead><TableHead>Email</TableHead><TableHead className="w-20">Rol</TableHead><TableHead className="w-20">Estado</TableHead><TableHead className="min-w-[200px]">Asignaciones</TableHead><TableHead className="w-20 text-center">Acciones</TableHead></TableRow></TableHeader>
                         <TableBody>
                           {usuarios.map(u => (
                             <TableRow key={u.id} className={darkMode ? 'border-slate-700' : ''}>

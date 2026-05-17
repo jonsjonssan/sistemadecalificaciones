@@ -90,7 +90,7 @@ export function EstudiantesTable({ estudiantes, darkMode, isAdmin, loading = fal
       <div className="overflow-x-auto">
         <Table className="text-xs sm:text-sm md:text-base font-medium min-w-[400px]">
           <TableHeader>
-            <TableRow className={darkMode ? 'bg-slate-800' : 'bg-slate-100'}>
+            <TableRow className={darkMode ? 'bg-slate-800/25' : 'bg-slate-100'}>
               <TableHead className="w-10 text-center h-12">N°</TableHead>
               <TableHead className="min-w-[120px]">Nombre Completo</TableHead>
               <TableHead className="hidden sm:table-cell">Correo</TableHead>
@@ -132,7 +132,7 @@ export function EstudiantesTable({ estudiantes, darkMode, isAdmin, loading = fal
         <div className="overflow-x-auto">
           <Table className="text-xs sm:text-sm md:text-base font-medium min-w-[500px]">
             <TableHeader>
-              <TableRow className={darkMode ? 'bg-slate-800' : 'bg-slate-100'}>
+              <TableRow className={darkMode ? 'bg-slate-800/25' : 'bg-slate-100'}>
                 <TableHead className="w-10 text-center h-12">N°</TableHead>
                 <TableHead className="min-w-[120px]">Nombre Completo</TableHead>
                 <TableHead className="hidden sm:table-cell">Correo</TableHead>
