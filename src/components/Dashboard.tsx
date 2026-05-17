@@ -5,7 +5,7 @@ import { useTheme } from "next-themes";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Users, BookOpen, School, GraduationCap, Book, FileText, Target, TrendingUp, ChevronDown, ChevronRight, Trophy, AlertTriangle, ClipboardList, CalendarDays } from "lucide-react";
+import { type LucideIcon, Users, BookOpen, School, GraduationCap, Book, FileText, Target, TrendingUp, ChevronDown, ChevronRight, Trophy, AlertTriangle, ClipboardList, CalendarDays } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend, Cell } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
@@ -67,6 +67,55 @@ function getCicloDark(ciclo: CicloAsignaturas) {
     "Tercer Ciclo": { bg: "bg-primary/10", border: "border-primary/30", icon: "text-primary" },
   };
   return map[ciclo.nombre] || { bg: "bg-slate-800", border: "border-slate-700", icon: "text-slate-400" };
+}
+
+function StatBadge({ icon: Icon, label, value, note, darkMode, action }: {
+  icon: LucideIcon;
+  label: string;
+  value: number | string;
+  note: string;
+  darkMode: boolean;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="group relative p-3 rounded-md border border-border bg-card hover:shadow-sm transition-all overflow-hidden">
+      <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-accent/70 via-accent/30 to-transparent" />
+      <div className="flex items-center gap-3">
+        <div className="p-2 rounded-sm bg-accent/10 text-accent shrink-0">
+          <Icon className="h-4 w-4" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50">{label}</p>
+          <p className="text-lg font-bold font-mono text-foreground tabular-nums leading-tight">{value}</p>
+          <p className="text-[10px] text-muted-foreground/40">{note}</p>
+        </div>
+        {action && (
+          <div className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+            {action}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function QuickActionRow({ icon: Icon, label, sub, onClick }: {
+  icon: LucideIcon;
+  label: string;
+  sub: string;
+  onClick: () => void;
+}) {
+  return (
+    <div className="flex items-center gap-3 p-2.5 rounded-sm cursor-pointer group transition-all bg-muted/10 border border-border hover:bg-muted/25 hover:border-accent/20" onClick={onClick}>
+      <div className="p-1.5 shrink-0 rounded-sm bg-accent/10 text-accent group-hover:bg-accent/20 transition-colors">
+        <Icon className="h-4 w-4" />
+      </div>
+      <div>
+        <h4 className="text-xs font-semibold text-foreground group-hover:text-accent transition-colors">{label}</h4>
+        <p className="text-[10px] text-muted-foreground/50">{sub}</p>
+      </div>
+    </div>
+  );
 }
 
 /**
@@ -232,14 +281,14 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
   }
 
   return (
-    <div className="pb-8">
-      {/* Header bar — spans all panels */}
-      <div className="flex items-center justify-between mb-6 animate-fade-slide-up">
+    <div className="pb-6 space-y-5">
+      {/* ===== HEADER ===== */}
+      <div className="flex items-center justify-between animate-fade-slide-up">
         <div>
           <h2 className="font-display text-xl sm:text-2xl tracking-tight text-foreground">
             Hola, {usuario.nombre}
           </h2>
-          <p className="text-sm sm:text-base mt-1 text-muted-foreground">
+          <p className="text-sm mt-0.5 text-muted-foreground/70">
             {usuario.rol === "admin"
               ? "Panel de administración del sistema."
               : "Bienvenido al ciclo escolar."}
@@ -253,79 +302,36 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
         )}
       </div>
 
-      {/* Three-panel grid layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr_240px] gap-4">
-
-        {/* ===== PANEL 1: Stats + Gestión Rápida ===== */}
-        <div className="space-y-4">
-          {usuario.rol === "admin" && (
-            <div className="space-y-3">
-              {loading ? (
-                <>
-                  <StatCard loading title="Total Estudiantes" value={0} subtitle="" icon={Users} iconColor="text-accent" iconBg="bg-accent" accentColor="bg-accent" darkMode />
-                  <StatCard loading title="Grados Activos" value={0} subtitle="" icon={School} iconColor="text-accent" iconBg="bg-accent" accentColor="bg-accent" darkMode />
-                  <StatCard loading title="Asignaturas" value={0} subtitle="" icon={BookOpen} iconColor="text-accent" iconBg="bg-accent" accentColor="bg-accent" darkMode />
-                  <StatCard loading title="Docentes" value={0} subtitle="" icon={GraduationCap} iconColor="text-accent" iconBg="bg-accent" accentColor="bg-accent" darkMode />
-                </>
-              ) : (
-                <>
-                  <div className="animate-fade-slide-up" style={{ animationDelay: '0s' }}>
-                    <StatCard title="Total Estudiantes" value={totalEstudiantesVisibles} subtitle="Registrados" icon={Users} iconColor="text-accent" iconBg="bg-accent" accentColor="bg-accent" darkMode={darkMode} delay={0} action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.totalEstudiantes} />} />
-                  </div>
-                  <div className="animate-fade-slide-up" style={{ animationDelay: '0.1s' }}>
-                    <StatCard title="Grados Activos" value={gradosVisibles.length} subtitle="Secciones" icon={School} iconColor="text-accent" iconBg="bg-accent" accentColor="bg-accent" darkMode={darkMode} delay={0.1} action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.gradosActivos} />} />
-                  </div>
-                  <div className="animate-fade-slide-up" style={{ animationDelay: '0.2s' }}>
-                    <StatCard title="Asignaturas" value={totalAsignaturasVisibles} subtitle="Impartidas" icon={BookOpen} iconColor="text-accent" iconBg="bg-accent" accentColor="bg-accent" darkMode={darkMode} delay={0.2} action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.asignaturas} />} />
-                  </div>
-                  <div className="animate-fade-slide-up" style={{ animationDelay: '0.3s' }}>
-                    <StatCard title="Docentes" value={totalDocentes} subtitle="Activos" icon={GraduationCap} iconColor="text-accent" iconBg="bg-accent" accentColor="bg-accent" darkMode={darkMode} delay={0.3} action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.docentes} />} />
-                  </div>
-                </>
-              )}
-            </div>
+      {/* ===== STATS ROW (compact horizontal) ===== */}
+      {esDirectiva && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 animate-fade-slide-up" style={{ animationDelay: '0.05s' }}>
+          {loading ? (
+            <>
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="h-[72px] rounded-md border border-border bg-card animate-pulse" />
+              ))}
+            </>
+          ) : (
+            <>
+              <StatBadge icon={Users} label="Estudiantes" value={totalEstudiantesVisibles} note="Registrados" darkMode={darkMode} action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.totalEstudiantes} />} />
+              <StatBadge icon={School} label="Grados" value={gradosVisibles.length} note="Secciones" darkMode={darkMode} action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.gradosActivos} />} />
+              <StatBadge icon={BookOpen} label="Asignaturas" value={totalAsignaturasVisibles} note="Impartidas" darkMode={darkMode} action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.asignaturas} />} />
+              <StatBadge icon={GraduationCap} label="Docentes" value={totalDocentes} note="Activos" darkMode={darkMode} action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.docentes} />} />
+            </>
           )}
-
-          {/* Gestión Rápida */}
-          <Card className="shadow-sm bg-card border-border">
-            <CardHeader className="py-3 px-4 border-b border-border">
-              <CardTitle className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Gestión Rápida</CardTitle>
-            </CardHeader>
-            <CardContent className="p-3 space-y-2">
-              <div className="p-3 flex items-center gap-3 cursor-pointer group transition-all bg-muted/20 border border-border hover:bg-muted/40 rounded-sm" onClick={() => (window as any).setActiveTab?.('calificaciones')}>
-                <div className="p-2 shrink-0 group-hover:scale-105 transition-transform bg-accent text-accent-foreground rounded-sm"><ClipboardList className="h-5 w-5" /></div>
-                <div>
-                  <h4 className="text-sm font-semibold text-foreground">Pasar Notas</h4>
-                  <p className="text-[11px] text-muted-foreground/60">Calificaciones</p>
-                </div>
-              </div>
-              <div className="p-3 flex items-center gap-3 cursor-pointer group transition-all bg-muted/20 border border-border hover:bg-muted/40 rounded-sm" onClick={() => (window as any).setActiveTab?.('asistencia')}>
-                <div className="p-2 shrink-0 group-hover:scale-105 transition-transform bg-accent text-accent-foreground rounded-sm"><CalendarDays className="h-5 w-5" /></div>
-                <div>
-                  <h4 className="text-sm font-semibold text-foreground">Asistencia</h4>
-                  <p className="text-[11px] text-muted-foreground/60">Control diario</p>
-                </div>
-              </div>
-              {usuario.rol === "admin" && (
-                <div className="p-3 flex items-center gap-3 cursor-pointer group transition-all bg-muted/20 border border-border hover:bg-muted/40 rounded-sm" onClick={() => (window as any).setActiveTab?.('admin')}>
-                  <div className="p-2 shrink-0 group-hover:scale-105 transition-transform bg-accent text-accent-foreground rounded-sm"><GraduationCap className="h-5 w-5" /></div>
-                  <div>
-                    <h4 className="text-sm font-semibold text-foreground">Docentes</h4>
-                    <p className="text-[11px] text-muted-foreground/60">Administración</p>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
         </div>
+      )}
 
-        {/* ===== PANEL 2: Rendimiento ===== */}
-        <div className="space-y-4">
-          {/* Promedio Institucional */}
+      {/* ===== TWO-COLUMN LAYOUT: Main + Sidebar ===== */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-5">
+        {/* ----- LEFT COLUMN: Performance ----- */}
+        <div className="space-y-5 min-w-0">
+
+          {/* Rendimiento Institucional */}
           {esDirectiva && (
             <div className="animate-fade-slide-up" style={{ animationDelay: '0.1s' }}>
               <Card className="shadow-sm overflow-hidden bg-card border-border">
-                <div className="h-px bg-gradient-to-r from-primary/30 via-primary/10 to-transparent w-full" />
+                <div className="h-px bg-gradient-to-r from-primary/40 via-primary/10 to-transparent w-full" />
                 <CardHeader className="pb-3 flex flex-row items-center justify-between">
                   <CardTitle className="font-display text-sm flex items-center gap-2 text-card-foreground">
                     <Target className="h-4 w-4 text-accent" />
@@ -338,16 +344,18 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                     <div className="flex justify-center">
                       <PromedioCircular valor={promInstitucional} darkMode={darkMode} />
                     </div>
-                    <div className="grid grid-cols-1 gap-3">
+                    <div className="grid grid-cols-1 gap-2.5">
                       {promPorCiclo.map(c => (
-                        <div key={c.nombre} className="rounded-sm border border-border p-3 text-center bg-muted/30">
-                          <p className="font-display text-xs mb-1 text-muted-foreground/70">{c.nombre}</p>
-                          <p className={`text-2xl font-semibold font-mono ${c.prom != null && Math.round(c.prom) >= 5 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
-                            {c.prom != null ? c.prom.toFixed(2) : "—"}
-                          </p>
-                          <p className="text-[10px] font-medium text-muted-foreground/50">
-                            {c.prom != null && Math.round(c.prom) >= 5 ? 'Sobre umbral' : c.prom != null ? 'Bajo umbral' : 'Sin datos'}
-                          </p>
+                        <div key={c.nombre} className="flex items-center justify-between rounded-sm border border-border p-2.5 bg-muted/20">
+                          <span className="font-display text-xs text-muted-foreground/70">{c.nombre}</span>
+                          <div className="flex items-center gap-2">
+                            <span className={`text-lg font-semibold font-mono tabular-nums ${c.prom != null && Math.round(c.prom) >= 5 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                              {c.prom != null ? c.prom.toFixed(1) : "—"}
+                            </span>
+                            <span className={`text-[10px] font-medium ${c.prom != null && Math.round(c.prom) >= 5 ? 'text-emerald-500' : c.prom != null ? 'text-red-400' : ''}`}>
+                              {c.prom != null && Math.round(c.prom) >= 5 ? '✓' : c.prom != null ? '⚠' : ''}
+                            </span>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -359,20 +367,20 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
 
           {/* Promedio por Categoría */}
           {esDirectiva && evolutionChartData.length > 0 && (
-            <div className="animate-fade-slide-up" style={{ animationDelay: '0.2s' }}>
-              <GradeChart data={evolutionChartData} title="Promedio por Categoría" description="Promedio institucional por tipo de actividad" icon={TrendingUp} showArea showTarget darkMode={darkMode} height={260} action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.promedioPorCategoria} />} />
+            <div className="animate-fade-slide-up" style={{ animationDelay: '0.15s' }}>
+              <GradeChart data={evolutionChartData} title="Promedio por Categoría" description="Promedio institucional por tipo de actividad" icon={TrendingUp} showArea showTarget darkMode={darkMode} height={240} action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.promedioPorCategoria} />} />
             </div>
           )}
 
           {/* Rendimiento Académico */}
-          <Card className="shadow-sm overflow-hidden flex flex-col bg-card border-border">
-            <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-border gap-4 bg-muted/30">
+          <Card className="shadow-sm overflow-hidden bg-card border-border">
+            <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-border gap-3 bg-muted/20">
               <div>
                 <CardTitle className="font-display text-sm flex items-center gap-2 text-card-foreground">
                   <TrendingUp className="h-4 w-4 text-accent" />
                   Rendimiento Académico
                 </CardTitle>
-                <CardDescription className="text-xs text-muted-foreground">
+                <CardDescription className="text-xs text-muted-foreground mt-0.5">
                   {esDocente ? `Estadísticas de ${gradosVisibles[0]?.numero}° ${gradosVisibles[0]?.seccion}` : 'Promedios por categoría'}
                 </CardDescription>
               </div>
@@ -390,29 +398,29 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                 </Select>
               )}
             </CardHeader>
-            <CardContent className="p-3 sm:p-4 flex-1">
+            <CardContent className="p-3 sm:p-4">
               {selectedGradoIdEfectivo === "all" ? (
-                <div className="h-[200px] sm:h-[250px]">
+                <div className="h-[200px] sm:h-[240px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={popChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={darkMode ? "#1a3a2a" : "#E2E8F0"} />
                       <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: darkMode ? '#94a3b8' : '#64748b' }} />
                       <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: darkMode ? '#94a3b8' : '#64748b' }} />
                       <Tooltip cursor={{ fill: darkMode ? '#1a3a2a' : '#f1f5f9' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '11px', backgroundColor: darkMode ? '#0a1a10' : '#fff', color: darkMode ? '#e8e8e8' : '#111' }} />
-                      <Bar dataKey="estudiantes" name="N° Estudiantes" fill="var(--color-primary, oklch(0.28 0.055 160))" radius={[4, 4, 0, 0]} barSize={30} />
+                      <Bar dataKey="estudiantes" name="N° Estudiantes" fill="var(--color-primary, oklch(0.28 0.055 160))" radius={[4, 4, 0, 0]} barSize={32} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
               ) : selectedStats ? (
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="h-[180px] sm:h-[220px] w-full">
+                <div className="space-y-4">
+                  <div className="h-[160px] sm:h-[200px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={categoryChartData} layout="vertical" margin={{ top: 0, right: 20, left: 40, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={darkMode ? "#1a3a2a" : "#E2E8F0"} />
                         <XAxis type="number" domain={[0, 10]} axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: darkMode ? '#94a3b8' : '#64748b' }} />
                         <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: darkMode ? '#94a3b8' : '#64748b' }} width={70} />
                         <Tooltip cursor={{ fill: darkMode ? '#1a3a2a' : '#f1f5f9' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '11px', backgroundColor: darkMode ? '#0a1a10' : '#fff', color: darkMode ? '#e8e8e8' : '#111' }} />
-                        <Bar dataKey="valor" name="Promedio" radius={[0, 4, 4, 0]} barSize={22}>
+                        <Bar dataKey="valor" name="Promedio" radius={[0, 4, 4, 0]} barSize={20}>
                           {categoryChartData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
@@ -421,22 +429,25 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                     </ResponsiveContainer>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className={`p-3 rounded-xl border ${darkMode ? 'bg-emerald-900/20 border-emerald-800/60' : 'bg-emerald-50/50 border-emerald-100'}`}>
-                      <h4 className={`text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2 ${darkMode ? 'text-emerald-400' : 'text-emerald-700'}`}>
-                        <Trophy className="h-4 w-4 text-amber-500" /> Cuadro de Honor
+                    <div className={`p-3 rounded-md border ${darkMode ? 'bg-emerald-900/20 border-emerald-800/60' : 'bg-emerald-50/50 border-emerald-100'}`}>
+                      <h4 className={`text-xs font-bold uppercase tracking-wider mb-2.5 flex items-center gap-1.5 ${darkMode ? 'text-emerald-400' : 'text-emerald-700'}`}>
+                        <Trophy className="h-3.5 w-3.5 text-amber-500" /> Cuadro de Honor
                       </h4>
-                      <div className="space-y-2">
-                        {selectedStats.topEstudiantes.length > 0 ? selectedStats.topEstudiantes.map((est, i) => (
+                      <div className="space-y-1.5">
+                        {selectedStats.topEstudiantes.length > 0 ? selectedStats.topEstudiantes.slice(0, 5).map((est, i) => (
                           <div key={est.id} className="flex items-center justify-between text-xs gap-2">
-                            <span className={`flex-1 truncate ${darkMode ? 'text-slate-400' : 'text-slate-700'}`} title={`${i + 1}. ${est.nombre}`}>{i + 1}. {est.nombre}</span>
-                            <div className="flex items-center gap-1.5 shrink-0">
+                            <span className="flex items-center gap-1.5 truncate">
+                              <span className={`font-mono text-[10px] w-4 text-right shrink-0 ${i === 0 ? 'text-amber-500' : 'text-muted-foreground/50'}`}>{i + 1}.</span>
+                              <span className="truncate text-foreground/80">{est.nombre}</span>
+                            </span>
+                            <div className="flex items-center gap-1 shrink-0">
                               {est.estado === "CONDICIONADO" && (
                                 <Badge variant="secondary" className="text-[9px] py-0 h-4 px-1 bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/50 dark:text-amber-400 dark:border-amber-700">C</Badge>
                               )}
                               {est.estado === "REPROBADO" && (
                                 <Badge variant="destructive" className="text-[9px] py-0 h-4 px-1">R</Badge>
                               )}
-                              <Badge variant="outline" className={`shrink-0 py-0 h-5 text-xs ${darkMode ? 'bg-slate-800 text-emerald-400 border-emerald-700' : 'bg-white text-emerald-700 border-emerald-200'}`}>
+                              <Badge variant="outline" className={`shrink-0 py-0 h-5 text-xs font-mono ${darkMode ? 'bg-slate-800 text-emerald-400 border-emerald-700' : 'bg-white text-emerald-700 border-emerald-200'}`}>
                                 {est.promedio.toFixed(1)}
                               </Badge>
                             </div>
@@ -444,22 +455,22 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                         )) : <p className="text-xs text-muted-foreground">Sin datos</p>}
                       </div>
                     </div>
-                    <div className={`p-3 rounded-xl border ${darkMode ? 'bg-red-900/20 border-red-800/60' : 'bg-red-50/50 border-red-100'}`}>
-                      <h4 className={`text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2 ${darkMode ? 'text-red-400' : 'text-red-700'}`}>
-                        <AlertTriangle className="h-4 w-4 text-red-500" /> Alertas
+                    <div className={`p-3 rounded-md border ${darkMode ? 'bg-red-900/20 border-red-800/60' : 'bg-red-50/50 border-red-100'}`}>
+                      <h4 className={`text-xs font-bold uppercase tracking-wider mb-2.5 flex items-center gap-1.5 ${darkMode ? 'text-red-400' : 'text-red-700'}`}>
+                        <AlertTriangle className="h-3.5 w-3.5 text-red-500" /> Alertas
                       </h4>
-                      <div className="space-y-2">
-                        {selectedStats.alertas.length > 0 ? selectedStats.alertas.map((est, i) => (
+                      <div className="space-y-1.5">
+                        {selectedStats.alertas.length > 0 ? selectedStats.alertas.slice(0, 5).map((est, i) => (
                           <div key={est.id} className="flex items-center justify-between text-xs gap-2">
-                            <span className={`flex-1 truncate ${darkMode ? 'text-slate-400' : 'text-slate-700'}`} title={est.nombre}>{est.nombre}</span>
-                            <div className="flex items-center gap-1.5 shrink-0">
+                            <span className="truncate text-foreground/80">{est.nombre}</span>
+                            <div className="flex items-center gap-1 shrink-0">
                               {est.estado === "CONDICIONADO" && (
                                 <Badge variant="secondary" className="text-[9px] py-0 h-4 px-1 bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/50 dark:text-amber-400 dark:border-amber-700">C</Badge>
                               )}
                               {est.estado === "REPROBADO" && (
                                 <Badge variant="destructive" className="text-[9px] py-0 h-4 px-1">R</Badge>
                               )}
-                              <Badge variant={est.estado === "REPROBADO" ? "destructive" : "secondary"} className={`shrink-0 font-bold py-0 h-5 text-xs ${est.estado === "CONDICIONADO" ? 'bg-amber-500 text-white' : 'bg-red-500 text-white'}`}>
+                              <Badge variant={est.estado === "REPROBADO" ? "destructive" : "secondary"} className={`shrink-0 font-bold py-0 h-5 text-xs font-mono ${est.estado === "CONDICIONADO" ? 'bg-amber-500 text-white' : 'bg-red-500 text-white'}`}>
                                 {est.promedio.toFixed(1)}
                               </Badge>
                             </div>
@@ -476,57 +487,49 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
               )}
             </CardContent>
           </Card>
-
-          {/* Asignaturas por Ciclo */}
-          {esDirectiva && todasAsignaturasList.length > 0 && (
-            <div className="animate-fade-slide-up" style={{ animationDelay: '0.3s' }}>
-              <div className="flex items-center gap-2 mb-3">
-                <h3 className="font-display text-base text-foreground">
-                  <BookOpen className="h-4 w-4 inline mr-2 text-accent" />
-                  Asignaturas por Ciclo
-                </h3>
-                <MathInfoButton darkMode={darkMode} explanation={mathExplanations.asignaturasPorCiclo} />
-              </div>
-              <CiclosSection asignaturas={todasAsignaturasList} stats={stats} grados={grados} darkMode={darkMode} selectedMaterias={selectedMaterias} setSelectedMaterias={setSelectedMaterias} />
-              {esDirectiva && (
-                <div className="mt-3">
-                  <Button size="sm" onClick={() => setInformeOpen(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm">
-                    <FileText className="h-4 w-4 mr-2" />
-                    Generar Informe Técnico
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
-        {/* ===== PANEL 3: Asignaturas + Contexto ===== */}
+        {/* ----- RIGHT COLUMN: Sidebar ----- */}
         <div className="space-y-4">
-          {(usuario.rol === "docente" || usuario.rol === "docente-orientador") && asignaturasAsignadas && asignaturasAsignadas.length > 0 && (
+
+          {/* Gestión Rápida */}
+          <Card className="shadow-sm bg-card border-border">
+            <CardHeader className="py-3 px-4 border-b border-border">
+              <CardTitle className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Gestión Rápida</CardTitle>
+            </CardHeader>
+            <CardContent className="p-2.5 space-y-1.5">
+              <QuickActionRow icon={ClipboardList} label="Pasar Notas" sub="Calificaciones" onClick={() => (window as any).setActiveTab?.('calificaciones')} />
+              <QuickActionRow icon={CalendarDays} label="Asistencia" sub="Control diario" onClick={() => (window as any).setActiveTab?.('asistencia')} />
+              {usuario.rol === "admin" && (
+                <QuickActionRow icon={GraduationCap} label="Docentes" sub="Administración" onClick={() => (window as any).setActiveTab?.('admin')} />
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Mis Asignaturas (docente only) */}
+          {esDocente && asignaturasAsignadas && asignaturasAsignadas.length > 0 && (
             <Card className="shadow-sm bg-card border-border">
               <CardHeader className="py-3 px-4 border-b border-border">
                 <CardTitle className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Mis Asignaturas</CardTitle>
               </CardHeader>
-              <CardContent className="p-3 max-h-[220px] overflow-y-auto">
-                <div className="space-y-1.5">
-                  {asignaturasAsignadas.map(m => (
-                    <div key={m.id} className="p-2 text-xs flex justify-between items-center bg-muted/30 border border-border rounded-sm">
-                      <span className="font-medium truncate mr-2 text-foreground/80">{m.nombre}</span>
-                      <span className="font-mono text-[10px] text-muted-foreground/60">{m.grado?.numero}°{m.grado?.seccion}</span>
-                    </div>
-                  ))}
-                </div>
+              <CardContent className="p-2.5 max-h-[200px] overflow-y-auto space-y-1">
+                {asignaturasAsignadas.map(m => (
+                  <div key={m.id} className="flex items-center justify-between p-2 text-xs bg-muted/20 border border-border rounded-sm">
+                    <span className="font-medium truncate mr-2 text-foreground/80">{m.nombre}</span>
+                    <span className="font-mono text-[10px] text-muted-foreground/60 shrink-0">{m.grado?.numero}°{m.grado?.seccion}</span>
+                  </div>
+                ))}
               </CardContent>
             </Card>
           )}
 
-          {/* Información del Año */}
+          {/* Información */}
           <Card className="shadow-sm bg-card border-border">
             <CardHeader className="py-3 px-4 border-b border-border">
               <CardTitle className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Información</CardTitle>
             </CardHeader>
             <CardContent className="p-3 space-y-2">
-              <div className="p-2.5 text-xs bg-muted/30 border border-border rounded-sm space-y-1.5">
+              <div className="p-2.5 text-xs bg-muted/20 border border-border rounded-sm space-y-1.5">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground/60">Rol</span>
                   <span className="font-semibold text-foreground capitalize">{usuario.rol === "admin" ? "Administrador" : usuario.rol === "docente-orientador" ? "Docente Orientador" : "Docente"}</span>
@@ -549,13 +552,41 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
 
           {/* Stats rápidos para docentes */}
           {esDocente && (
-            <div className="space-y-2">
-              <StatCard title="Estudiantes" value={totalEstudiantesVisibles} subtitle="En su clase" icon={Users} iconColor="text-emerald-500" iconBg="bg-emerald-100 dark:bg-emerald-900/30" accentColor="bg-emerald-500" darkMode={darkMode} delay={0} />
-              <StatCard title="Asignaturas" value={totalAsignaturasVisibles} subtitle="Asignadas" icon={BookOpen} iconColor="text-emerald-500" iconBg="bg-emerald-100 dark:bg-emerald-900/30" accentColor="bg-emerald-500" darkMode={darkMode} delay={0.1} />
+            <div className="grid grid-cols-2 gap-2">
+              <div className={`p-2.5 rounded-sm border text-center ${darkMode ? 'bg-emerald-900/10 border-emerald-800/30' : 'bg-emerald-50/50 border-emerald-100'}`}>
+                <Users className="h-4 w-4 mx-auto mb-1 text-emerald-500" />
+                <p className="text-lg font-bold font-mono tabular-nums text-foreground">{totalEstudiantesVisibles}</p>
+                <p className="text-[10px] text-muted-foreground/60">Estudiantes</p>
+              </div>
+              <div className={`p-2.5 rounded-sm border text-center ${darkMode ? 'bg-emerald-900/10 border-emerald-800/30' : 'bg-emerald-50/50 border-emerald-100'}`}>
+                <BookOpen className="h-4 w-4 mx-auto mb-1 text-emerald-500" />
+                <p className="text-lg font-bold font-mono tabular-nums text-foreground">{totalAsignaturasVisibles}</p>
+                <p className="text-[10px] text-muted-foreground/60">Asignaturas</p>
+              </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* ===== ASIGNATURAS POR CICLO (full width) ===== */}
+      {esDirectiva && todasAsignaturasList.length > 0 && (
+        <div className="animate-fade-slide-up" style={{ animationDelay: '0.2s' }}>
+          <div className="flex items-center gap-2 mb-3">
+            <h3 className="font-display text-base text-foreground">
+              <BookOpen className="h-4 w-4 inline mr-2 text-accent" />
+              Asignaturas por Ciclo
+            </h3>
+            <MathInfoButton darkMode={darkMode} explanation={mathExplanations.asignaturasPorCiclo} />
+          </div>
+          <CiclosSection asignaturas={todasAsignaturasList} stats={stats} grados={grados} darkMode={darkMode} selectedMaterias={selectedMaterias} setSelectedMaterias={setSelectedMaterias} />
+          <div className="mt-3">
+            <Button size="sm" onClick={() => setInformeOpen(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm">
+              <FileText className="h-4 w-4 mr-2" />
+              Generar Informe Técnico
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Dialog de Informe */}
       {esDirectiva && configuracion && (
