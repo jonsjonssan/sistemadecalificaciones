@@ -20,7 +20,7 @@ import {
   LogOut, Users, User, ClipboardList, FileText, Plus, RefreshCw,
   School, Save, Printer, ChevronDown, ChevronUp,   Settings, Upload,
   Download, Trash2, ListPlus, UserPlus, Key, Calendar, LayoutDashboard, CalendarDays, Lightbulb, Hash,
-  Search, ArrowUpDown, Globe, BarChart3, AlertTriangle, Menu
+  Search, ArrowUpDown, Globe, BarChart3, AlertTriangle, Menu, GraduationCap
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import Dashboard from "@/components/Dashboard";
@@ -42,6 +42,7 @@ import ReporteCalificaciones from "@/components/ReporteCalificaciones";
 import CuadroTrimestres from "@/components/CuadroTrimestres";
 import EnlacesInstitucionales from "@/components/EnlacesInstitucionales";
 import { SystemThresholdsCard } from "@/components/SystemThresholdsCard";
+import AvanceDocentes from "@/components/AvanceDocentes";
 
 export default function Home() {
   const { toast } = useToast();
@@ -2263,6 +2264,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
               <TabsTrigger value="boletas" aria-label="Ver boletas" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-muted-foreground hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><FileText className="h-4 w-4" />Boletas</TabsTrigger>
               <TabsTrigger value="enlaces" aria-label="Enlaces institucionales" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-muted-foreground hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><Globe className="h-4 w-4" />Enlaces</TabsTrigger>
               <TabsTrigger value="reportes" aria-label="Reportes de calificaciones" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-muted-foreground hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><BarChart3 className="h-4 w-4" />Reportes</TabsTrigger>
+              {isAdmin(usuario.rol) && <TabsTrigger value="avance" aria-label="Avance de docentes" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-muted-foreground hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><GraduationCap className="h-4 w-4" />Avance</TabsTrigger>}
               {isAdmin(usuario.rol) && <TabsTrigger value="admin" aria-label="Administración" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-muted-foreground hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><Settings className="h-4 w-4" />Admin</TabsTrigger>}
             </motion.div>
           </TabsList>
@@ -3036,6 +3038,15 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
               umbralAprobado={configuracion?.umbralAprobado ?? 6.5}
             />
           </TabsContent>
+
+          {/* Avance Docentes */}
+          {
+            isAdmin(usuario.rol) && (
+              <TabsContent value="avance" className="mt-3">
+                <AvanceDocentes />
+              </TabsContent>
+            )
+          }
 
           {/* Admin */}
           {

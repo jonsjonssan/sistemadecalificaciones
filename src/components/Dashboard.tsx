@@ -16,6 +16,7 @@ import InformeTecnicoDialog from "./InformeTecnicoDialog";
 import { MathInfoButton, mathExplanations } from "./MathInfoButton";
 import { CiclosSection } from "./CiclosSection";
 import { PromedioCircular } from "./PromedioCircular";
+import { CheckCircle2, AlertCircle, MinusCircle } from "lucide-react";
 
 interface UsuarioSesion { id: string; email: string; nombre: string; rol: string; asignaturasAsignadas?: Array<{ gradoId: string }>; }
 interface Grado { id: string; numero: number; seccion: string; _count?: { estudiantes: number; materias: number; }; }
@@ -180,6 +181,19 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
   const [loading, setLoading] = useState(true);
   const [informeOpen, setInformeOpen] = useState(false);
   const [selectedMaterias, setSelectedMaterias] = useState<Set<string>>(new Set());
+  const [miAvance, setMiAvance] = useState<{
+    porcentajeGlobal: number;
+    globalCompleto: number;
+    globalParcial: number;
+    globalVacio: number;
+    globalEsperado: number;
+    materias: Array<{
+      materiaNombre: string;
+      gradoNumero: number;
+      gradoSeccion: string;
+      porcentaje: number;
+    }>;
+  } | null>(null);
 
   const esDirectiva = ["admin", "admin-directora", "admin-codirectora"].includes(usuario.rol);
   const esDocente = ["docente", "docente-orientador"].includes(usuario.rol);
@@ -215,7 +229,18 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
       }
     };
     fetchStats();
-  }, [gradoAsignado]);
+
+    if (esDocente) {
+      fetch("/api/stats/avance-docentes", { credentials: "include" })
+        .then((r) => r.ok ? r.json() : null)
+        .then((data) => {
+          if (data && data.length > 0) {
+            setMiAvance(data[0]);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [gradoAsignado, esDocente]);
 
   // Si es docente, seleccionar automáticamente su grado
   const selectedGradoIdEfectivo = esDocente && gradoAsignado ? gradoAsignado : selectedGradoId;
@@ -519,6 +544,71 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                     <span className="font-mono text-[10px] text-muted-foreground/60 shrink-0">{m.grado?.numero}°{m.grado?.seccion}</span>
                   </div>
                 ))}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Mi Avance (docente only) */}
+          {esDocente && miAvance && (
+            <Card className="shadow-sm bg-card border-border">
+              <CardHeader className="py-3 px-4 border-b border-border">
+                <CardTitle className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
+                  <CheckCircle2 className="h-3 w-3 inline mr-1 text-accent" />
+                  Mi Avance
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-3 space-y-3">
+                <div className="text-center">
+                  <span className={`text-2xl font-bold font-mono tabular-nums ${
+                    miAvance.porcentajeGlobal >= 100
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : miAvance.porcentajeGlobal >= 50
+                      ? 'text-amber-600 dark:text-amber-400'
+                      : 'text-red-600 dark:text-red-400'
+                  }`}>
+                    {miAvance.porcentajeGlobal}%
+                  </span>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">Completado</p>
+                  <div className="w-full h-2 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700 mt-1.5">
+                    <div className={`h-full rounded-full transition-all duration-500 ${
+                      miAvance.porcentajeGlobal >= 100
+                        ? 'bg-emerald-500'
+                        : miAvance.porcentajeGlobal >= 50
+                        ? 'bg-amber-400'
+                        : 'bg-red-500'
+                    }`} style={{ width: `${miAvance.porcentajeGlobal}%` }} />
+                  </div>
+                </div>
+                <div className="flex justify-center gap-3 text-[10px]">
+                  <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                    <CheckCircle2 className="h-3 w-3" /> {miAvance.globalCompleto}
+                  </span>
+                  <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400">
+                    <AlertCircle className="h-3 w-3" /> {miAvance.globalParcial}
+                  </span>
+                  <span className="flex items-center gap-1 text-slate-400">
+                    <MinusCircle className="h-3 w-3" /> {miAvance.globalVacio}
+                  </span>
+                </div>
+                {miAvance.materias.length > 0 && (
+                  <div className="space-y-1.5 pt-1 border-t border-border">
+                    {miAvance.materias.map((m, i) => (
+                      <div key={i} className="flex items-center justify-between gap-2 text-[10px]">
+                        <span className="truncate text-foreground/70 flex-1">{m.materiaNombre}</span>
+                        <span className="text-muted-foreground/60 shrink-0">{m.gradoNumero}°{m.gradoSeccion}</span>
+                        <span className={`font-mono font-bold shrink-0 ${
+                          m.porcentaje >= 100
+                            ? 'text-emerald-600 dark:text-emerald-400'
+                            : m.porcentaje >= 50
+                            ? 'text-amber-600 dark:text-amber-400'
+                            : 'text-red-600 dark:text-red-400'
+                        }`}>
+                          {m.porcentaje}%
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
