@@ -749,7 +749,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
   const tardyCount = Object.values(asistencias).filter(e => e === "tarde").length;
 
   return (
-    <Card className={`shadow-sm ${darkMode ? 'bg-[#121923] border-slate-700' : 'border-emerald-100'}`}>
+    <Card className={`shadow-sm ${darkMode ? 'bg-[#18181C] border-slate-700' : 'border-emerald-100'}`}>
       <CardHeader className={`pb-3 border-b ${darkMode ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50/50'}`}>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex flex-col gap-1">
@@ -862,7 +862,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                   </TableHeader>
                   <TableBody>
                     {Array.from({ length: 5 }).map((_, idx) => (
-                      <TableRow key={`skeleton-${idx}`} className={idx % 2 === 0 ? (darkMode ? 'bg-[#121923]' : '') : (darkMode ? 'bg-slate-800/50' : 'bg-slate-50/50')}>
+                      <TableRow key={`skeleton-${idx}`} className={idx % 2 === 0 ? (darkMode ? 'bg-[#18181C]' : '') : (darkMode ? 'bg-slate-800/50' : 'bg-slate-50/50')}>
                         <TableCell className="text-center"><Skeleton className={`h-4 w-6 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
                         <TableCell><Skeleton className={`h-4 w-40 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
                         <TableCell className="text-center"><Skeleton className={`h-8 w-32 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
@@ -948,8 +948,8 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                     {activeStudents.map((est, idx) => {
                       const estado = asistencias[est.id];
                       const evenRow = idx % 2 === 0;
-                      const rowBg = evenRow ? (darkMode ? 'bg-[#121923]' : '') : (darkMode ? 'bg-slate-800/50' : 'bg-slate-50/50');
-                      const stickyBg = evenRow ? (darkMode ? 'bg-[#121923]' : 'bg-white') : (darkMode ? 'bg-slate-800/50' : 'bg-slate-50/50');
+                      const rowBg = evenRow ? (darkMode ? 'bg-[#18181C]' : '') : (darkMode ? 'bg-slate-800/50' : 'bg-slate-50/50');
+                      const stickyBg = evenRow ? (darkMode ? 'bg-[#18181C]' : 'bg-white') : (darkMode ? 'bg-slate-800/50' : 'bg-slate-50/50');
 
                       const getEstadoBadgeClass = (e: string) => {
                         if (!e) return darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-400';
@@ -1106,7 +1106,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                 <TableBody>
                   {loading ? (
                     Array.from({ length: 5 }).map((_, idx) => (
-                      <TableRow key={`skeleton-${idx}`} className={idx % 2 === 0 ? (darkMode ? 'bg-[#121923]' : '') : (darkMode ? 'bg-slate-800/50' : 'bg-slate-50/50')}>
+                      <TableRow key={`skeleton-${idx}`} className={idx % 2 === 0 ? (darkMode ? 'bg-[#18181C]' : '') : (darkMode ? 'bg-slate-800/50' : 'bg-slate-50/50')}>
                         <TableCell className="text-center"><Skeleton className={`h-4 w-6 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
                         <TableCell><Skeleton className={`h-4 w-40 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
                         <TableCell className="text-center"><Skeleton className={`h-4 w-8 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></TableCell>
@@ -1306,7 +1306,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
       </CardContent>
 
       <Dialog open={bloqueoDialogOpen} onOpenChange={setBloqueoDialogOpen}>
-        <DialogContent className={`max-w-sm ${darkMode ? 'bg-[#121923] border-slate-700' : ''}`}>
+        <DialogContent className={`max-w-sm ${darkMode ? 'bg-[#18181C] border-slate-700' : ''}`}>
           <DialogHeader>
             <DialogTitle className={`flex items-center gap-2 ${darkMode ? 'text-white' : ''}`}>
               <Lock className={`h-5 w-5 ${puedeSobrescribir ? 'text-blue-500' : 'text-amber-500'}`} />

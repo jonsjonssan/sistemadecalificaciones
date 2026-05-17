@@ -286,7 +286,7 @@ export default function GettingStartedWizard({ open, onClose, darkMode, userRole
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className={`max-w-lg ${darkMode ? 'bg-[#121923] border-slate-700' : ''}`}>
+      <DialogContent className={`max-w-lg ${darkMode ? 'bg-[#18181C] border-slate-700' : ''}`}>
         <DialogHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">

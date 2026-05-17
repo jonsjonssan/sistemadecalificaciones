@@ -581,7 +581,7 @@ useEffect(() => {
 
   const rowBg = evenRow
     ? darkMode
-      ? "bg-[#121923] hover:bg-slate-700/80"
+      ? "bg-[#18181C] hover:bg-slate-700/80"
       : "bg-white hover:bg-slate-50"
     : darkMode
       ? "bg-slate-800/60 hover:bg-slate-700/80"
@@ -589,7 +589,7 @@ useEffect(() => {
   const cellBorder = darkMode ? "border-slate-600/60" : "border-slate-200";
   const stickyBg = evenRow
     ? darkMode
-      ? "bg-[#121923]"
+      ? "bg-[#18181C]"
       : "bg-white"
     : darkMode
       ? "bg-slate-800/60"

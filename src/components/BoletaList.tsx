@@ -1321,7 +1321,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
       {(loadingAsistencia || loadingAnual) && (
         <div className="space-y-2 mb-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <Card key={i} className={`shadow-sm ${darkMode ? 'bg-[#121923] border-slate-700' : ''}`}>
+            <Card key={i} className={`shadow-sm ${darkMode ? 'bg-[#18181C] border-slate-700' : ''}`}>
               <div className="p-2.5 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Skeleton className={`h-3 w-5 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
@@ -1372,7 +1372,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
       {(estudiantes || []).map(est => {
         const califs = getCalifs(est.id), prom = calcProm(califs), open = expandedBoleta === est.id;
         return (
-          <Card key={est.id} className={`shadow-sm ${darkMode ? 'bg-[#121923] border-slate-700' : ''}`}>
+          <Card key={est.id} className={`shadow-sm ${darkMode ? 'bg-[#18181C] border-slate-700' : ''}`}>
             <div className={`p-2.5 flex items-center justify-between cursor-pointer ${darkMode ? 'hover:bg-slate-800' : 'hover:bg-slate-50'}`} onClick={() => setExpandedBoleta(open ? null : est.id)}>
               <div className="flex items-center gap-2"><span className={`text-xs w-5 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>{est.numero}</span><span className={`text-xs sm:text-sm font-medium ${darkMode ? 'text-white' : ''}`}>{est.nombre}</span><Badge variant={prom !== null && prom >= ua ? "default" : prom !== null && prom >= uc ? "secondary" : "destructive"} className={`text-[10px] h-5 ${prom !== null && prom >= ua ? (darkMode ? 'bg-emerald-600' : 'bg-emerald-600') : prom !== null && prom >= uc ? (darkMode ? 'bg-amber-600' : 'bg-amber-600') : ''}`}>Prom: {prom !== null ? prom.toFixed(2) : "N/A"}</Badge></div>
               <div className="flex items-center gap-1">
