@@ -141,7 +141,7 @@ export function SystemThresholdsCard({
   };
 
   return (
-    <Card className={`shadow-sm ${darkMode ? "bg-[#121E32] border-slate-700" : ""}`}>
+    <Card className={`shadow-sm ${darkMode ? "bg-[#0E1726] border-slate-700" : ""}`}>
       <CardHeader className={`py-3 px-4 ${darkMode ? "border-slate-700" : ""}`}>
         <CardTitle className="text-sm sm:text-base">Umbrales del Sistema</CardTitle>
         <CardDescription className={`text-xs ${darkMode ? "text-slate-400" : ""}`}>

@@ -80,7 +80,7 @@ const enlaces: EnlaceInstitucional[] = [
 
 export default function EnlacesInstitucionales({ darkMode }: { darkMode: boolean }) {
   return (
-    <Card className={`shadow-sm ${darkMode ? "bg-[#121E32] border-slate-700" : ""}`}>
+    <Card className={`shadow-sm ${darkMode ? "bg-[#0E1726] border-slate-700" : ""}`}>
       <CardHeader className="pb-3 sm:pb-4">
         <CardTitle className="text-base sm:text-lg flex items-center gap-2">
           <Globe className="h-5 w-5 text-emerald-600" />
