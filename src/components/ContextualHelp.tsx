@@ -20,7 +20,7 @@ export function HelpTooltip({ content, darkMode = false, side = "top", children 
             <HelpCircle className={`h-4 w-4 cursor-help ${darkMode ? 'text-slate-500' : 'text-slate-400'}`} />
           )}
         </TooltipTrigger>
-        <TooltipContent side={side} className={`max-w-xs text-xs ${darkMode ? 'bg-slate-800 border-slate-700' : ''}`}>
+        <TooltipContent side={side} className="max-w-xs text-xs bg-popover text-popover-foreground border-border">
           <p>{content}</p>
         </TooltipContent>
       </Tooltip>
@@ -117,14 +117,14 @@ export function ContextualHelp({ section, darkMode }: ContextualHelpProps) {
             <HelpCircle className="h-4 w-4" />
           </button>
         </TooltipTrigger>
-        <TooltipContent side="bottom" className={`max-w-sm p-4 ${darkMode ? 'bg-slate-800 border-slate-700' : ''}`}>
+        <TooltipContent side="bottom" className="max-w-sm p-4 bg-popover text-popover-foreground border-border">
           <div className="space-y-2">
             <p className="text-sm font-semibold">{help.title}</p>
             <ul className="space-y-1.5">
               {help.tips.map((tip, i) => (
                 <li key={i} className="text-xs flex items-start gap-1.5">
-                  <span className="text-emerald-600 mt-0.5">•</span>
-                  <span className={darkMode ? 'text-slate-400' : 'text-slate-600'}>{tip}</span>
+                  <span className="text-emerald-500 dark:text-emerald-400 mt-0.5">•</span>
+                  <span>{tip}</span>
                 </li>
               ))}
             </ul>
