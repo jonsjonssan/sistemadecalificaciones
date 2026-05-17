@@ -122,7 +122,7 @@ export default function AvanceDocentes() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
             <Input
-              placeholder="Buscar docente..."
+              placeholder="Buscar usuario..."
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
               className={`pl-9 h-9 text-sm ${
@@ -137,7 +137,7 @@ export default function AvanceDocentes() {
                 <Skeleton
                   key={i}
                   className={`h-16 w-full ${
-                    darkMode ? "bg-slate-800" : "bg-slate-200"
+                    darkMode ? "bg-slate-800/25" : "bg-slate-200/50"
                   }`}
                 />
               ))}
@@ -145,8 +145,8 @@ export default function AvanceDocentes() {
           ) : filtrados.length === 0 ? (
             <div className="text-center py-8 text-sm text-muted-foreground">
               {data.length === 0
-                ? "No hay docentes registrados en el sistema."
-                : "Ningún docente coincide con la búsqueda."}
+                ? "No hay usuarios registrados en el sistema."
+                : "Ningún usuario coincide con la búsqueda."}
             </div>
           ) : (
             <div className="space-y-2">
@@ -160,7 +160,7 @@ export default function AvanceDocentes() {
                   <button
                     onClick={() => toggleDocente(docente.docenteId)}
                     className={`w-full flex items-center gap-3 p-3 text-left transition-colors hover:bg-muted/30 ${
-                      darkMode ? "bg-slate-800/50" : "bg-slate-50/50"
+                      darkMode ? "bg-slate-800/10" : "bg-slate-50/10"
                     }`}
                   >
                     <div className="shrink-0">
@@ -179,28 +179,49 @@ export default function AvanceDocentes() {
                           variant={
                             docente.docenteRol === "docente-orientador"
                               ? "outline"
+                              : docente.docenteRol === "admin"
+                              ? "default"
+                              : docente.docenteRol === "admin-directora"
+                              ? "default"
+                              : docente.docenteRol === "admin-codirectora"
+                              ? "default"
                               : "secondary"
                           }
                           className={`text-[10px] ${
                             darkMode ? "border-white/30" : ""
                           }`}
                         >
-                          {docente.docenteRol === "docente-orientador"
+                          {docente.docenteRol === "admin"
+                            ? "Admin"
+                            : docente.docenteRol === "admin-directora"
+                            ? "Directora"
+                            : docente.docenteRol === "admin-codirectora"
+                            ? "Codirectora"
+                            : docente.docenteRol === "docente-orientador"
                             ? "Docente Orientador"
                             : "Docente"}
                         </Badge>
                       </div>
                       <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <BookOpen className="h-3 w-3" />
-                          {docente.materias.length} materia
-                          {docente.materias.length !== 1 ? "s" : ""}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Users className="h-3 w-3" />
-                          {docente.globalEsperado} calif.
-                          {docente.globalEsperado !== 1 ? "es" : ""} esperadas
-                        </span>
+                        {["admin", "admin-directora", "admin-codirectora"].includes(docente.docenteRol) ? (
+                          <span className="flex items-center gap-1">
+                            <BookOpen className="h-3 w-3" />
+                            Acceso total a todas las opciones
+                          </span>
+                        ) : (
+                          <>
+                            <span className="flex items-center gap-1">
+                              <BookOpen className="h-3 w-3" />
+                              {docente.materias.length} materia
+                              {docente.materias.length !== 1 ? "s" : ""}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Users className="h-3 w-3" />
+                              {docente.globalEsperado} calif.
+                              {docente.globalEsperado !== 1 ? "es" : ""} esperadas
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
@@ -252,12 +273,20 @@ export default function AvanceDocentes() {
                     <div
                       className={`border-t ${
                         darkMode
-                          ? "border-slate-700 bg-slate-900/50"
+                          ? "border-slate-700 bg-slate-900/10"
                           : "border-slate-200 bg-white"
                       }`}
                     >
                       <div className="p-2 space-y-1">
-                        {docente.materias.map((materia) => (
+                        {["admin", "admin-directora", "admin-codirectora"].includes(docente.docenteRol) ? (
+                          <div className="p-4 text-center text-sm text-muted-foreground">
+                            Usuario con acceso total a todas las opciones del sistema. No tiene materias asignadas individualmente.
+                          </div>
+                        ) : docente.materias.length === 0 ? (
+                          <div className="p-4 text-center text-sm text-muted-foreground">
+                            Sin materias asignadas.
+                          </div>
+                        ) : docente.materias.map((materia) => (
                           <div
                             key={materia.materiaId}
                             className={`rounded-md border ${
@@ -312,7 +341,7 @@ export default function AvanceDocentes() {
                                       key={t.trimestre}
                                       className={`text-center p-2 rounded-md border text-xs ${
                                         darkMode
-                                          ? "border-slate-700 bg-slate-800/50"
+                                          ? "border-slate-700 bg-slate-800/10"
                                           : "border-slate-100 bg-slate-50"
                                       }`}
                                     >
