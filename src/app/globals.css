@@ -602,13 +602,10 @@
   -webkit-text-stroke: 0.5px oklch(0 0 0 / 0.5);
 }
 
-/* ── TEXT READABILITY: green glow for near-black text in light mode ── */
-:root:not(.dark) .text-slate-800,
-:root:not(.dark) .text-slate-900 {
-  text-shadow: 0 0 1px oklch(0.64 0.17 155 / 0.25), 0 0 2px oklch(0.64 0.17 155 / 0.1);
+/* ── LIGHT MODE: negro profundo + negrita para que resalte ── */
+:root:not(.dark) body {
+  font-weight: 500;
 }
-
-/* ── LIGHT MODE: all text → negro profundo (fallback for slate classes) ── */
 :root:not(.dark) .text-slate-400,
 :root:not(.dark) .text-slate-500,
 :root:not(.dark) .text-slate-600,
@@ -616,6 +613,16 @@
 :root:not(.dark) .text-slate-800,
 :root:not(.dark) .text-slate-900 {
   color: oklch(0.02 0 0) !important;
+}
+:root:not(.dark) .text-slate-400,
+:root:not(.dark) .text-slate-500,
+:root:not(.dark) .text-slate-600,
+:root:not(.dark) .text-slate-700 {
+  font-weight: 600 !important;
+}
+:root:not(.dark) .text-slate-800,
+:root:not(.dark) .text-slate-900 {
+  font-weight: 700 !important;
 }
 
 @media (max-width: 480px) {
