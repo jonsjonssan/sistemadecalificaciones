@@ -164,6 +164,7 @@ export function useDashboardData() {
   const [mostrarAsistencia, setMostrarAsistencia] = useState<boolean>(true);
   const observacionesSaveTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
   const asistenciaManualDataRef = useRef(asistenciaManualData);
+  const gradoSeleccionadoRef = useRef(gradoSeleccionado);
 
   const [promedioAsignatura, setPromedioAsignatura] = useState<number | null>(null);
 
@@ -250,6 +251,15 @@ export function useDashboardData() {
   }, []);
 
   useEffect(() => { asistenciaManualDataRef.current = asistenciaManualData; }, [asistenciaManualData]);
+
+  useEffect(() => { gradoSeleccionadoRef.current = gradoSeleccionado; }, [gradoSeleccionado]);
+
+  // Limpiar datos de asistencia manual al cambiar de grado para evitar contaminacion cruzada
+  useEffect(() => {
+    if (gradoSeleccionadoRef.current && gradoSeleccionadoRef.current !== gradoSeleccionado) {
+      setAsistenciaManualData({});
+    }
+  }, [gradoSeleccionado]);
 
   // Load observaciones
   useEffect(() => {
@@ -1210,6 +1220,8 @@ export function useDashboardData() {
         const año = grado?.año || new Date().getFullYear();
         for (const [estudianteId, entry] of Object.entries(data)) {
           if (!entry) continue;
+          const tieneDatos = entry.observaciones || entry.asistencias || entry.inasistencias || entry.tardanzas || entry.justificadas || entry.totalDias;
+          if (!tieneDatos) continue;
           const blob = new Blob([JSON.stringify({ estudianteId, gradoId: gradoSeleccionado, trimestre: effectiveTrimestre, año, ...entry })], { type: "application/json" });
           navigator.sendBeacon("/api/observaciones", blob);
         }
