@@ -15,6 +15,7 @@ import { GradeChart } from "@/components/ui/grade-chart";
 import InformeTecnicoDialog from "./InformeTecnicoDialog";
 import { MathInfoButton, mathExplanations } from "./MathInfoButton";
 import { CiclosSection } from "./CiclosSection";
+import { DescargaCompletaButton } from "./DescargaCompletaButton";
 import { PromedioCircular } from "./PromedioCircular";
 import { CheckCircle2, AlertCircle, MinusCircle } from "lucide-react";
 import { CICLOS, getCicloDark, CicloAsignaturas } from "@/lib/ciclos";
@@ -645,11 +646,12 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
             <MathInfoButton darkMode={darkMode} explanation={mathExplanations.asignaturasPorCiclo} />
           </div>
           <CiclosSection asignaturas={todasAsignaturasList} stats={stats} grados={grados} darkMode={darkMode} selectedMaterias={selectedMaterias} setSelectedMaterias={setSelectedMaterias} />
-          <div className="mt-3">
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             <Button size="sm" onClick={() => setInformeOpen(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm">
               <FileText className="h-4 w-4 mr-2" />
               Generar Informe Técnico
             </Button>
+            <DescargaCompletaButton darkMode={darkMode} />
           </div>
         </div>
       )}
