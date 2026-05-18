@@ -279,7 +279,7 @@ self.addEventListener("message", (event) => {
 });
 
 // Notificación de actualización disponible
-self.addEventListener("updatefound", (event) => {
+self.registration.addEventListener("updatefound", () => {
   const newWorker = self.registration.installing;
   
   if (newWorker) {
