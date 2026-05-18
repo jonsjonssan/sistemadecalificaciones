@@ -300,6 +300,8 @@ export function useDashboardData() {
     }
   }, []);
 
+  useEffect(() => { checkAuth(); }, []);
+
   const initSystem = async () => {
     try {
       const res = await fetch("/api/init", { method: "POST", credentials: "include" });
