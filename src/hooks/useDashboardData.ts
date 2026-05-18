@@ -274,7 +274,7 @@ export function useDashboardData() {
               tardanzas: entry.tardanzas ?? prev[estudianteId]?.tardanzas ?? '',
               justificadas: entry.justificadas ?? prev[estudianteId]?.justificadas ?? '',
               totalDias: entry.totalDias ?? prev[estudianteId]?.totalDias ?? '',
-              observaciones: entry.observaciones ?? prev[estudianteId]?.observaciones ?? '',
+              observaciones: entry.observaciones || prev[estudianteId]?.observaciones || '',
             };
           }
           return updated;
@@ -1059,8 +1059,14 @@ export function useDashboardData() {
       const grado = gradosFiltrados.find(g => g.id === gradoSeleccionado);
       const año = grado?.año || new Date().getFullYear();
       try {
-        await fetch("/api/observaciones", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ estudianteId, gradoId: gradoSeleccionado, trimestre: effectiveTrimestre, año, ...entry }) });
-      } catch { }
+        const res = await fetch("/api/observaciones", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ estudianteId, gradoId: gradoSeleccionado, trimestre: effectiveTrimestre, año, ...entry }) });
+        if (!res.ok) {
+          const errBody = await res.text();
+          console.error(`[observaciones] Error ${res.status} al guardar:`, errBody);
+        }
+      } catch (e) {
+        console.error("[observaciones] Error de red al guardar:", e);
+      }
     }, 2000);
     observacionesSaveTimersRef.current.set(estudianteId, timer);
   }, [gradoSeleccionado, trimestreSeleccionado, gradosFiltrados]);
