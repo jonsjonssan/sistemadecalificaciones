@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { cookies } from "next/headers";
 import { verifySession } from "@/lib/session";
+import { isAdmin } from "@/utils/roleHelpers";
 
 async function getUsuarioSession() {
   const cookieStore = await cookies();
@@ -11,14 +12,14 @@ async function getUsuarioSession() {
 }
 
 function canAccessGrado(session: any, gradoId: string): boolean {
-  if (["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) return true;
+  if (isAdmin(session.rol)) return true;
   if (session.asignaturasAsignadas?.some((m: any) => m.gradoId === gradoId)) return true;
   if (session.gradosAsignados?.some((g: any) => g.id === gradoId)) return true;
   return false;
 }
 
 function canAccessMateria(session: any, materiaId: string): boolean {
-  if (["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) return true;
+  if (isAdmin(session.rol)) return true;
   return session.asignaturasAsignadas?.some((m: any) => m.id === materiaId) ?? false;
 }
 

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { verifySession } from "@/lib/session";
 import { db } from "@/lib/db";
+import { isAdmin } from "@/utils/roleHelpers";
 
 const selectMateriasConDatos = {
   materia: {
@@ -203,7 +204,7 @@ export async function GET() {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const isAdminRole = ["admin", "admin-directora", "admin-codirectora"].includes(session.rol);
+    const isAdminRole = isAdmin(session.rol);
 
     if (!isAdminRole && !["docente", "docente-orientador"].includes(session.rol)) {
       return NextResponse.json({ error: "Acceso denegado" }, { status: 403 });

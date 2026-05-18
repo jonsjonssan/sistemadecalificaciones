@@ -3,6 +3,7 @@ import { sql } from "@/lib/neon";
 import { db } from "@/lib/db";
 import { cookies } from "next/headers";
 import { verifySession } from "@/lib/session";
+import { isAdmin } from "@/utils/roleHelpers";
 
 export const revalidate = 300;
 
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
       año = configResult[0].añoEscolar;
     }
 
-    const isAdminUser = ["admin", "admin-directora", "admin-codirectora"].includes(session.rol);
+    const isAdminUser = isAdmin(session.rol);
 
     let grados: any[];
     if (isAdminUser) {
@@ -103,8 +104,8 @@ export async function POST(request: NextRequest) {
     }
 
     const usuario = session as any;
-    const isAdmin = ["admin", "admin-directora", "admin-codirectora"].includes(usuario.rol);
-    if (!isAdmin) {
+    const esAdmin = isAdmin(usuario.rol);
+    if (!esAdmin) {
       return NextResponse.json({ error: "Solo administradores pueden crear grados" }, { status: 403 });
     }
 

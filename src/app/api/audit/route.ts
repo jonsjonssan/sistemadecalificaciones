@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { cookies } from "next/headers";
 import { verifySession } from "@/lib/session";
+import { isAdmin } from "@/utils/roleHelpers";
 
 async function getUsuarioSession() {
   try {
@@ -20,7 +21,7 @@ async function getUsuarioSession() {
 export async function GET(request: NextRequest) {
   try {
     const session = await getUsuarioSession();
-    if (!session || !["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) {
+    if (!session || !isAdmin(session.rol)) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
@@ -114,7 +115,7 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const session = await getUsuarioSession();
-    if (!session || !["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) {
+    if (!session || !isAdmin(session.rol)) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 

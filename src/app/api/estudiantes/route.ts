@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { cookies } from "next/headers";
 import { verifySession } from "@/lib/session";
+import { isAdmin } from "@/utils/roleHelpers";
 
 async function getUsuarioSession() {
   const cookieStore = await cookies();
@@ -11,7 +12,7 @@ async function getUsuarioSession() {
 }
 
 function canAccessGrado(session: any, gradoId: string): boolean {
-  if (["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) return true;
+  if (isAdmin(session.rol)) return true;
   if (session.asignaturasAsignadas?.some((m: any) => m.gradoId === gradoId)) return true;
   if (session.gradosAsignados?.some((g: any) => g.id === gradoId)) return true;
   return false;
@@ -106,7 +107,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    if (!["admin", "admin-directora", "admin-codirectora"].includes(session.rol) && session.rol !== "docente") {
+    if (!isAdmin(session.rol) && session.rol !== "docente") {
       return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 
@@ -158,7 +159,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    if (!["admin", "admin-directora", "admin-codirectora"].includes(session.rol) && session.rol !== "docente") {
+    if (!isAdmin(session.rol) && session.rol !== "docente") {
       return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 
@@ -218,7 +219,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    if (!["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) {
+    if (!isAdmin(session.rol)) {
       return NextResponse.json({ error: "Solo administradores pueden eliminar estudiantes" }, { status: 403 });
     }
 
@@ -258,7 +259,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    if (!["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) {
+    if (!isAdmin(session.rol)) {
       return NextResponse.json({ error: "Solo administradores pueden reordenar" }, { status: 403 });
     }
 

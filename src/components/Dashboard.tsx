@@ -17,10 +17,17 @@ import { MathInfoButton, mathExplanations } from "./MathInfoButton";
 import { CiclosSection } from "./CiclosSection";
 import { PromedioCircular } from "./PromedioCircular";
 import { CheckCircle2, AlertCircle, MinusCircle } from "lucide-react";
+import { CICLOS, getCicloDark, CicloAsignaturas } from "@/lib/ciclos";
 
 interface UsuarioSesion { id: string; email: string; nombre: string; rol: string; asignaturasAsignadas?: Array<{ gradoId: string }>; }
 interface Grado { id: string; numero: number; seccion: string; _count?: { estudiantes: number; materias: number; }; }
-interface MateriaConGrado { id: string; nombre: string; gradoId?: string; grado?: { id: string; numero: number; seccion: string; }; }
+
+interface MateriaConGrado {
+  id: string;
+  nombre: string;
+  gradoId?: string;
+  grado?: { id: string; numero: number; seccion: string };
+}
 
 interface DashboardProps {
   usuario: UsuarioSesion;
@@ -46,29 +53,48 @@ interface GradeStats {
   materias?: { id: string; nombre: string; promedio: number | null }[];
 }
 
-interface CicloAsignaturas {
-  nombre: string;
-  grados: number[];
-  color: string;
-  colorBg: string;
-  colorBorder: string;
-  iconColor: string;
-  ringColor: string;
-}
+function calcularPromedioGradoAjustado(
+  stat: GradeStats | undefined,
+  selectedMaterias: Set<string>
+): number | null {
+  if (!stat) return null;
 
-const CICLOS: CicloAsignaturas[] = [
-  { nombre: "Primer Ciclo", grados: [2, 3], color: "text-emerald-600 dark:text-emerald-400", colorBg: "bg-emerald-50 dark:bg-emerald-900/20", colorBorder: "border-emerald-200 dark:border-emerald-800", iconColor: "text-emerald-500 dark:text-emerald-400", ringColor: "oklch(0.56 0.15 155)" },
-  { nombre: "Segundo Ciclo", grados: [4, 5, 6], color: "text-amber-600 dark:text-amber-400", colorBg: "bg-amber-50 dark:bg-amber-900/20", colorBorder: "border-amber-200 dark:border-amber-800", iconColor: "text-amber-500 dark:text-amber-400", ringColor: "oklch(0.65 0.12 85)" },
-  { nombre: "Tercer Ciclo", grados: [7, 8, 9], color: "text-primary dark:text-primary", colorBg: "bg-primary/5 dark:bg-primary/10", colorBorder: "border-primary/20 dark:border-primary/30", iconColor: "text-primary dark:text-primary", ringColor: "oklch(0.28 0.055 160)" },
-];
+  // Promedio original por categorias (metodo historico)
+  const tieneDatos =
+    stat.promedios?.cotidiana != null ||
+    stat.promedios?.integradora != null ||
+    stat.promedios?.examen != null;
+  if (!tieneDatos) return null;
 
-function getCicloDark(ciclo: CicloAsignaturas) {
-  const map: Record<string, { bg: string; border: string; icon: string }> = {
-    "Primer Ciclo": { bg: "bg-emerald-900/20", border: "border-emerald-800", icon: "text-emerald-400" },
-    "Segundo Ciclo": { bg: "bg-amber-900/20", border: "border-amber-800", icon: "text-amber-400" },
-    "Tercer Ciclo": { bg: "bg-primary/10", border: "border-primary/30", icon: "text-primary" },
-  };
-  return map[ciclo.nombre] || { bg: "bg-slate-800", border: "border-slate-700", icon: "text-slate-400" };
+  const promOriginal =
+    ((stat.promedios.cotidiana ?? 0) +
+      (stat.promedios.integradora ?? 0) +
+      (stat.promedios.examen ?? 0)) /
+    3;
+
+  const allMaterias = stat.materias || [];
+  const materiasConDatos = allMaterias.filter(m => m.promedio != null);
+  const selectedConDatos = materiasConDatos.filter(m => selectedMaterias.has(m.id));
+
+  if (selectedConDatos.length === 0) return null;
+
+  // Si todas las materias con datos estan seleccionadas, devolver el original
+  if (selectedConDatos.length === materiasConDatos.length) {
+    return Math.round(promOriginal * 100) / 100;
+  }
+
+  // Ajuste proporcional segun las materias seleccionadas
+  const promTodas =
+    materiasConDatos.reduce((a, m) => a + (m.promedio ?? 0), 0) /
+    materiasConDatos.length;
+
+  const promSeleccionadas =
+    selectedConDatos.reduce((a, m) => a + (m.promedio ?? 0), 0) /
+    selectedConDatos.length;
+
+  if (promTodas === 0) return null;
+
+  return Math.round(promOriginal * (promSeleccionadas / promTodas) * 100) / 100;
 }
 
 function StatBadge({ icon: Icon, label, value, note, darkMode, action }: {
@@ -119,60 +145,6 @@ function QuickActionRow({ icon: Icon, label, sub, onClick }: {
     </div>
   );
 }
-
-/**
- * Calcula el promedio de un grado respetando la formula original (categorias)
- * pero permitiendo filtrar por materias seleccionadas.
- * Cuando todas las materias con datos estan seleccionadas, devuelve exactamente
- * el mismo resultado que el calculo historico por categorias.
- */
-function calcularPromedioGradoAjustado(
-  stat: GradeStats | undefined,
-  selectedMaterias: Set<string>
-): number | null {
-  if (!stat) return null;
-
-  // Promedio original por categorias (metodo historico)
-  const tieneDatos =
-    stat.promedios?.cotidiana != null ||
-    stat.promedios?.integradora != null ||
-    stat.promedios?.examen != null;
-  if (!tieneDatos) return null;
-
-  const promOriginal =
-    ((stat.promedios.cotidiana ?? 0) +
-      (stat.promedios.integradora ?? 0) +
-      (stat.promedios.examen ?? 0)) /
-    3;
-
-  const allMaterias = stat.materias || [];
-  const materiasConDatos = allMaterias.filter(m => m.promedio != null);
-  const selectedConDatos = materiasConDatos.filter(m => selectedMaterias.has(m.id));
-
-  if (selectedConDatos.length === 0) return null;
-
-  // Si todas las materias con datos estan seleccionadas, devolver el original
-  if (selectedConDatos.length === materiasConDatos.length) {
-    return Math.round(promOriginal * 100) / 100;
-  }
-
-  // Ajuste proporcional segun las materias seleccionadas
-  const promTodas =
-    materiasConDatos.reduce((a, m) => a + (m.promedio ?? 0), 0) /
-    materiasConDatos.length;
-
-  const promSeleccionadas =
-    selectedConDatos.reduce((a, m) => a + (m.promedio ?? 0), 0) /
-    selectedConDatos.length;
-
-  if (promTodas === 0) return null;
-
-  return Math.round(promOriginal * (promSeleccionadas / promTodas) * 100) / 100;
-}
-
-
-
-
 
 const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, totalAsignaturas, asignaturasAsignadas, totalDocentes, configuracion, onNavigate }: DashboardProps) {
   const { resolvedTheme } = useTheme();

@@ -5,6 +5,7 @@ import { verifySession } from "@/lib/session";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
+import { isAdmin } from "@/utils/roleHelpers";
 
 async function getUsuarioSession() {
   const cookieStore = await cookies();
@@ -14,7 +15,7 @@ async function getUsuarioSession() {
 }
 
 function canAccessGrado(session: any, gradoId: string): boolean {
-  if (["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) return true;
+  if (isAdmin(session.rol)) return true;
   if (session.asignaturasAsignadas?.some((m: any) => m.gradoId === gradoId)) return true;
   if (session.gradosAsignados?.some((g: any) => g.id === gradoId)) return true;
   return false;

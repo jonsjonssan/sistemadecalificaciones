@@ -4,31 +4,7 @@ import { useState, memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, Book, ChevronDown, ChevronRight } from "lucide-react";
-
-interface CicloAsignaturas {
-  nombre: string;
-  grados: number[];
-  color: string;
-  colorBg: string;
-  colorBorder: string;
-  iconColor: string;
-  ringColor: string;
-}
-
-const CICLOS: CicloAsignaturas[] = [
-  { nombre: "Primer Ciclo", grados: [2, 3], color: "text-emerald-600", colorBg: "bg-emerald-50", colorBorder: "border-emerald-200", iconColor: "text-emerald-500", ringColor: "oklch(0.56 0.15 155)" },
-  { nombre: "Segundo Ciclo", grados: [4, 5, 6], color: "text-amber-600", colorBg: "bg-amber-50", colorBorder: "border-amber-200", iconColor: "text-amber-500", ringColor: "oklch(0.65 0.12 85)" },
-  { nombre: "Tercer Ciclo", grados: [7, 8, 9], color: "text-primary", colorBg: "bg-primary/10", colorBorder: "border-primary/20", iconColor: "text-primary", ringColor: "oklch(0.28 0.055 160)" },
-];
-
-function getCicloDark(ciclo: CicloAsignaturas) {
-  const map: Record<string, { bg: string; border: string; icon: string }> = {
-    "Primer Ciclo": { bg: "bg-emerald-900/20", border: "border-emerald-800", icon: "text-emerald-400" },
-    "Segundo Ciclo": { bg: "bg-amber-900/20", border: "border-amber-800", icon: "text-amber-400" },
-    "Tercer Ciclo": { bg: "bg-primary/10", border: "border-primary/30", icon: "text-primary" },
-  };
-  return map[ciclo.nombre] || { bg: "bg-slate-800", border: "border-slate-700", icon: "text-slate-400" };
-}
+import { CICLOS, getCicloDark, CicloAsignaturas } from "@/lib/ciclos";
 
 function calcularPromedioGradoAjustado(
   stat: any,

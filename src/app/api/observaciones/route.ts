@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireSession } from "@/lib/api-middleware";
+import { isAdmin } from "@/utils/roleHelpers";
 
 type AsistenciaManualData = {
   asistencias: string;
@@ -12,7 +13,7 @@ type AsistenciaManualData = {
 };
 
 function canAccessGrado(session: any, gradoId: string): boolean {
-  if (["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) return true;
+  if (isAdmin(session.rol)) return true;
   if (session.asignaturasAsignadas?.some((m: any) => m.gradoId === gradoId)) return true;
   if (session.gradosAsignados?.some((g: any) => g.id === gradoId)) return true;
   return false;

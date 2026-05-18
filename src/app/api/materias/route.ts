@@ -3,6 +3,7 @@ import { sql } from "@/lib/neon";
 import { db } from "@/lib/db";
 import { cookies } from "next/headers";
 import { verifySession } from "@/lib/session";
+import { isAdmin } from "@/utils/roleHelpers";
 
 export const revalidate = 300;
 
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
     const todas = searchParams.get("todas");
     const año = searchParams.get("año") ? parseInt(searchParams.get("año")!) : 2026;
 
-    const isAdminUser = ["admin", "admin-directora", "admin-codirectora"].includes(session.rol);
+    const isAdminUser = isAdmin(session.rol);
     const materiasArr = (session.asignaturasAsignadas || []) as Array<{ id: string; gradoId: string }>;
     const materiaIdsAsignadas = materiasArr.map(m => m.id);
     const gradosAsignados = [...new Set(materiasArr.map(m => m.gradoId).filter(Boolean))];
@@ -117,7 +118,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    if (!["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) {
+    if (!isAdmin(session.rol)) {
       return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 
@@ -148,7 +149,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    if (!["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) {
+    if (!isAdmin(session.rol)) {
       return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 
@@ -178,7 +179,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    if (!["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) {
+    if (!isAdmin(session.rol)) {
       return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 

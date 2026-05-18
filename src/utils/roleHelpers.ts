@@ -1,11 +1,13 @@
 import { Usuario, UsuarioSesion } from "@/types";
 
+export const ADMIN_ROLES = ["admin", "admin-directora", "admin-codirectora"] as const;
+
 export const isAdmin = (rol: string): boolean => {
-  return ["admin", "admin-directora", "admin-codirectora"].includes(rol);
+  return ADMIN_ROLES.includes(rol as any);
 };
 
 export const canDeleteUsers = (user: UsuarioSesion | null): boolean => {
-  return ["admin", "admin-directora", "admin-codirectora"].includes(user?.rol || "");
+  return ADMIN_ROLES.includes(user?.rol as any);
 };
 
 export const getDocentesDelGrado = (usuarios: Usuario[], gradoId: string): string[] => {

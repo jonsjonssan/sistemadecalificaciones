@@ -23,7 +23,7 @@ async function getUsuarioSession() {
 }
 
 function canAccessMateria(session: any, materiaId: string): boolean {
-  if (["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) return true;
+  if (isAdmin(session.rol)) return true;
   return session.asignaturasAsignadas?.some((m: any) => m.id === materiaId) ?? false;
 }
 

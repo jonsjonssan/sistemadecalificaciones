@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import { verifySession } from "@/lib/session";
 import bcrypt from "bcryptjs";
 import { randomUUID } from "crypto";
+import { isAdmin } from "@/utils/roleHelpers";
 
 export const revalidate = 300;
 
@@ -20,8 +21,8 @@ async function getUsuarioSession() {
 /**
  * Verifica si el usuario tiene rol de administrador (cualquier variante)
  */
-function isAdmin(rol: string): boolean {
-  return ["admin", "admin-directora", "admin-codirectora"].includes(rol);
+function esAdminRol(rol: string): boolean {
+  return isAdmin(rol);
 }
 
 /**
@@ -29,7 +30,7 @@ function isAdmin(rol: string): boolean {
  * Cualquier administrador puede eliminar usuarios
  */
 function canDeleteUsers(session: any): boolean {
-  return ["admin", "admin-directora", "admin-codirectora"].includes(session.rol);
+  return isAdmin(session.rol);
 }
 
 /**
