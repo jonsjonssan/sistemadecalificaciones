@@ -3,15 +3,56 @@
  * 
  * Proporciona funcionalidades comunes para todas las rutas API:
  * - Autenticación y autorización
- * - Validación de datos
+ * - Validación de datos con Zod
  * - Manejo consistente de errores
  * - Audit logging helper
+ * - Rate limiting
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { db } from "./db";
 import { verifySession } from "./session";
+import { z } from "zod";
+
+// ==========================================
+// Zod Validation Helpers
+// ==========================================
+
+export function formatZodErrors(error: z.ZodError): string {
+  return error.issues.map((e: z.ZodIssue) => `${e.path.join(".")}: ${e.message}`).join("; ");
+}
+
+export async function validateBody<T>(req: NextRequest, schema: z.ZodType<T>): Promise<{ data: T; error?: never } | { data?: never; error: NextResponse }> {
+  try {
+    const body = await req.json();
+    const result = schema.safeParse(body);
+    if (!result.success) {
+      return { error: NextResponse.json({ success: false, error: "Datos inválidos", details: formatZodErrors(result.error) }, { status: 400 }) };
+    }
+    return { data: result.data };
+  } catch {
+    return { error: NextResponse.json({ success: false, error: "JSON inválido en el cuerpo de la solicitud" }, { status: 400 }) };
+  }
+}
+
+export function validateQuery<T>(searchParams: URLSearchParams, schema: z.ZodType<T>): { data: T; error?: never } | { data?: never; error: NextResponse } {
+  const params: Record<string, string> = {};
+  searchParams.forEach((value, key) => { params[key] = value; });
+  const result = schema.safeParse(params);
+  if (!result.success) {
+    return { error: NextResponse.json({ success: false, error: "Parámetros inválidos", details: formatZodErrors(result.error) }, { status: 400 }) };
+  }
+  return { data: result.data };
+}
+
+export function validateObject<T>(obj: unknown, schema: z.ZodType<T>): { data: T; error?: never } | { data?: never; error: NextResponse } {
+  const result = schema.safeParse(obj);
+  if (!result.success) {
+    return { error: NextResponse.json({ success: false, error: "Datos inválidos", details: formatZodErrors(result.error) }, { status: 400 }) };
+  }
+  return { data: result.data };
+}
 
 // ==========================================
 // Session Helpers
@@ -24,7 +65,7 @@ export async function getSession() {
   try {
     const verified = verifySession(session.value);
     if (!verified) return null;
-    return verified as { id: string; email: string; nombre: string; rol: string; asignaturasAsignadas?: any[] };
+    return verified as { id: string; email: string; nombre: string; rol: string; gradoId?: string; materias?: Array<{ id: string; nombre: string; gradoId: string; grado?: { numero: number; seccion: string } }>; gradosAsignados?: Array<{ id: string; numero: number; seccion: string }>; asignaturasAsignadas?: Array<{ id: string; nombre: string; gradoId: string }> };
   } catch {
     return null;
   }
@@ -51,7 +92,7 @@ export async function requireAdmin() {
 // Response Helpers
 // ==========================================
 
-export function successResponse(data: any, status = 200) {
+export function successResponse<T = unknown>(data: T, status = 200) {
   return NextResponse.json({ success: true, data }, { status });
 }
 
@@ -70,7 +111,7 @@ export function parsePagination(searchParams: URLSearchParams, defaults = { page
   return { page, limit, skip };
 }
 
-export function paginationResponse(data: any[], total: number, page: number, limit: number) {
+export function paginationResponse<T>(data: T[], total: number, page: number, limit: number) {
   return {
     data,
     pagination: {
@@ -104,7 +145,7 @@ export function withErrorHandling(handler: (req: NextRequest, ...args: any[]) =>
 // Auth Wrapper
 // ==========================================
 
-export function withAuth(handler: (req: NextRequest, session: any) => Promise<NextResponse>, options?: { requireAdmin?: boolean }) {
+export function withAuth(handler: (req: NextRequest, session: ReturnType<typeof getSession> extends Promise<infer R> ? NonNullable<R> : never) => Promise<NextResponse>, options?: { requireAdmin?: boolean }) {
   return withErrorHandling(async (req: NextRequest, ...args: any[]) => {
     const session = await getSession();
     if (!session) {

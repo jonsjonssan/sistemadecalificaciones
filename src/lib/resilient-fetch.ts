@@ -108,11 +108,10 @@ export async function fetchWithCache<T = unknown>(
       }
 
       return data as T;
-    } catch (error: any) {
-      lastError = error;
+    } catch (error: unknown) {
+      lastError = error instanceof Error ? error : new Error(String(error));
 
-      // Si es AbortError, no reintentar
-      if (error.name === "AbortError") {
+      if (error instanceof DOMException && error.name === "AbortError") {
         throw new TimeoutError(`Request timeout: ${url}`, timeout);
       }
 
