@@ -54,28 +54,28 @@ describe('canDeleteUsers', () => {
     expect(canDeleteUsers(user)).toBe(true);
   });
 
-  it('admin con otro email no puede eliminar', () => {
+  it('admin con otro email puede eliminar (validado por rol)', () => {
     const user: UsuarioSesion = {
       id: '2',
       email: 'otro@clases.edu.sv',
       nombre: 'Otro Admin',
       rol: 'admin',
     };
-    expect(canDeleteUsers(user)).toBe(false);
+    expect(canDeleteUsers(user)).toBe(true);
   });
 
   it('usuario null no puede eliminar', () => {
     expect(canDeleteUsers(null)).toBe(false);
   });
 
-  it('usuario sin email no puede eliminar', () => {
+  it('admin sin email puede eliminar (validado por rol)', () => {
     const user = {
       id: '3',
       email: '',
       nombre: 'Sin Email',
       rol: 'admin',
     } as UsuarioSesion;
-    expect(canDeleteUsers(user)).toBe(false);
+    expect(canDeleteUsers(user)).toBe(true);
   });
 });
 

@@ -165,7 +165,7 @@ export function useDashboardData() {
   const asistenciaManualDataRef = useRef(asistenciaManualData);
 
   const [promedioAsignatura, setPromedioAsignatura] = useState<number | null>(null);
-  const [promedioGrado, setPromedioGrado] = useState<number | null>(null);
+
 
   const [busquedaEstudiante, setBusquedaEstudiante] = useState("");
   const busquedaDeferred = useDeferredValue(busquedaEstudiante);
@@ -736,21 +736,22 @@ export function useDashboardData() {
   const estadosCompletitud = useMemo(() => contarEstados(estudiantes, calificaciones, asignaturaSeleccionada, parseInt(trimestreSeleccionado), configActual), [estudiantes, calificaciones, asignaturaSeleccionada, trimestreSeleccionado, configActual]);
 
   // Insertar promedios de grado cuando cambian las calificaciones
-  useEffect(() => {
+  const promedioGrado = useMemo(() => {
     const trimmed = parseInt(trimestreSeleccionado);
     if (!isNaN(trimmed) && calificaciones.length > 0) {
       const promsFinalesValidos = calificaciones.filter(c => c.promedioFinal !== null && c.materiaId === asignaturaSeleccionada && c.trimestre === trimmed).map(c => c.promedioFinal as number);
       if (promsFinalesValidos.length > 0) {
         const suma = promsFinalesValidos.reduce((a, b) => a + b, 0);
-        setPromedioGrado(Math.round((suma / promsFinalesValidos.length) * 100) / 100);
-      } else { setPromedioGrado(null); }
-    } else { setPromedioGrado(null); }
+        return Math.round((suma / promsFinalesValidos.length) * 100) / 100;
+      }
+    }
+    return null;
   }, [calificaciones, asignaturaSeleccionada, trimestreSeleccionado]);
 
   // Load data on mount
   useEffect(() => {
     if (usuario) {
-      setDataLoading(true);
+      queueMicrotask(() => setDataLoading(true));
       Promise.all([loadGrados(), loadTodasAsignaturas(), loadUsuarios(), loadConfiguracion()])
         .catch(() => {})
         .finally(() => setDataLoading(false));
@@ -758,8 +759,8 @@ export function useDashboardData() {
   }, [usuario]);
 
   // Load dependent data
-  useEffect(() => { if (gradoSeleccionado) { loadEstudiantes(); loadAsignaturas(); loadConfigsGrado(); } }, [gradoSeleccionado]);
-  useEffect(() => { if (gradoSeleccionado && asignaturaSeleccionada && trimestreSeleccionado) { loadCalificaciones(); loadConfig(); } }, [asignaturaSeleccionada, trimestreSeleccionado]);
+  useEffect(() => { if (gradoSeleccionado) { Promise.all([loadEstudiantes(), loadAsignaturas(), loadConfigsGrado()]); } }, [gradoSeleccionado]);
+  useEffect(() => { if (gradoSeleccionado && asignaturaSeleccionada && trimestreSeleccionado) { Promise.all([loadCalificaciones(), loadConfig()]); } }, [asignaturaSeleccionada, trimestreSeleccionado]);
 
   // Filter grados
   useEffect(() => {
