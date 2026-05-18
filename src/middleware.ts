@@ -20,10 +20,23 @@ function isPublic(path: string): boolean {
 
 const RATE_LIMIT_WINDOW = 60_000;
 const RATE_LIMIT_MAX = 60;
-const rateMap = new Map<string, { count: number; resetAt: number }>();
+
+function getRateMap(): Map<string, { count: number; resetAt: number }> {
+  const now = Date.now();
+  const g = globalThis as { __rateMap?: Map<string, { count: number; resetAt: number }> };
+  if (!g.__rateMap) {
+    g.__rateMap = new Map();
+  } else if (g.__rateMap.size > 1000) {
+    for (const [key, entry] of g.__rateMap) {
+      if (now > entry.resetAt) g.__rateMap.delete(key);
+    }
+  }
+  return g.__rateMap;
+}
 
 function isRateLimited(ip: string): boolean {
   const now = Date.now();
+  const rateMap = getRateMap();
   const entry = rateMap.get(ip);
   if (!entry || now > entry.resetAt) {
     rateMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW });

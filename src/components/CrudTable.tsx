@@ -144,20 +144,4 @@ export function CrudTable<T>({
   );
 }
 
-interface ConfirmDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onConfirm: () => void;
-  title: string;
-  description: string;
-  confirmLabel?: string;
-  loading?: boolean;
-  variant?: "default" | "destructive";
-}
 
-export function ConfirmDialog({
-  open, onOpenChange, onConfirm, title, description,
-  confirmLabel = "Confirmar", loading, variant = "destructive",
-}: ConfirmDialogProps) {
-  return null;
-}

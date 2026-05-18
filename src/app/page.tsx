@@ -478,7 +478,7 @@ export default function Home() {
                                 promedioDecimal={d.promedioDecimal}
                                 rowIndex={idx}
                                 totalRows={arr.length}
-                                onNavigate={(_row: number, _col: number, dir: string) => { if (dir === 'up' || dir === 'down') d.handleNavigate(dir, 0); }}
+                                 onNavigate={(_row: number, _col: number, dir: string) => { if (dir === 'up' || dir === 'down') d.handleNavigate(dir, _row); }}
                                 inputRefs={d.inputRefs}
                                 onShowHistory={d.handleShowHistory}
                                 activeHistoryCell={d.activeHistoryCell}

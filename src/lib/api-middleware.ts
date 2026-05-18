@@ -58,14 +58,25 @@ export function validateObject<T>(obj: unknown, schema: z.ZodType<T>): { data: T
 // Session Helpers
 // ==========================================
 
-export async function getSession() {
+export interface SessionUsuario {
+  id: string;
+  email: string;
+  nombre: string;
+  rol: string;
+  gradoId?: string;
+  materias?: Array<{ id: string; nombre: string; gradoId: string; grado?: { numero: number; seccion: string } }>;
+  gradosAsignados?: Array<{ id: string; numero: number; seccion: string }>;
+  asignaturasAsignadas?: Array<{ id: string; nombre: string; gradoId: string }>;
+}
+
+export async function getSession(): Promise<SessionUsuario | null> {
   const cookieStore = await cookies();
   const session = cookieStore.get("session");
   if (!session) return null;
   try {
     const verified = verifySession(session.value);
     if (!verified) return null;
-    return verified as { id: string; email: string; nombre: string; rol: string; gradoId?: string; materias?: Array<{ id: string; nombre: string; gradoId: string; grado?: { numero: number; seccion: string } }>; gradosAsignados?: Array<{ id: string; numero: number; seccion: string }>; asignaturasAsignadas?: Array<{ id: string; nombre: string; gradoId: string }> };
+    return verified as SessionUsuario;
   } catch {
     return null;
   }
@@ -145,7 +156,7 @@ export function withErrorHandling(handler: (req: NextRequest, ...args: any[]) =>
 // Auth Wrapper
 // ==========================================
 
-export function withAuth(handler: (req: NextRequest, session: ReturnType<typeof getSession> extends Promise<infer R> ? NonNullable<R> : never) => Promise<NextResponse>, options?: { requireAdmin?: boolean }) {
+export function withAuth(handler: (req: NextRequest, session: SessionUsuario) => Promise<NextResponse>, options?: { requireAdmin?: boolean }) {
   return withErrorHandling(async (req: NextRequest, ...args: any[]) => {
     const session = await getSession();
     if (!session) {
