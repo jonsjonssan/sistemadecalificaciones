@@ -459,7 +459,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                         <Trophy className="h-3.5 w-3.5 text-amber-500" /> Cuadro de Honor
                       </h4>
                       <div className="space-y-1.5">
-                        {selectedStats.topEstudiantes.length > 0 ? selectedStats.topEstudiantes.slice(0, 5).map((est, i) => (
+                        {selectedStats.topEstudiantes.length > 0 ? selectedStats.topEstudiantes.slice(0, 10).map((est, i) => (
                           <div key={est.id} className="flex items-center justify-between text-xs gap-2">
                             <span className="flex items-center gap-1.5 truncate">
                               <span className={`font-mono text-[10px] w-4 text-right shrink-0 ${i === 0 ? 'text-amber-500' : 'text-muted-foreground/50'}`}>{i + 1}.</span>
@@ -485,7 +485,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                         <AlertTriangle className="h-3.5 w-3.5 text-red-500" /> Alertas
                       </h4>
                       <div className="space-y-1.5">
-                        {selectedStats.alertas.length > 0 ? selectedStats.alertas.slice(0, 5).map((est, i) => (
+                        {selectedStats.alertas.length > 0 ? selectedStats.alertas.slice(0, 10).map((est, i) => (
                           <div key={est.id} className="flex items-center justify-between text-xs gap-2">
                             <span className="truncate text-foreground/80">{est.nombre}</span>
                             <div className="flex items-center gap-1 shrink-0">

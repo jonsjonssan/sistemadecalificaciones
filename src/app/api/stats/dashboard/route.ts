@@ -143,6 +143,7 @@ export async function GET(req: Request) {
         }))
         .sort((a: any, b: any) => b.promedio - a.promedio);
 
+      const topIds = new Set(ranking.slice(0, 10).map(s => s.id));
       return {
         gradoId: grado.id,
         nombre: `${grado.numero}° "${grado.seccion}"`,
@@ -154,7 +155,7 @@ export async function GET(req: Request) {
           examen: countEx > 0 ? sumEx / countEx : null
         },
         topEstudiantes: ranking.slice(0, 10),
-        alertas: ranking.slice(-10).reverse(),
+        alertas: ranking.filter(s => !topIds.has(s.id)).slice(-10).reverse(),
         materias: Object.values(materiaAverages).map((m: any) => ({
           id: m.id,
           nombre: m.nombre,
