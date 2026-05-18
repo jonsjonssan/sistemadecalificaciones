@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { verifySession } from "@/lib/session";
 import { z } from "zod";
 import { isAdmin } from "@/utils/roleHelpers";
+import { calcularPromedioFinal } from "@/utils/gradeCalculations";
 
 const calificacionSchema = z.object({
   estudianteId: z.string().min(1, "ID de estudiante requerido"),
@@ -120,6 +121,33 @@ export async function GET(request: NextRequest) {
         },
         orderBy: { estudiante: { numero: "asc" } },
       });
+
+      // Recalcular promedioFinal para que coincida con el valor mostrado en la tabla de notas
+      if (boleta) {
+        const pairs = new Set<string>();
+        for (const c of calificaciones) {
+          pairs.add(`${c.materiaId}_${c.trimestre}`);
+        }
+        const configs = await db.configActividad.findMany({
+          where: {
+            OR: Array.from(pairs).map(p => {
+              const [mId, t] = p.split('_');
+              return { materiaId: mId, trimestre: parseInt(t) };
+            }),
+          },
+        });
+        const cfgMap = new Map<string, (typeof configs)[0]>();
+        for (const cfg of configs) {
+          cfgMap.set(`${cfg.materiaId}_${cfg.trimestre}`, cfg);
+        }
+        for (const cal of calificaciones) {
+          const cfg = cfgMap.get(`${cal.materiaId}_${cal.trimestre}`);
+          const pct = cfg
+            ? { porcentajeAC: cfg.porcentajeAC, porcentajeAI: cfg.porcentajeAI, porcentajeExamen: cfg.porcentajeExamen, tieneExamen: cfg.tieneExamen, numActividadesCotidianas: cfg.numActividadesCotidianas, numActividadesIntegradoras: cfg.numActividadesIntegradoras }
+            : { porcentajeAC: 35, porcentajeAI: 35, porcentajeExamen: 30, tieneExamen: true, numActividadesCotidianas: 0, numActividadesIntegradoras: 0 };
+          cal.promedioFinal = calcularPromedioFinal(cal.calificacionAC, cal.calificacionAI, cal.examenTrimestral, pct, cal.recuperacion);
+        }
+      }
 
       return NextResponse.json(calificaciones.map(transformCalificacion));
     }
