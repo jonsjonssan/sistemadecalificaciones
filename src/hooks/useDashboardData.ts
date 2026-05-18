@@ -161,6 +161,7 @@ export function useDashboardData() {
   const [asistenciaManualHabilitado, setAsistenciaManualHabilitado] = useState<boolean>(false);
   const [asistenciaManualData, setAsistenciaManualData] = useState<{[key: string]: { asistencias: string; inasistencias: string; tardanzas: string; justificadas: string; totalDias: string; observaciones: string }}>({});
   const [tipoAsistencia, setTipoAsistencia] = useState<"auto" | "manual_espacio" | "manual_digital">("auto");
+  const [mostrarAsistencia, setMostrarAsistencia] = useState<boolean>(true);
   const observacionesSaveTimersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
   const asistenciaManualDataRef = useRef(asistenciaManualData);
 
@@ -1273,6 +1274,7 @@ export function useDashboardData() {
     asistenciaManualHabilitado, setAsistenciaManualHabilitado,
     asistenciaManualData, setAsistenciaManualData,
     tipoAsistencia, setTipoAsistencia,
+    mostrarAsistencia, setMostrarAsistencia,
     promedioAsignatura, promedioGrado,
     busquedaEstudiante, setBusquedaEstudiante, filtroEstado, setFiltroEstado,
     sortColumn, sortDirection, handleSort,

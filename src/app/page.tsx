@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -689,6 +690,17 @@ export default function Home() {
                                 <SelectItem value="manual_digital" className="text-xs">Manual por Alumno</SelectItem>
                               </SelectContent>
                             </Select>
+                            <div className="flex items-center gap-1.5 ml-1">
+                              <Switch
+                                checked={d.mostrarAsistencia}
+                                onCheckedChange={d.setMostrarAsistencia}
+                                id="mostrar-asistencia"
+                                className="h-4 w-7"
+                              />
+                              <Label htmlFor="mostrar-asistencia" className={`text-[10px] cursor-pointer select-none ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                                {d.mostrarAsistencia ? 'Mostrar' : 'Ocultar'}
+                              </Label>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -713,6 +725,7 @@ export default function Home() {
                         porcentajes={d.configActual ? { ac: d.configActual.porcentajeAC, ai: d.configActual.porcentajeAI, ex: d.configActual.porcentajeExamen } : undefined}
                         incluirAsistenciaManual={d.incluirAsistenciaManual}
                         asistenciaManualHabilitado={d.asistenciaManualHabilitado}
+                        mostrarAsistencia={d.mostrarAsistencia}
                         asistenciaManualData={d.asistenciaManualData}
                         onAsistenciaManualChange={d.handleAsistenciaManualChange}
                       />

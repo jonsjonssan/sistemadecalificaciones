@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { escapeHtml } from "@/lib/utils/index";
 import type { Estudiante, Asignatura, Grado, Calificacion } from "@/types";
-export default function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, expandedBoleta, setExpandedBoleta, darkMode, configuracion, paperSize, incluirAsistencia = true, mostrarRecuperacion = true, porcentajes, incluirAsistenciaManual = false, asistenciaManualHabilitado = false, asistenciaManualData = {}, onAsistenciaManualChange }: { estudiantes: Estudiante[]; calificaciones: Calificacion[]; materias: Asignatura[]; grado?: Grado; trimestre: number; expandedBoleta: string | null; setExpandedBoleta: (id: string | null) => void; darkMode: boolean; configuracion?: { nombreDirectora?: string; umbralCondicionado?: number; umbralAprobado?: number }; paperSize?: "letter" | "a4"; incluirAsistencia?: boolean; mostrarRecuperacion?: boolean; porcentajes?: { ac: number; ai: number; ex: number }; incluirAsistenciaManual?: boolean; asistenciaManualHabilitado?: boolean; asistenciaManualData?: { [key: string]: { asistencias: string; inasistencias: string; tardanzas: string; justificadas: string; totalDias: string; observaciones: string } }; onAsistenciaManualChange?: (estudianteId: string, field: string, value: string) => void; }) {
+export default function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, expandedBoleta, setExpandedBoleta, darkMode, configuracion, paperSize, incluirAsistencia = true, mostrarRecuperacion = true, porcentajes, incluirAsistenciaManual = false, asistenciaManualHabilitado = false, mostrarAsistencia = true, asistenciaManualData = {}, onAsistenciaManualChange }: { estudiantes: Estudiante[]; calificaciones: Calificacion[]; materias: Asignatura[]; grado?: Grado; trimestre: number; expandedBoleta: string | null; setExpandedBoleta: (id: string | null) => void; darkMode: boolean; configuracion?: { nombreDirectora?: string; umbralCondicionado?: number; umbralAprobado?: number }; paperSize?: "letter" | "a4"; incluirAsistencia?: boolean; mostrarRecuperacion?: boolean; porcentajes?: { ac: number; ai: number; ex: number }; incluirAsistenciaManual?: boolean; asistenciaManualHabilitado?: boolean; mostrarAsistencia?: boolean; asistenciaManualData?: { [key: string]: { asistencias: string; inasistencias: string; tardanzas: string; justificadas: string; totalDias: string; observaciones: string } }; onAsistenciaManualChange?: (estudianteId: string, field: string, value: string) => void; }) {
   const [resumenAsistencia, setResumenAsistencia] = useState<any[]>([]);
   const [todasCalificaciones, setTodasCalificaciones] = useState<Calificacion[]>([]);
   const [resumenAsistenciaAnual, setResumenAsistenciaAnual] = useState<any[]>([]);
@@ -170,7 +170,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
 
     const asist = getAsistInfo(id);
 
-    const bloqueAsistencia = (incluirAsistencia || asistenciaManualHabilitado) ? `
+    const bloqueAsistencia = mostrarAsistencia && (incluirAsistencia || asistenciaManualHabilitado) ? `
     <div class="seccion-asistencia">
       <div class="seccion-asistencia-header">
         <span>RESUMEN DE ASISTENCIA</span>
@@ -200,7 +200,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
       </div>
     </div>` : '';
 
-    const bloqueAsistenciaManual = incluirAsistenciaManual ? `
+    const bloqueAsistenciaManual = mostrarAsistencia && incluirAsistenciaManual ? `
     <div class="seccion-asistencia" style="margin-top:15px;page-break-inside:avoid;">
       <div class="seccion-asistencia-header" style="background:#0d9488;color:#fff;padding:6px 10px;font-weight:bold;font-size:9pt;display:flex;justify-content:space-between;">
         <span>REGISTRO DE ASISTENCIA</span>
@@ -427,7 +427,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
           "</tr>";
       }).join('');
 
-      const bloqueAsistenciaTodas = (incluirAsistencia || asistenciaManualHabilitado) ? `
+      const bloqueAsistenciaTodas = mostrarAsistencia && (incluirAsistencia || asistenciaManualHabilitado) ? `
         <div class="seccion-asistencia">
           <div class="seccion-asistencia-header">
             <span>RESUMEN DE ASISTENCIA</span>
@@ -504,7 +504,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
 
         ${bloqueAsistenciaTodas}
 
-        ${incluirAsistenciaManual ? `
+        ${mostrarAsistencia && incluirAsistenciaManual ? `
         <div class="seccion-asistencia" style="margin-top:15px;page-break-inside:avoid;">
           <div class="seccion-asistencia-header" style="background:#0d9488;color:#fff;padding:6px 10px;font-weight:bold;font-size:9pt;display:flex;justify-content:space-between;">
             <span>REGISTRO DE ASISTENCIA</span>
@@ -699,7 +699,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
 
     const pFinal = promGralAnual();
 
-    const bloqueAsistenciaAnual = (incluirAsistencia || asistenciaManualHabilitado) ? `
+    const bloqueAsistenciaAnual = mostrarAsistencia && (incluirAsistencia || asistenciaManualHabilitado) ? `
     <div class="seccion-asistencia">
       <div class="seccion-asistencia-header">RESUMEN DE ASISTENCIA ANUAL (TOTAL ACUMULADO)</div>
       <div class="asistencia-grid">
@@ -846,7 +846,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
       }).filter((n): n is number => n !== null);
       const pFinal = notasFinales.length ? notasFinales.reduce((a, b) => a + b, 0) / notasFinales.length : null;
 
-      const bloqueAsistenciaTodasAnual = (incluirAsistencia || asistenciaManualHabilitado) ? `
+      const bloqueAsistenciaTodasAnual = mostrarAsistencia && (incluirAsistencia || asistenciaManualHabilitado) ? `
         <div class="seccion-asistencia">
           <div class="seccion-asistencia-header">RESUMEN DE ASISTENCIA ANUAL (TOTAL ACUMULADO)</div>
           <div class="asistencia-grid">
@@ -971,7 +971,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     }).filter((n): n is number => n !== null);
     const pFinal = notasFinales.length ? notasFinales.reduce((a, b) => a + b, 0) / notasFinales.length : null;
 
-    const bloqueAsistenciaAnual = (incluirAsistencia || asistenciaManualHabilitado) ? `
+    const bloqueAsistenciaAnual = mostrarAsistencia && (incluirAsistencia || asistenciaManualHabilitado) ? `
     <div class="seccion-asistencia">
       <div class="seccion-asistencia-header">RESUMEN DE ASISTENCIA ANUAL (TOTAL ACUMULADO)</div>
       <div class="asistencia-grid">
@@ -1123,7 +1123,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
       }).filter((n): n is number => n !== null);
       const pFinal = notasFinales.length ? notasFinales.reduce((a, b) => a + b, 0) / notasFinales.length : null;
 
-      const bloqueAsistenciaTodasAnual = (incluirAsistencia || asistenciaManualHabilitado) ? `
+      const bloqueAsistenciaTodasAnual = mostrarAsistencia && (incluirAsistencia || asistenciaManualHabilitado) ? `
         <div class="seccion-asistencia">
           <div class="seccion-asistencia-header">RESUMEN DE ASISTENCIA ANUAL (TOTAL ACUMULADO)</div>
           <div class="asistencia-grid">
@@ -1273,8 +1273,8 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     <thead><tr><th>Asignatura</th><th>Prom. A.C.</th><th>Prom. A.I.</th><th>Examen</th>${mostrarRecuperacion ? '<th>Recup.</th>' : ''}<th>Prom. Final</th><th>Estado</th></tr></thead>
     <tbody>${tablaAsignaturas}</tbody>
   </table>
-  ${(incluirAsistencia || asistenciaManualHabilitado) ? `<p><b>Asistencia:</b> Asistencias: ${asist.asistencias} | Inasistencias: ${asist.ausencias} | Tardanzas: ${asist.tardanzas} | Justificadas: ${asist.justificadas || 0} | Total: ${asist.total}</p>` : ''}
-  ${incluirAsistenciaManual ? `
+  ${mostrarAsistencia && (incluirAsistencia || asistenciaManualHabilitado) ? `<p><b>Asistencia:</b> Asistencias: ${asist.asistencias} | Inasistencias: ${asist.ausencias} | Tardanzas: ${asist.tardanzas} | Justificadas: ${asist.justificadas || 0} | Total: ${asist.total}</p>` : ''}
+  ${mostrarAsistencia && incluirAsistenciaManual ? `
   <div style="margin:15px 0;padding:10px;border:2px solid #0d9488;border-radius:4px;">
     <div style="font-weight:bold;font-size:11pt;margin-bottom:8px;color:#0d9488;">REGISTRO DE ASISTENCIA <span style="font-weight:normal;font-size:8pt;color:#555;">(para llenar manualmente)</span></div>
     <table style="width:100%;border-collapse:collapse;">
@@ -1392,7 +1392,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
               </div>
             </div>
             {open && <div className={`border-t p-2 ${darkMode ? 'bg-card border-white/30' : 'bg-slate-50'}`}><Table className="text-xs"><TableHeader><TableRow className={`h-7 ${darkMode ? 'bg-slate-700/25' : 'bg-slate-100'}`}><TableHead>Asignatura</TableHead><TableHead className="text-center">Prom. A.C.</TableHead><TableHead className="text-center">Prom. A.I.</TableHead><TableHead className="text-center">Examen</TableHead>{mostrarRecuperacion && <TableHead className="text-center">Recup.</TableHead>}<TableHead className="text-center font-bold">Promedio</TableHead></TableRow></TableHeader><TableBody>{materias.map(m => { const c = califs.find(x => x.materiaId === m.id); const estadoMat = c?.promedioFinal !== null && c?.promedioFinal !== undefined ? (c.promedioFinal < uc ? 'REPROBADO' : c.promedioFinal < ua ? 'CONDICIONADO' : 'APROBADO') : 'PENDIENTE'; return <TableRow key={m.id} className={`h-7 ${darkMode ? 'border-slate-700' : ''}`}><TableCell className={`font-medium ${darkMode ? 'text-white' : ''}`}>{m.nombre}</TableCell><TableCell className="text-center">{c?.calificacionAC != null ? (c.calificacionAC * pctAC).toFixed(2) : "-"}</TableCell><TableCell className="text-center">{c?.calificacionAI != null ? (c.calificacionAI * pctAI).toFixed(2) : "-"}</TableCell><TableCell className="text-center">{c?.examenTrimestral != null ? (c.examenTrimestral * pctEx).toFixed(2) : "-"}</TableCell>{mostrarRecuperacion && <TableCell className="text-center">{c?.recuperacion !== null && c?.recuperacion !== undefined ? c.recuperacion.toFixed(2) : "-"}</TableCell>}<TableCell className="text-center"><Badge variant={c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= ua ? "default" : c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= uc ? "secondary" : "destructive"} className={`text-[10px] ${c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= ua ? 'bg-emerald-600' : c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= uc ? 'bg-amber-600' : ''}`}>{c?.promedioFinal !== null && c?.promedioFinal !== undefined ? c.promedioFinal.toFixed(2) : "-"}</Badge></TableCell></TableRow>;         })}</TableBody></Table>
-              {asistenciaManualHabilitado && (
+              {mostrarAsistencia && asistenciaManualHabilitado && (
                 <div className="mt-2 border-t pt-2">
                   <div className="text-xs font-semibold mb-1.5 text-emerald-600 dark:text-emerald-400">REGISTRO DE ASISTENCIA MANUAL</div>
                   <div className="grid grid-cols-5 gap-1.5">
