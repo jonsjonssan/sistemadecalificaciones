@@ -73,7 +73,7 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode, umbralA
     return (
       <Card className={`shadow-sm ${darkMode ? 'bg-card border-slate-700' : ''}`}>
         <CardContent className="p-6 text-center">
-          <BarChart3 className={`h-12 w-12 mx-auto mb-3 ${darkMode ? 'text-slate-600' : 'text-slate-300'}`} />
+          <BarChart3 className={`h-12 w-12 mx-auto mb-3 ${darkMode ? 'text-slate-600 ring-1 ring-white rounded-full' : 'text-slate-300 ring-1 ring-black rounded-full'}`} />
           <p className={`text-sm ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
             Selecciona un grado para ver el análisis predictivo
           </p>
@@ -91,8 +91,8 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode, umbralA
       {/* Resumen General */}
       <Card className={`shadow-sm ${darkMode ? 'bg-card border-slate-700' : ''}`}>
         <CardHeader className="pb-3">
-          <CardTitle className={`text-base flex items-center gap-2 ${darkMode ? 'text-white' : 'text-slate-800'}`}>
-            <BarChart3 className="h-5 w-5 text-emerald-600" />
+          <CardTitle className={`text-base flex items-center gap-2 ${darkMode ? 'text-slate-100 font-bold' : 'text-black font-bold'}`}>
+            <BarChart3 className={`h-5 w-5 text-emerald-600 ${darkMode ? 'ring-1 ring-white rounded-full' : 'ring-1 ring-black rounded-full'}`} />
             Análisis Predictivo Avanzado
           </CardTitle>
           <CardDescription className={`text-sm ${darkMode ? 'text-slate-400' : ''}`}>
@@ -152,14 +152,14 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode, umbralA
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       {t.tendencia === "mejorando" ? (
-                        <ArrowUpCircle className="h-4 w-4 text-green-600" />
+                        <ArrowUpCircle className={`h-4 w-4 text-green-600 ${darkMode ? 'ring-1 ring-white rounded-full' : 'ring-1 ring-black rounded-full'}`} />
                       ) : t.tendencia === "empeorando" ? (
-                        <ArrowDownCircle className="h-4 w-4 text-red-600" />
+                        <ArrowDownCircle className={`h-4 w-4 text-red-600 ${darkMode ? 'ring-1 ring-white rounded-full' : 'ring-1 ring-black rounded-full'}`} />
                       ) : (
-                        <MinusCircle className="h-4 w-4 text-blue-600" />
+                        <MinusCircle className={`h-4 w-4 text-blue-600 ${darkMode ? 'ring-1 ring-white rounded-full' : 'ring-1 ring-black rounded-full'}`} />
                       )}
-                      <span className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-slate-800'}`}>{t.nombre}</span>
-                      <Badge variant="outline" className={`text-[10px] ${darkMode ? 'border-white/30 text-white' : ''}`}>
+                      <span className={`text-sm font-medium ${darkMode ? 'text-slate-100 font-bold' : 'text-black font-bold'}`}>{t.nombre}</span>
+                      <Badge variant="outline" className={`text-[10px] ${darkMode ? 'border-white/30 text-slate-100 font-bold' : ''}`}>
                         {t.grado}
                       </Badge>
                     </div>
@@ -196,8 +196,8 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode, umbralA
                 <div key={i} className={`p-3 rounded-lg border ${darkMode ? 'bg-card border-white/30' : 'bg-slate-50 border-slate-200'}`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <CalendarX className="h-4 w-4 text-amber-600" />
-                      <span className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-slate-800'}`}>{c.nombre}</span>
+                      <CalendarX className={`h-4 w-4 text-amber-600 ${darkMode ? 'ring-1 ring-white rounded-full' : 'ring-1 ring-black rounded-full'}`} />
+                      <span className={`text-sm font-medium ${darkMode ? 'text-slate-100 font-bold' : 'text-black font-bold'}`}>{c.nombre}</span>
                       <Badge variant={c.impacto === "alto" ? "destructive" : "outline"} className="text-[10px]">
                         {c.totalAusencias} ausencias
                       </Badge>
@@ -233,9 +233,9 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode, umbralA
                   }`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <BookOpen className={`h-4 w-4 ${a.nivel === "critico" ? 'text-red-600' : a.nivel === "preocupante" ? 'text-amber-600' : 'text-blue-600'}`} />
-                      <span className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-slate-800'}`}>{a.materiaNombre}</span>
-                      <Badge variant="outline" className={`text-[10px] ${darkMode ? 'border-white/30 text-white' : ''}`}>
+                      <BookOpen className={`h-4 w-4 ${a.nivel === "critico" ? 'text-red-600' : a.nivel === "preocupante" ? 'text-amber-600' : 'text-blue-600'} ${darkMode ? 'ring-1 ring-white rounded-full' : 'ring-1 ring-black rounded-full'}`} />
+                      <span className={`text-sm font-medium ${darkMode ? 'text-slate-100 font-bold' : 'text-black font-bold'}`}>{a.materiaNombre}</span>
+                      <Badge variant="outline" className={`text-[10px] ${darkMode ? 'border-white/30 text-slate-100 font-bold' : ''}`}>
                         {a.grado}
                       </Badge>
                     </div>
@@ -271,7 +271,7 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode, umbralA
               {data.predicciones.filter((p: any) => p.probabilidadReprobacion > 30).slice(0, 10).map((p: any, i: number) => (
                 <div key={i} className={`p-3 rounded-lg border ${darkMode ? 'bg-card border-white/30' : 'bg-slate-50 border-slate-200'}`}>
                   <div className="flex items-center justify-between mb-2">
-                    <span className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-slate-800'}`}>{p.nombre}</span>
+                    <span className={`text-sm font-medium ${darkMode ? 'text-slate-100 font-bold' : 'text-black font-bold'}`}>{p.nombre}</span>
                     <Badge variant={p.nivel === "muy_alto" || p.nivel === "alto" ? "destructive" : p.nivel === "medio" ? "outline" : "secondary"} className="text-[10px]">
                       {p.probabilidadReprobacion}% riesgo
                     </Badge>
@@ -359,9 +359,9 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode, umbralA
                       r.tipo === "academica" ? 'text-amber-600' :
                         r.tipo === "asistencia" ? 'text-blue-600' :
                           'text-green-600'
-                      }`} />
+                      } ${darkMode ? 'ring-1 ring-white rounded-full' : 'ring-1 ring-black rounded-full'}`} />
                     <div className="flex-1">
-                      <h4 className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{r.titulo}</h4>
+                      <h4 className={`text-sm font-semibold ${darkMode ? 'text-slate-100 font-bold' : 'text-black font-bold'}`}>{r.titulo}</h4>
                       <p className={`text-xs mt-1 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>{r.descripcion}</p>
                       {r.estudiantes && r.estudiantes.length > 0 && (
                         <p className={`text-[10px] mt-2 ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>
@@ -391,10 +391,10 @@ function StatCard({ label, value, icon: Icon, color, darkMode }: any) {
   return (
     <div className={`p-3 rounded-lg border ${darkMode ? 'bg-card border-white/30' : 'bg-slate-50 border-slate-200'}`}>
       <div className="flex items-center gap-2 mb-1">
-        <Icon className={`h-4 w-4 ${color}`} />
+        <Icon className={`h-4 w-4 ${color} ${darkMode ? 'ring-1 ring-white rounded-full' : 'ring-1 ring-black rounded-full'}`} />
         <span className={`text-[10px] uppercase tracking-wide ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{label}</span>
       </div>
-      <p className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{value}</p>
+      <p className={`text-xl font-bold ${darkMode ? 'text-slate-100 font-bold' : 'text-black font-bold'}`}>{value}</p>
     </div>
   );
 }
@@ -408,15 +408,15 @@ function SectionCard({ title, subtitle, icon: Icon, expanded, onToggle, count, d
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Icon className={`h-5 w-5 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
+            <Icon className={`h-5 w-5 ${darkMode ? 'text-emerald-400 ring-1 ring-white rounded-full' : 'text-emerald-600 ring-1 ring-black rounded-full'}`} />
             <div>
-              <CardTitle className={`text-sm ${darkMode ? 'text-white' : 'text-slate-800'}`}>{title}</CardTitle>
+              <CardTitle className={`text-sm ${darkMode ? 'text-slate-100 font-bold' : 'text-black font-bold'}`}>{title}</CardTitle>
               <CardDescription className={`text-xs ${darkMode ? 'text-slate-400' : ''}`}>{subtitle}</CardDescription>
             </div>
           </div>
           <div className="flex items-center gap-2">
             {count > 0 && (
-              <Badge variant="outline" className={`text-[10px] ${darkMode ? 'border-white/30 text-white' : ''}`}>
+              <Badge variant="outline" className={`text-[10px] ${darkMode ? 'border-white/30 text-slate-100 font-bold' : ''}`}>
                 {count}
               </Badge>
             )}
@@ -440,7 +440,7 @@ function SectionCard({ title, subtitle, icon: Icon, expanded, onToggle, count, d
 function EmptyState({ message, darkMode }: any) {
   return (
     <div className="text-center py-4">
-      <CheckCircle2 className={`h-8 w-8 mx-auto mb-2 ${darkMode ? 'text-slate-600' : 'text-slate-300'}`} />
+      <CheckCircle2 className={`h-8 w-8 mx-auto mb-2 ${darkMode ? 'text-slate-600 ring-1 ring-white rounded-full' : 'text-slate-300 ring-1 ring-black rounded-full'}`} />
       <p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>{message}</p>
     </div>
   );

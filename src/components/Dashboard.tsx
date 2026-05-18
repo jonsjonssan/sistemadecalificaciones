@@ -30,6 +30,7 @@ interface DashboardProps {
   asignaturasAsignadas?: MateriaConGrado[];
   totalDocentes: number;
   configuracion?: { añoEscolar: number; escuela: string; umbralAprobado?: number };
+  onNavigate?: (tab: string) => void;
 }
 
 interface GradeStats {
@@ -173,7 +174,7 @@ function calcularPromedioGradoAjustado(
 
 
 
-const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, totalAsignaturas, asignaturasAsignadas, totalDocentes, configuracion }: DashboardProps) {
+const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, totalAsignaturas, asignaturasAsignadas, totalDocentes, configuracion, onNavigate }: DashboardProps) {
   const { resolvedTheme } = useTheme();
   const darkMode = resolvedTheme === "dark";
   const [stats, setStats] = useState<GradeStats[]>([]);
@@ -211,35 +212,38 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
   const totalAsignaturasVisibles = esDirectiva ? totalAsignaturas : asignaturasAsignadas?.length || 0;
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchStats = async () => {
       try {
-        // Si es docente, pasar el gradoId asignado para filtrar
         const url = gradoAsignado
           ? `/api/stats/dashboard?gradoId=${gradoAsignado}`
           : "/api/stats/dashboard";
         const res = await fetch(url, { credentials: "include" });
-        if (res.ok) {
+        if (res.ok && !cancelled) {
           const data = await res.json();
           setStats(data);
         }
       } catch (error) {
-        console.error("Error fetching stats:", error);
+        if (!cancelled) console.error("Error fetching stats:", error);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
     fetchStats();
 
-    if (esDocente) {
+    if (esDocente && !cancelled) {
       fetch("/api/stats/avance-docentes", { credentials: "include" })
         .then((r) => r.ok ? r.json() : null)
         .then((data) => {
-          if (data && data.length > 0) {
+          if (!cancelled && data && data.length > 0) {
             setMiAvance(data[0]);
           }
         })
         .catch(() => {});
     }
+
+    return () => { cancelled = true; };
   }, [gradoAsignado, esDocente]);
 
   // Si es docente, seleccionar automáticamente su grado
@@ -523,10 +527,10 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
               <CardTitle className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Gestión Rápida</CardTitle>
             </CardHeader>
             <CardContent className="p-2.5 space-y-1.5">
-              <QuickActionRow icon={ClipboardList} label="Pasar Notas" sub="Calificaciones" onClick={() => (window as any).setActiveTab?.('calificaciones')} />
-              <QuickActionRow icon={CalendarDays} label="Asistencia" sub="Control diario" onClick={() => (window as any).setActiveTab?.('asistencia')} />
+              <QuickActionRow icon={ClipboardList} label="Pasar Notas" sub="Calificaciones" onClick={() => onNavigate?.('calificaciones')} />
+              <QuickActionRow icon={CalendarDays} label="Asistencia" sub="Control diario" onClick={() => onNavigate?.('asistencia')} />
               {usuario.rol === "admin" && (
-                <QuickActionRow icon={GraduationCap} label="Docentes" sub="Administración" onClick={() => (window as any).setActiveTab?.('admin')} />
+                <QuickActionRow icon={GraduationCap} label="Docentes" sub="Administración" onClick={() => onNavigate?.('admin')} />
               )}
             </CardContent>
           </Card>

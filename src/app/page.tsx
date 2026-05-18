@@ -2295,6 +2295,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
               totalAsignaturas={todasAsignaturas.length}
               totalDocentes={usuarios.filter(u => (u.rol === "docente" || u.rol === "docente-orientador") && u.activo).length}
               configuracion={configuracion ? { añoEscolar: configuracion.añoEscolar, escuela: configuracion.escuela, umbralAprobado: configuracion?.umbralAprobado ?? 6.5 } : undefined}
+              onNavigate={(tab) => setActiveTab(tab)}
               asignaturasAsignadas={(
                 isAdmin(usuario.rol)
                   ? todasAsignaturas.map((m: any) => ({

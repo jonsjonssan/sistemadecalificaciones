@@ -4,7 +4,9 @@ import { requireSession } from "@/lib/api-middleware";
 
 function canAccessGrado(session: any, gradoId: string): boolean {
   if (["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) return true;
-  return session.asignaturasAsignadas?.some((m: any) => m.gradoId === gradoId) ?? false;
+  if (session.asignaturasAsignadas?.some((m: any) => m.gradoId === gradoId)) return true;
+  if (session.gradosAsignados?.some((g: any) => g.id === gradoId)) return true;
+  return false;
 }
 
 export async function GET(req: Request) {

@@ -20,7 +20,7 @@ async function getUsuarioSession() {
 export async function GET(request: NextRequest) {
   try {
     const session = await getUsuarioSession();
-    if (!session || session.rol !== "admin") {
+    if (!session || !["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const session = await getUsuarioSession();
-    if (!session || session.rol !== "admin") {
+    if (!session || !["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 

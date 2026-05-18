@@ -12,7 +12,9 @@ async function getUsuarioSession() {
 
 function canAccessGrado(session: any, gradoId: string): boolean {
   if (["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) return true;
-  return session.asignaturasAsignadas?.some((m: any) => m.gradoId === gradoId) ?? false;
+  if (session.asignaturasAsignadas?.some((m: any) => m.gradoId === gradoId)) return true;
+  if (session.gradosAsignados?.some((g: any) => g.id === gradoId)) return true;
+  return false;
 }
 
 export async function GET(request: NextRequest) {
@@ -124,20 +126,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "El grado seleccionado no existe" }, { status: 400 });
     }
 
-    const ultimo = await db.estudiante.findFirst({
-      where: { gradoId },
-      orderBy: { numero: "desc" },
-    });
-    const nuevoNumero = ultimo ? ultimo.numero + 1 : 1;
-
-    const estudiante = await db.estudiante.create({
-      data: {
-        numero: nuevoNumero,
-        nombre,
-        email: data.email || null,
-        gradoId,
-        activo: true,
-      },
+    // Atomic auto-increment using transaction to prevent race conditions
+    const estudiante = await db.$transaction(async (tx) => {
+      const max = await tx.estudiante.aggregate({
+        where: { gradoId },
+        _max: { numero: true },
+      });
+      const nuevoNumero = (max._max.numero ?? 0) + 1;
+      return tx.estudiante.create({
+        data: {
+          numero: nuevoNumero,
+          nombre,
+          email: data.email || null,
+          gradoId,
+          activo: true,
+        },
+      });
     });
 
     return NextResponse.json(estudiante);
@@ -177,25 +181,28 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "El grado seleccionado no existe" }, { status: 400 });
     }
 
-    const ultimo = await db.estudiante.findFirst({
-      where: { gradoId },
-      orderBy: { numero: "desc" },
-    });
-    const numeroInicial = ultimo ? ultimo.numero : 0;
+    // Atomic auto-increment using transaction to prevent race conditions
+    const creados = await db.$transaction(async (tx) => {
+      const max = await tx.estudiante.aggregate({
+        where: { gradoId },
+        _max: { numero: true },
+      });
+      const numeroInicial = max._max.numero ?? 0;
 
-    const creados = await Promise.all(
-      estudiantes.map((item: { nombre: string; email?: string }, i: number) =>
-        db.estudiante.create({
-          data: {
-            numero: numeroInicial + i + 1,
-            nombre: item.nombre,
-            email: item.email || null,
-            gradoId,
-            activo: true,
-          },
-        })
-      )
-    );
+      return Promise.all(
+        estudiantes.map((item: { nombre: string; email?: string }, i: number) =>
+          tx.estudiante.create({
+            data: {
+              numero: numeroInicial + i + 1,
+              nombre: item.nombre,
+              email: item.email || null,
+              gradoId,
+              activo: true,
+            },
+          })
+        )
+      );
+    });
 
     return NextResponse.json({ message: `${creados.length} estudiantes creados`, estudiantes: creados });
   } catch (error) {
@@ -261,7 +268,19 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Se requiere un array de ordenes" }, { status: 400 });
     }
 
-    await Promise.all(
+    // Verify all students belong to accessible grades
+    const ids = ordenes.map((o: { id: string }) => o.id);
+    const estudiantes = await db.estudiante.findMany({
+      where: { id: { in: ids } },
+      select: { id: true, gradoId: true },
+    });
+    for (const est of estudiantes) {
+      if (!canAccessGrado(session, est.gradoId)) {
+        return NextResponse.json({ error: "No autorizado para reordenar estudiantes de este grado" }, { status: 403 });
+      }
+    }
+
+    await db.$transaction(
       ordenes.map((item: { id: string; orden: number }) =>
         db.estudiante.update({
           where: { id: item.id },

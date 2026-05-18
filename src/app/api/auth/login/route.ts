@@ -10,6 +10,17 @@ import { signSession } from "@/lib/session";
 // Limits: 5 attempts per minute per IP
 const loginAttempts = new Map<string, { count: number; resetTime: number }>();
 
+// Periodic cleanup to prevent memory leaks
+const LOGIN_RATE_LIMIT_CLEANUP = 5 * 60 * 1000;
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of loginAttempts.entries()) {
+    if (now > entry.resetTime) {
+      loginAttempts.delete(key);
+    }
+  }
+}, LOGIN_RATE_LIMIT_CLEANUP);
+
 function checkRateLimit(ip: string): { allowed: boolean; remaining: number; resetIn: number } {
   const now = Date.now();
   const windowMs = 60 * 1000; // 1 minute window

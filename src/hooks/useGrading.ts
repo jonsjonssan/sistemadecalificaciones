@@ -23,7 +23,9 @@ interface UseGradingReturn {
   handleDeleteCalif: (
     tipo: "alumno" | "grado",
     estudianteId?: string,
-    gradoId?: string
+    gradoId?: string,
+    materiaId?: string,
+    trimestre?: number
   ) => Promise<void>;
 }
 
@@ -139,12 +141,12 @@ export function useGrading(): UseGradingReturn {
         if (tipo === "alumno" && estudianteId) {
           params.set("estudianteId", estudianteId);
           if (materiaId) params.set("materiaId", materiaId);
-          if (trimestre) params.set("trimestre", String(trimestre));
+          if (trimestre !== undefined && trimestre !== null) params.set("trimestre", String(trimestre));
         }
         if (tipo === "grado" && gradoId) {
           params.set("gradoId", gradoId);
           if (materiaId) params.set("materiaId", materiaId);
-          if (trimestre) params.set("trimestre", String(trimestre));
+          if (trimestre !== undefined && trimestre !== null) params.set("trimestre", String(trimestre));
         }
 
         const res = await fetch(`/api/calificaciones?${params}`, {

@@ -11,6 +11,13 @@ type AsistenciaManualData = {
   observaciones: string;
 };
 
+function canAccessGrado(session: any, gradoId: string): boolean {
+  if (["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) return true;
+  if (session.asignaturasAsignadas?.some((m: any) => m.gradoId === gradoId)) return true;
+  if (session.gradosAsignados?.some((g: any) => g.id === gradoId)) return true;
+  return false;
+}
+
 export async function GET(req: NextRequest) {
   const { session, error: authError } = await requireSession();
   if (authError) return authError;
@@ -25,7 +32,17 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Faltan parámetros: gradoId, trimestre, año" }, { status: 400 });
     }
 
-    const where: any = { gradoId, trimestre: parseInt(trimestre), año: parseInt(año) };
+    if (!canAccessGrado(session, gradoId)) {
+      return NextResponse.json({ error: "No autorizado para este grado" }, { status: 403 });
+    }
+
+    const trimestreNum = parseInt(trimestre);
+    const añoNum = parseInt(año);
+    if (isNaN(trimestreNum) || trimestreNum < 1 || trimestreNum > 3 || isNaN(añoNum)) {
+      return NextResponse.json({ error: "Parámetros inválidos" }, { status: 400 });
+    }
+
+    const where: any = { gradoId, trimestre: trimestreNum, año: añoNum };
 
     const registros = await db.observacionBoleta.findMany({ where });
 
@@ -60,6 +77,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Faltan datos requeridos" }, { status: 400 });
     }
 
+    if (!canAccessGrado(session, gradoId)) {
+      return NextResponse.json({ error: "No autorizado para este grado" }, { status: 403 });
+    }
+
+    const trimestreNum = parseInt(trimestre);
+    const añoNum = parseInt(año);
+    if (isNaN(trimestreNum) || trimestreNum < 1 || trimestreNum > 3 || isNaN(añoNum)) {
+      return NextResponse.json({ error: "Trimestre o año inválidos" }, { status: 400 });
+    }
+
     const data = {
       asistencias: asistencias ?? "",
       inasistencias: inasistencias ?? "",
@@ -74,16 +101,16 @@ export async function POST(req: NextRequest) {
         estudianteId_gradoId_trimestre_año: {
           estudianteId,
           gradoId,
-          trimestre: parseInt(trimestre),
-          año: parseInt(año),
+          trimestre: trimestreNum,
+          año: añoNum,
         },
       },
       update: data,
       create: {
         estudianteId,
         gradoId,
-        trimestre: parseInt(trimestre),
-        año: parseInt(año),
+        trimestre: trimestreNum,
+        año: añoNum,
         ...data,
       },
     });

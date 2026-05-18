@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Todos los campos son requeridos" }, { status: 400 });
     }
 
-    const existeEmail = await sql`SELECT id FROM "Usuario" WHERE email = ${email}`;
+    const existeEmail = await sql`SELECT id FROM "Usuario" WHERE LOWER(email) = LOWER(${email})`;
     if (existeEmail.length > 0) {
       return NextResponse.json({ error: "El email ya está registrado" }, { status: 400 });
     }

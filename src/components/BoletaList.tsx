@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { Printer, FileText, ChevronUp, ChevronDown, Download } from "lucide-react";
@@ -310,7 +310,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
       <div>
         <p><span class="label">Estudiante:</span> ${escapeHtml(est.nombre)}</p>
         ${est.email ? `<p><span class="label">Correo:</span> ${escapeHtml(est.email)}</p>` : ''}
-        <p><span class="label">Grado:</span> ${grado?.numero}° Grado "${grado?.seccion}"</p>
+        <p><span class="label">Grado:</span> ${grado?.numero}° Grado "${escapeHtml(grado?.seccion || '')}"</p>
       </div>
       <div style="text-align: right;">
         <p><span class="label">Año Lectivo:</span> ${año}</p>
@@ -580,7 +580,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     const html = `<!DOCTYPE html>
 <html>
 <head>
-  <title>Boletas de Calificaciones - ${grado?.numero}° ${grado?.seccion}</title>
+  <title>Boletas de Calificaciones - ${grado?.numero}° ${escapeHtml(grado?.seccion || '')}</title>
   <style>
     ${paperStyles.pageAt}
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -714,7 +714,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     const html = `<!DOCTYPE html>
 <html>
 <head>
-  <title>Boleta Anual Consolidada - ${est.nombre}</title>
+  <title>Boleta Anual Consolidada - ${escapeHtml(est.nombre)}</title>
   <style>
     ${paperStyles.pageAt}
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -758,7 +758,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
       <div>
         <p><span class="label">Estudiante:</span> ${escapeHtml(est.nombre)}</p>
         ${est.email ? `<p><span class="label">Correo:</span> ${escapeHtml(est.email)}</p>` : ''}
-        <p><span class="label">Grado:</span> ${grado?.numero}° Grado "${grado?.seccion}"</p>
+        <p><span class="label">Grado:</span> ${grado?.numero}° Grado "${escapeHtml(grado?.seccion || '')}"</p>
       </div>
       <div style="text-align: right;">
         <p><span class="label">Año Lectivo:</span> ${año}</p>
@@ -867,7 +867,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
         </div>
         <div class="titulo-boleta"><h3>BOLETA DE CALIFICACIONES CONSOLIDADA - ANUAL</h3></div>
         <div class="info-estudiante">
-          <div><p><span class="label">Estudiante:</span> ${escapeHtml(est.nombre)}</p>${est.email ? `<p><span class="label">Correo:</span> ${escapeHtml(est.email)}</p>` : ''}<p><span class="label">Grado:</span> ${grado?.numero}° Grado "${grado?.seccion}"</p></div>
+          <div><p><span class="label">Estudiante:</span> ${escapeHtml(est.nombre)}</p>${est.email ? `<p><span class="label">Correo:</span> ${escapeHtml(est.email)}</p>` : ''}<p><span class="label">Grado:</span> ${grado?.numero}° Grado "${escapeHtml(grado?.seccion || '')}"</p></div>
           <div style="text-align: right;"><p><span class="label">Año Lectivo:</span> ${año}</p><p><span class="label">N° Lista:</span> ${est.numero}</p></div>
         </div>
         <table>
@@ -890,7 +890,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
       </div>`;
     }
 
-    const html = "<!DOCTYPE html><html><head><title>Boletas Consolidadas - " + (grado?.numero || "") + "\u00B0 " + (grado?.seccion || "") + "</title>" +
+    const html = "<!DOCTYPE html><html><head><title>Boletas Consolidadas - " + (grado?.numero || "") + "\u00B0 " + escapeHtml(grado?.seccion || "") + "</title>" +
     "<style>" +
     "  " + paperStyles.pageAt +
     "  * { margin: 0; padding: 0; box-sizing: border-box; }" +
@@ -986,7 +986,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     const html = `<!DOCTYPE html>
 <html>
 <head>
-  <title>Boleta Anual con Recuperación - ${est.nombre}</title>
+  <title>Boleta Anual con Recuperación - ${escapeHtml(est.nombre)}</title>
   <style>
     ${paperStyles.pageAt}
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -1030,7 +1030,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
       <div>
         <p><span class="label">Estudiante:</span> ${escapeHtml(est.nombre)}</p>
         ${est.email ? `<p><span class="label">Correo:</span> ${escapeHtml(est.email)}</p>` : ''}
-        <p><span class="label">Grado:</span> ${grado?.numero}° Grado "${grado?.seccion}"</p>
+        <p><span class="label">Grado:</span> ${grado?.numero}° Grado "${escapeHtml(grado?.seccion || '')}"</p>
       </div>
       <div style="text-align: right;">
         <p><span class="label">Año Lectivo:</span> ${año}</p>
@@ -1144,7 +1144,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
         </div>
         <div class="titulo-boleta"><h3>BOLETA ANUAL CON RECUPERACIÓN</h3></div>
         <div class="info-estudiante">
-          <div><p><span class="label">Estudiante:</span> ${escapeHtml(est.nombre)}</p>${est.email ? `<p><span class="label">Correo:</span> ${escapeHtml(est.email)}</p>` : ''}<p><span class="label">Grado:</span> ${grado?.numero}° Grado "${grado?.seccion}"</p></div>
+          <div><p><span class="label">Estudiante:</span> ${escapeHtml(est.nombre)}</p>${est.email ? `<p><span class="label">Correo:</span> ${escapeHtml(est.email)}</p>` : ''}<p><span class="label">Grado:</span> ${grado?.numero}° Grado "${escapeHtml(grado?.seccion || '')}"</p></div>
           <div style="text-align: right;"><p><span class="label">Año Lectivo:</span> ${año}</p><p><span class="label">N° Lista:</span> ${est.numero}</p></div>
         </div>
         <table>
@@ -1167,7 +1167,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
       </div>`;
     }
 
-    const html = "<!DOCTYPE html><html><head><title>Boletas Anuales con Recuperación - " + (grado?.numero || "") + "° " + (grado?.seccion || "") + "</title>" +
+    const html = "<!DOCTYPE html><html><head><title>Boletas Anuales con Recuperación - " + (grado?.numero || "") + "° " + escapeHtml(grado?.seccion || "") + "</title>" +
     "<style>" +
     "  " + paperStyles.pageAt +
     "  * { margin: 0; padding: 0; box-sizing: border-box; }" +
@@ -1267,7 +1267,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
   <div class="titulo-boleta"><h3>Boleta de Calificaciones - Trimestre ${getTrimestreRomano(trimestre)}</h3></div>
   <div class="info-estudiante">
     <p><b>Estudiante:</b> ${escapeHtml(est.nombre)}</p>
-    <p><b>Grado:</b> ${grado?.numero}° Grado "${grado?.seccion}" &nbsp;&nbsp; <b>Año:</b> ${año} &nbsp;&nbsp; <b>N° Lista:</b> ${est.numero}</p>
+    <p><b>Grado:</b> ${grado?.numero}° Grado "${escapeHtml(grado?.seccion || '')}" &nbsp;&nbsp; <b>Año:</b> ${año} &nbsp;&nbsp; <b>N° Lista:</b> ${est.numero}</p>
   </div>
   <table>
     <thead><tr><th>Asignatura</th><th>Prom. A.C.</th><th>Prom. A.I.</th><th>Examen</th>${mostrarRecuperacion ? '<th>Recup.</th>' : ''}<th>Prom. Final</th><th>Estado</th></tr></thead>
@@ -1460,4 +1460,4 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
       })}
     </div>
   );
-}
+}

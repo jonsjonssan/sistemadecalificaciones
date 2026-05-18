@@ -14,6 +14,10 @@ export async function POST(request: NextRequest) {
     }
 
     const sessionData = verifySession(session.value);
+    if (!sessionData || !sessionData.id) {
+      return NextResponse.json({ error: "Sesión inválida" }, { status: 401 });
+    }
+
     const { passwordActual, passwordNuevo } = await request.json();
 
     if (!passwordActual || !passwordNuevo) {
@@ -28,6 +32,11 @@ export async function POST(request: NextRequest) {
 
     if (usuario.length === 0) {
       return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+    }
+
+    // Si el usuario fue creado con Google y no tiene contraseña local
+    if (!usuario[0].password) {
+      return NextResponse.json({ error: "No puedes cambiar la contraseña de una cuenta de Google. Usa el inicio de sesión con Google." }, { status: 400 });
     }
 
     const passwordValida = await bcrypt.compare(passwordActual, usuario[0].password);

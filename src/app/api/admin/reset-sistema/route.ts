@@ -18,45 +18,47 @@ export async function DELETE(request: NextRequest) {
     }
 
     const sessionData = verifySession(session.value);
+    if (!sessionData) {
+      return NextResponse.json({ error: "Sesión inválida" }, { status: 401 });
+    }
 
-    // Solo el administrador puede resetear el sistema
     if (sessionData.rol !== "admin") {
       return NextResponse.json({ error: "Permiso denegado. Solo administradores pueden realizar esta acción." }, { status: 403 });
     }
 
-    // 1. Eliminar todas las calificaciones
-    await db.calificacion.deleteMany({});
+    // Wrap all operations in a single transaction for atomicity
+    await db.$transaction(async (tx) => {
+      await tx.calificacion.deleteMany({});
+      await tx.notaActividad.deleteMany({});
+      await tx.historialCalificacion.deleteMany({});
+      await tx.asistencia.deleteMany({});
+      await tx.observacionBoleta.deleteMany({});
+      await tx.estudiante.deleteMany({});
+      await tx.docenteMateria.deleteMany({});
+      await tx.recuperacionAnual.deleteMany({});
 
-    // 2. Eliminar toda la asistencia
-    await db.asistencia.deleteMany({});
+      // Clear grade tutors
+      await tx.grado.updateMany({
+        data: {
+          docenteId: null,
+        },
+      });
 
-    // 3. Eliminar todos los estudiantes
-    await db.estudiante.deleteMany({});
-
-    // 4. Eliminar asignaciones de materias (grados 6-9)
-    await db.docenteMateria.deleteMany({});
-
-    // 5. Limpiar tutores de los grados (grados 2-5)
-    await db.grado.updateMany({
-      data: {
-        // No hay docenteId en Grado - se maneja por DocenteMateria
+      // Increment the school year
+      const config = await tx.configuracionSistema.findFirst();
+      if (config) {
+        await tx.configuracionSistema.update({
+          where: { id: config.id },
+          data: {
+            añoEscolar: config.añoEscolar + 1,
+          },
+        });
       }
     });
 
-    // 5. Opcionalmente: Incrementar el año escolar en la configuración
-    const config = await db.configuracionSistema.findFirst();
-    if (config) {
-      await db.configuracionSistema.update({
-        where: { id: config.id },
-        data: {
-          añoEscolar: config.añoEscolar + 1
-        }
-      });
-    }
-
     return NextResponse.json({
       success: true,
-      message: "Sistema reiniciado exitosamente para el próximo año escolar."
+      message: "Sistema reiniciado exitosamente para el próximo año escolar.",
     });
   } catch (error) {
     console.error("Error al resetear el sistema:", error);

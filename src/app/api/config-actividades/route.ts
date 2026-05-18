@@ -28,13 +28,13 @@ export async function GET(request: NextRequest) {
     const gradoId = searchParams.get("gradoId");
     const trimestre = searchParams.get("trimestre");
 
-    if (session.rol === "docente") {
+    if (session.rol === "docente" || session.rol === "docente-orientador") {
       const materiasAsignadasIds = session.asignaturasAsignadas?.map((m: any) => m.id) || [];
       const gradosByMaterias = session.asignaturasAsignadas?.map((m: any) => m.gradoId) || [];
       const gradosByTutor = session.gradosAsignados?.map((g: any) => g.id) || [];
       const todosGradosIds = [...new Set([...gradosByMaterias, ...gradosByTutor])];
 
-      if (materiaId && materiasAsignadasIds.length > 0 && !materiasAsignadasIds.includes(materiaId)) {
+      if (materiaId && !materiasAsignadasIds.includes(materiaId)) {
         return NextResponse.json({ error: "No autorizado para esta materia" }, { status: 403 });
       }
       if (gradoId && todosGradosIds.length > 0 && !todosGradosIds.includes(gradoId)) {
@@ -181,7 +181,7 @@ export async function POST(request: NextRequest) {
       const gradosByTutor = session.gradosAsignados?.map((g: any) => g.id) || [];
       const todosGradosIds = [...new Set([...gradosByMaterias, ...gradosByTutor])];
 
-      if (materiaId && materiasAsignadasIds.length > 0 && !materiasAsignadasIds.includes(materiaId)) {
+      if (materiaId && !materiasAsignadasIds.includes(materiaId)) {
         return NextResponse.json({ error: "No autorizado para esta materia" }, { status: 403 });
       }
       if (gradoId && todosGradosIds.length > 0 && !todosGradosIds.includes(gradoId)) {
@@ -193,16 +193,16 @@ export async function POST(request: NextRequest) {
     }
 
     const trimestreNum = trimestreValue !== undefined && trimestreValue !== null ? parseInt(String(trimestreValue)) : NaN;
-    if (!trimestreValue || isNaN(trimestreNum)) {
-      return NextResponse.json({ error: "Trimestre es requerido y debe ser válido" }, { status: 400 });
+    if (trimestreNum === undefined || trimestreNum === null || isNaN(trimestreNum) || trimestreNum < 1 || trimestreNum > 3) {
+      return NextResponse.json({ error: "Trimestre es requerido y debe ser válido (1-3)" }, { status: 400 });
     }
 
-    const numAC = numActividadesCotidianas !== undefined && numActividadesCotidianas !== null ? parseInt(String(numActividadesCotidianas)) : 4;
-    const numAI = numActividadesIntegradoras !== undefined && numActividadesIntegradoras !== null ? parseInt(String(numActividadesIntegradoras)) : 1;
+    const numAC = numActividadesCotidianas !== undefined && numActividadesCotidianas !== null ? Math.max(0, parseInt(String(numActividadesCotidianas)) || 4) : 4;
+    const numAI = numActividadesIntegradoras !== undefined && numActividadesIntegradoras !== null ? Math.max(0, parseInt(String(numActividadesIntegradoras)) || 1) : 1;
     const tieneEx = tieneExamen === true || tieneExamen === "true" || tieneExamen === 1;
-    const porcAC = porcentajeAC !== undefined && porcentajeAC !== null ? parseFloat(String(porcentajeAC)) : 35.0;
-    const porcAI = porcentajeAI !== undefined && porcentajeAI !== null ? parseFloat(String(porcentajeAI)) : 35.0;
-    const porcEx = porcentajeExamen !== undefined && porcentajeExamen !== null ? parseFloat(String(porcentajeExamen)) : 30.0;
+    const porcAC = porcentajeAC !== undefined && porcentajeAC !== null ? parseFloat(String(porcentajeAC)) || 35.0 : 35.0;
+    const porcAI = porcentajeAI !== undefined && porcentajeAI !== null ? parseFloat(String(porcentajeAI)) || 35.0 : 35.0;
+    const porcEx = porcentajeExamen !== undefined && porcentajeExamen !== null ? parseFloat(String(porcentajeExamen)) || 30.0 : 30.0;
 
     const totalPorcentaje = porcAC + porcAI + (tieneEx ? porcEx : 0);
     if (Math.abs(totalPorcentaje - 100) > 0.01) {

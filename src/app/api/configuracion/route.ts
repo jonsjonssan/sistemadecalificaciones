@@ -1,19 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@/lib/neon';
 import { randomUUID } from 'crypto';
-import { requireAdmin } from '@/lib/api-middleware';
+import { getSession, requireAdmin } from '@/lib/api-middleware';
 
 export const revalidate = 300;
 
 export async function GET() {
   try {
-    // Asegurar que las columnas nuevas existen (migración segura idempotente)
-    await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "usarIntervaloReprobado" BOOLEAN DEFAULT true`;
-    await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "usarIntervaloCondicionado" BOOLEAN DEFAULT true`;
-    await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "usarIntervaloAprobado" BOOLEAN DEFAULT true`;
-    await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "maxHistorialCelda" INTEGER DEFAULT 10`;
-    await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "notaMinima" FLOAT DEFAULT 0.0`;
-    await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "notaMaxima" FLOAT DEFAULT 10.0`;
+    const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
 
     let config = await sql`SELECT * FROM "ConfiguracionSistema" LIMIT 1`;
 
@@ -60,18 +57,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Error de autenticación', details: authErr?.message || String(authErr) }, { status: 401 });
     }
 
-    // Asegurar que las columnas nuevas existen (migración segura idempotente)
-    try {
-      await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "usarIntervaloReprobado" BOOLEAN DEFAULT true`;
-      await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "usarIntervaloCondicionado" BOOLEAN DEFAULT true`;
-      await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "usarIntervaloAprobado" BOOLEAN DEFAULT true`;
-      await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "maxHistorialCelda" INTEGER DEFAULT 10`;
-      await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "notaMinima" FLOAT DEFAULT 0.0`;
-      await sql`ALTER TABLE "ConfiguracionSistema" ADD COLUMN IF NOT EXISTS "notaMaxima" FLOAT DEFAULT 10.0`;
-    } catch (alterErr: any) {
-      console.error('[configuracion/PUT] ALTER TABLE error:', alterErr);
-      // No bloquear si ALTER falla (puede ser por permisos); continuar con la lógica
-    }
+
 
     let body;
     try {

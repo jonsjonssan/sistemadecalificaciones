@@ -84,9 +84,21 @@ export function useDataLoading(): UseDataLoadingReturn {
   const loadTodasAsignaturas = useCallback(async () => {
     try {
       const res = await fetch("/api/materias?todas=true", { cache: "no-store", credentials: "include" });
-      setTodasAsignaturas(await res.json());
-    } catch {}
+      if (res.ok) setTodasAsignaturas(Array.isArray(await res.json()) ? await res.json() : []);
+      else setTodasAsignaturas([]);
+    } catch {
+      setTodasAsignaturas([]);
+    }
   }, []);
+
+  const getDefaultConfig = () => ({
+    numActividadesCotidianas: 4,
+    numActividadesIntegradoras: 1,
+    tieneExamen: true,
+    porcentajeAC: 35,
+    porcentajeAI: 35,
+    porcentajeExamen: 30,
+  });
 
   const loadConfig = useCallback(
     async (materiaId: string, trimestre: string) => {
@@ -97,24 +109,9 @@ export function useDataLoading(): UseDataLoadingReturn {
           { cache: "no-store", credentials: "include" }
         );
         if (res.ok) setConfigActual(await res.json());
-        else
-          setConfigActual({
-            numActividadesCotidianas: 4,
-            numActividadesIntegradoras: 1,
-            tieneExamen: true,
-            porcentajeAC: 35,
-            porcentajeAI: 35,
-            porcentajeExamen: 30,
-          });
+        else setConfigActual(getDefaultConfig());
       } catch {
-        setConfigActual({
-          numActividadesCotidianas: 4,
-          numActividadesIntegradoras: 1,
-          tieneExamen: true,
-          porcentajeAC: 35,
-          porcentajeAI: 35,
-          porcentajeExamen: 30,
-        });
+        setConfigActual(getDefaultConfig());
       }
     },
     []

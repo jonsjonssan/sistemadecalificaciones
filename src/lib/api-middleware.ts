@@ -122,6 +122,19 @@ export function withAuth(handler: (req: NextRequest, session: any) => Promise<Ne
 // ==========================================
 
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT_CLEANUP_INTERVAL = 5 * 60 * 1000; // 5 minutes
+
+// Periodic cleanup to prevent memory leaks
+if (typeof setInterval !== 'undefined') {
+  setInterval(() => {
+    const now = Date.now();
+    for (const [key, entry] of rateLimitStore.entries()) {
+      if (now > entry.resetTime) {
+        rateLimitStore.delete(key);
+      }
+    }
+  }, RATE_LIMIT_CLEANUP_INTERVAL);
+}
 
 export function checkRateLimit(key: string, maxAttempts = 10, windowMs = 60 * 1000) {
   const now = Date.now();
