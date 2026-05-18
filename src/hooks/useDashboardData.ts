@@ -254,12 +254,26 @@ export function useDashboardData() {
 
   useEffect(() => { gradoSeleccionadoRef.current = gradoSeleccionado; }, [gradoSeleccionado]);
 
-  // Limpiar datos de asistencia manual al cambiar de grado para evitar contaminacion cruzada
+  // Al cambiar de grado: primero forzar guardado pendiente, luego limpiar estado
   useEffect(() => {
     if (gradoSeleccionadoRef.current && gradoSeleccionadoRef.current !== gradoSeleccionado) {
+      const oldGradoId = gradoSeleccionadoRef.current;
+      const data = asistenciaManualDataRef.current;
+      const effectiveTrimestre = trimestreSeleccionado || "1";
+      const gradoOld = gradosFiltrados.find(g => g.id === oldGradoId);
+      const año = gradoOld?.año || new Date().getFullYear();
+      for (const [estudianteId, entry] of Object.entries(data)) {
+        if (!entry) continue;
+        const tieneDatos = entry.observaciones || entry.asistencias || entry.inasistencias || entry.tardanzas || entry.justificadas || entry.totalDias;
+        if (!tieneDatos) continue;
+        const blob = new Blob([JSON.stringify({ estudianteId, gradoId: oldGradoId, trimestre: effectiveTrimestre, año, ...entry })], { type: "application/json" });
+        navigator.sendBeacon("/api/observaciones", blob);
+      }
+      observacionesSaveTimersRef.current.forEach(t => clearTimeout(t));
+      observacionesSaveTimersRef.current.clear();
       setAsistenciaManualData({});
     }
-  }, [gradoSeleccionado]);
+  }, [gradoSeleccionado, trimestreSeleccionado, gradosFiltrados]);
 
   // Load observaciones
   useEffect(() => {
