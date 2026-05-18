@@ -315,6 +315,56 @@ export function useDashboardData() {
     } catch { toast({ title: "Error al inicializar", variant: "destructive" }); }
   };
 
+  const handleGoogleLogin = async (response: any) => {
+    setGoogleLoading(true);
+    setLoginError("");
+    try {
+      const res = await fetch("/api/auth/google", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ credential: response.credential }),
+      });
+      const data = await res.json();
+      if (res.ok && data.usuario) {
+        setUsuario(data.usuario);
+      } else {
+        setLoginError(data.error || "Error al iniciar sesión con Google");
+      }
+    } catch { setLoginError("Error de conexión"); }
+    finally { setGoogleLoading(false); }
+  };
+
+  const initGoogleButton = () => {
+    if (!googleButtonRef.current || !(window as any).google) return;
+    (window as any).google.accounts.id.initialize({
+      client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "588360712961-5r5mloqlefuq7nghgetgcr18evctl3sp.apps.googleusercontent.com",
+      callback: handleGoogleLogin,
+      auto_select: false,
+    });
+    (window as any).google.accounts.id.renderButton(googleButtonRef.current, {
+      theme: "outline",
+      size: "large",
+      width: "100%",
+      text: "signin_with",
+      shape: "rectangular",
+    });
+  };
+
+  useEffect(() => {
+    if (typeof window === "undefined" || usuario) return;
+    if ((window as any).google) {
+      queueMicrotask(() => initGoogleButton());
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.onload = () => queueMicrotask(() => initGoogleButton());
+    document.head.appendChild(script);
+  }, [usuario, initialized]);
+
   useEffect(() => {
     fetch("/api/init", { cache: "no-store" })
       .then(res => res.json())
