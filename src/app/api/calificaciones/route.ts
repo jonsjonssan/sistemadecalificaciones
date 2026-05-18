@@ -331,11 +331,18 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const examenVal = (examenTrimestral !== undefined && examenTrimestral !== null && !isNaN(examenTrimestral)) ? examenTrimestral : null;
-    const recupVal = (recuperacion !== undefined && recuperacion !== null && !isNaN(recuperacion)) ? recuperacion : null;
     const acFinal = (calificacionAC !== null && !isNaN(calificacionAC)) ? calificacionAC : null;
     const aiFinal = (calificacionAI !== null && !isNaN(calificacionAI)) ? calificacionAI : null;
     const promFinal = (promedioFinal !== null && !isNaN(promedioFinal)) ? promedioFinal : null;
+
+    // Solo sobrescribir examenTrimestral/recuperacion si el frontend los envió explícitamente
+    // Si no se enviaron (undefined), preservar el valor existente en la BD
+    const examenVal = examenTrimestral !== undefined
+      ? (examenTrimestral !== null && !isNaN(examenTrimestral) ? examenTrimestral : null)
+      : undefined;
+    const recupVal = recuperacion !== undefined
+      ? (recuperacion !== null && !isNaN(recuperacion) ? recuperacion : null)
+      : undefined;
 
     // Preparar datos de notas para crear
     const notasCreateData: { tipo: string; numeroActividad: number; nota: number }[] = [];
@@ -390,6 +397,25 @@ export async function POST(request: NextRequest) {
         }
       }
 
+      const updateData: any = {
+        calificacionAC: acFinal,
+        calificacionAI: aiFinal,
+        promedioFinal: promFinal,
+      };
+      if (examenVal !== undefined) updateData.examenTrimestral = examenVal;
+      if (recupVal !== undefined) updateData.recuperacion = recupVal;
+
+      const createData: any = {
+        estudianteId,
+        materiaId,
+        trimestre: parseInt(String(trimestre)),
+        calificacionAC: acFinal,
+        calificacionAI: aiFinal,
+        promedioFinal: promFinal,
+      };
+      if (examenVal !== undefined) createData.examenTrimestral = examenVal;
+      if (recupVal !== undefined) createData.recuperacion = recupVal;
+
       const result = await tx.calificacion.upsert({
         where: {
           estudianteId_materiaId_trimestre: {
@@ -398,23 +424,8 @@ export async function POST(request: NextRequest) {
             trimestre: parseInt(String(trimestre)),
           },
         },
-        update: {
-          calificacionAC: acFinal,
-          calificacionAI: aiFinal,
-          examenTrimestral: examenVal,
-          promedioFinal: promFinal,
-          recuperacion: recupVal,
-        },
-        create: {
-          estudianteId,
-          materiaId,
-          trimestre: parseInt(String(trimestre)),
-          calificacionAC: acFinal,
-          calificacionAI: aiFinal,
-          examenTrimestral: examenVal,
-          promedioFinal: promFinal,
-          recuperacion: recupVal,
-        },
+        update: updateData,
+        create: createData,
       });
 
       // Solo borrar y recrear notas si hay datos nuevos que guardar

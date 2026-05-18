@@ -1037,7 +1037,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
     }
   }, []);
 
-  const handleSaveCalificacion = useCallback(async (estudianteId: string, materiaId: string, data: { actividadesCotidianas: (number | null)[]; actividadesIntegradoras: (number | null)[]; examenTrimestral: number | null; recuperacion: number | null; }): Promise<Calificacion> => {
+  const handleSaveCalificacion = useCallback(async (estudianteId: string, materiaId: string, data: { actividadesCotidianas: (number | null)[]; actividadesIntegradoras: (number | null)[]; examenTrimestral?: number | null; recuperacion?: number | null; }): Promise<Calificacion> => {
     const est = estudiantes.find(e => e.id === estudianteId);
     const mat = asignaturas.find(a => a.id === materiaId);
     const estGrado = grados.find(g => g.id === est?.gradoId);
@@ -2570,7 +2570,7 @@ localStorage.setItem("ss_tipoAsistencia", JSON.stringify(tipoAsistencia));
                 <Card className="shadow-xl border overflow-hidden bg-card border-border">
                   <CardContent className="p-0">
                     <div className="table-scroll-container">
-                      <table className="w-full text-sm sm:text-base font-medium border-collapse">
+                      <table className="grade-table w-full text-sm sm:text-base font-medium border-collapse">
                         <thead><tr className={darkMode ? 'bg-gradient-to-r from-slate-200 to-slate-300 text-white' : 'bg-gradient-to-r from-slate-700 to-slate-600 text-white'}>
                           <th className={`w-10 p-2 text-center font-semibold sticky-col shadow-right left-0 z-20 border-r border-b ${darkMode ? 'bg-slate-200 border-slate-400' : 'bg-slate-700 border-slate-500'}`}>N°</th>
                           <th

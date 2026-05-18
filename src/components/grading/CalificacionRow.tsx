@@ -16,8 +16,8 @@ interface CalificacionRowProps {
   onSave: (id: string, matId: string, data: {
     actividadesCotidianas: (number | null)[];
     actividadesIntegradoras: (number | null)[];
-    examenTrimestral: number | null;
-    recuperacion: number | null;
+    examenTrimestral?: number | null;
+    recuperacion?: number | null;
   }) => Promise<Calificacion | void> | void;
   onRegisterForceSave?: (studentId: string, saveFn: (() => Promise<void>) | null) => void;
   onDirtyChange?: (studentId: string, isDirty: boolean) => void;
@@ -55,12 +55,40 @@ function NotaInput({ value, onChange, darkMode, hasError, onBlur, onNavigate, in
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const cellRef = useRef<HTMLDivElement>(null);
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleContextMenu = (e: React.MouseEvent) => {
-    e.preventDefault();
+  const showHistory = () => {
     if (onShowHistory && calificacionId && tipoCampo && campoLabel) {
       onShowHistory(calificacionId, tipoCampo, campoLabel, cellRef);
     }
+  };
+
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    showHistory();
+  };
+
+  const cancelLongPress = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    cancelLongPress();
+    longPressTimerRef.current = setTimeout(() => {
+      longPressTimerRef.current = null;
+      showHistory();
+    }, 600);
+  };
+
+  const handleTouchMove = () => {
+    cancelLongPress();
+  };
+
+  const handleTouchEnd = () => {
+    cancelLongPress();
   };
 
   // Registrar input en el Map de referencias
@@ -178,8 +206,11 @@ function NotaInput({ value, onChange, darkMode, hasError, onBlur, onNavigate, in
       ref={cellRef}
       suppressHydrationWarning
       onContextMenu={handleContextMenu}
+      onTouchStart={onShowHistory ? handleTouchStart : undefined}
+      onTouchMove={onShowHistory ? handleTouchMove : undefined}
+      onTouchEnd={onShowHistory ? handleTouchEnd : undefined}
       className={`relative group ${onShowHistory ? "cursor-pointer" : ""}`}
-      title={onShowHistory ? "Clic derecho para ver historial" : undefined}
+      title={onShowHistory ? "Clic derecho o mantener presionado para ver historial" : undefined}
     >
       <input
         ref={inputRef}
@@ -301,36 +332,34 @@ useEffect(() => {
 
 // Sincronizar con props SOLO cuando no haya cambios locales pendientes (dirty)
 // para evitar sobreescribir lo que el usuario acaba de escribir
+  const syncedFromPropsRef = useRef(false);
+
   useEffect(() => {
-    if (dirty) return; // No sobreescribir si el usuario tiene cambios sin guardar
-    const timer = setTimeout(() => {
-      const newAC = parseNotas(calificacion?.actividadesCotidianas ?? null, numAC);
-      const newAI = parseNotas(calificacion?.actividadesIntegradoras ?? null, numAI);
-      const newEx = calificacion?.examenTrimestral ?? null;
-      const newRc = calificacion?.recuperacion ?? null;
+    if (dirty) return;
+    const prevSynced = syncedFromPropsRef.current;
+    const newAC = parseNotas(calificacion?.actividadesCotidianas ?? null, numAC);
+    const newAI = parseNotas(calificacion?.actividadesIntegradoras ?? null, numAI);
+    const newEx = calificacion?.examenTrimestral ?? null;
+    const newRc = calificacion?.recuperacion ?? null;
 
-      // Proteccion contra lag de replica de BD: si acabamos de guardar exitosamente
-      // y la prop entrante viene vacia mientras el estado local tiene datos,
-      // ignoramos la sincronizacion durante 5 segundos para evitar que el polling
-      // sobrescriba el valor recien guardado antes de que se replique.
-      const localHasData = acNotas.some(n => n !== null) || aiNotas.some(n => n !== null) || examen !== null || recup !== null;
-      const incomingHasData = newAC.some(n => n !== null) || newAI.some(n => n !== null) || newEx !== null || newRc !== null;
-      if (localHasData && !incomingHasData && Date.now() - lastSavedAtRef.current < 5000) {
-        return;
-      }
+    const localHasData = acNotas.some(n => n !== null) || aiNotas.some(n => n !== null) || examen !== null || recup !== null;
+    const incomingHasData = newAC.some(n => n !== null) || newAI.some(n => n !== null) || newEx !== null || newRc !== null;
+    if (localHasData && !incomingHasData && Date.now() - lastSavedAtRef.current < 5000) {
+      if (!prevSynced) syncedFromPropsRef.current = true;
+      return;
+    }
 
-      setAcNotas(newAC);
-      setAiNotas(newAI);
-      setExamen(newEx);
-      setRecup(newRc);
-      setSaveError(false);
-      retryCountRef.current = 0;
-      if (retryTimerRef.current) {
-        clearTimeout(retryTimerRef.current);
-        retryTimerRef.current = null;
-      }
-    }, 0);
-    return () => clearTimeout(timer);
+    setAcNotas(newAC);
+    setAiNotas(newAI);
+    setExamen(newEx);
+    setRecup(newRc);
+    setSaveError(false);
+    retryCountRef.current = 0;
+    if (retryTimerRef.current) {
+      clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+    }
+    syncedFromPropsRef.current = true;
   }, [key, numAC, numAI, calificacion?.actividadesCotidianas, calificacion?.actividadesIntegradoras, calificacion?.examenTrimestral, calificacion?.recuperacion, dirty]);
 
   const stateRef = useRef({ dirty, acNotas, aiNotas, examen, recup });
@@ -338,6 +367,8 @@ useEffect(() => {
   useEffect(() => {
     stateRef.current = { dirty, acNotas, aiNotas, examen, recup };
   }, [dirty, acNotas, aiNotas, examen, recup]);
+  const califRef = useRef(calificacion);
+  useEffect(() => { califRef.current = calificacion; }, [calificacion]);
 
   const promAC = calcularPromedio(acNotas),
     promAI = calcularPromedio(aiNotas);
@@ -488,12 +519,26 @@ useEffect(() => {
     savingRef.current = true;
     setSaveError(false);
     try {
-      const result = await onSave(estudiante.id, materiaId, {
+      const c = califRef.current;
+      const payload: {
+        actividadesCotidianas: (number | null)[];
+        actividadesIntegradoras: (number | null)[];
+        examenTrimestral?: number | null;
+        recuperacion?: number | null;
+      } = {
         actividadesCotidianas: stateRef.current.acNotas,
         actividadesIntegradoras: stateRef.current.aiNotas,
-        examenTrimestral: stateRef.current.examen,
-        recuperacion: stateRef.current.recup,
-      });
+      };
+      // Solo enviar examen/recup si el valor local cambió vs la prop entrante
+      const propExam = c?.examenTrimestral ?? null;
+      if (stateRef.current.examen !== propExam) {
+        payload.examenTrimestral = stateRef.current.examen;
+      }
+      const propRecup = c?.recuperacion ?? null;
+      if (stateRef.current.recup !== propRecup) {
+        payload.recuperacion = stateRef.current.recup;
+      }
+      const result = await onSave(estudiante.id, materiaId, payload);
       if (result && typeof result === "object") {
         setAcNotas(parseNotas(result.actividadesCotidianas ?? null, numAC));
         setAiNotas(parseNotas(result.actividadesIntegradoras ?? null, numAI));
@@ -549,16 +594,23 @@ useEffect(() => {
         retryTimerRef.current = null;
       }
       if (stateRef.current.dirty) {
-        const trimestreNum = parseInt(trimestre);
-        const body = JSON.stringify({
+        const c = califRef.current;
+        const cleanBody: any = {
           estudianteId: estudiante.id,
           materiaId,
-          trimestre: trimestreNum,
+          trimestre: parseInt(trimestre),
           actividadesCotidianas: JSON.stringify(stateRef.current.acNotas),
           actividadesIntegradoras: JSON.stringify(stateRef.current.aiNotas),
-          examenTrimestral: stateRef.current.examen,
-          recuperacion: stateRef.current.recup,
-        });
+        };
+        const propExam = c?.examenTrimestral ?? null;
+        if (stateRef.current.examen !== propExam) {
+          cleanBody.examenTrimestral = stateRef.current.examen;
+        }
+        const propRecup = c?.recuperacion ?? null;
+        if (stateRef.current.recup !== propRecup) {
+          cleanBody.recuperacion = stateRef.current.recup;
+        }
+        const body = JSON.stringify(cleanBody);
         fetch("/api/calificaciones", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
