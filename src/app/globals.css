@@ -166,23 +166,23 @@
   --radius: 0.625rem;
 
   --white: oklch(1 0 0);
-  --black: oklch(0.15 0.02 264.542);
+  --black: oklch(0 0 0);
 
-  /* ── SEMANTIC (LIGHT) ── */
+  /* ── SEMANTIC (LIGHT) — deep black text ── */
   --background:       oklch(0.97 0.005 264.542);
-  --foreground:       oklch(0.15 0.02 264.542);
+  --foreground:       oklch(0.02 0 0);
   --card:             oklch(1 0 0);
-  --card-foreground:  oklch(0.15 0.02 264.542);
+  --card-foreground:  oklch(0.02 0 0);
   --popover:          oklch(1 0 0);
-  --popover-foreground: oklch(0.15 0.02 264.542);
+  --popover-foreground: oklch(0.02 0 0);
   --primary:          oklch(0.55 0.15 178.5);
   --primary-foreground: oklch(0.985 0 0);
   --secondary:        oklch(0.96 0.005 264.542);
-  --secondary-foreground: oklch(0.25 0.02 264.542);
+  --secondary-foreground: oklch(0.02 0 0);
   --muted:            oklch(0.96 0.005 264.542);
-  --muted-foreground: oklch(0.5 0.02 264.542);
+  --muted-foreground: oklch(0.12 0 0);
   --accent:           oklch(0.96 0.005 264.542);
-  --accent-foreground: oklch(0.25 0.02 264.542);
+  --accent-foreground: oklch(0.02 0 0);
   --destructive:      oklch(0.577 0.245 27.325);
   --border:           oklch(0.9 0.01 264.542);
   --input:            oklch(0.9 0.01 264.542);
@@ -197,7 +197,7 @@
 
   /* ── SIDEBAR (LIGHT) ── */
   --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.15 0.02 264.542);
+  --sidebar-foreground: oklch(0.02 0 0);
   --sidebar-primary: oklch(0.55 0.15 178.5);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.96 0.005 264.542);
@@ -608,16 +608,14 @@
   text-shadow: 0 0 1px oklch(0.64 0.17 155 / 0.25), 0 0 2px oklch(0.64 0.17 155 / 0.1);
 }
 
-/* ── LIGHT MODE: all text → negro profundo —─ */
+/* ── LIGHT MODE: all text → negro profundo (fallback for slate classes) ── */
 :root:not(.dark) .text-slate-400,
 :root:not(.dark) .text-slate-500,
 :root:not(.dark) .text-slate-600,
 :root:not(.dark) .text-slate-700,
-:root:not(.dark) .text-slate-800 {
-  color: oklch(0.15 0.02 264.542) !important;
-}
-:root:not(.dark) .text-muted-foreground {
-  color: oklch(0.2 0.02 264.542) !important;
+:root:not(.dark) .text-slate-800,
+:root:not(.dark) .text-slate-900 {
+  color: oklch(0.02 0 0) !important;
 }
 
 @media (max-width: 480px) {
