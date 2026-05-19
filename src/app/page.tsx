@@ -39,6 +39,7 @@ import PresenceIndicator from "@/components/PresenceIndicator";
 import BoletaList from "@/components/BoletaList";
 import ReporteCalificaciones from "@/components/ReporteCalificaciones";
 import CuadroTrimestres from "@/components/CuadroTrimestres";
+import ResumenAsignaturas from "@/components/ResumenAsignaturas";
 import EnlacesInstitucionales from "@/components/EnlacesInstitucionales";
 import { SystemThresholdsCard } from "@/components/SystemThresholdsCard";
 import AvanceDocentes from "@/components/AvanceDocentes";
@@ -511,6 +512,19 @@ export default function Home() {
                     </div>
                   </CardContent>
                 </Card>
+
+                {!isAdmin(usuario.rol) && d.gradoSeleccionado && d.trimestreSeleccionado && (
+                  <ResumenAsignaturas
+                    gradoId={d.gradoSeleccionado}
+                    trimestre={d.trimestreSeleccionado}
+                    estudiantes={d.estudiantes}
+                    misMateriasIds={d.asignaturasFiltradas.map((m: any) => m.id)}
+                    todasAsignaturas={d.todasAsignaturas}
+                    darkMode={darkMode}
+                    umbralCondicionado={d.configuracion?.umbralCondicionado ?? 4.5}
+                    umbralAprobado={d.configuracion?.umbralAprobado ?? 6.5}
+                  />
+                )}
 
                 {d.gradoSeleccionado && (() => {
                   const grado = d.gradosFiltrados.find((g: any) => g.id === d.gradoSeleccionado);
