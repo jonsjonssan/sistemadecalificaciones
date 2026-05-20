@@ -515,6 +515,10 @@
     @apply min-h-[44px] min-w-[44px];
   }
 
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+  }
+
   .grade-input {
     font-family: var(--font-mono), monospace;
     font-weight: 500;
@@ -631,6 +635,8 @@
   .mobile-tab-item { @apply px-2 py-1.5 text-xs; }
   .mobile-card-content { @apply p-3; }
   .grade-input { @apply h-11 text-base; }
+  .hide-on-mobile { display: none !important; }
+  .show-on-mobile { display: revert !important; }
 }
 
 @media (max-width: 640px) {
@@ -646,6 +652,42 @@
   .table-scroll-container { @apply -mx-2; scrollbar-width: thin; }
   .table-scroll-container table { @apply min-w-[600px]; }
   .sticky-col { @apply z-20; }
+  .hide-on-tablet { display: none !important; }
+}
+
+@media (max-width: 640px) {
+  .mobile-table-card {
+    display: block;
+  }
+  .mobile-table-card thead {
+    display: none;
+  }
+  .mobile-table-card tbody tr {
+    display: block;
+    margin-bottom: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    background: var(--card);
+  }
+  .mobile-table-card tbody tr td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.375rem 0;
+    border: none;
+    text-align: right;
+  }
+  .mobile-table-card tbody tr td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-align: left;
+    color: var(--muted-foreground);
+  }
+  .mobile-table-card tbody tr td:empty {
+    display: none;
+  }
 }
 
 @media (min-width: 641px) and (max-width: 768px) {

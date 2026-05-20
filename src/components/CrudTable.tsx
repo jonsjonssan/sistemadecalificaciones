@@ -40,6 +40,21 @@ export function CrudTable<T>({
   loading, emptyMessage = "No hay registros.",
   keyExtractor, createLabel = "Nuevo", disableCreate,
 }: CrudTableProps<T>) {
+  const renderActions = (item: T) => (
+    <div className="flex items-center gap-1">
+      {onEdit && (
+        <Button variant="ghost" size="icon" className="touch-target" onClick={() => onEdit(item)} aria-label="Editar">
+          <Pencil className="h-4 w-4" />
+        </Button>
+      )}
+      {onDelete && (
+        <Button variant="ghost" size="icon" className="touch-target text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30" onClick={() => onDelete(item)} aria-label="Eliminar">
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      )}
+    </div>
+  );
+
   return (
     <div className="space-y-3">
       <div className="flex flex-col sm:flex-row gap-2 justify-between">
@@ -50,7 +65,7 @@ export function CrudTable<T>({
               placeholder={searchPlaceholder}
               value={searchValue ?? ""}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-8"
+              className="pl-8 touch-target"
               aria-label={searchPlaceholder}
             />
           </div>
@@ -63,7 +78,8 @@ export function CrudTable<T>({
         )}
       </div>
 
-      <div className="rounded-lg border overflow-hidden">
+      {/* Desktop table */}
+      <div className="rounded-lg border overflow-hidden max-sm:hidden">
         <Table>
           <TableHeader>
             <TableRow>
@@ -120,18 +136,7 @@ export function CrudTable<T>({
                   ))}
                   {(onEdit || onDelete) && (
                     <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        {onEdit && (
-                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => onEdit(item)} aria-label="Editar">
-                            <Pencil className="h-3.5 w-3.5" />
-                          </Button>
-                        )}
-                        {onDelete && (
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30" onClick={() => onDelete(item)} aria-label="Eliminar">
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        )}
-                      </div>
+                      {renderActions(item)}
                     </TableCell>
                   )}
                 </TableRow>
@@ -139,6 +144,38 @@ export function CrudTable<T>({
             )}
           </TableBody>
         </Table>
+      </div>
+
+      {/* Mobile cards */}
+      <div className="sm:hidden space-y-3">
+        {loading ? (
+          <div className="text-center py-8">
+            <div className="flex items-center justify-center gap-2">
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              <span className="text-sm text-muted-foreground">Cargando...</span>
+            </div>
+          </div>
+        ) : data.length === 0 ? (
+          <div className="text-center py-8 text-sm text-muted-foreground">
+            {emptyMessage}
+          </div>
+        ) : (
+          data.map((item) => (
+            <div key={keyExtractor(item)} className="rounded-lg border bg-card p-4 space-y-2">
+              {columns.map((col) => (
+                <div key={col.key} className="flex justify-between items-center gap-2">
+                  <span className="text-xs font-medium text-muted-foreground">{col.label}</span>
+                  <span className="text-sm text-right">{col.render(item)}</span>
+                </div>
+              ))}
+              {(onEdit || onDelete) && (
+                <div className="flex justify-end gap-1 pt-2 border-t">
+                  {renderActions(item)}
+                </div>
+              )}
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

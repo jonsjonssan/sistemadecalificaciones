@@ -43,6 +43,7 @@ import ResumenAsignaturas from "@/components/ResumenAsignaturas";
 import EnlacesInstitucionales from "@/components/EnlacesInstitucionales";
 import { SystemThresholdsCard } from "@/components/SystemThresholdsCard";
 import AvanceDocentes from "@/components/AvanceDocentes";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useDashboardData } from "@/hooks/useDashboardData";
 
 export default function Home() {
@@ -119,11 +120,11 @@ export default function Home() {
                 <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
               )}
             </button>
-            <Button variant="ghost" size="sm" onClick={() => d.setShowWizard(true)} className="h-8 sm:h-10 px-1.5 sm:px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50" title="Guía de inicio"><Lightbulb className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Ayuda</span></Button>
+            <Button variant="ghost" size="sm" onClick={() => d.setShowWizard(true)} className="touch-target px-1.5 sm:px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 sm:h-10" title="Guía de inicio"><Lightbulb className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Ayuda</span></Button>
             <div className="text-right text-xs font-medium hidden sm:block"><p className="font-medium cursor-pointer hover:underline text-foreground" onClick={() => setPerfilDialogOpen(true)}>{usuario.nombre}</p><p className="capitalize text-muted-foreground/60">{usuario.rol}</p></div>
-            <Button variant="ghost" size="sm" onClick={() => setPerfilDialogOpen(true)} className="h-8 sm:h-10 px-1.5 sm:px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50"><User className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Perfil</span></Button>
-            <Button variant="ghost" size="sm" onClick={() => setPasswordDialogOpen(true)} className="h-8 sm:h-10 px-1.5 sm:px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50"><Key className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Clave</span></Button>
-            <Button variant="ghost" size="sm" onClick={handleLogout} aria-label="Cerrar sesión" className="h-8 sm:h-10 px-1.5 sm:px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50"><LogOut className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Salir</span></Button>
+            <Button variant="ghost" size="sm" onClick={() => setPerfilDialogOpen(true)} className="touch-target px-1.5 sm:px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 sm:h-10"><User className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Perfil</span></Button>
+            <Button variant="ghost" size="sm" onClick={() => setPasswordDialogOpen(true)} className="touch-target px-1.5 sm:px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 sm:h-10"><Key className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Clave</span></Button>
+            <Button variant="ghost" size="sm" onClick={handleLogout} aria-label="Cerrar sesión" className="touch-target px-1.5 sm:px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 sm:h-10"><LogOut className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Salir</span></Button>
           </div>
         </div>
       </header>
@@ -841,10 +842,12 @@ export default function Home() {
                               </div>
                             </TableCell>
                             <TableCell className="text-center">
-                              <Button size="sm" variant="ghost" className={`h-6 w-6 p-0 mr-1 ${darkMode ? 'text-amber-400' : 'text-amber-500'}`} onClick={() => d.abrirEditarUsuario(u)}><Settings className="h-3.5 w-3.5" /></Button>
-                              <Button size="sm" variant="ghost" className="h-6 w-6 p-0 mr-1" onClick={() => d.handleToggleUsuario(u.id, u.activo)}>{u.activo ? "🔒" : "🔓"}</Button>
-                              <Button size="sm" variant="ghost" className={`h-6 w-6 p-0 mr-1 ${darkMode ? 'text-blue-400' : 'text-blue-500'}`} onClick={() => d.openResetPassword({ id: u.id, nombre: u.nombre })}>🔑</Button>
-                              {d.canDelete(usuario) && <Button size="sm" variant="ghost" className={`h-6 w-6 p-0 ${darkMode ? 'text-red-400' : 'text-red-500'}`} onClick={() => d.handleDeleteUsuario(u.id)}><Trash2 className="h-3.5 w-3.5" /></Button>}
+                              <div className="flex items-center justify-center gap-1">
+                                <Button size="sm" variant="ghost" className={`touch-target ${darkMode ? 'text-amber-400' : 'text-amber-500'}`} onClick={() => d.abrirEditarUsuario(u)}><Settings className="h-4 w-4" /></Button>
+                                <Button size="sm" variant="ghost" className="touch-target" onClick={() => d.handleToggleUsuario(u.id, u.activo)} aria-label={u.activo ? "Bloquear" : "Desbloquear"}>{u.activo ? "🔒" : "🔓"}</Button>
+                                <Button size="sm" variant="ghost" className={`touch-target ${darkMode ? 'text-blue-400' : 'text-blue-500'}`} onClick={() => d.openResetPassword({ id: u.id, nombre: u.nombre })} aria-label="Restablecer contraseña">🔑</Button>
+                                {d.canDelete(usuario) && <Button size="sm" variant="ghost" className={`touch-target ${darkMode ? 'text-red-400' : 'text-red-500'}`} onClick={() => d.handleDeleteUsuario(u.id)}><Trash2 className="h-4 w-4" /></Button>}
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -1072,26 +1075,29 @@ export default function Home() {
       <footer className="py-2 text-center text-xs hidden md:block bg-card text-muted-foreground">© 2026 Centro Escolar Católico San José de la Montaña</footer>
 
       {/* Mobile bottom nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 safe-area-bottom bg-card border-border" aria-label="Navegación principal">
-        <button onClick={() => d.setMenuAbierto(!d.menuAbierto)} className="w-full flex items-center justify-center gap-2 py-3 px-4 border-t border-border text-foreground hover:bg-muted transition-colors" aria-label="Abrir menú de navegación">
-          <Menu className="h-5 w-5" />
-          <span className="text-sm font-medium">{d.navItems.find(i => i.value === d.activeTab)?.label || 'Menú'}</span>
-          <ChevronUp className={`h-4 w-4 transition-transform ${d.menuAbierto ? 'rotate-0' : 'rotate-180'}`} />
-        </button>
-        <AnimatePresence>
-          {d.menuAbierto && (
-            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden border-t border-border">
-              <div className="grid grid-cols-4 gap-1 p-2 bg-muted">
-                {d.navItems.map((item) => (
-                  <button key={item.value} onClick={() => { d.setActiveTab(item.value); d.setMenuAbierto(false); }} className={`flex flex-col items-center justify-center py-3 px-1 rounded-xl transition-colors min-h-[56px] ${d.activeTab === item.value ? "text-primary bg-primary/10 ring-1 ring-primary" : "text-muted-foreground hover:bg-accent"}`}>
-                    <span className="text-[10px] leading-tight font-medium">{item.label}</span>
-                  </button>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </nav>
+      <Sheet open={d.menuAbierto} onOpenChange={d.setMenuAbierto}>
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 safe-area-bottom bg-card border-t border-border" aria-label="Navegación principal">
+          <SheetTrigger asChild>
+            <button className="w-full flex items-center justify-center gap-2 py-3 px-4 text-foreground hover:bg-muted transition-colors touch-target" aria-label="Abrir menú de navegación">
+              <Menu className="h-5 w-5 shrink-0" />
+              <span className="text-sm font-medium">{d.navItems.find(i => i.value === d.activeTab)?.label || 'Menú'}</span>
+              <ChevronUp className="h-4 w-4 shrink-0" />
+            </button>
+          </SheetTrigger>
+        </nav>
+        <SheetContent side="bottom" className="bg-card border-border p-4 rounded-t-2xl safe-area-bottom">
+          <SheetHeader className="mb-3">
+            <SheetTitle className="text-sm font-medium text-center">Navegación</SheetTitle>
+          </SheetHeader>
+          <div className="grid grid-cols-4 gap-2">
+            {d.navItems.map((item) => (
+              <button key={item.value} onClick={() => { d.setActiveTab(item.value); d.setMenuAbierto(false); }} className={`flex flex-col items-center justify-center py-4 px-1 rounded-xl transition-colors min-h-[56px] touch-target ${d.activeTab === item.value ? "text-primary bg-primary/10 ring-1 ring-primary" : "text-muted-foreground hover:bg-accent"}`}>
+                <span className="text-xs leading-tight font-medium text-center">{item.label}</span>
+              </button>
+            ))}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
