@@ -166,6 +166,9 @@ model RecuperacionAnual {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  estudiante Estudiante @relation(fields: [estudianteId], references: [id], onDelete: Cascade)
+  materia    Materia    @relation(fields: [materiaId], references: [id], onDelete: Cascade)
+
   @@unique([estudianteId, materiaId, año])
   @@index([materiaId, año])
 }
