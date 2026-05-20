@@ -73,6 +73,7 @@ model Estudiante {
   calificaciones Calificacion[]
   asistencia    Asistencia[]
   observaciones ObservacionBoleta[]
+  recuperacionesAnuales RecuperacionAnual[]
 
   @@index([gradoId, activo])
   @@index([nombre])
@@ -92,6 +93,7 @@ model Materia {
   configActividades  ConfigActividad[]
   docentesAsignados  DocenteMateria[] // Para grados 6-9
   asistencia        Asistencia[]
+  recuperacionesAnuales RecuperacionAnual[]
 
   @@index([gradoId])
   @@index([nombre])
