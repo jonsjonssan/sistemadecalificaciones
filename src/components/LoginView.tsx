@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { GraduationCap, BookOpen, Lock, Mail } from "lucide-react";
+import { GraduationCap, BookOpen, Lock, Mail, School } from "lucide-react";
 import { useState } from "react";
 
 interface LoginViewProps {
@@ -26,6 +26,7 @@ export default function LoginView({
   loginError, loginLoading, googleLoading, googleButtonRef,
 }: LoginViewProps) {
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [logoError, setLogoError] = useState(false);
 
   return (
     <div className="min-h-screen flex flex-col safe-area-bottom relative overflow-hidden bg-gradient-to-b from-background via-background to-primary/5">
@@ -47,7 +48,7 @@ export default function LoginView({
           <div className="flex flex-col items-center mb-8">
             <div className="relative mb-5">
               <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary/70 shadow-lg shadow-primary/20 flex items-center justify-center">
-                <img src="/0.png" alt="Logo" className="h-12 w-12 object-contain brightness-0 invert" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                {logoError ? <School className="h-10 w-10 text-primary-foreground" /> : <img src="/0.png" alt="Logo" className="h-12 w-12 object-contain" onError={() => setLogoError(true)} />}
               </div>
               <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-400 border-2 border-background flex items-center justify-center">
                 <GraduationCap className="h-3 w-3 text-white" />

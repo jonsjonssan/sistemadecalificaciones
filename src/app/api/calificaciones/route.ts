@@ -396,14 +396,12 @@ export async function POST(request: NextRequest) {
     // Ejecutar todo en una sola transacción interactiva para atomicidad
      
     const finalResult = await db.$transaction(async (tx: any) => {
-      // Obtener calificación existente para comparar valores anteriores
-      const existingCal = await tx.calificacion.findUnique({
+      // Buscar calificación existente (sin depender de @@unique)
+      const existingCal = await tx.calificacion.findFirst({
         where: {
-          estudianteId_materiaId_trimestre: {
-            estudianteId,
-            materiaId,
-            trimestre: parseInt(String(trimestre)),
-          },
+          estudianteId,
+          materiaId,
+          trimestre: parseInt(String(trimestre)),
         },
         include: {
           notasActividad: true,
@@ -433,28 +431,27 @@ export async function POST(request: NextRequest) {
       if (examenVal !== undefined) updateData.examenTrimestral = examenVal;
       if (recupVal !== undefined) updateData.recuperacion = recupVal;
 
-      const createData: any = {
-        estudianteId,
-        materiaId,
-        trimestre: parseInt(String(trimestre)),
-        calificacionAC: acFinal,
-        calificacionAI: aiFinal,
-        promedioFinal: promFinal,
-      };
-      if (examenVal !== undefined) createData.examenTrimestral = examenVal;
-      if (recupVal !== undefined) createData.recuperacion = recupVal;
-
-      const result = await tx.calificacion.upsert({
-        where: {
-          estudianteId_materiaId_trimestre: {
-            estudianteId,
-            materiaId,
-            trimestre: parseInt(String(trimestre)),
-          },
-        },
-        update: updateData,
-        create: createData,
-      });
+      let result;
+      if (existingCal) {
+        result = await tx.calificacion.update({
+          where: { id: existingCal.id },
+          data: updateData,
+        });
+      } else {
+        const createData: any = {
+          estudianteId,
+          materiaId,
+          trimestre: parseInt(String(trimestre)),
+          calificacionAC: acFinal,
+          calificacionAI: aiFinal,
+          promedioFinal: promFinal,
+        };
+        if (examenVal !== undefined) createData.examenTrimestral = examenVal;
+        if (recupVal !== undefined) createData.recuperacion = recupVal;
+        result = await tx.calificacion.create({
+          data: createData,
+        });
+      }
 
       // Solo borrar y recrear notas si hay datos nuevos que guardar
       if (notasCreateData.length > 0) {
