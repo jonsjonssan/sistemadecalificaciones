@@ -1,9 +1,11 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { GraduationCap, BookOpen, Lock, Mail } from "lucide-react";
+import { useState } from "react";
 
 interface LoginViewProps {
   initialized: boolean;
@@ -17,44 +19,156 @@ interface LoginViewProps {
   googleButtonRef: React.RefObject<HTMLDivElement | null>;
 }
 
+
+
 export default function LoginView({
   initialized, initSystem, loginForm, setLoginForm, handleLogin,
   loginError, loginLoading, googleLoading, googleButtonRef,
 }: LoginViewProps) {
+  const [focusedField, setFocusedField] = useState<string | null>(null);
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 safe-area-bottom relative overflow-hidden bg-background">
+    <div className="min-h-screen flex flex-col safe-area-bottom relative overflow-hidden bg-gradient-to-b from-background via-background to-primary/5">
       <div className="absolute inset-0 page-atmosphere" />
-      <Card className="w-full max-w-sm sm:max-w-md mx-4 relative animate-scale-in bg-card border-border">
-        <CardHeader className="text-center pb-2">
-          <div className="mx-auto w-14 h-14 flex items-center justify-center mb-3 overflow-hidden rounded-sm bg-primary/10 border border-primary/20">
-            <img src="/0.png" alt="Logo" className="h-9 w-9 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-          </div>
-          <CardTitle className="font-display text-base sm:text-lg text-card-foreground">Sistema de Calificaciones</CardTitle>
-          <CardDescription className="text-xs sm:text-sm text-muted-foreground">Centro Escolar Católico San José de la Montaña</CardDescription>
-        </CardHeader>
-        <CardContent className="pt-4">
-          {!initialized ? (
-            <div className="space-y-3 text-center">
-              <p className="text-sm text-muted-foreground">Inicializa el sistema para comenzar</p>
-              <Button onClick={initSystem} className="w-full mobile-button bg-primary text-primary-foreground hover:bg-primary/90">Inicializar Sistema</Button>
-            </div>
-          ) : (
-            <form onSubmit={handleLogin} className="space-y-3">
-              <div><Label className="text-sm text-foreground">Email</Label><Input type="email" value={loginForm.email} onChange={e => setLoginForm({ ...loginForm, email: e.target.value })} placeholder="correo@ejemplo.edu" required className="mobile-input" /></div>
-              <div><Label className="text-sm text-foreground">Contraseña</Label><Input type="password" autoComplete="current-password" value={loginForm.password} onChange={e => setLoginForm({ ...loginForm, password: e.target.value })} required className="mobile-input" /></div>
-              {loginError && <p className={`text-sm text-center ${loginError.includes("no está registrada") ? "text-amber-600" : "text-red-500"}`}>{loginError}</p>}
-              <Button type="submit" className="w-full mobile-button bg-primary text-primary-foreground hover:bg-primary/90" disabled={loginLoading}>{loginLoading ? "Ingresando..." : "Ingresar"}</Button>
-              <div className="relative flex items-center justify-center">
-                <div className="border-t w-full border-border" />
-                <span className="px-2 text-xs bg-card text-muted-foreground">o</span>
+      <div className="absolute top-0 left-0 right-0 h-64 bg-gradient-to-b from-primary/8 to-transparent pointer-events-none" />
+
+      <motion.div
+        className="flex-1 flex flex-col items-center justify-center px-6 py-8"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <motion.div
+          className="w-full max-w-sm mx-auto"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
+          <div className="flex flex-col items-center mb-8">
+            <div className="relative mb-5">
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary/70 shadow-lg shadow-primary/20 flex items-center justify-center">
+                <img src="/0.png" alt="Logo" className="h-12 w-12 object-contain brightness-0 invert" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
               </div>
+              <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-400 border-2 border-background flex items-center justify-center">
+                <GraduationCap className="h-3 w-3 text-white" />
+              </div>
+            </div>
+            <h1 className="font-display text-xl text-foreground font-bold tracking-tight">Sistema de Calificaciones</h1>
+            <p className="text-sm text-muted-foreground/70 mt-1 text-center leading-relaxed">
+              Centro Escolar Católico<br />San José de la Montaña
+            </p>
+          </div>
+
+          {!initialized ? (
+            <motion.div
+              className="space-y-4 text-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <div className="p-6 rounded-2xl bg-card border border-border shadow-sm">
+                <BookOpen className="h-10 w-10 mx-auto mb-3 text-primary" />
+                <p className="text-sm text-muted-foreground mb-4">Inicializa el sistema para comenzar a gestionar calificaciones</p>
+                <Button onClick={initSystem} className="w-full h-12 text-base font-semibold rounded-xl bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20">
+                  Inicializar Sistema
+                </Button>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.form
+              onSubmit={handleLogin}
+              className="space-y-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <div className="space-y-1.5">
+                <Label htmlFor="login-email" className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider">Correo electrónico</Label>
+                <div className={`relative transition-all duration-200 ${focusedField === 'email' ? 'ring-2 ring-primary/20 rounded-xl' : ''}`}>
+                  <Mail className={`absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${focusedField === 'email' ? 'text-primary' : 'text-muted-foreground/40'}`} />
+                  <Input
+                    id="login-email"
+                    type="email"
+                    value={loginForm.email}
+                    onChange={e => setLoginForm({ ...loginForm, email: e.target.value })}
+                    placeholder="correo@ejemplo.edu"
+                    required
+                    className="h-12 pl-10 text-base rounded-xl bg-card border-border focus:border-primary"
+                    onFocus={() => setFocusedField('email')}
+                    onBlur={() => setFocusedField(null)}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="login-password" className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider">Contraseña</Label>
+                <div className={`relative transition-all duration-200 ${focusedField === 'password' ? 'ring-2 ring-primary/20 rounded-xl' : ''}`}>
+                  <Lock className={`absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${focusedField === 'password' ? 'text-primary' : 'text-muted-foreground/40'}`} />
+                  <Input
+                    id="login-password"
+                    type="password"
+                    autoComplete="current-password"
+                    value={loginForm.password}
+                    onChange={e => setLoginForm({ ...loginForm, password: e.target.value })}
+                    required
+                    className="h-12 pl-10 text-base rounded-xl bg-card border-border focus:border-primary"
+                    onFocus={() => setFocusedField('password')}
+                    onBlur={() => setFocusedField(null)}
+                  />
+                </div>
+              </div>
+
+              {loginError && (
+                <motion.p
+                  initial={{ opacity: 0, y: -8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`text-sm text-center font-medium ${loginError.includes("no está registrada") ? "text-amber-600" : "text-red-500"}`}
+                >
+                  {loginError}
+                </motion.p>
+              )}
+
+              <Button
+                type="submit"
+                className="w-full h-12 text-base font-semibold rounded-xl bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 disabled:opacity-60"
+                disabled={loginLoading}
+              >
+                {loginLoading ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                    Ingresando...
+                  </span>
+                ) : "Ingresar"}
+              </Button>
+
+              <div className="relative flex items-center justify-center py-1">
+                <div className="flex-1 h-px bg-border" />
+                <span className="px-3 text-xs text-muted-foreground/50 font-medium">o continúa con</span>
+                <div className="flex-1 h-px bg-border" />
+              </div>
+
               <div ref={googleButtonRef} id="google-button-container" className="flex justify-center min-h-[40px]" />
-              {googleLoading && <p className="text-sm text-center text-muted-foreground">Iniciando sesión con Google...</p>}
-              <p className="text-sm font-medium text-center text-muted-foreground">Ingrese sus credenciales para continuar</p>
-            </form>
+              {googleLoading && (
+                <p className="text-sm text-center text-muted-foreground/60">
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                    Iniciando sesión con Google...
+                  </span>
+                </p>
+              )}
+            </motion.form>
           )}
-        </CardContent>
-      </Card>
+        </motion.div>
+
+        <motion.p
+          className="text-xs text-muted-foreground/40 mt-8 text-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
+          Sistema de Gestión Educativa © {new Date().getFullYear()}
+        </motion.p>
+      </motion.div>
     </div>
   );
 }

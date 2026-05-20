@@ -788,7 +788,7 @@ const statusIcon =
             />
         </td>
         )}
-        <td className={`p-2 text-center border-l ${cellBorder} ${finalBg}`}>
+      <td data-label="Prom Final" className={`p-2 text-center border-l ${cellBorder} ${finalBg}`}>
           <span className={`inline-block px-2 py-0.5 rounded-md text-xs sm:text-sm font-bold shadow ${finalBadgeClass}`}>
             {promFinal !== null ? (promedioDecimal ? formatNumber(promFinal, true) : Math.round(promFinal).toString()) : "-"}
             {promFinal !== null && recup !== null && mostrarRecuperacion && (
@@ -796,7 +796,7 @@ const statusIcon =
             )}
           </span>
         </td>
-        <td className={`p-2 border-l ${cellBorder} text-center`}>{statusIcon}</td>
+      <td data-label="Estado" className={`p-2 border-l ${cellBorder} text-center`}>{statusIcon}</td>
         {isAdmin && onBorrar && (
           <td className={`p-1 border-l ${cellBorder} text-center`}>
             <button
@@ -814,10 +814,10 @@ const statusIcon =
 
   return (
     <tr className={`border-b transition-colors ${rowBg}`}>
-      <td className={`p-2 text-center font-semibold sticky-col shadow-right left-0 z-10 border-r ${stickyBg} ${cellBorder}`}>
+      <td data-label="N°" className={`p-2 text-center font-semibold sticky-col shadow-right left-0 z-10 border-r ${stickyBg} ${cellBorder}`}>
         {estudiante.numero}
       </td>
-      <td className={`p-2 font-medium sticky-col shadow-right left-10 z-10 whitespace-nowrap border-r ${stickyBg} ${cellBorder}`}>
+      <td data-label="Estudiante" className={`p-2 font-medium sticky-col shadow-right left-10 z-10 whitespace-nowrap border-r ${stickyBg} ${cellBorder}`}>
         <span className={`inline-block w-2 h-2 rounded-full mr-1.5 flex-shrink-0 align-middle ${
           estadoCompletitud === 'completo'
             ? 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]'
@@ -828,7 +828,7 @@ const statusIcon =
         {estudiante.nombre}
       </td>
       {acNotas.map((n, i) => (
-        <td key={`ac-${i}`} className={`p-1 border-l ${cellBorder}`}>
+        <td key={`ac-${i}`} data-label={`AC ${i + 1}`} className={`p-1 border-l ${cellBorder}`}>
           <NotaInput
             value={n ?? ""}
             onChange={v => updateAC(i, v)}
@@ -846,11 +846,11 @@ const statusIcon =
           />
         </td>
       ))}
-      <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promACBg} text-sm sm:text-base`}>
+      <td data-label="Prom AC" className={`p-2 text-center font-bold border-l ${cellBorder} ${promACBg} text-sm sm:text-base`}>
         {promACPeso !== null ? formatNumber(promACPeso) : "-"}
       </td>
       {aiNotas.map((n, i) => (
-        <td key={`ai-${i}`} className={`p-1 border-l ${cellBorder}`}>
+        <td key={`ai-${i}`} data-label={`AI ${i + 1}`} className={`p-1 border-l ${cellBorder}`}>
           <NotaInput
             value={n ?? ""}
             onChange={v => updateAI(i, v)}
@@ -868,11 +868,11 @@ const statusIcon =
           />
         </td>
       ))}
-      <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promAIBg} text-sm sm:text-base`}>
+      <td data-label="Prom AI" className={`p-2 text-center font-bold border-l ${cellBorder} ${promAIBg} text-sm sm:text-base`}>
         {promAIPeso !== null ? formatNumber(promAIPeso) : "-"}
       </td>
       {config.tieneExamen && (
-        <td className={`p-1 border-l ${cellBorder}`}>
+        <td data-label="Examen" className={`p-1 border-l ${cellBorder}`}>
           <NotaInput
             value={examen ?? ""}
             onChange={handleExamen}
@@ -891,12 +891,12 @@ const statusIcon =
         </td>
       )}
       {config.tieneExamen && (
-        <td className={`p-2 text-center font-bold border-l ${cellBorder} ${promExBg} text-sm sm:text-base`}>
+        <td data-label="Prom Ex" className={`p-2 text-center font-bold border-l ${cellBorder} ${promExBg} text-sm sm:text-base`}>
           {promExPeso !== null ? formatNumber(promExPeso) : "-"}
         </td>
       )}
       {mostrarRecuperacion && (
-      <td className={`p-1 border-l ${cellBorder}`}>
+      <td data-label="Rec." className={`p-1 border-l ${cellBorder}`}>
         <NotaInput
           value={recup ?? ""}
           onChange={handleRecup}

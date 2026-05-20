@@ -585,6 +585,48 @@
     background-size: 200% 100%;
   }
 
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-slide-up {
+    animation: slide-up 0.4s ease-out both;
+  }
+
+  @keyframes slide-in-right {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .animate-slide-in-right {
+    animation: slide-in-right 0.3s ease-out both;
+  }
+
+  @keyframes scale-fade {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .animate-scale-fade {
+    animation: scale-fade 0.3s ease-out both;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 0 0 oklch(0.55 0.15 178.5 / 0.4); }
+    50% { box-shadow: 0 0 0 8px oklch(0.55 0.15 178.5 / 0); }
+  }
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  .page-transition-enter {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  .page-transition-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
 }
 
 /* Thin black text-stroke for dark-mode table headers and selected green subject buttons */
@@ -653,14 +695,26 @@
   .table-scroll-container table { @apply min-w-[600px]; }
   .sticky-col { @apply z-20; }
   .hide-on-tablet { display: none !important; }
+  .mobile-bottom-padding { padding-bottom: 5rem; }
+  .mobile-tab-content { padding-bottom: 5rem; }
 }
 
 @media (max-width: 640px) {
+  .table-scroll-container:has(.mobile-table-card) {
+    overflow: visible;
+  }
+  .table-scroll-container:has(.mobile-table-card) table {
+    min-width: unset;
+  }
   .mobile-table-card {
     display: block;
+    width: 100%;
   }
   .mobile-table-card thead {
     display: none;
+  }
+  .mobile-table-card tbody {
+    display: block;
   }
   .mobile-table-card tbody tr {
     display: block;
@@ -677,6 +731,9 @@
     padding: 0.375rem 0;
     border: none;
     text-align: right;
+    position: static;
+    box-shadow: none;
+    background: transparent;
   }
   .mobile-table-card tbody tr td::before {
     content: attr(data-label);
@@ -684,9 +741,14 @@
     font-size: 0.75rem;
     text-align: left;
     color: var(--muted-foreground);
+    flex-shrink: 0;
+    margin-right: 0.5rem;
   }
   .mobile-table-card tbody tr td:empty {
     display: none;
+  }
+  .mobile-table-card tbody tr td input {
+    max-width: 80px;
   }
 }
 

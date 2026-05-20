@@ -19,7 +19,7 @@ import {
   LogOut, Users, User, ClipboardList, FileText, Plus, RefreshCw,
   School, Save, Printer, ChevronDown, ChevronUp, Settings, Upload,
   Download, Trash2, ListPlus, UserPlus, Key, Calendar, LayoutDashboard, CalendarDays, Lightbulb, Hash,
-  Search, ArrowUpDown, Globe, BarChart3, AlertTriangle, Menu, GraduationCap
+  Search, ArrowUpDown, Globe, BarChart3, AlertTriangle, GraduationCap
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import Dashboard from "@/components/Dashboard";
@@ -43,7 +43,7 @@ import ResumenAsignaturas from "@/components/ResumenAsignaturas";
 import EnlacesInstitucionales from "@/components/EnlacesInstitucionales";
 import { SystemThresholdsCard } from "@/components/SystemThresholdsCard";
 import AvanceDocentes from "@/components/AvanceDocentes";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { MobileTabBar } from "@/components/MobileTabBar";
 import { useDashboardData } from "@/hooks/useDashboardData";
 
 export default function Home() {
@@ -145,7 +145,7 @@ export default function Home() {
         </DialogContent>
       </Dialog>
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-3 py-2 sm:py-3 pb-24 md:pb-3">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-3 py-2 sm:py-3 pb-24 md:pb-3 mobile-tab-content">
         <Tabs value={d.activeTab} onValueChange={(val) => {
           if (d.activeTab === "calificaciones" && val !== "calificaciones" && d.dirtyStudentsRef.current.size > 0) {
             if (!window.confirm("Tienes " + d.dirtyStudentsRef.current.size + " estudiante(s) con cambios sin guardar. ¿Cambiar de pestaña los perderá. ¿Continuar?")) return;
@@ -415,7 +415,7 @@ export default function Home() {
                 <Card className="shadow-xl border overflow-hidden bg-card border-border">
                   <CardContent className="p-0">
                     <div className="table-scroll-container">
-                      <table className="grade-table w-full text-sm sm:text-base font-medium border-collapse">
+                      <table className="grade-table mobile-table-card w-full text-sm sm:text-base font-medium border-collapse">
                         <thead>
                           <tr className={darkMode ? 'bg-gradient-to-r from-slate-200 to-slate-300 text-white' : 'bg-gradient-to-r from-slate-700 to-slate-600 text-white'}>
                             <th className={`w-10 p-2 text-center font-semibold sticky-col shadow-right left-0 z-20 border-r border-b ${darkMode ? 'bg-slate-200 border-slate-400' : 'bg-slate-700 border-slate-500'}`}>N°</th>
@@ -1075,29 +1075,13 @@ export default function Home() {
       <footer className="py-2 text-center text-xs hidden md:block bg-card text-muted-foreground">© 2026 Centro Escolar Católico San José de la Montaña</footer>
 
       {/* Mobile bottom nav */}
-      <Sheet open={d.menuAbierto} onOpenChange={d.setMenuAbierto}>
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 safe-area-bottom bg-card border-t border-border" aria-label="Navegación principal">
-          <SheetTrigger asChild>
-            <button className="w-full flex items-center justify-center gap-2 py-3 px-4 text-foreground hover:bg-muted transition-colors touch-target" aria-label="Abrir menú de navegación">
-              <Menu className="h-5 w-5 shrink-0" />
-              <span className="text-sm font-medium">{d.navItems.find(i => i.value === d.activeTab)?.label || 'Menú'}</span>
-              <ChevronUp className="h-4 w-4 shrink-0" />
-            </button>
-          </SheetTrigger>
-        </nav>
-        <SheetContent side="bottom" className="bg-card border-border p-4 rounded-t-2xl safe-area-bottom">
-          <SheetHeader className="mb-3">
-            <SheetTitle className="text-sm font-medium text-center">Navegación</SheetTitle>
-          </SheetHeader>
-          <div className="grid grid-cols-4 gap-2">
-            {d.navItems.map((item) => (
-              <button key={item.value} onClick={() => { d.setActiveTab(item.value); d.setMenuAbierto(false); }} className={`flex flex-col items-center justify-center py-4 px-1 rounded-xl transition-colors min-h-[56px] touch-target ${d.activeTab === item.value ? "text-primary bg-primary/10 ring-1 ring-primary" : "text-muted-foreground hover:bg-accent"}`}>
-                <span className="text-xs leading-tight font-medium text-center">{item.label}</span>
-              </button>
-            ))}
-          </div>
-        </SheetContent>
-      </Sheet>
+      <MobileTabBar
+        items={d.navItems}
+        activeTab={d.activeTab}
+        onTabChange={d.setActiveTab}
+        darkMode={darkMode}
+        isAdmin={isAdmin(usuario.rol)}
+      />
     </div>
   );
 }

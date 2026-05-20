@@ -98,6 +98,7 @@ export function useDashboardData() {
     { value: "boletas", icon: undefined, label: "Boletas" },
     { value: "enlaces", icon: undefined, label: "Enlaces" },
     { value: "reportes", icon: undefined, label: "Reportes" },
+    ...(usuario?.rol && isAdmin(usuario.rol) ? [{ value: "avance", icon: undefined, label: "Avance" }] : []),
     ...(usuario?.rol && isAdmin(usuario.rol) ? [{ value: "admin", icon: undefined, label: "Admin" }] : []),
   ];
 
