@@ -752,7 +752,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
   const tardyCount = Object.values(asistencias).filter(e => e === "tarde").length;
 
   return (
-    <Card className={`shadow-sm ${darkMode ? 'bg-card border-slate-700' : 'border-emerald-100'}`}>
+    <Card className={`shadow-sm ${darkMode ? 'bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl' : 'border-emerald-100'}`}>
       <CardHeader className={`pb-3 border-b ${darkMode ? 'bg-muted border-white/20' : 'bg-slate-50/50'}`}>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex flex-col gap-1">
@@ -854,9 +854,9 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
             </div>
 
             {loading ? (
-              <div className={`rounded-md border overflow-hidden table-scroll-container relative ${darkMode ? 'border-slate-700' : ''}`}>
+              <div className={`rounded-md border overflow-hidden table-scroll-container relative ${darkMode ? 'border-white/10' : ''}`}>
                 <Table className="text-xs sm:text-sm font-medium">
-                  <TableHeader className={darkMode ? 'bg-slate-800' : 'bg-slate-50'}>
+                  <TableHeader className={darkMode ? 'bg-slate-950/30' : 'bg-slate-50'}>
                     <TableRow>
                       <TableHead className="w-10 text-center">N°</TableHead>
                       <TableHead className="min-w-[120px] sm:min-w-[150px]">Estudiante</TableHead>
@@ -875,12 +875,12 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                 </Table>
               </div>
             ) : activeStudents.length === 0 ? (
-              <div className={`py-12 text-center ${darkMode ? 'text-slate-300 bg-slate-800/50' : 'text-slate-500 bg-slate-50'} rounded-lg border border-dashed ${darkMode ? 'border-slate-700' : 'border-slate-100'}`}>
+              <div className={`py-12 text-center ${darkMode ? 'text-slate-300 bg-slate-950/40 backdrop-blur-md' : 'text-slate-500 bg-slate-50'} rounded-lg border border-dashed ${darkMode ? 'border-white/10' : 'border-slate-100'}`}>
                 Seleccione un grado para tomar asistencia.
               </div>
             ) : (
-              <div className={`rounded-md border overflow-hidden table-scroll-container relative ${darkMode ? 'border-slate-700' : ''}`}>
-                  <div className={`flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 px-2 sm:px-4 py-2 sm:py-3 border-b ${darkMode ? 'bg-gradient-to-r from-slate-800/25 to-slate-750/25 border-slate-700' : 'bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200'}`}>
+              <div className={`rounded-md border overflow-hidden table-scroll-container relative ${darkMode ? 'border-white/10' : ''}`}>
+                  <div className={`flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 px-2 sm:px-4 py-2 sm:py-3 border-b ${darkMode ? 'bg-slate-950/20 backdrop-blur-md border-white/10' : 'bg-gradient-to-r from-slate-50 to-slate-100 border-slate-200'}`}>
                     <div className="flex items-center gap-2">
                       <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-white' : 'text-slate-500'}`}>
                         Estudiantes
@@ -1093,7 +1093,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
               </div>
             </div>
 
-            <div className={`rounded-xl border overflow-hidden table-scroll-container ${darkMode ? 'border-slate-700' : ''}`}>
+                  <div className={`rounded-xl border overflow-hidden table-scroll-container ${darkMode ? 'border-white/10' : ''}`}>
               <Table className="text-xs sm:text-sm font-medium">
                 <TableHeader>
                   <TableRow className={darkMode ? 'bg-slate-800' : 'bg-slate-50'}>
@@ -1309,7 +1309,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
       </CardContent>
 
       <Dialog open={bloqueoDialogOpen} onOpenChange={setBloqueoDialogOpen}>
-        <DialogContent className={`max-w-sm ${darkMode ? 'bg-card border-slate-700' : ''}`}>
+        <DialogContent className={`max-w-sm ${darkMode ? 'bg-slate-950/70 backdrop-blur-xl border-white/5 shadow-2xl' : ''}`}>
           <DialogHeader>
             <DialogTitle className={`flex items-center gap-2 ${darkMode ? 'text-white' : ''}`}>
               <Lock className={`h-5 w-5 ${puedeSobrescribir ? 'text-blue-500' : 'text-amber-500'}`} />

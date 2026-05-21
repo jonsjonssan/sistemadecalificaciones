@@ -163,7 +163,7 @@ export default function BatchActions({ gradoId, materiaId, trimestre, estudiante
           Acciones por Lote
         </Button>
       </DialogTrigger>
-      <DialogContent className={`max-w-lg ${darkMode ? 'bg-card border-slate-700' : ''}`}>
+      <DialogContent className={`max-w-lg ${darkMode ? 'bg-slate-950/70 backdrop-blur-xl border-white/5 shadow-2xl' : ''}`}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Users className="h-5 w-5 text-emerald-600" />
@@ -185,7 +185,7 @@ export default function BatchActions({ gradoId, materiaId, trimestre, estudiante
                 {selectedStudents.length}/{estudiantes.length}
               </Badge>
             </div>
-            <div className={`max-h-40 overflow-y-auto border rounded-lg p-2 space-y-1 ${darkMode ? 'border-slate-700 bg-slate-800/50' : 'border-slate-200'}`}>
+            <div className={`max-h-40 overflow-y-auto border rounded-lg p-2 space-y-1 ${darkMode ? 'border-white/10 bg-slate-950/40 backdrop-blur-md' : 'border-slate-200'}`}>
               {estudiantes.map(est => (
                 <label
                   key={est.id}
@@ -243,7 +243,7 @@ export default function BatchActions({ gradoId, materiaId, trimestre, estudiante
               action === "clear-grades" 
                 ? 'border-l-red-500' 
                 : 'border-l-amber-500'
-            } ${darkMode ? 'bg-slate-800/50' : 'bg-amber-50/50'}`}>
+            } ${darkMode ? 'bg-slate-950/40 backdrop-blur-md' : 'bg-amber-50/50'}`}>
               <CardContent className="p-3 flex items-start gap-2">
                 <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
                 <p className="text-xs text-amber-700 dark:text-amber-400">

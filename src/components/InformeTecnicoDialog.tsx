@@ -325,7 +325,7 @@ export default function InformeTecnicoDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={`max-w-md ${darkMode ? 'bg-card border-slate-700' : ''}`}>
+      <DialogContent className={`max-w-md ${darkMode ? 'bg-slate-950/70 backdrop-blur-xl border-white/5 shadow-2xl' : ''}`}>
         <DialogHeader>
           <DialogTitle className={`flex items-center gap-2 ${darkMode ? 'text-white' : ''}`}>
             <FileText className="h-5 w-5 text-emerald-600" />

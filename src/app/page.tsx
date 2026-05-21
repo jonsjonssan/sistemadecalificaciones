@@ -285,7 +285,7 @@ export default function Home() {
                     <div className="border-t border-border" />
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                       {d.configActual && (
-                        <div className={`flex items-center gap-2 sm:gap-3 text-xs font-medium px-2 sm:px-3 py-2 rounded-lg w-full sm:w-auto overflow-x-auto hide-scrollbar ${darkMode ? 'text-slate-300 bg-slate-800/60' : 'text-slate-600 bg-slate-50'}`}>
+                        <div className={`flex items-center gap-2 sm:gap-3 text-xs font-medium px-2 sm:px-3 py-2 rounded-lg w-full sm:w-auto overflow-x-auto hide-scrollbar ${darkMode ? 'text-slate-300 bg-slate-950/40 backdrop-blur-md' : 'text-slate-600 bg-slate-50'}`}>
                           <span className="flex items-center gap-1 whitespace-nowrap">
                             <span className={`w-2 h-2 rounded-full ${darkMode ? 'bg-blue-500' : 'bg-blue-600'}`} />
                             {d.configActual.numActividadesCotidianas} AC ({d.configActual.porcentajeAC}%)
@@ -507,7 +507,7 @@ export default function Home() {
                         </tbody>
                       </table>
                     </div>
-                    <div className={`flex flex-wrap items-center gap-2 sm:gap-4 p-2 sm:p-3 mt-2 border-t ${darkMode ? 'border-slate-700 bg-slate-800/50' : 'border-slate-200 bg-slate-50'}`}>
+                    <div className={`flex flex-wrap items-center gap-2 sm:gap-4 p-2 sm:p-3 mt-2 border-t ${darkMode ? 'border-white/10 bg-slate-950/40 backdrop-blur-md' : 'border-slate-200 bg-slate-50'}`}>
                       <div className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg ${darkMode ? 'bg-blue-900/30 border border-blue-700' : 'bg-blue-50 border border-blue-200'}`}>
                         <div className={`text-[10px] sm:text-xs font-medium whitespace-nowrap ${darkMode ? 'text-blue-400' : 'text-blue-700'}`}>Prom. Asig.</div>
                         <div className={`text-base sm:text-lg font-bold ${darkMode ? 'text-blue-400' : 'text-blue-800'}`}>{d.promedioAsignatura !== null ? d.promedioAsignatura.toFixed(2) : "—"}</div>
@@ -619,7 +619,7 @@ export default function Home() {
                   </div>
                 </CardHeader>
                 <CardContent className="pt-0 px-5 pb-5 space-y-4">
-                  <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-800/40 border-slate-700/50' : 'bg-white border-slate-200/70 shadow-sm'}`}>
+                  <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl' : 'bg-white border-slate-200/70 shadow-sm'}`}>
                     <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                       <div className="flex-1">
                         <Label className={`text-xs font-semibold uppercase tracking-wider mb-1.5 block ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>Grado</Label>
@@ -645,7 +645,7 @@ export default function Home() {
                   {d.gradoSeleccionado && d.estudiantes.length > 0 && (
                     <>
                       {(isAdmin(usuario.rol) || usuario.rol === "docente-orientador") && (
-                        <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-800/40 border-slate-700/50' : 'bg-white border-slate-200/70 shadow-sm'}`}>
+                        <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl' : 'bg-white border-slate-200/70 shadow-sm'}`}>
                           <div className="flex items-center justify-between mb-3">
                             <Label className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>Asignaturas en boleta</Label>
                             <Select value={d.materiasEnBoleta.length === 0 ? "todas" : "personalizado"} onValueChange={(v) => { if (v === "todas") { d.setMateriasEnBoleta([]); } }}>
@@ -680,7 +680,7 @@ export default function Home() {
                         </div>
                       )}
 
-                      <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-800/40 border-slate-700/50' : 'bg-white border-slate-200/70 shadow-sm'}`}>
+                      <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl' : 'bg-white border-slate-200/70 shadow-sm'}`}>
                         <Label className={`text-xs font-semibold uppercase tracking-wider mb-3 block ${darkMode ? 'text-white' : 'text-slate-500'}`}>Opciones de impresión</Label>
                         <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
                           <div className="flex items-center gap-4">
@@ -990,7 +990,7 @@ export default function Home() {
               <Button size="sm" variant="outline" onClick={() => (document.querySelector<HTMLInputElement>('input[type="file"]')?.click())} className={`flex-1 text-xs ${darkMode ? 'border-white/30 text-white hover:bg-white/10' : ''}`}><Upload className="h-3.5 w-3.5 mr-1" />Cargar</Button>
               <input type="file" accept=".csv,.txt" className="hidden" onChange={d.handleFileUpload} />
             </div>
-            {d.importData && <div className={`p-2 rounded text-xs max-h-24 overflow-auto ${darkMode ? 'bg-slate-800 text-slate-300' : 'bg-slate-50'}`}>{d.importData.slice(0, 200)}…</div>}
+            {d.importData && <div className={`p-2 rounded text-xs max-h-24 overflow-auto ${darkMode ? 'bg-slate-950/40 backdrop-blur-md text-slate-300' : 'bg-slate-50'}`}>{d.importData.slice(0, 200)}…</div>}
                             <p className={`text-[10px] ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Primera fila: Estudiante, AC1, AC2… AI1… Examen. Filas siguientes: datos.</p>
           </div>
           <DialogFooter><Button variant="outline" size="sm" onClick={() => { d.setImportDialogOpen(false); d.setImportData(""); }} disabled={d.importLoading}>Cancelar</Button><Button size="sm" onClick={async () => { d.setImportLoading(true); try { await d.handleImport(); } finally { d.setImportLoading(false); }}} disabled={!d.importData || d.importLoading} className="bg-primary">{d.importLoading ? "Importando…" : "Importar"}</Button></DialogFooter>
@@ -1043,7 +1043,7 @@ export default function Home() {
             <DialogDescription>Información de tu cuenta y asignaciones.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className={`p-4 rounded-lg space-y-3 ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
+            <div className={`p-4 rounded-lg space-y-3 ${darkMode ? 'bg-slate-950/40 backdrop-blur-md' : 'bg-slate-50'}`}>
               <div><p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Nombre</p><p className={`font-medium text-lg ${darkMode ? 'text-white' : ''}`}>{usuario.nombre}</p></div>
               <div><p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Email</p><p className={`font-medium ${darkMode ? 'text-white' : ''}`}>{usuario.email}</p></div>
               <div><p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Rol</p><p className={`font-medium capitalize ${darkMode ? 'text-white' : ''}`}>{usuario.rol}</p></div>

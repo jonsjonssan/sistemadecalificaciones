@@ -262,7 +262,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
 
   if (!grados || grados.length === 0) {
     return (
-      <Card className={`shadow-sm border ${darkMode ? "bg-card border-slate-700 text-white" : "bg-white border-slate-200"}`}>
+      <Card className={`shadow-sm border ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl text-white" : "bg-white border-slate-200"}`}>
         <CardContent className="p-6 text-center text-slate-500">No hay grados disponibles.</CardContent>
       </Card>
     );
@@ -271,7 +271,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
   return (
     <div className="space-y-3">
       {/* Leyenda normativa */}
-      <Card className={`shadow-sm border ${darkMode ? "bg-card border-slate-700 text-white" : "bg-white border-slate-200"}`}>
+      <Card className={`shadow-sm border ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl text-white" : "bg-white border-slate-200"}`}>
         <CardContent className="p-3">
           <div className="flex flex-wrap items-center gap-3 text-xs">
             <span className="font-semibold uppercase tracking-wider text-slate-500 dark:text-white text-[10px]">Marco Normativo</span>
@@ -303,7 +303,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
       </Card>
 
       {/* Selectores */}
-      <Card className={`shadow-sm border ${darkMode ? "bg-card border-slate-700" : "bg-white border-slate-200"}`}>
+      <Card className={`shadow-sm border ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl" : "bg-white border-slate-200"}`}>
         <CardContent className="p-2 sm:p-3">
           <div className="flex flex-wrap items-end gap-2 sm:gap-3">
             <div className="flex-1 min-w-[140px]">
@@ -378,11 +378,11 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
 
       {/* Contenido */}
       {!gradoId ? (
-        <Card className={`shadow-sm border ${darkMode ? "bg-card border-slate-700 text-white" : "bg-white border-slate-200"}`}>
+        <Card className={`shadow-sm border ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl text-white" : "bg-white border-slate-200"}`}>
           <CardContent className="p-6 text-center text-slate-500">Selecciona un grado y trimestre para ver el reporte.</CardContent>
         </Card>
       ) : loading ? (
-        <Card className={`shadow-sm border ${darkMode ? "bg-card border-slate-700" : "bg-white border-slate-200"}`}>
+        <Card className={`shadow-sm border ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl" : "bg-white border-slate-200"}`}>
           <CardContent className="p-3">
             <div className="space-y-2">
               <Skeleton className={`h-4 w-48 ${darkMode ? "bg-slate-700" : "bg-slate-200"}`} />
@@ -393,14 +393,14 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
           </CardContent>
         </Card>
       ) : error ? (
-        <Card className={`shadow-sm border ${darkMode ? "bg-card border-slate-700" : "bg-white border-slate-200"}`}>
+        <Card className={`shadow-sm border ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl" : "bg-white border-slate-200"}`}>
           <CardContent className="p-4 text-center text-red-500">{error}</CardContent>
         </Card>
       ) : (
         <>
           {/* Resumen */}
           <div className={`flex flex-wrap gap-3 px-4 py-2.5 rounded-lg border text-sm ${
-            darkMode ? "bg-slate-800/80 border-slate-700 text-slate-400" : "bg-white border-slate-200 text-slate-600"
+            darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5 text-slate-400 shadow-2xl" : "bg-white border-slate-200 text-slate-600"
           }`}>
             <span className="font-medium text-slate-500 dark:text-slate-200 text-xs uppercase tracking-wider">Resumen</span>
             <div className="flex items-center gap-1.5">
@@ -429,7 +429,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
           </div>
 
           {/* Tabla */}
-          <Card className={`shadow-xl border overflow-hidden ${darkMode ? "bg-card border-slate-700 text-white" : "bg-white border-slate-200"}`}>
+          <Card className={`shadow-xl border overflow-hidden ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl text-white" : "bg-white border-slate-200"}`}>
             <CardContent className="p-0">
               <div className="overflow-x-auto">
                 <table className="w-full text-xs sm:text-sm font-medium border-collapse">
@@ -480,7 +480,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
               </div>
 
               {/* Footer resumen materias */}
-              <div className={`flex flex-wrap gap-3 p-3 mt-2 border-t text-xs ${darkMode ? "border-slate-700 bg-slate-800/50" : "border-slate-200 bg-slate-50"}`}>
+              <div className={`flex flex-wrap gap-3 p-3 mt-2 border-t text-xs ${darkMode ? "border-white/10 bg-slate-950/40 backdrop-blur-md" : "border-slate-200 bg-slate-50"}`}>
                 {materiasFiltradas.map(mat => {
                   const notas = estudiantes.map(est => matriz.get(est.id)?.get(mat.id) ?? null).filter(n => n !== null) as number[];
                   const promedio = notas.length > 0 ? notas.reduce((a, b) => a + b, 0) / notas.length : null;

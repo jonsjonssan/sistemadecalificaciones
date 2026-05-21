@@ -141,8 +141,8 @@ export function SystemThresholdsCard({
   };
 
   return (
-    <Card className={`shadow-sm ${darkMode ? "bg-card border-slate-700" : ""}`}>
-      <CardHeader className={`py-3 px-4 ${darkMode ? "border-slate-700" : ""}`}>
+    <Card className={`shadow-sm ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl" : ""}`}>
+      <CardHeader className={`py-3 px-4 ${darkMode ? "border-white/10" : ""}`}>
         <CardTitle className="text-sm sm:text-base">Umbrales del Sistema</CardTitle>
         <CardDescription className={`text-xs ${darkMode ? "text-slate-400" : ""}`}>
           Establezca los intervalos de calificaciones y el límite de historial

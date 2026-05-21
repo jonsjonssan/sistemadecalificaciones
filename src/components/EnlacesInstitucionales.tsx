@@ -6,7 +6,7 @@ import { enlaces } from "@/lib/enlaces";
 
 export default function EnlacesInstitucionales({ darkMode }: { darkMode: boolean }) {
   return (
-    <Card className={`shadow-sm ${darkMode ? "bg-card border-slate-700" : ""}`}>
+    <Card className={`shadow-sm ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl" : ""}`}>
       <CardHeader className="pb-3 sm:pb-4">
         <CardTitle className="text-base sm:text-lg flex items-center gap-2">
           <Globe className="h-5 w-5 text-emerald-600" />
@@ -26,7 +26,7 @@ export default function EnlacesInstitucionales({ darkMode }: { darkMode: boolean
               rel="noopener noreferrer"
               className={`group flex items-start gap-3 rounded-lg border p-3.5 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${
                 darkMode
-                  ? "border-slate-700 hover:border-white/50 hover:bg-slate-800/50"
+                  ? "border-white/10 hover:border-white/30 hover:bg-slate-950/40 backdrop-blur-md"
                   : "border-slate-200 hover:border-emerald-200 hover:bg-emerald-50/50"
               }`}
             >

@@ -227,7 +227,7 @@ const CuadroTrimestres = memo(function CuadroTrimestres({ gradoId, gradoNumero, 
   }
 
   return (
-    <Card className={`shadow-xl border overflow-hidden mt-4 ${darkMode ? "bg-card border-slate-700 text-white" : "bg-white border-slate-200"}`}>
+    <Card className={`shadow-xl border overflow-hidden mt-4 ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl text-white" : "bg-white border-slate-200"}`}>
       <CardContent className="p-3">
         <div className="flex flex-wrap items-end gap-3 mb-3">
           <div className="flex-1 min-w-[180px]">

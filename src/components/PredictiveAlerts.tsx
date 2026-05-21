@@ -54,7 +54,7 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode, umbralA
 
   if (loading) {
     return (
-      <Card className={`shadow-sm ${darkMode ? 'bg-card border-slate-700' : ''}`}>
+      <Card className={`shadow-sm ${darkMode ? 'bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl' : ''}`}>
         <CardHeader>
           <Skeleton className={`h-5 w-48 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
         </CardHeader>
@@ -71,7 +71,7 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode, umbralA
 
   if (!data) {
     return (
-      <Card className={`shadow-sm ${darkMode ? 'bg-card border-slate-700' : ''}`}>
+      <Card className={`shadow-sm ${darkMode ? 'bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl' : ''}`}>
         <CardContent className="p-6 text-center">
           <BarChart3 className={`h-12 w-12 mx-auto mb-3 ${darkMode ? 'text-slate-600 ring-1 ring-white rounded-full' : 'text-slate-300 ring-1 ring-black rounded-full'}`} />
           <p className={`text-sm ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -89,7 +89,7 @@ export default function PredictiveAlerts({ gradoId, trimestre, darkMode, umbralA
   return (
     <div className="space-y-4">
       {/* Resumen General */}
-      <Card className={`shadow-sm ${darkMode ? 'bg-card border-slate-700' : ''}`}>
+      <Card className={`shadow-sm ${darkMode ? 'bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl' : ''}`}>
         <CardHeader className="pb-3">
           <CardTitle className={`text-base flex items-center gap-2 ${darkMode ? 'text-slate-100 font-bold' : 'text-black font-bold'}`}>
             <BarChart3 className={`h-5 w-5 text-emerald-600 ${darkMode ? 'ring-1 ring-white rounded-full' : 'ring-1 ring-black rounded-full'}`} />
@@ -401,9 +401,9 @@ function StatCard({ label, value, icon: Icon, color, darkMode }: any) {
 
 function SectionCard({ title, subtitle, icon: Icon, expanded, onToggle, count, darkMode, children }: any) {
   return (
-    <Card className={`shadow-sm ${darkMode ? 'bg-card border-slate-700' : ''}`}>
+    <Card className={`shadow-sm ${darkMode ? 'bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl' : ''}`}>
       <CardHeader
-        className={`pb-3 cursor-pointer hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors ${darkMode ? 'border-slate-700' : ''}`}
+        className={`pb-3 cursor-pointer hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors ${darkMode ? 'border-white/10' : ''}`}
         onClick={onToggle}
       >
         <div className="flex items-center justify-between">

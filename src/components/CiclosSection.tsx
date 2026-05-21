@@ -151,7 +151,7 @@ export const CiclosSection = memo(function CiclosSection({
 
             {isOpen && (
               <CardContent className="px-4 pb-4 pt-0 space-y-4">
-                <div className={`grid grid-cols-2 sm:grid-cols-3 gap-3 p-3 rounded-lg ${darkMode ? 'bg-slate-800/50' : 'bg-slate-50'}`}>
+                <div className={`grid grid-cols-2 sm:grid-cols-3 gap-3 p-3 rounded-lg ${darkMode ? 'bg-slate-950/40 backdrop-blur-md' : 'bg-slate-50'}`}>
                   <div className="text-center">
                     <p className="text-xs text-muted-foreground">Estudiantes</p>
                     <p className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-slate-800'}`}>{totalEstudiantesCiclo}</p>

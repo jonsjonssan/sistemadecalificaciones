@@ -42,7 +42,7 @@ export function EmptyState({
             transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
             className={cn(
               "h-16 w-16 rounded-full flex items-center justify-center mb-4",
-              darkMode ? "bg-slate-800" : "bg-slate-50"
+              darkMode ? "bg-slate-950/40 backdrop-blur-md" : "bg-slate-50"
             )}
           >
             <Icon className={cn("h-8 w-8", darkMode ? "text-slate-600" : "text-slate-300")} />
