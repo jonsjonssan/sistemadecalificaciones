@@ -28,6 +28,7 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -160,6 +161,12 @@
   --color-violet-700: var(--violet-700);
   --color-violet-800: var(--violet-800);
   --color-violet-900: var(--violet-900);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info-foreground: var(--info-foreground);
+  --color-overlay: var(--overlay);
 }
 
 :root {
@@ -184,9 +191,17 @@
   --accent:           oklch(0.945 0.006 140);
   --accent-foreground: oklch(0.15 0.008 140);
   --destructive:      oklch(0.50 0.18 28);
+  --destructive-foreground: oklch(0.985 0 0);
   --border:           oklch(0.87 0.008 140);
   --input:            oklch(0.87 0.008 140);
   --ring:             oklch(0.42 0.10 140);
+  --success:          oklch(0.94 0.035 140);
+  --success-foreground: oklch(0.28 0.06 140);
+  --warning:          oklch(0.93 0.05 85);
+  --warning-foreground: oklch(0.44 0.08 85);
+  --info:             oklch(0.92 0.04 240);
+  --info-foreground:  oklch(0.42 0.12 240);
+  --overlay:          oklch(0 0 0 / 0.5);
 
   /* ── CHARTS (LIGHT) ── */
   --chart-1: oklch(0.646 0.222 41.116);
@@ -194,107 +209,7 @@
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-
-  /* ── SIDEBAR (LIGHT) ── */
-  --sidebar: oklch(0.985 0.002 140);
-  --sidebar-foreground: oklch(0.15 0.008 140);
-  --sidebar-primary: oklch(0.42 0.10 140);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.945 0.006 140);
-  --sidebar-accent-foreground: oklch(0.25 0.01 140);
-  --sidebar-border: oklch(0.87 0.008 140);
-  --sidebar-ring: oklch(0.42 0.10 140);
-
-  /* ── SLATE (neutral gray scale — light, tinted green) ── */
-  --slate-50:  oklch(0.985 0.003 140);
-  --slate-100: oklch(0.975 0.005 140);
-  --slate-200: oklch(0.955 0.008 140);
-  --slate-300: oklch(0.930 0.010 140);
-  --slate-400: oklch(0.860 0.015 140);
-  --slate-500: oklch(0.780 0.018 140);
-  --slate-600: oklch(0.650 0.020 140);
-  --slate-700: oklch(0.550 0.022 140);
-  --slate-800: oklch(0.400 0.020 140);
-  --slate-900: oklch(0.160 0.018 140);
-
-  /* ── GREEN (acento principal — light, verde bosque) ── */
-  --green-50:  oklch(0.97 0.02 140);
-  --green-100: oklch(0.94 0.035 140);
-  --green-200: oklch(0.88 0.06 140);
-  --green-300: oklch(0.78 0.08 140);
-  --green-400: oklch(0.65 0.10 140);
-  --green-500: oklch(0.52 0.11 140);
-  --green-600: oklch(0.42 0.10 140);
-  --green-700: oklch(0.35 0.08 140);
-  --green-800: oklch(0.28 0.06 140);
-  --green-900: oklch(0.20 0.04 140);
-
-  /* ── EMERALD (verde secundario — light) ── */
-  --emerald-50:  oklch(0.97 0.02 155);
-  --emerald-100: oklch(0.94 0.045 155);
-  --emerald-200: oklch(0.89 0.07 155);
-  --emerald-300: oklch(0.82 0.1 155);
-  --emerald-400: oklch(0.73 0.14 155);
-  --emerald-500: oklch(0.64 0.17 155);
-  --emerald-600: oklch(0.56 0.16 155);
-  --emerald-700: oklch(0.48 0.14 155);
-  --emerald-800: oklch(0.39 0.11 155);
-  --emerald-900: oklch(0.31 0.09 155);
-
-  --lime-50: oklch(0.972 0.02 155);
-  --lime-100: oklch(0.945 0.04 155);
-  --lime-200: oklch(0.90 0.06 155);
-  --lime-300: oklch(0.82 0.09 155);
-  --lime-400: oklch(0.68 0.13 155);
-  --lime-500: oklch(0.56 0.15 155);
-  --lime-600: oklch(0.44 0.13 155);
-  --lime-700: oklch(0.36 0.11 155);
-  --lime-800: oklch(0.28 0.09 155);
-  --lime-900: oklch(0.20 0.06 155);
-
-  --amber-50: oklch(0.96 0.03 85);
-  --amber-100: oklch(0.93 0.05 85);
-  --amber-200: oklch(0.88 0.07 85);
-  --amber-300: oklch(0.82 0.09 85);
-  --amber-400: oklch(0.72 0.11 85);
-  --amber-500: oklch(0.80 0.12 85);
-  --amber-600: oklch(0.60 0.10 85);
-  --amber-700: oklch(0.44 0.08 85);
-  --amber-800: oklch(0.30 0.06 85);
-  --amber-900: oklch(0.20 0.04 85);
-
-  --blue-50: oklch(0.95 0.02 240);
-  --blue-100: oklch(0.92 0.04 240);
-  --blue-200: oklch(0.86 0.06 240);
-  --blue-300: oklch(0.78 0.09 240);
-  --blue-400: oklch(0.67 0.12 240);
-  --blue-500: oklch(0.58 0.15 240);
-  --blue-600: oklch(0.50 0.14 240);
-  --blue-700: oklch(0.42 0.12 240);
-  --blue-800: oklch(0.34 0.10 240);
-  --blue-900: oklch(0.26 0.08 240);
-
-  --red-50: oklch(0.95 0.02 28);
-  --red-100: oklch(0.92 0.04 28);
-  --red-200: oklch(0.87 0.07 28);
-  --red-300: oklch(0.80 0.11 28);
-  --red-400: oklch(0.70 0.15 28);
-  --red-500: oklch(0.60 0.19 28);
-  --red-600: oklch(0.52 0.18 28);
-  --red-700: oklch(0.44 0.15 28);
-  --red-800: oklch(0.36 0.12 28);
-  --red-900: oklch(0.28 0.09 28);
-
-  --violet-50: oklch(0.94 0.02 285);
-  --violet-100: oklch(0.91 0.04 285);
-  --violet-200: oklch(0.85 0.06 285);
-  --violet-300: oklch(0.76 0.09 285);
-  --violet-400: oklch(0.64 0.13 285);
-  --violet-500: oklch(0.53 0.16 285);
-  --violet-600: oklch(0.46 0.14 285);
-  --violet-700: oklch(0.38 0.12 285);
-  --violet-800: oklch(0.30 0.10 285);
-  --violet-900: oklch(0.23 0.08 285);
+  --chart-6: oklch(0.65 0.2 300);
 }
 
 .dark,
@@ -327,7 +242,14 @@
   --border:             oklch(0.32 0.03 140);     /* borde visible */
   --input:              oklch(0.24 0.02 140);     /* fondo de input */
   --ring:               oklch(0.58 0.10 140);
+  --destructive-foreground: oklch(0.12 0.01 140);
+  --success:            oklch(0.25 0.06 140);
+  --success-foreground: oklch(0.85 0.05 140);
+  --warning:            oklch(0.12 0.06 85);
+  --warning-foreground: oklch(0.92 0.08 85);
   --info:               oklch(0.72 0.13 250);
+  --info-foreground:    oklch(0.94 0.04 260);
+  --overlay:            oklch(0 0 0 / 0.6);
 
   /* ── CHARTS (DARK) ── */
   --chart-1: oklch(0.488 0.243 264.376);
