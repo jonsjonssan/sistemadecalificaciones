@@ -531,7 +531,7 @@ export default function InformeTecnicoDialog({
           <Button variant="outline" size="sm" onClick={() => onOpenChange(false)} className={darkMode ? 'border-white/30 text-white' : ''}>
             Cancelar
           </Button>
-          <Button size="sm" onClick={generarInforme} disabled={generando} className="bg-emerald-600 hover:bg-emerald-700">
+          <Button size="sm" onClick={generarInforme} disabled={generando}>
             {generando ? (
               <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Generando...</>
             ) : (

@@ -821,7 +821,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
               </div>
 
               <Button
-                className={`h-10 w-full sm:w-auto px-6 font-bold text-xs sm:text-sm ${darkMode ? 'bg-emerald-600 hover:bg-emerald-500 text-black' : 'bg-emerald-600 hover:bg-emerald-700 text-white'}`}
+                className="h-10 w-full sm:w-auto px-6 font-bold text-xs sm:text-sm"
                 onClick={handleSave}
                 disabled={saving || activeStudents.length === 0 || asistenciaBloqueada}
               >

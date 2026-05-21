@@ -242,7 +242,7 @@ export default function ReporteAsistenciaMultiGrado({ grados, darkMode: darkMode
             <div className="flex gap-2 w-full sm:w-auto">
               {selectedGrados.size > 0 && (
                 <>
-                  <Button size="sm" className={`h-9 text-xs font-bold flex-1 sm:flex-initial bg-emerald-600 hover:bg-emerald-700 text-white`} onClick={exportPDF} disabled={!data}>
+                  <Button size="sm" className="h-9 text-xs font-bold flex-1 sm:flex-initial" onClick={exportPDF} disabled={!data}>
                     <Download className="h-4 w-4 mr-1" /> PDF
                   </Button>
                   <Button size="sm" variant="outline" className={`h-9 text-xs font-bold flex-1 sm:flex-initial ${darkMode ? "border-white/30 text-white hover:bg-white/10" : ""}`} onClick={exportCSV} disabled={!data}>

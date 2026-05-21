@@ -29,9 +29,8 @@ export default function LoginView({
   const [logoError, setLogoError] = useState(false);
 
   return (
-    <div className="min-h-screen flex flex-col safe-area-bottom relative overflow-hidden bg-gradient-to-b from-background via-background to-primary/5">
+    <div className="min-h-screen flex flex-col safe-area-bottom relative bg-background">
       <div className="absolute inset-0 page-atmosphere" />
-      <div className="absolute top-0 left-0 right-0 h-64 bg-gradient-to-b from-primary/8 to-transparent pointer-events-none" />
 
       <motion.div
         className="flex-1 flex flex-col items-center justify-center px-6 py-8"
@@ -47,7 +46,7 @@ export default function LoginView({
         >
           <div className="flex flex-col items-center mb-8">
             <div className="relative mb-5">
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-primary/70 shadow-lg shadow-primary/20 flex items-center justify-center">
+              <div className="w-20 h-20 rounded-2xl bg-primary shadow-lg shadow-primary/20 flex items-center justify-center">
                 {logoError ? <School className="h-10 w-10 text-primary-foreground" /> : <img src="/0.png" alt="Logo" className="h-12 w-12 object-contain" onError={() => setLogoError(true)} />}
               </div>
               <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-400 border-2 border-background flex items-center justify-center">

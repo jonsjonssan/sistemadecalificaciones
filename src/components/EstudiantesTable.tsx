@@ -90,7 +90,7 @@ export function EstudiantesTable({ estudiantes, darkMode, isAdmin, loading = fal
       <div className="overflow-x-auto">
         <Table className="text-xs sm:text-sm md:text-base font-medium min-w-[400px]">
           <TableHeader>
-            <TableRow className={darkMode ? 'bg-slate-800/25' : 'bg-slate-100'}>
+            <TableRow className="bg-muted">
               <TableHead className="w-10 text-center h-12">N°</TableHead>
               <TableHead className="min-w-[120px]">Nombre Completo</TableHead>
               <TableHead className="hidden sm:table-cell">Correo</TableHead>
@@ -102,18 +102,18 @@ export function EstudiantesTable({ estudiantes, darkMode, isAdmin, loading = fal
               <SkeletonRows darkMode={darkMode} isAdmin={isAdmin} />
             ) : !estudiantes || estudiantes.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className={`text-center py-8 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
                   No hay estudiantes
                 </TableCell>
               </TableRow>
             ) : (
               estudiantes.map((est) => (
-                <TableRow key={est.id} className={darkMode ? 'border-slate-700' : ''}>
-                  <TableCell className={`text-center font-medium ${darkMode ? 'text-white' : ''}`}>{est.numero}</TableCell>
-                  <TableCell className={`font-medium ${darkMode ? 'text-white' : ''} break-words`}>{est.nombre}</TableCell>
-                  <TableCell className={`hidden sm:table-cell ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>{est.email || "—"}</TableCell>
+                <TableRow key={est.id} className="border-border">
+                  <TableCell className="text-center font-medium text-foreground">{est.numero}</TableCell>
+                  <TableCell className="font-medium text-foreground break-words">{est.nombre}</TableCell>
+                  <TableCell className="hidden sm:table-cell text-muted-foreground">{est.email || "—"}</TableCell>
                   <TableCell className="text-center">
-<Badge variant={est.activo ? "default" : "secondary"} className={`text-xs sm:text-sm font-medium h-5 ${est.activo ? (darkMode ? 'bg-emerald-600 text-white' : '') : ''}`}>
+ <Badge variant={est.activo ? "default" : "secondary"} className="text-xs sm:text-sm font-medium h-5">
                       {est.activo ? "Activo" : "Inactivo"}
                     </Badge>
                   </TableCell>
@@ -132,7 +132,7 @@ export function EstudiantesTable({ estudiantes, darkMode, isAdmin, loading = fal
         <div className="overflow-x-auto">
           <Table className="text-xs sm:text-sm md:text-base font-medium min-w-[500px]">
             <TableHeader>
-              <TableRow className={darkMode ? 'bg-slate-800/25' : 'bg-slate-100'}>
+              <TableRow className="bg-muted">
                 <TableHead className="w-10 text-center h-12">N°</TableHead>
                 <TableHead className="min-w-[120px]">Nombre Completo</TableHead>
                 <TableHead className="hidden sm:table-cell">Correo</TableHead>
@@ -146,7 +146,7 @@ export function EstudiantesTable({ estudiantes, darkMode, isAdmin, loading = fal
               <SkeletonRows darkMode={darkMode} isAdmin={isAdmin} />
             ) : !estudiantes || estudiantes.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className={`text-center py-8 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                  <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                     No hay estudiantes
                   </TableCell>
                 </TableRow>
@@ -212,8 +212,8 @@ function SortableEstudianteRow({ est, idx, total, darkMode, onMoveUp, onMoveDown
 
   if (editing) {
     return (
-      <TableRow ref={setNodeRef} style={style} className={`${darkMode ? 'border-slate-700' : ''} bg-emerald-900/20`}>
-        <TableCell className={`text-center font-medium ${darkMode ? 'text-white' : ''}`}>{est.numero}</TableCell>
+      <TableRow ref={setNodeRef} style={style} className="border-border bg-primary/5">
+        <TableCell className="text-center font-medium text-foreground">{est.numero}</TableCell>
         <TableCell>
           <Input
             value={editNombre}
@@ -232,23 +232,23 @@ function SortableEstudianteRow({ est, idx, total, darkMode, onMoveUp, onMoveDown
           />
         </TableCell>
         <TableCell className="text-center">
-          <Badge variant="default" className={`text-xs sm:text-sm font-medium h-5 ${darkMode ? 'bg-emerald-600 text-white' : ''}`}>
+          <Badge variant="default" className="text-xs sm:text-sm font-medium h-5">
             Activo
           </Badge>
         </TableCell>
         <TableCell className="text-center">
           <div className="flex items-center justify-center gap-1">
-            <Button size="sm" variant="ghost" className={`touch-target ${idx === 0 ? 'opacity-30 cursor-not-allowed' : ''} ${darkMode ? 'text-slate-400' : 'text-slate-500'}`} onClick={onMoveUp} disabled={idx === 0}>
+            <Button size="sm" variant="ghost" className={`touch-target text-muted-foreground ${idx === 0 ? 'opacity-30 cursor-not-allowed' : ''}`} onClick={onMoveUp} disabled={idx === 0}>
               <ChevronUp className="h-5 w-5" />
             </Button>
-            <Button size="sm" variant="ghost" className={`touch-target ${idx === total - 1 ? 'opacity-30 cursor-not-allowed' : ''} ${darkMode ? 'text-slate-400' : 'text-slate-500'}`} onClick={onMoveDown} disabled={idx === total - 1}>
+            <Button size="sm" variant="ghost" className={`touch-target text-muted-foreground ${idx === total - 1 ? 'opacity-30 cursor-not-allowed' : ''}`} onClick={onMoveDown} disabled={idx === total - 1}>
               <ChevronDown className="h-5 w-5" />
             </Button>
           </div>
         </TableCell>
         <TableCell className="text-center">
           <div className="flex items-center justify-center gap-1">
-            <Button size="sm" variant="ghost" className="touch-target text-emerald-500 hover:text-emerald-400" onClick={handleSave} disabled={saving}>
+            <Button size="sm" variant="ghost" className="touch-target text-primary" onClick={handleSave} disabled={saving}>
               <Save className="h-5 w-5" />
             </Button>
             <Button size="sm" variant="ghost" className="touch-target text-red-500 hover:text-red-400" onClick={handleCancel} disabled={saving}>
@@ -261,36 +261,36 @@ function SortableEstudianteRow({ est, idx, total, darkMode, onMoveUp, onMoveDown
   }
 
   return (
-    <TableRow ref={setNodeRef} style={style} className={`${darkMode ? 'border-slate-700' : ''} ${isDragging ? 'bg-emerald-900/30' : ''}`}>
-      <TableCell className={`text-center font-medium ${darkMode ? 'text-white' : ''}`}>{est.numero}</TableCell>
-      <TableCell className={`flex items-center gap-2 ${darkMode ? 'text-white' : ''}`}>
-        <button aria-label={`Arrastrar para reordenar a ${est.nombre}`} {...attributes} {...listeners} className={`cursor-grab active:cursor-grabbing touch-target rounded hover:bg-slate-700 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+    <TableRow ref={setNodeRef} style={style} className={`border-border ${isDragging ? 'bg-primary/10' : ''}`}>
+      <TableCell className="text-center font-medium text-foreground">{est.numero}</TableCell>
+      <TableCell className="flex items-center gap-2 text-foreground">
+        <button aria-label={`Arrastrar para reordenar a ${est.nombre}`} {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing touch-target rounded hover:bg-accent text-muted-foreground">
           <GripVertical className="h-5 w-5" />
         </button>
         {est.nombre}
       </TableCell>
-      <TableCell className={darkMode ? 'text-slate-400' : 'text-slate-500'}>{est.email || "—"}</TableCell>
+      <TableCell className="text-muted-foreground">{est.email || "—"}</TableCell>
       <TableCell className="text-center">
-        <Badge variant={est.activo ? "default" : "secondary"} className={`text-xs sm:text-sm font-medium h-5 ${est.activo ? (darkMode ? 'bg-emerald-600' : '') : ''}`}>
+        <Badge variant={est.activo ? "default" : "secondary"} className="text-xs sm:text-sm font-medium h-5">
           {est.activo ? "Activo" : "Inactivo"}
         </Badge>
       </TableCell>
       <TableCell className="text-center">
         <div className="flex items-center justify-center gap-1">
-          <Button size="sm" variant="ghost" aria-label="Mover arriba" className={`touch-target ${idx === 0 ? 'opacity-30 cursor-not-allowed' : ''} ${darkMode ? 'text-slate-300 hover:text-emerald-400' : 'text-slate-500 hover:text-emerald-600'}`} onClick={onMoveUp} disabled={idx === 0}>
+          <Button size="sm" variant="ghost" aria-label="Mover arriba" className={`touch-target text-muted-foreground hover:text-primary ${idx === 0 ? 'opacity-30 cursor-not-allowed' : ''}`} onClick={onMoveUp} disabled={idx === 0}>
             <ChevronUp className="h-5 w-5" />
           </Button>
-          <Button size="sm" variant="ghost" aria-label="Mover abajo" className={`touch-target ${idx === total - 1 ? 'opacity-30 cursor-not-allowed' : ''} ${darkMode ? 'text-slate-300 hover:text-emerald-400' : 'text-slate-500 hover:text-emerald-600'}`} onClick={onMoveDown} disabled={idx === total - 1}>
+          <Button size="sm" variant="ghost" aria-label="Mover abajo" className={`touch-target text-muted-foreground hover:text-primary ${idx === total - 1 ? 'opacity-30 cursor-not-allowed' : ''}`} onClick={onMoveDown} disabled={idx === total - 1}>
             <ChevronDown className="h-5 w-5" />
           </Button>
         </div>
       </TableCell>
       <TableCell className="text-center">
         <div className="flex items-center justify-center gap-1">
-          <Button size="sm" variant="ghost" aria-label={`Editar estudiante ${est.nombre}`} className={`touch-target ${darkMode ? 'text-blue-400 hover:text-blue-400 hover:bg-blue-900/30' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50'}`} onClick={() => { setEditNombre(est.nombre); setEditEmail(est.email || ""); setEditing(true); }}>
+          <Button size="sm" variant="ghost" aria-label={`Editar estudiante ${est.nombre}`} className="touch-target text-muted-foreground" onClick={() => { setEditNombre(est.nombre); setEditEmail(est.email || ""); setEditing(true); }}>
             <Edit2 className="h-5 w-5" />
           </Button>
-          <Button size="sm" variant="ghost" aria-label={`Eliminar estudiante ${est.nombre}`} className={`touch-target ${darkMode ? 'text-red-400 hover:text-red-400 hover:bg-red-900/30' : 'text-red-500 hover:text-red-700 hover:bg-red-50'}`} onClick={onDelete}>
+          <Button size="sm" variant="ghost" aria-label={`Eliminar estudiante ${est.nombre}`} className="touch-target text-muted-foreground hover:text-destructive" onClick={onDelete}>
             <Trash2 className="h-5 w-5" />
           </Button>
         </div>

@@ -203,13 +203,25 @@
   --info-foreground:  oklch(0.42 0.12 240);
   --overlay:          oklch(0 0 0 / 0.5);
 
-  /* ── CHARTS (LIGHT) ── */
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --chart-6: oklch(0.65 0.2 300);
+  /* ── SLATE (escala neutra — light, tintada verde) ── */
+  --slate-50:  oklch(0.985 0.003 140);
+  --slate-100: oklch(0.965 0.004 140);
+  --slate-200: oklch(0.935 0.006 140);
+  --slate-300: oklch(0.88 0.008 140);
+  --slate-400: oklch(0.78 0.010 140);
+  --slate-500: oklch(0.62 0.012 140);
+  --slate-600: oklch(0.48 0.010 140);
+  --slate-700: oklch(0.32 0.010 140);
+  --slate-800: oklch(0.20 0.008 140);
+  --slate-900: oklch(0.15 0.008 140);
+
+  /* ── CHARTS (LIGHT) — gama verde cohesionada ── */
+  --chart-1: oklch(0.55 0.14 140);
+  --chart-2: oklch(0.60 0.12 100);
+  --chart-3: oklch(0.45 0.10 180);
+  --chart-4: oklch(0.70 0.14 75);
+  --chart-5: oklch(0.50 0.12 160);
+  --chart-6: oklch(0.65 0.15 120);
 }
 
 .dark,
@@ -454,16 +466,10 @@
     content: '';
     position: fixed;
     inset: 0;
-    background-image:
-      radial-gradient(ellipse at 15% 20%, oklch(0.42 0.10 140 / 0.04) 0%, transparent 55%),
-      radial-gradient(ellipse at 85% 80%, oklch(0.42 0.10 140 / 0.02) 0%, transparent 50%);
+    background:
+      radial-gradient(ellipse at 15% 20%, oklch(0.42 0.10 140 / 0.03) 0%, transparent 50%);
     pointer-events: none;
     z-index: -1;
-  }
-  .dark .page-atmosphere::before {
-    background-image:
-      radial-gradient(ellipse at 15% 20%, oklch(0.58 0.10 140 / 0.08) 0%, transparent 50%),
-      radial-gradient(ellipse at 85% 80%, oklch(0.58 0.10 140 / 0.04) 0%, transparent 50%);
   }
 
   @keyframes fade-slide-up {

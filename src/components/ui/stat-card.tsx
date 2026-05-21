@@ -79,8 +79,7 @@ export function StatCard({
             <div className="flex items-center gap-2">
               <p
                 className={cn(
-                  "text-sm font-medium",
-                  darkMode ? "text-slate-300" : "text-green-800"
+                  "text-sm font-medium text-foreground"
                 )}
               >
                 {title}
@@ -98,14 +97,13 @@ export function StatCard({
           </div>
 
           <div className="flex items-baseline gap-2">
-            <p
-              className={cn(
-                "text-2xl font-bold tracking-tight",
-                  darkMode ? "text-white" : "text-green-900"
-              )}
-            >
-              {value}
-            </p>
+              <p
+                className={cn(
+                  "text-2xl font-bold tracking-tight text-foreground"
+                )}
+              >
+                {value}
+              </p>
           </div>
 
           <div className="flex items-center justify-between mt-2">

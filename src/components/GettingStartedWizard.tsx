@@ -96,19 +96,19 @@ const steps = [
         </p>
         <div className="space-y-3">
           <div className="flex items-start gap-3">
-            <Badge className="bg-emerald-600 shrink-0 mt-0.5">1</Badge>
+            <Badge variant="default" className="shrink-0 mt-0.5">1</Badge>
             <p className="text-sm">Selecciona el <strong>Grado</strong> y la <strong>Asignatura</strong></p>
           </div>
           <div className="flex items-start gap-3">
-            <Badge className="bg-emerald-600 shrink-0 mt-0.5">2</Badge>
+            <Badge variant="default" className="shrink-0 mt-0.5">2</Badge>
             <p className="text-sm">Elige el <strong>Trimestre</strong> (I, II o III)</p>
           </div>
           <div className="flex items-start gap-3">
-            <Badge className="bg-emerald-600 shrink-0 mt-0.5">3</Badge>
+            <Badge variant="default" className="shrink-0 mt-0.5">3</Badge>
             <p className="text-sm">Ingresa las notas en la tabla (0-10)</p>
           </div>
           <div className="flex items-start gap-3">
-            <Badge className="bg-emerald-600 shrink-0 mt-0.5">4</Badge>
+            <Badge variant="default" className="shrink-0 mt-0.5">4</Badge>
             <p className="text-sm">Presiona <strong>Guardar</strong> para almacenar todo</p>
           </div>
         </div>
@@ -370,7 +370,7 @@ export default function GettingStartedWizard({ open, onClose, darkMode, userRole
             <Button
               size="sm"
               onClick={handleNext}
-              className={`text-sm ${darkMode ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-emerald-600'}`}
+              className="text-sm"
             >
               {currentStep === steps.length - 1 ? "Finalizar" : "Siguiente"}
               {currentStep < steps.length - 1 && <ChevronRight className="h-4 w-4 ml-1" />}

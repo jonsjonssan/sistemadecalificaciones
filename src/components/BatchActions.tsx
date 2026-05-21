@@ -266,7 +266,6 @@ export default function BatchActions({ gradoId, materiaId, trimestre, estudiante
             size="sm" 
             onClick={handleExecute} 
             disabled={loading || !action || selectedStudents.length === 0}
-            className="bg-emerald-600"
           >
             {loading ? (
               <>

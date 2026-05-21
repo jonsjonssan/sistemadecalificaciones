@@ -31,8 +31,7 @@ export function EmptyState({
     >
       <Card
         className={cn(
-          "border-2 border-dashed shadow-sm",
-          darkMode ? "bg-card border-slate-700" : "bg-white border-slate-200"
+          "border-2 border-dashed shadow-sm bg-card border-border"
         )}
       >
         <CardContent className="flex flex-col items-center justify-center py-12 px-4 text-center">
@@ -40,29 +39,16 @@ export function EmptyState({
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.1, type: "spring", stiffness: 200 }}
-            className={cn(
-              "h-16 w-16 rounded-full flex items-center justify-center mb-4",
-              darkMode ? "bg-slate-950/40 backdrop-blur-md" : "bg-slate-50"
-            )}
+            className="h-16 w-16 rounded-full flex items-center justify-center mb-4 bg-muted"
           >
-            <Icon className={cn("h-8 w-8", darkMode ? "text-slate-600" : "text-slate-300")} />
+            <Icon className="h-8 w-8 text-muted-foreground/50" />
           </motion.div>
 
-          <h3
-            className={cn(
-              "text-lg font-semibold mb-1",
-              darkMode ? "text-slate-400" : "text-slate-700"
-            )}
-          >
+          <h3 className="text-lg font-semibold mb-1 text-foreground">
             {title}
           </h3>
 
-          <p
-            className={cn(
-              "text-sm max-w-sm mb-4",
-              darkMode ? "text-slate-500" : "text-slate-500"
-            )}
-          >
+          <p className="text-sm max-w-sm mb-4 text-muted-foreground">
             {description}
           </p>
 
@@ -70,7 +56,6 @@ export function EmptyState({
             <Button
               onClick={onAction}
               size="sm"
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
             >
               {actionLabel}
             </Button>

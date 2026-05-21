@@ -333,7 +333,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
           {esDirectiva && (
             <div className="animate-fade-slide-up" style={{ animationDelay: '0.1s' }}>
               <Card className="shadow-sm overflow-hidden bg-card border-border">
-                <div className="h-px bg-gradient-to-r from-primary/40 via-primary/10 to-transparent w-full" />
+                <div className="h-px bg-primary/20 w-full" />
                 <CardHeader className="pb-3 flex flex-row items-center justify-between">
                   <CardTitle className="font-display text-sm flex items-center gap-2 text-card-foreground">
                     <Target className="h-4 w-4 text-accent" />
