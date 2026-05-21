@@ -86,10 +86,11 @@ export default function LoginView({
               <div className="space-y-1.5">
                 <Label htmlFor="login-email" className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider">Correo electrónico</Label>
                 <div className={`relative transition-all duration-200 ${focusedField === 'email' ? 'ring-2 ring-primary/20 rounded-xl' : ''}`}>
-                  <Mail className={`absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${focusedField === 'email' ? 'text-primary' : 'text-muted-foreground/40'}`} />
+                  <Mail className={`absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${focusedField === 'email' ? 'text-primary' : 'text-muted-foreground/40'}`} aria-hidden="true" />
                   <Input
                     id="login-email"
                     type="email"
+                    autoComplete="email"
                     value={loginForm.email}
                     onChange={e => setLoginForm({ ...loginForm, email: e.target.value })}
                     placeholder="correo@ejemplo.edu"
@@ -104,7 +105,7 @@ export default function LoginView({
               <div className="space-y-1.5">
                 <Label htmlFor="login-password" className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider">Contraseña</Label>
                 <div className={`relative transition-all duration-200 ${focusedField === 'password' ? 'ring-2 ring-primary/20 rounded-xl' : ''}`}>
-                  <Lock className={`absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${focusedField === 'password' ? 'text-primary' : 'text-muted-foreground/40'}`} />
+                  <Lock className={`absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors ${focusedField === 'password' ? 'text-primary' : 'text-muted-foreground/40'}`} aria-hidden="true" />
                   <Input
                     id="login-password"
                     type="password"
@@ -136,8 +137,8 @@ export default function LoginView({
               >
                 {loginLoading ? (
                   <span className="flex items-center gap-2">
-                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
-                    Ingresando...
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                    Ingresando…
                   </span>
                 ) : "Ingresar"}
               </Button>
@@ -152,7 +153,7 @@ export default function LoginView({
               {googleLoading && (
                 <p className="text-sm text-center text-muted-foreground/60">
                   <span className="flex items-center justify-center gap-2">
-                    <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
+                    <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" aria-hidden="true"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg>
                     Iniciando sesión con Google...
                   </span>
                 </p>

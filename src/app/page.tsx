@@ -57,9 +57,9 @@ export default function Home() {
 
   if (loading || dataLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-background" role="status" aria-live="polite" aria-label="Cargando sistema">
         <div className="flex flex-col items-center gap-4">
-          <RefreshCw className="h-8 w-8 animate-spin text-primary/60" />
+          <RefreshCw className="h-8 w-8 animate-spin text-primary/60" aria-hidden="true" />
           <p className="text-sm text-muted-foreground">Sistema de Calificaciones</p>
         </div>
       </div>
@@ -115,9 +115,9 @@ export default function Home() {
             )}
             <button onClick={() => d.setTheme(d.theme === "dark" ? "light" : "dark")} className={`p-1.5 sm:p-2 transition-all text-muted-foreground hover:text-foreground hover:bg-muted/50`} title={darkMode ? "Modo claro" : "Modo oscuro"}>
               {darkMode ? (
-                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
               ) : (
-                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
               )}
             </button>
             <Button variant="ghost" size="sm" onClick={() => d.setShowWizard(true)} className="touch-target px-1.5 sm:px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 sm:h-10" title="Guía de inicio"><Lightbulb className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Ayuda</span></Button>
@@ -134,18 +134,18 @@ export default function Home() {
         <DialogContent className="max-w-sm">
           <DialogHeader><DialogTitle>Cambiar Contraseña</DialogTitle><DialogDescription>Actualiza tu contraseña de acceso al sistema.</DialogDescription></DialogHeader>
           <div className="space-y-3">
-            <div><Label className="text-base font-medium">Contraseña Actual</Label><Input type="password" value={passwordForm.actual} onChange={e => setPasswordForm({ ...passwordForm, actual: e.target.value })} /></div>
-            <div><Label className="text-base font-medium">Nueva Contraseña</Label><Input type="password" value={passwordForm.nueva} onChange={e => setPasswordForm({ ...passwordForm, nueva: e.target.value })} /></div>
-            <div><Label className="text-base font-medium">Confirmar Nueva Contraseña</Label><Input type="password" value={passwordForm.confirmar} onChange={e => setPasswordForm({ ...passwordForm, confirmar: e.target.value })} /></div>
+            <div><Label className="text-base font-medium" htmlFor="pw-actual">Contraseña Actual</Label><Input id="pw-actual" type="password" autoComplete="current-password" value={passwordForm.actual} onChange={e => setPasswordForm({ ...passwordForm, actual: e.target.value })} /></div>
+            <div><Label className="text-base font-medium" htmlFor="pw-nueva">Nueva Contraseña</Label><Input id="pw-nueva" type="password" autoComplete="new-password" value={passwordForm.nueva} onChange={e => setPasswordForm({ ...passwordForm, nueva: e.target.value })} /></div>
+            <div><Label className="text-base font-medium" htmlFor="pw-confirmar">Confirmar Nueva Contraseña</Label><Input id="pw-confirmar" type="password" autoComplete="new-password" value={passwordForm.confirmar} onChange={e => setPasswordForm({ ...passwordForm, confirmar: e.target.value })} /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" size="sm" onClick={() => { setPasswordDialogOpen(false); setPasswordForm({ actual: "", nueva: "", confirmar: "" }); }}>Cancelar</Button>
-            <Button size="sm" onClick={handleChangePassword} disabled={passwordLoading} className="bg-primary">{passwordLoading ? "Guardando..." : "Cambiar"}</Button>
+            <Button size="sm" onClick={handleChangePassword} disabled={passwordLoading} className="bg-primary">{passwordLoading ? "Guardando…" : "Cambiar"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      <main className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-3 py-2 sm:py-3 pb-24 md:pb-3 mobile-tab-content">
+      <main id="main-content" className="flex-1 max-w-7xl mx-auto w-full px-2 sm:px-3 py-2 sm:py-3 pb-24 md:pb-3 mobile-tab-content">
         <Tabs value={d.activeTab} onValueChange={(val) => {
           if (d.activeTab === "calificaciones" && val !== "calificaciones" && d.dirtyStudentsRef.current.size > 0) {
             if (!window.confirm("Tienes " + d.dirtyStudentsRef.current.size + " estudiante(s) con cambios sin guardar. ¿Cambiar de pestaña los perderá. ¿Continuar?")) return;
@@ -168,9 +168,15 @@ export default function Home() {
           <div className="flex items-center gap-2 ml-auto">
             <ContextualHelp section={d.activeTab} darkMode={darkMode} />
             {d.autoSaveStatus === "saving" && (
-              <span className="text-xs flex items-center gap-1 text-amber-600 dark:text-amber-400">
-                <RefreshCw className="h-3 w-3 animate-spin" />
-                <span className="hidden sm:inline">Guardando...</span>
+              <span className="text-xs flex items-center gap-1 text-amber-600 dark:text-amber-400" role="status" aria-live="polite" aria-atomic="true">
+                <RefreshCw className="h-3 w-3 animate-spin" aria-hidden="true" />
+                <span className="hidden sm:inline">Guardando…</span>
+              </span>
+            )}
+            {d.autoSaveStatus === "saved" && (
+              <span className="text-xs flex items-center gap-1 text-green-600 dark:text-green-400" role="status" aria-live="polite" aria-atomic="true">
+                <span className="hidden sm:inline">Guardado</span>
+                <span className="sm:hidden">✓</span>
               </span>
             )}
             {d.autoSaveStatus === "saved" && (
@@ -299,12 +305,12 @@ export default function Home() {
                       <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 w-full sm:w-auto">
                         <Button size="sm" className="h-9 sm:h-10 px-2 sm:px-4 font-semibold text-xs sm:text-sm gap-1 sm:gap-2 bg-primary hover:bg-primary/90 text-primary-foreground" onClick={d.handleGuardarTodo} disabled={d.saving}>
                           <Save className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                          <span className="hidden sm:inline">{d.saving ? 'Guardando...' : 'Guardar Todo'}</span>
-                          <span className="sm:hidden">{d.saving ? '...' : 'Guardar'}</span>
+                          <span className="hidden sm:inline">{d.saving ? 'Guardando…' : 'Guardar Todo'}</span>
+                          <span className="sm:hidden">{d.saving ? '…' : 'Guardar'}</span>
                         </Button>
                         <Button size="sm" variant="outline" className={`h-9 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm gap-1 sm:gap-2 ${darkMode ? 'bg-slate-100/10 border-border text-slate-300 hover:bg-slate-100/20' : ''}`} onClick={d.handleRefrescar} disabled={d.refreshing}>
                           <RefreshCw className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${d.refreshing ? 'animate-spin' : ''}`} />
-                          <span className="hidden sm:inline">{d.refreshing ? 'Refrescando...' : 'Refrescar'}</span>
+                          <span className="hidden sm:inline">{d.refreshing ? 'Refrescando…' : 'Refrescar'}</span>
                         </Button>
                         <Button size="sm" variant="outline" className={`h-9 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm gap-1 sm:gap-2 ${darkMode ? 'bg-slate-100/10 border-border text-slate-300 hover:bg-slate-100/20' : ''}`} onClick={() => { d.setEditConfig(d.configActual); d.setConfigDialogOpen(true); }}>
                           <Settings className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -386,7 +392,7 @@ export default function Home() {
                       <div className="flex-1 min-w-[140px] sm:min-w-[200px] order-1">
                         <div className="relative">
                           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-slate-400" />
-                          <Input placeholder="Buscar..." value={d.busquedaEstudiante} onChange={(e) => startTransition(() => d.setBusquedaEstudiante(e.target.value))} className={`pl-8 sm:pl-9 h-9 text-xs sm:text-sm ${darkMode ? 'bg-card border-white/30 text-white' : ''}`} />
+                          <Input placeholder="Buscar…" aria-label="Buscar estudiante" value={d.busquedaEstudiante} onChange={(e) => startTransition(() => d.setBusquedaEstudiante(e.target.value))} className={`pl-8 sm:pl-9 h-9 text-xs sm:text-sm ${darkMode ? 'bg-card border-white/30 text-white' : ''}`} />
                         </div>
                       </div>
                       <div className="order-3 sm:order-2">
@@ -558,7 +564,7 @@ export default function Home() {
                       <DialogTrigger asChild><Button size="sm" variant="outline" className={`h-10 text-xs sm:text-sm ${darkMode ? 'border-white/30 text-white hover:bg-white/10' : ''}`}><ListPlus className="h-5 w-5 mr-1" />Lista</Button></DialogTrigger>
                       <DialogContent className="max-w-md bg-card border-border">
                         <DialogHeader><DialogTitle>Agregar Lista de Estudiantes</DialogTitle><DialogDescription>Ingresa los nombres de los estudiantes, uno por línea.</DialogDescription></DialogHeader>
-                        <div className="space-y-2"><Label>Un nombre por línea</Label><textarea className={`w-full h-48 p-2 text-sm border rounded-md ${darkMode ? 'bg-card border-white/30 text-white' : ''}`} value={d.listaEstudiantes} onChange={e => d.setListaEstudiantes(e.target.value)} placeholder="Apellido, Nombre&#10;Apellido, Nombre, correo@email.com&#10;..." /></div>
+                        <div className="space-y-2"><Label>Un nombre por línea</Label><textarea className={`w-full h-48 p-2 text-sm border rounded-md ${darkMode ? 'bg-card border-white/30 text-white' : ''}`} value={d.listaEstudiantes} onChange={e => d.setListaEstudiantes(e.target.value)} placeholder="Apellido, Nombre&#10;Apellido, Nombre, correo@email.com&#10;…" aria-label="Lista de estudiantes, uno por línea" /></div>
                         <DialogFooter><Button variant="outline" size="sm" onClick={() => { d.setListaDialogOpen(false); d.setListaEstudiantes(""); }}>Cancelar</Button><Button size="sm" onClick={d.handleAddMultipleEstudiantes} className="bg-primary">Agregar {d.listaEstudiantes.split('\n').filter((n: string) => n.trim()).length}</Button></DialogFooter>
                       </DialogContent>
                     </Dialog>
@@ -646,7 +652,7 @@ export default function Home() {
                               <SelectTrigger className={`w-36 h-8 text-xs ${darkMode ? 'bg-card border-white/30 text-white' : 'bg-white border-slate-300'}`}><SelectValue /></SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="todas" className="text-xs">Todas ({d.todasAsignaturas.filter((m: any) => m.gradoId === d.gradoSeleccionado).length})</SelectItem>
-                                <SelectItem value="personalizado" className="text-xs">Seleccionar...</SelectItem>
+                                <SelectItem value="personalizado" className="text-xs">Seleccionar…</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
@@ -785,9 +791,9 @@ export default function Home() {
                     <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto bg-card border-border">
                       <DialogHeader><DialogTitle>{d.editUsuarioId ? "Editar Usuario" : "Crear Usuario"}</DialogTitle><DialogDescription>Completa la información del usuario del sistema.</DialogDescription></DialogHeader>
                       <div className="space-y-3">
-                        <div><Label className="text-xs">Nombre</Label><Input value={d.nuevoUsuario.nombre} onChange={e => d.setNuevoUsuario({ ...d.nuevoUsuario, nombre: e.target.value })} /></div>
-                        <div><Label className="text-xs">Email</Label><Input type="email" value={d.nuevoUsuario.email} onChange={e => d.setNuevoUsuario({ ...d.nuevoUsuario, email: e.target.value })} /></div>
-                        <div><Label className="text-xs">Contraseña</Label><Input type="password" value={d.nuevoUsuario.password} onChange={e => d.setNuevoUsuario({ ...d.nuevoUsuario, password: e.target.value })} /></div>
+                        <div><Label className="text-xs" htmlFor="new-user-nombre">Nombre</Label><Input id="new-user-nombre" value={d.nuevoUsuario.nombre} onChange={e => d.setNuevoUsuario({ ...d.nuevoUsuario, nombre: e.target.value })} autoComplete="name" /></div>
+                        <div><Label className="text-xs" htmlFor="new-user-email">Email</Label><Input id="new-user-email" type="email" value={d.nuevoUsuario.email} onChange={e => d.setNuevoUsuario({ ...d.nuevoUsuario, email: e.target.value })} autoComplete="email" /></div>
+                        <div><Label className="text-xs" htmlFor="new-user-password">Contraseña</Label><Input id="new-user-password" type="password" value={d.nuevoUsuario.password} onChange={e => d.setNuevoUsuario({ ...d.nuevoUsuario, password: e.target.value })} autoComplete="new-password" /></div>
                         <div><Label className="text-xs">Rol</Label>
                           <Select value={d.nuevoUsuario.rol} onValueChange={v => d.setNuevoUsuario({ ...d.nuevoUsuario, rol: v })}>
                             <SelectTrigger className={`h-8 ${darkMode ? 'bg-card border-white/30 text-white' : ''}`}><SelectValue /></SelectTrigger>
@@ -882,7 +888,7 @@ export default function Home() {
                         <Label className="text-xs">Año Escolar</Label>
                         <Input type="number" value={d.nuevoAño} onChange={e => d.setNuevoAño(parseInt(e.target.value) || 2026)} min={2020} max={2100} className={`h-8 ${darkMode ? 'bg-card border-white/30 text-white' : ''}`} />
                       </div>
-                      <DialogFooter><Button variant="outline" size="sm" onClick={() => d.setAñoDialogOpen(false)}>Cancelar</Button><Button size="sm" onClick={d.handleCambiarAño} disabled={d.añoLoading} className="bg-primary">{d.añoLoading ? "Guardando..." : "Cambiar"}</Button></DialogFooter>
+                      <DialogFooter><Button variant="outline" size="sm" onClick={() => d.setAñoDialogOpen(false)}>Cancelar</Button><Button size="sm" onClick={d.handleCambiarAño} disabled={d.añoLoading} className="bg-primary">{d.añoLoading ? "Guardando…" : "Cambiar"}</Button></DialogFooter>
                     </DialogContent>
                   </Dialog>
                 </CardHeader>
@@ -928,7 +934,7 @@ export default function Home() {
                         <th className="p-2 text-left">Fecha</th><th className="p-2 text-left">Usuario</th><th className="p-2 text-left">Acción</th><th className="p-2 text-left">Grado</th>
                       </tr></thead>
                       <tbody>
-                        {d.auditLoading ? <tr><td colSpan={4} className="p-4 text-center text-slate-500">Cargando...</td></tr> :
+                        {d.auditLoading ? <tr><td colSpan={4} className="p-4 text-center text-slate-500">Cargando…</td></tr> :
                           d.auditLogs.length === 0 ? <tr><td colSpan={4} className="p-4 text-center text-slate-500">No hay registros</td></tr> :
                             d.auditLogs.map((log: any) => (
                               <tr key={log.id} className={`border-t ${darkMode ? 'border-slate-700' : ''}`}>
@@ -970,7 +976,7 @@ export default function Home() {
               <Label htmlFor="aplicarATodas" className="text-sm font-medium">Aplicar a todas las materias de este grado</Label>
             </div>
           </div>}
-          <DialogFooter className="flex-row gap-2 sm:gap-0"><Button variant="outline" size="sm" className="flex-1 sm:flex-initial" onClick={() => d.setConfigDialogOpen(false)} disabled={d.configLoading}>Cancelar</Button><Button size="sm" className="flex-1 sm:flex-initial bg-primary" onClick={async () => { d.setConfigLoading(true); try { await d.handleSaveConfig(); } finally { d.setConfigLoading(false); }}} disabled={d.configLoading}>{d.configLoading ? "Guardando..." : "Guardar"}</Button></DialogFooter>
+          <DialogFooter className="flex-row gap-2 sm:gap-0"><Button variant="outline" size="sm" className="flex-1 sm:flex-initial" onClick={() => d.setConfigDialogOpen(false)} disabled={d.configLoading}>Cancelar</Button><Button size="sm" className="flex-1 sm:flex-initial bg-primary" onClick={async () => { d.setConfigLoading(true); try { await d.handleSaveConfig(); } finally { d.setConfigLoading(false); }}} disabled={d.configLoading}>{d.configLoading ? "Guardando…" : "Guardar"}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -984,10 +990,10 @@ export default function Home() {
               <Button size="sm" variant="outline" onClick={() => (document.querySelector<HTMLInputElement>('input[type="file"]')?.click())} className={`flex-1 text-xs ${darkMode ? 'border-white/30 text-white hover:bg-white/10' : ''}`}><Upload className="h-3.5 w-3.5 mr-1" />Cargar</Button>
               <input type="file" accept=".csv,.txt" className="hidden" onChange={d.handleFileUpload} />
             </div>
-            {d.importData && <div className={`p-2 rounded text-xs max-h-24 overflow-auto ${darkMode ? 'bg-slate-800 text-slate-300' : 'bg-slate-50'}`}>{d.importData.slice(0, 200)}...</div>}
-            <p className={`text-[10px] ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Primera fila: Estudiante, AC1, AC2... AI1... Examen. Filas siguientes: datos.</p>
+            {d.importData && <div className={`p-2 rounded text-xs max-h-24 overflow-auto ${darkMode ? 'bg-slate-800 text-slate-300' : 'bg-slate-50'}`}>{d.importData.slice(0, 200)}…</div>}
+                            <p className={`text-[10px] ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Primera fila: Estudiante, AC1, AC2… AI1… Examen. Filas siguientes: datos.</p>
           </div>
-          <DialogFooter><Button variant="outline" size="sm" onClick={() => { d.setImportDialogOpen(false); d.setImportData(""); }} disabled={d.importLoading}>Cancelar</Button><Button size="sm" onClick={async () => { d.setImportLoading(true); try { await d.handleImport(); } finally { d.setImportLoading(false); }}} disabled={!d.importData || d.importLoading} className="bg-primary">{d.importLoading ? "Importando..." : "Importar"}</Button></DialogFooter>
+          <DialogFooter><Button variant="outline" size="sm" onClick={() => { d.setImportDialogOpen(false); d.setImportData(""); }} disabled={d.importLoading}>Cancelar</Button><Button size="sm" onClick={async () => { d.setImportLoading(true); try { await d.handleImport(); } finally { d.setImportLoading(false); }}} disabled={!d.importData || d.importLoading} className="bg-primary">{d.importLoading ? "Importando…" : "Importar"}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -1005,7 +1011,7 @@ export default function Home() {
           <DialogFooter>
             <Button variant="outline" onClick={() => d.setBorrarCalifDialogOpen(false)}>Cancelar</Button>
             <Button variant="destructive" onClick={d.borrarCalifTipo === "grado" ? d.handleBorrarCalifGrado : d.handleBorrarCalifAlumno} disabled={d.borrarCalifLoading}>
-              {d.borrarCalifLoading ? "Borrando..." : "Borrar"}
+              {d.borrarCalifLoading ? "Borrando…" : "Borrar"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1019,12 +1025,12 @@ export default function Home() {
             <DialogDescription>Nueva contraseña para: <strong>{d.resetPasswordUser?.nombre}</strong></DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <Label>Nueva Contraseña</Label>
-            <Input type="password" value={d.resetPasswordForm.password} onChange={(e) => d.setResetPasswordForm({ password: e.target.value })} className={`mt-1 ${darkMode ? 'bg-card border-white/30 text-white' : ''}`} />
+            <Label htmlFor="reset-password">Nueva Contraseña</Label>
+            <Input id="reset-password" type="password" autoComplete="new-password" value={d.resetPasswordForm.password} onChange={(e) => d.setResetPasswordForm({ password: e.target.value })} className={`mt-1 ${darkMode ? 'bg-card border-white/30 text-white' : ''}`} />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => d.setResetPasswordDialogOpen(false)}>Cancelar</Button>
-            <Button onClick={d.handleResetPassword} disabled={d.resetPasswordLoading || !d.resetPasswordForm.password} className="bg-primary">{d.resetPasswordLoading ? "Guardando..." : "Guardar"}</Button>
+            <Button onClick={d.handleResetPassword} disabled={d.resetPasswordLoading || !d.resetPasswordForm.password} className="bg-primary">{d.resetPasswordLoading ? "Guardando…" : "Guardar"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

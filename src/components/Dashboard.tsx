@@ -135,7 +135,7 @@ function QuickActionRow({ icon: Icon, label, sub, onClick }: {
   onClick: () => void;
 }) {
   return (
-    <div className="flex items-center gap-3 p-2.5 rounded-sm cursor-pointer group transition-all bg-muted/10 border border-border hover:bg-muted/25 hover:border-accent/20" onClick={onClick}>
+    <button className="flex items-center gap-3 p-2.5 rounded-sm cursor-pointer group transition-all w-full text-left bg-muted/10 border border-border hover:bg-muted/25 hover:border-accent/20" onClick={onClick}>
       <div className="p-1.5 shrink-0 rounded-sm bg-accent/10 text-accent group-hover:bg-accent/20 transition-colors">
         <Icon className="h-4 w-4" />
       </div>
@@ -143,7 +143,7 @@ function QuickActionRow({ icon: Icon, label, sub, onClick }: {
         <h4 className="text-xs font-semibold text-foreground group-hover:text-accent transition-colors">{label}</h4>
         <p className="text-[10px] text-muted-foreground/50">{sub}</p>
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -514,7 +514,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
               <CardHeader className="py-3 px-4 border-b border-border">
                 <CardTitle className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Mis Asignaturas</CardTitle>
               </CardHeader>
-              <CardContent className="p-2.5 max-h-[200px] overflow-y-auto space-y-1">
+              <CardContent className="p-2.5 max-h-[200px] overflow-y-auto space-y-1" tabIndex={0} role="region" aria-label="Mis asignaturas">
                 {asignaturasAsignadas.map(m => (
                   <div key={m.id} className="flex items-center justify-between p-2 text-xs bg-muted/20 border border-border rounded-sm">
                     <span className="font-medium truncate mr-2 text-foreground/80">{m.nombre}</span>

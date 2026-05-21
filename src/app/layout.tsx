@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ClientComponents } from "@/components/ClientComponents";
 import { QueryProvider } from "@/lib/query-provider";
+import { SkipLink } from "@/components/A11y";
 
 const sora = Sora({
   variable: "--font-body",
@@ -60,6 +61,7 @@ export default function RootLayout({
       <body
         className={`${sora.variable} ${syne.variable} ${jetbrainsMono.variable} antialiased bg-background text-foreground font-body`}
       >
+        <SkipLink />
         <ErrorBoundary>
           <QueryProvider>
             <ThemeProvider
