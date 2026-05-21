@@ -42,6 +42,9 @@ import CuadroTrimestres from "@/components/CuadroTrimestres";
 import ResumenAsignaturas from "@/components/ResumenAsignaturas";
 import EnlacesInstitucionales from "@/components/EnlacesInstitucionales";
 import { SystemThresholdsCard } from "@/components/SystemThresholdsCard";
+import ReporteAsistenciaMultiGrado from "@/components/ReporteAsistenciaMultiGrado";
+import { DescargaCompletaButton } from "@/components/DescargaCompletaButton";
+import InformeTecnicoDialog from "@/components/InformeTecnicoDialog";
 import AvanceDocentes from "@/components/AvanceDocentes";
 import { MobileTabBar } from "@/components/MobileTabBar";
 import { useDashboardData } from "@/hooks/useDashboardData";
@@ -54,6 +57,8 @@ export default function Home() {
     darkMode, handleLogout, perfilDialogOpen, setPerfilDialogOpen,
     passwordDialogOpen, setPasswordDialogOpen, passwordForm, setPasswordForm, passwordLoading, handleChangePassword,
   } = d;
+
+  const [informeDialogOpen, setInformeDialogOpen] = useState(false);
 
   if (loading || dataLoading) {
     return (
@@ -764,13 +769,113 @@ export default function Home() {
 
           {/* Reportes */}
           <TabsContent value="reportes" className="mt-3">
-            <ReporteCalificaciones
-              grados={d.gradosFiltrados}
-              darkMode={darkMode}
-              todasAsignaturas={d.todasAsignaturas}
-              umbralCondicionado={d.configuracion?.umbralCondicionado ?? 4.5}
-              umbralAprobado={d.configuracion?.umbralAprobado ?? 6.5}
-            />
+            <div className="space-y-4">
+              {/* Sección: Reporte de Calificaciones */}
+              <Card className={`shadow-sm border overflow-hidden ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5" : "bg-white border-slate-200"}`}>
+                <div className={`h-1 w-full ${darkMode ? "bg-gradient-to-r from-blue-500 to-blue-400" : "bg-gradient-to-r from-blue-600 to-blue-500"}`} />
+                <CardHeader className="pb-2 px-4 pt-3">
+                  <div className="flex items-center gap-2">
+                    <div className={`p-1.5 rounded-lg ${darkMode ? "bg-blue-900/40 text-blue-400" : "bg-blue-50 text-blue-700"}`}>
+                      <FileText className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <CardTitle className={`text-sm font-semibold ${darkMode ? "text-white" : "text-slate-800"}`}>Reporte de Calificaciones</CardTitle>
+                      <CardDescription className="text-[10px] mt-0.5">Estado de estudiantes por grado y trimestre</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="px-4 pb-4 pt-2">
+                  <ReporteCalificaciones
+                    grados={d.gradosFiltrados}
+                    darkMode={darkMode}
+                    todasAsignaturas={d.todasAsignaturas}
+                    umbralCondicionado={d.configuracion?.umbralCondicionado ?? 4.5}
+                    umbralAprobado={d.configuracion?.umbralAprobado ?? 6.5}
+                  />
+                </CardContent>
+              </Card>
+
+              {/* Sección: Consolidado de Calificaciones */}
+              <Card className={`shadow-sm border overflow-hidden ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5" : "bg-white border-slate-200"}`}>
+                <div className={`h-1 w-full ${darkMode ? "bg-gradient-to-r from-purple-500 to-purple-400" : "bg-gradient-to-r from-purple-600 to-purple-500"}`} />
+                <CardHeader className="pb-2 px-4 pt-3">
+                  <div className="flex items-center gap-2">
+                    <div className={`p-1.5 rounded-lg ${darkMode ? "bg-purple-900/40 text-purple-400" : "bg-purple-50 text-purple-700"}`}>
+                      <Download className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <CardTitle className={`text-sm font-semibold ${darkMode ? "text-white" : "text-slate-800"}`}>Consolidado de Calificaciones</CardTitle>
+                      <CardDescription className="text-[10px] mt-0.5">Descarga las calificaciones de todos los grados y asignaturas por trimestre</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="px-4 pb-4 pt-2">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <p className={`text-xs ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
+                      Selecciona el trimestre y descarga el reporte completo en PDF, Word o Excel.
+                    </p>
+                    <DescargaCompletaButton darkMode={darkMode} />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Sección: Reporte de Asistencia Consolidado */}
+              <Card className={`shadow-sm border overflow-hidden ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5" : "bg-white border-slate-200"}`}>
+                <div className={`h-1 w-full ${darkMode ? "bg-gradient-to-r from-emerald-500 to-emerald-400" : "bg-gradient-to-r from-emerald-600 to-emerald-500"}`} />
+                <CardHeader className="pb-2 px-4 pt-3">
+                  <div className="flex items-center gap-2">
+                    <div className={`p-1.5 rounded-lg ${darkMode ? "bg-emerald-900/40 text-emerald-400" : "bg-emerald-50 text-emerald-700"}`}>
+                      <CalendarDays className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <CardTitle className={`text-sm font-semibold ${darkMode ? "text-white" : "text-slate-800"}`}>Reporte de Asistencia Consolidado</CardTitle>
+                      <CardDescription className="text-[10px] mt-0.5">Visualiza y exporta la asistencia de múltiples grados (2° a 9°)</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="px-4 pb-4 pt-2">
+                  <ReporteAsistenciaMultiGrado grados={d.gradosFiltrados} darkMode={darkMode} />
+                </CardContent>
+              </Card>
+
+              {/* Sección: Informe Técnico */}
+              <Card className={`shadow-sm border overflow-hidden ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5" : "bg-white border-slate-200"}`}>
+                <div className={`h-1 w-full ${darkMode ? "bg-gradient-to-r from-amber-500 to-amber-400" : "bg-gradient-to-r from-amber-600 to-amber-500"}`} />
+                <CardHeader className="pb-2 px-4 pt-3">
+                  <div className="flex items-center gap-2">
+                    <div className={`p-1.5 rounded-lg ${darkMode ? "bg-amber-900/40 text-amber-400" : "bg-amber-50 text-amber-700"}`}>
+                      <FileText className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <CardTitle className={`text-sm font-semibold ${darkMode ? "text-white" : "text-slate-800"}`}>Informe Técnico Pedagógico</CardTitle>
+                      <CardDescription className="text-[10px] mt-0.5">Genera un informe profesional con estadísticas generales del sistema</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="px-4 pb-4 pt-2">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <p className={`text-xs ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
+                      Genera un informe técnico pedagógico-didáctico con estadísticas de rendimiento por ciclo, cuadro de honor y plan de acción.
+                    </p>
+                    <Button
+                      size="sm"
+                      onClick={() => setInformeDialogOpen(true)}
+                      className="bg-amber-600 hover:bg-amber-700 text-white h-9 text-xs font-bold px-4"
+                    >
+                      <FileText className="h-4 w-4 mr-1" /> Generar Informe
+                    </Button>
+                  </div>
+                  <InformeTecnicoDialog
+                    open={informeDialogOpen}
+                    onOpenChange={setInformeDialogOpen}
+                    darkMode={darkMode}
+                    usuario={usuario ? { nombre: usuario.nombre, rol: usuario.rol } : { nombre: "", rol: "" }}
+                    configuracion={{ añoEscolar: d.configuracion?.añoEscolar ?? 2026, escuela: d.configuracion?.escuela ?? "Centro Escolar Católico", umbralAprobado: d.configuracion?.umbralAprobado ?? 6.5 }}
+                    grados={d.gradosFiltrados.map((g: any) => ({ id: g.id, numero: g.numero, seccion: g.seccion, _count: g._count || { estudiantes: 0 } }))}
+                  />
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           {/* Avance */}

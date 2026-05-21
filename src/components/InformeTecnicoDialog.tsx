@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { FileText, Printer, Download, Loader2 } from "lucide-react";
+import { FileText, Printer, Download, Loader2, AlertCircle } from "lucide-react";
 import { escapeHtml } from "@/lib/utils/index";
 
 interface InformeTecnicoProps {
@@ -15,7 +15,6 @@ interface InformeTecnicoProps {
   darkMode: boolean;
   usuario: { nombre: string; rol: string };
   configuracion: { añoEscolar: number; escuela: string; umbralAprobado?: number };
-  stats: any[];
   grados: { id: string; numero: number; seccion: string; _count?: { estudiantes: number } }[];
 }
 
@@ -31,11 +30,49 @@ export default function InformeTecnicoDialog({
   darkMode,
   usuario,
   configuracion: { umbralAprobado, ...configuracion },
-  stats,
   grados,
 }: InformeTecnicoProps) {
   const [trimestre, setTrimestre] = useState("1");
   const [generando, setGenerando] = useState(false);
+  const [stats, setStats] = useState<any[]>([]);
+  const [statsLoading, setStatsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    setStatsLoading(true);
+    Promise.all([
+      fetch("/api/grados", { credentials: "include" }).then(r => r.json()),
+      fetch("/api/calificaciones?trimestre=" + trimestre, { credentials: "include" }).then(r => r.json()),
+    ])
+      .then(([gradosData, califData]) => {
+        const statsMap: Record<string, any> = {};
+        if (Array.isArray(gradosData)) {
+          for (const g of gradosData) {
+            const gradosCalif = Array.isArray(califData) ? califData.filter((c: any) => c.estudiante?.gradoId === g.id) : [];
+            const notas = gradosCalif.map((c: any) => ({ ac: c.calificacionAC || 0, ai: c.calificacionAI || 0, ex: c.examenTrimestral || 0, pf: c.promedioFinal || 0 }));
+            const promedios = notas.length > 0 ? {
+              cotidiana: notas.reduce((s: number, n: any) => s + n.ac, 0) / notas.length,
+              integradora: notas.reduce((s: number, n: any) => s + n.ai, 0) / notas.length,
+              examen: notas.reduce((s: number, n: any) => s + n.ex, 0) / notas.length,
+            } : { cotidiana: 0, integradora: 0, examen: 0 };
+            const top = [...gradosCalif]
+              .filter((c: any) => c.promedioFinal !== null)
+              .sort((a: any, b: any) => b.promedioFinal - a.promedioFinal)
+              .slice(0, 10)
+              .map((c: any) => ({ nombre: c.estudiante?.nombre || "—", promedio: c.promedioFinal, numero: c.estudiante?.numero || 0, estado: c.promedioFinal >= 6.5 ? "APROBADO" : c.promedioFinal >= 4.5 ? "CONDICIONADO" : "REPROBADO" }));
+            const alertas = [...gradosCalif]
+              .filter((c: any) => c.promedioFinal !== null && c.promedioFinal < 5.0)
+              .sort((a: any, b: any) => a.promedioFinal - b.promedioFinal)
+              .slice(0, 10)
+              .map((c: any) => ({ nombre: c.estudiante?.nombre || "—", promedio: c.promedioFinal, numero: c.estudiante?.numero || 0, estado: "REPROBADO" }));
+            statsMap[g.id] = { nombre: `${g.numero}° "${g.seccion}"`, promedios, topEstudiantes: top, alertas };
+          }
+        }
+        setStats(Object.values(statsMap));
+      })
+      .catch(() => setStats([]))
+      .finally(() => setStatsLoading(false));
+  }, [open, trimestre]);
 
   const generarInforme = async () => {
     setGenerando(true);

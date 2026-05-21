@@ -664,7 +664,6 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
           darkMode={darkMode}
           usuario={{ nombre: usuario.nombre, rol: usuario.rol }}
           configuracion={configuracion}
-          stats={stats}
           grados={grados}
         />
       )}
