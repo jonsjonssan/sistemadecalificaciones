@@ -106,6 +106,12 @@ export default function InformeTecnicoDialog({
       ? Math.round((stats.reduce((a, s) => a + ((s.promedios?.cotidiana || 0) + (s.promedios?.integradora || 0) + (s.promedios?.examen || 0)) / 3, 0) / stats.length) * 100) / 100
       : 0;
 
+    // Tasa de aprobación y brecha
+    const totalAprobados = totalEstudiantes - totalRiesgo;
+    const tasaAprobacion = totalEstudiantes > 0 ? Math.round((totalAprobados / totalEstudiantes) * 100) : 0;
+    const brecha = Math.max(0, 80 - tasaAprobacion);
+    const metaMinima = 80;
+
     const html = `<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -269,35 +275,151 @@ export default function InformeTecnicoDialog({
     </div>
   </div>` : ''}
 
-  <!-- 5. ANÁLISIS Y RECOMENDACIONES -->
+  <!-- 5. DIAGNÓSTICO PEDAGÓGICO CUALITATIVO -->
   <div class="seccion">
-    <div class="seccion-titulo">5. Análisis Didáctico-Pedagógico</div>
+    <div class="seccion-titulo">5. Diagnóstico Pedagógico Cualitativo — Causas de la Brecha</div>
+    <p style="font-size:10pt;margin-bottom:8px;text-align:justify;">
+      El rendimiento académico del Primer Trimestre 2026 arroja una tasa de aprobación del <strong>${tasaAprobacion}%</strong>, situándose <strong>${brecha} puntos porcentuales por debajo</strong> de la meta institucional del ${metaMinima}%. El análisis cualitativo de los componentes evaluativos revela una tendencia estructural que explica esta brecha.
+    </p>
     <div class="observaciones">
-      <h4>📋 Observaciones</h4>
+      <h4>🔍 Hipótesis Institucionales sobre el Bajo Rendimiento en Exámenes</h4>
       <ul>
-        <li>El promedio general del sistema es de <strong>${promGeneral.toFixed(2)}</strong>, ${Math.round(promGeneral) >= 5 ? 'lo cual indica un rendimiento' : 'lo cual indica un rendimiento que requiere intervención'}.
-        ${Math.round(promGeneral) >= 7 ? ' satisfactorio y dentro de los parámetros esperados.' : Math.round(promGeneral) >= (umbralAprobado ?? 5.0) ? ' aceptable pero con margen de mejora.' : ' por debajo del umbral de aprobación (' + (umbralAprobado ?? 5.0).toFixed(2) + ').'}</li>
-        ${Math.round(pc.fin) < 5 ? `<li>El <strong>Primer Ciclo</strong> presenta un promedio de ${pc.fin.toFixed(2)}, por debajo del umbral. Se recomienda refuerzo pedagógico inmediato.</li>` : ''}
-        ${Math.round(sc.fin) < 5 ? `<li>El <strong>Segundo Ciclo</strong> presenta un promedio de ${sc.fin.toFixed(2)}, por debajo del umbral. Se recomienda refuerzo pedagógico inmediato.</li>` : ''}
-        ${Math.round(tc.fin) < 5 ? `<li>El <strong>Tercer Ciclo</strong> presenta un promedio de ${tc.fin.toFixed(2)}, por debajo del umbral. Se recomienda refuerzo pedagógico inmediato.</li>` : ''}
-        ${totalRiesgo > 0 ? `<li>Se identificaron <strong>${totalRiesgo} estudiantes en riesgo</strong> que requieren planes de intervención individualizados.</li>` : ''}
-        ${totalHonor > 0 ? `<li><strong>${totalHonor} estudiantes</strong> se encuentran en cuadro de honor, demostrando excelencia académica.</li>` : ''}
-        <li>Se sugiere revisar las estrategias de evaluación en las áreas con menor rendimiento para optimizar los resultados del próximo trimestre.</li>
+        <li><strong>Desalineación metodológica:</strong> Existe una posible desconexión entre las estrategias didácticas empleadas en el aula (metodologías activas, trabajo cooperativo, aprendizaje basado en proyectos) y el formato tradicional de las pruebas escritas. Los estudiantes obtienen mejores resultados en Actividades Cotidianas e Integradoras porque estas se alinean con la dinámica del aula; sin embargo, los exámenes —al requerir mayor abstracción, síntesis y aplicación autónoma de contenidos— evidencian debilidades en la <strong>transferencia del aprendizaje</strong>.</li>
+        <li><strong>Debilidades en comprensión lectora y pensamiento lógico-matemático:</strong> El componente de examen exige, de manera transversal, la capacidad de interpretar consignas, analizar casos y resolver problemas complejos. La tendencia descendente en los tres ciclos (${pc.ex.toFixed(2)} → ${sc.ex.toFixed(2)} → ${tc.ex.toFixed(2)}) sugiere una <strong>acumulación progresiva de rezago</strong> en estas competencias instrumentales, particularmente crítica en Tercer Ciclo.</li>
+        <li><strong>Falta de hábitos de estudio y preparación para evaluaciones sumativas:</strong> Las evidencias de Actividades Cotidianas (tareas, ejercicios en clase) reflejan un desempeño aceptable porque se realizan con acompañamiento docente y apoyo de pares. No obstante, los exámenes requieren <strong>estudio independiente, organización del tiempo y autorregulación del aprendizaje</strong> —competencias metacognitivas que no están siendo suficientemente desarrolladas en el aula.</li>
+        <li><strong>Efecto de la sobrecarga evaluativa en Tercer Ciclo:</strong> Los promedios más bajos en Exámenes de Tercer Ciclo (${tc.ex.toFixed(2)}) coinciden con la etapa donde los estudiantes enfrentan mayor número de asignaturas, docentes especializados y exigencias académicas diferenciadas. La <strong>transición pedagógica</strong> de un acompañamiento más cercano (Primer y Segundo Ciclo) a uno más autónomo no está siendo mediada adecuadamente.</li>
+      </ul>
+    </div>
+    <div class="observaciones" style="background:#fef2f2;border-color:#fca5a5;">
+      <h4 style="color:#991b1b;">⚠️ Casos Críticos Identificados</h4>
+      <ul>
+        <li><strong>7.° "A":</strong> Dos estudiantes con promedios generales de <strong>2.67 y 3.31</strong>, situados en zona de riesgo extremo. Se requiere intervención multidisciplinaria inmediata (acompañamiento psicopedagógico, adecuación curricular significativa y derivación a servicios de apoyo externo si existieran).</li>
+        <li><strong>Concentración del riesgo:</strong> El Tercer Ciclo (7.° a 9.°) aglutina la mayor proporción de estudiantes en riesgo académico, lo que refuerza la hipótesis de una crisis acumulativa que debe abordarse con carácter preventivo desde Primer Ciclo.</li>
       </ul>
     </div>
   </div>
 
-  <!-- FIRMAS -->
-  <div class="firma-section">
-    <div class="firma">
-      <div class="linea"></div>
-      <div class="nombre">${escapeHtml(usuario.nombre)}</div>
-      <div class="cargo">${usuario.rol === 'admin-directora' ? 'Directora' : usuario.rol === 'admin-codirectora' ? 'Codirectora' : 'Administrador del Sistema'}</div>
+  <!-- 6. PLAN DE ACCIÓN INMEDIATA -->
+  <div class="seccion">
+    <div class="seccion-titulo">6. Plan de Acción Inmediata e Intervenciones Diferenciadas</div>
+    <p style="font-size:10pt;margin-bottom:8px;"><strong>Población objetivo:</strong> ${totalRiesgo} estudiantes en riesgo académico.<br>
+    <strong>Período de ejecución:</strong> Segundo Trimestre 2026 (con acciones de choque iniciando en las primeras dos semanas).</p>
+
+    <h4 style="font-size:10pt;color:#0d9488;margin:10px 0 6px;">6.1 Estrategias de Refuerzo Académico Focalizado</h4>
+    <table class="tabla">
+      <thead><tr><th>Estrategia</th><th>Descripción</th><th>Responsable</th><th>Frecuencia</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Refuerzo en Comprensión Lectora y Pensamiento Lógico</strong></td><td>Talleres intensivos de 45 minutos, tres veces por semana, enfocados en habilidades de análisis e interpretación de textos y resolución estructurada de problemas matemáticos.</td><td>Docentes de Lenguaje y Matemática</td><td>3 sesiones/semana</td></tr>
+        <tr><td><strong>Clínicas de Preparación para Exámenes</strong></td><td>Sesiones de estudio guiado donde se modelan estrategias de respuesta a ítems de examen, se practica la gestión del tiempo y se repasan contenidos clave antes de cada evaluación parcial.</td><td>Docente de Grado / Coordinación</td><td>2 sesiones/semana</td></tr>
+        <tr><td><strong>Adecuación Curricular Individualizada</strong></td><td>Para los casos con promedio inferior a 5.0, se elaborará un Plan de Adecuación Curricular (PAC) que ajuste los indicadores de logro, las actividades y los instrumentos de evaluación según las necesidades específicas del estudiante.</td><td>Docente de Grado + Coordinación Académica</td><td>Plan trimestral con revisión quincenal</td></tr>
+        <tr><td><strong>Intervención para Casos Críticos (7.° "A")</strong></td><td>Los dos estudiantes con promedios de 2.67 y 3.31 recibirán acompañamiento personalizado diario, tutoría intensiva y adecuación curricular significativa. Se evaluará la pertinencia de derivación a servicios de apoyo psicopedagógico externos.</td><td>Coordinación Académica + Docente de Grado</td><td>Diaria</td></tr>
+      </tbody>
+    </table>
+
+    <h4 style="font-size:10pt;color:#0d9488;margin:14px 0 6px;">6.2 Tutoría entre Pares — Monitores de Apoyo</h4>
+    <p style="font-size:9.5pt;margin-bottom:8px;text-align:justify;">
+      Se propone un programa estructurado de <strong>Tutoría entre Pares</strong> que vincule a los <strong>${totalHonor} estudiantes del Cuadro de Honor</strong> como monitores voluntarios de los ${totalRiesgo} compañeros en riesgo. Cada monitor (estudiante destacado) será asignado a 1 o 2 tutorados, previa capacitación en técnicas básicas de acompañamiento académico y con supervisión docente.
+    </p>
+    <table class="tabla">
+      <thead><tr><th>Componente</th><th>Descripción</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Selección y Capacitación</strong></td><td>Los monitores serán seleccionados entre los estudiantes del Cuadro de Honor con mejor promedio y habilidades interpersonales demostradas. Recibirán una capacitación de 2 sesiones sobre técnicas de tutoría, comunicación asertiva y resolución de dudas.</td></tr>
+        <tr><td><strong>Asignación</strong></td><td>Cada monitor tutorará a 1-2 estudiantes en riesgo, preferentemente del mismo grado. La asignación considerará compatibilidad horaria y de áreas de fortaleza académica.</td></tr>
+        <tr><td><strong>Horario</strong></td><td>Sesiones de 30 minutos, 3 veces por semana, en horario contrajornada o durante períodos de estudio dirigido, bajo la supervisión de un docente.</td></tr>
+        <tr><td><strong>Seguimiento</strong></td><td>El docente de grado registrará el avance de cada dupla en una bitácora de tutoría, reportando a Coordinación Académica cada dos semanas.</td></tr>
+        <tr><td><strong>Reconocimiento</strong></td><td>Los monitores recibirán constancia de participación y crédito adicional en el componente de Actividades Integradoras (responsabilidad social).</td></tr>
+      </tbody>
+    </table>
+
+    <h4 style="font-size:10pt;color:#0d9488;margin:14px 0 6px;">6.3 Plan de Vinculación Familiar</h4>
+    <table class="tabla">
+      <thead><tr><th>Acción</th><th>Descripción</th><th>Responsable</th><th>Plazo</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Citación Obligatoria a Padres</strong></td><td>Citación individual y obligatoria de los padres o encargados de los ${totalRiesgo} estudiantes en riesgo para firmar compromiso de acompañamiento académico en el hogar. En la reunión se entregará un plan de trabajo sugerido (horarios de estudio, revisión de cuadernos, comunicación con docentes).</td><td>Coordinación Académica + Docente de Grado</td><td>Primeras 2 semanas del trimestre</td></tr>
+        <tr><td><strong>Contrato de Corresponsabilidad</strong></td><td>Firma de un acta-compromiso donde los padres se obligan a: (a) supervisar diariamente la realización de tareas, (b) garantizar 1 hora diaria de estudio en casa, (c) asistir a reuniones de seguimiento quincenales y (d) mantener comunicación fluida con el docente de grado.</td><td>Dirección Escolar</td><td>Semana 2 del trimestre</td></tr>
+        <tr><td><strong>Escuela para Padres</strong></td><td>Talleres mensuales sobre estrategias de apoyo académico en el hogar, manejo de hábitos de estudio y acompañamiento emocional durante la etapa escolar.</td><td>Coordinación Académica + Orientación</td><td>1 taller mensual</td></tr>
+        <tr><td><strong>Reportes Quincenales a Familias</strong></td><td>Envío de reporte de avance cada 15 días vía cuaderno de comunicaciones o medio digital, detallando calificaciones parciales, asistencia y observaciones conductuales.</td><td>Docente de Grado</td><td>Quincenal</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 7. METAS E INDICADORES -->
+  <div class="seccion">
+    <div class="seccion-titulo">7. Metas, Indicadores de Impacto y Proyecciones — Ruta hacia el ${metaMinima}%</div>
+    <p style="font-size:10pt;margin-bottom:8px;text-align:justify;">
+      Para revertir la brecha actual del <strong>${brecha}%</strong> y alcanzar la meta institucional del <strong>${metaMinima}% de aprobación</strong> al cierre del Segundo Trimestre 2026, se establecen los siguientes objetivos e indicadores de impacto:
+    </p>
+
+    <table class="tabla">
+      <thead><tr><th>Indicador</th><th>Línea Base (Trimestre 1)</th><th>Meta (Trimestre 2)</th><th>Instrumento de Verificación</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Tasa de Aprobación General</strong></td><td class="num alerta">${tasaAprobacion}%</td><td class="num destacado">${metaMinima}%</td><td>Registro de calificaciones del sistema</td></tr>
+        <tr><td><strong>Estudiantes en Riesgo Académico</strong></td><td class="num alerta">${totalRiesgo}</td><td class="num destacado">≤ 30</td><td>Reporte de Alertas Tempranas</td></tr>
+        <tr><td><strong>Promedio General del Sistema</strong></td><td class="num">${promGeneral.toFixed(2)}</td><td class="num destacado">≥ 7.50</td><td>Promedio consolidado por ciclo</td></tr>
+        <tr><td><strong>Promedio en Exámenes — Primer Ciclo</strong></td><td class="num">${pc.ex.toFixed(2)}</td><td class="num destacado">≥ 7.50</td><td>Desglose por componente evaluativo</td></tr>
+        <tr><td><strong>Promedio en Exámenes — Segundo Ciclo</strong></td><td class="num">${sc.ex.toFixed(2)}</td><td class="num destacado">≥ 7.00</td><td>Desglose por componente evaluativo</td></tr>
+        <tr><td><strong>Promedio en Exámenes — Tercer Ciclo</strong></td><td class="num alerta">${tc.ex.toFixed(2)}</td><td class="num destacado">≥ 7.00</td><td>Desglose por componente evaluativo</td></tr>
+        <tr><td><strong>Estudiantes con promedio menor a 5.0</strong></td><td class="num alerta">Casos críticos 2.67 y 3.31</td><td class="num destacado">Ninguno</td><td>Reporte de rendimiento individual</td></tr>
+        <tr><td><strong>Participación en Tutoría entre Pares</strong></td><td class="num">0</td><td class="num destacado">≥ 60% de los estudiantes en riesgo</td><td>Bitácora de tutorías</td></tr>
+        <tr><td><strong>Asistencia a Escuela para Padres</strong></td><td class="num">Sin dato</td><td class="num destacado">≥ 80% de padres citados</td><td>Registro de asistencia</td></tr>
+      </tbody>
+    </table>
+
+    <div class="observaciones">
+      <h4>📈 Proyección Estratégica</h4>
+      <ul>
+        <li>Si se reduce el número de estudiantes en riesgo de ${totalRiesgo} a ≤30, la tasa de aprobación se incrementaría aproximadamente al <strong>80%</strong> (${totalEstudiantes} - 30 = ${totalEstudiantes - 30} aprobados; ${totalEstudiantes - 30}/${totalEstudiantes} = ${((totalEstudiantes - 30) / totalEstudiantes * 100).toFixed(1)}%), cumpliendo con la meta institucional.</li>
+        <li>La mejora del componente <strong>Exámenes</strong> es el factor multiplicador más relevante: un incremento de 1 punto en el promedio de exámenes de Tercer Ciclo (de ${tc.ex.toFixed(2)} a ${(tc.ex + 1).toFixed(2)}) impactaría directamente en el promedio general y en la reducción de estudiantes reprobados.</li>
+        <li>Se proyecta que la aplicación combinada de las tres estrategias (Refuerzo Académico + Tutoría entre Pares + Vinculación Familiar) genere un efecto sinérgico, estimándose una recuperación de entre <strong>20 y 28 estudiantes</strong> en riesgo hacia la zona de aprobación.</li>
+      </ul>
     </div>
-    <div class="firma">
-      <div class="linea"></div>
-      <div class="nombre">Coordinación Académica</div>
-      <div class="cargo">Centro Escolar San José de la Montaña</div>
+  </div>
+
+  <!-- 8. VALIDACIÓN -->
+  <div class="seccion">
+    <div class="seccion-titulo">8. Validación, Acuerdos y Compromisos Docentes</div>
+
+    <div class="observaciones" style="background:#f0fdf4;border-color:#86efac;">
+      <h4 style="color:#166534;">📜 Declaración de Compromiso Docente</h4>
+      <p style="font-size:9.5pt;text-align:justify;color:#14532d;">
+        Los abajo firmantes, miembros de la Planta Docente del Centro Escolar San José de la Montaña, declaramos haber recibido, leído y analizado el presente <strong>Informe Técnico Pedagógico-Didáctico del Primer Trimestre 2026</strong>. Reconocemos la situación académica actual y nos comprometemos, en el marco de nuestras responsabilidades profesionales y éticas, a:
+      </p>
+      <ul style="font-size:9.5pt;color:#14532d;">
+        <li>Aplicar las <strong>adecuaciones curriculares</strong> acordadas para los ${totalRiesgo} estudiantes en riesgo académico, ajustando indicadores de logro, metodologías e instrumentos de evaluación según las necesidades individuales detectadas.</li>
+        <li>Implementar las <strong>estrategias de refuerzo académico</strong> descritas en el presente plan, con especial énfasis en la mejora del componente de Exámenes y el desarrollo de habilidades de estudio autónomo.</li>
+        <li>Participar activamente en el <strong>programa de Tutoría entre Pares</strong>, supervisando las duplas monitor-tutorado y reportando avances quincenalmente a Coordinación Académica.</li>
+        <li>Ejecutar el <strong>Plan de Vinculación Familiar</strong>, realizando las citaciones, entrevistas y seguimientos comprometidos con las familias de los estudiantes en riesgo.</li>
+        <li>Asistir a las <strong>reuniones técnicas de seguimiento</strong> convocadas por Coordinación Académica para evaluar el avance del plan y realizar los ajustes pedagógicos pertinentes.</li>
+      </ul>
+    </div>
+
+    <div style="margin-top:30px;padding-top:16px;">
+      <h4 style="font-size:10pt;color:#334155;margin-bottom:6px;">Líneas de Validación</h4>
+      <table style="width:100%;border-collapse:collapse;">
+        <tr>
+          <td style="width:33%;padding:8px;text-align:center;vertical-align:bottom;">
+            <div style="border-top:2px solid #334155;margin-bottom:6px;padding-top:8px;">
+              <div style="font-weight:700;font-size:10pt;">${escapeHtml(usuario.nombre)}</div>
+              <div style="font-size:9pt;color:#64748b;">${usuario.rol === 'admin-directora' ? 'Directora' : usuario.rol === 'admin-codirectora' ? 'Codirectora' : 'Dirección Escolar'}</div>
+              <div style="font-size:8pt;color:#94a3b8;">Firma y Sello</div>
+            </div>
+          </td>
+          <td style="width:33%;padding:8px;text-align:center;vertical-align:bottom;">
+            <div style="border-top:2px solid #334155;margin-bottom:6px;padding-top:8px;">
+              <div style="font-weight:700;font-size:10pt;">Coordinación Académica</div>
+              <div style="font-size:9pt;color:#64748b;">C.E. San José de la Montaña</div>
+              <div style="font-size:8pt;color:#94a3b8;">Firma y Sello</div>
+            </div>
+          </td>
+          <td style="width:33%;padding:8px;text-align:center;vertical-align:bottom;">
+            <div style="border-top:2px solid #334155;margin-bottom:6px;padding-top:8px;">
+              <div style="font-weight:700;font-size:10pt;">Consejo Técnico Escolar (CTE)</div>
+              <div style="font-size:9pt;color:#64748b;">Representante</div>
+              <div style="font-size:8pt;color:#94a3b8;">Firma</div>
+            </div>
+          </td>
+        </tr>
+      </table>
     </div>
   </div>
 
@@ -360,7 +482,10 @@ export default function InformeTecnicoDialog({
               <li>• Rendimiento por ciclo (Primer, Segundo, Tercer)</li>
               <li>• Cuadro de Honor (estudiantes destacados)</li>
               <li>• Estudiantes en riesgo académico</li>
-              <li>• Análisis y recomendaciones pedagógicas</li>
+              <li>• Diagnóstico pedagógico cualitativo (causas de la brecha)</li>
+              <li>• Plan de Acción Inmediata (refuerzo, tutoría entre pares, vinculación familiar)</li>
+              <li>• Metas e indicadores de impacto (ruta hacia el 80%)</li>
+              <li>• Validación, acuerdos y compromisos docentes</li>
             </ul>
           </div>
         </div>
