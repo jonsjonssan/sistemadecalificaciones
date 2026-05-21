@@ -338,7 +338,7 @@ export async function POST(request: NextRequest) {
     if (config) {
       const porcAC = config.porcentajeAC / 100;
       const porcAI = config.porcentajeAI / 100;
-      const porcExam = config.tieneExamen ? config.porcentajeExamen / 100 : 0;
+      const porcExam = (config.porcentajeExamen ?? 30) / 100;
 
       const tieneNotas = calificacionAC !== null || calificacionAI !== null || examenTrimestral !== null;
       if (tieneNotas) {

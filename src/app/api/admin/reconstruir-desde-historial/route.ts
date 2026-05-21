@@ -173,10 +173,7 @@ export async function POST(request: NextRequest) {
         ) {
           const porcAC = config ? config.porcentajeAC / 100 : 0.35;
           const porcAI = config ? config.porcentajeAI / 100 : 0.35;
-          const porcEx =
-            config && config.tieneExamen
-              ? config.porcentajeExamen / 100
-              : 0.3;
+          const porcEx = config ? (config.porcentajeExamen ?? 30) / 100 : 0.3;
 
           const suma =
             (promAC ?? 0) * porcAC +
