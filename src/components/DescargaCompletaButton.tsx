@@ -389,13 +389,13 @@ async function generarWord(data: ApiResponse) {
   <style>
     @page { margin: 1.5cm; }
     body { font-family: 'Calibri', 'Arial', sans-serif; font-size: 10pt; color: #1a1a1a; }
-    h1 { font-size: 16pt; text-align: center; color: #0d9488; margin-bottom: 2px; }
+    h1 { font-size: 16pt; text-align: center; color: #1b6b3a; margin-bottom: 2px; }
     h2 { font-size: 12pt; text-align: center; color: #333; margin-top: 0; font-weight: normal; }
     .subtitle { text-align: center; font-size: 9pt; color: #666; margin-bottom: 15px; }
-    .grado-title { font-size: 13pt; font-weight: bold; color: #0d9488; margin-top: 20px; margin-bottom: 5px; border-bottom: 2px solid #0d9488; padding-bottom: 3px; }
+    .grado-title { font-size: 13pt; font-weight: bold; color: #1b6b3a; margin-top: 20px; margin-bottom: 5px; border-bottom: 2px solid #1b6b3a; padding-bottom: 3px; }
     .materia-title { font-size: 11pt; font-weight: bold; margin-top: 12px; margin-bottom: 4px; color: #444; }
     table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 8pt; }
-    th { background-color: #0d9488; color: white; padding: 4px 3px; text-align: center; font-weight: bold; }
+    th { background-color: #1b6b3a; color: white; padding: 4px 3px; text-align: center; font-weight: bold; }
     td { padding: 3px; border: 1px solid #ccc; text-align: center; }
     td:first-child { text-align: center; font-weight: bold; width: 25px; }
     td:nth-child(2) { text-align: left; }

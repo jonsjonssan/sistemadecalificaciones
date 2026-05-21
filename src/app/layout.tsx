@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Sora, Syne, JetBrains_Mono } from "next/font/google";
+import { Sora, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -13,12 +13,6 @@ const sora = Sora({
   variable: "--font-body",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
-});
-
-const syne = Syne({
-  variable: "--font-display",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -59,7 +53,7 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body
-        className={`${sora.variable} ${syne.variable} ${jetbrainsMono.variable} antialiased bg-background text-foreground font-body`}
+        className={`${sora.variable} ${jetbrainsMono.variable} antialiased bg-background text-foreground font-body`}
       >
         <SkipLink />
         <ErrorBoundary>

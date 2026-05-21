@@ -202,7 +202,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
 
     const bloqueAsistenciaManual = mostrarAsistencia && incluirAsistenciaManual ? `
     <div class="seccion-asistencia" style="margin-top:15px;page-break-inside:avoid;">
-      <div class="seccion-asistencia-header" style="background:#0d9488;color:#fff;padding:6px 10px;font-weight:bold;font-size:9pt;display:flex;justify-content:space-between;">
+      <div class="seccion-asistencia-header" style="background:#1b6b3a;color:#fff;padding:6px 10px;font-weight:bold;font-size:9pt;display:flex;justify-content:space-between;">
         <span>REGISTRO DE ASISTENCIA</span>
         <span style="font-weight:normal;font-size:8pt;">para llenar manualmente</span>
       </div>
@@ -506,7 +506,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
 
         ${mostrarAsistencia && incluirAsistenciaManual ? `
         <div class="seccion-asistencia" style="margin-top:15px;page-break-inside:avoid;">
-          <div class="seccion-asistencia-header" style="background:#0d9488;color:#fff;padding:6px 10px;font-weight:bold;font-size:9pt;display:flex;justify-content:space-between;">
+          <div class="seccion-asistencia-header" style="background:#1b6b3a;color:#fff;padding:6px 10px;font-weight:bold;font-size:9pt;display:flex;justify-content:space-between;">
             <span>REGISTRO DE ASISTENCIA</span>
             <span style="font-weight:normal;font-size:8pt;">para llenar manualmente</span>
           </div>
@@ -1275,8 +1275,8 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
   </table>
   ${mostrarAsistencia && (incluirAsistencia || asistenciaManualHabilitado) ? `<p><b>Asistencia:</b> Asistencias: ${asist.asistencias} | Inasistencias: ${asist.ausencias} | Tardanzas: ${asist.tardanzas} | Justificadas: ${asist.justificadas || 0} | Total: ${asist.total}</p>` : ''}
   ${mostrarAsistencia && incluirAsistenciaManual ? `
-  <div style="margin:15px 0;padding:10px;border:2px solid #0d9488;border-radius:4px;">
-    <div style="font-weight:bold;font-size:11pt;margin-bottom:8px;color:#0d9488;">REGISTRO DE ASISTENCIA <span style="font-weight:normal;font-size:8pt;color:#555;">(para llenar manualmente)</span></div>
+  <div style="margin:15px 0;padding:10px;border:2px solid #1b6b3a;border-radius:4px;">
+    <div style="font-weight:bold;font-size:11pt;margin-bottom:8px;color:#1b6b3a;">REGISTRO DE ASISTENCIA <span style="font-weight:normal;font-size:8pt;color:#555;">(para llenar manualmente)</span></div>
     <table style="width:100%;border-collapse:collapse;">
       <tr>
         <td style="border:1px solid #333;padding:8px 4px;text-align:center;width:20%;background:#f0fdfa;"><b style="font-size:9pt;text-transform:uppercase;">Asistencias</b><br><span style="font-size:16pt;line-height:2;">&nbsp;</span></td>

@@ -121,26 +121,26 @@ export default function InformeTecnicoDialog({
     @page { size: letter; margin: 2cm; }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #1e293b; font-size: 11pt; line-height: 1.5; }
-    .header { text-align: center; border-bottom: 3px solid #0d9488; padding-bottom: 16px; margin-bottom: 20px; }
-    .header h1 { font-size: 16pt; color: #0d9488; margin-bottom: 4px; }
+    .header { text-align: center; border-bottom: 3px solid #1b6b3a; padding-bottom: 16px; margin-bottom: 20px; }
+    .header h1 { font-size: 16pt; color: #1b6b3a; margin-bottom: 4px; }
     .header h2 { font-size: 13pt; color: #334155; font-weight: 500; }
     .header .subtitulo { font-size: 11pt; color: #64748b; margin-top: 4px; }
     .header .meta { font-size: 9pt; color: #94a3b8; margin-top: 8px; }
     .seccion { margin-bottom: 18px; page-break-inside: avoid; }
-    .seccion-titulo { font-size: 12pt; font-weight: 700; color: #0f172a; border-left: 4px solid #0d9488; padding-left: 10px; margin-bottom: 10px; background: #f0fdfa; padding: 6px 10px; }
+    .seccion-titulo { font-size: 12pt; font-weight: 700; color: #0f172a; border-left: 4px solid #1b6b3a; padding-left: 10px; margin-bottom: 10px; background: #f0fdfa; padding: 6px 10px; }
     .info-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
     .info-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; }
     .info-card .label { font-size: 8pt; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; }
     .info-card .valor { font-size: 16pt; font-weight: 700; color: #0f172a; }
     .info-card .sub { font-size: 8pt; color: #94a3b8; }
     .tabla { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 10pt; }
-    .tabla th { background: #0d9488; color: white; padding: 8px 10px; text-align: left; font-size: 9pt; text-transform: uppercase; letter-spacing: 0.3px; }
+    .tabla th { background: #1b6b3a; color: white; padding: 8px 10px; text-align: left; font-size: 9pt; text-transform: uppercase; letter-spacing: 0.3px; }
     .tabla td { padding: 6px 10px; border-bottom: 1px solid #e2e8f0; }
     .tabla tr:nth-child(even) { background: #f8fafc; }
     .tabla .num { text-align: right; font-weight: 600; }
     .tabla .destacado { color: #059669; font-weight: 700; }
     .tabla .alerta { color: #dc2626; font-weight: 700; }
-    .ciclo-header { font-size: 10pt; font-weight: 700; color: #0d9488; margin: 12px 0 6px; padding-bottom: 4px; border-bottom: 1px dashed #cbd5e1; }
+    .ciclo-header { font-size: 10pt; font-weight: 700; color: #1b6b3a; margin: 12px 0 6px; padding-bottom: 4px; border-bottom: 1px dashed #cbd5e1; }
     .firma-section { display: flex; justify-content: space-around; margin-top: 50px; padding-top: 20px; }
     .firma { text-align: center; width: 45%; }
     .firma .linea { border-top: 1px solid #334155; margin-bottom: 6px; }
@@ -246,7 +246,7 @@ export default function InformeTecnicoDialog({
   <div class="seccion">
     <div class="seccion-titulo">3. Cuadro de Honor — Estudiantes Destacados</div>
     ${cuadroHonor.map(g => `
-      <p style="font-size:10pt;font-weight:600;color:#0d9488;margin:8px 0 4px;">${escapeHtml(g.grado)}</p>
+      <p style="font-size:10pt;font-weight:600;color:#1b6b3a;margin:8px 0 4px;">${escapeHtml(g.grado)}</p>
       <table class="tabla">
         <thead><tr><th>N°</th><th>Estudiante</th><th>Promedio</th><th>Estado</th><th>Reconocimiento</th></tr></thead>
         <tbody>
@@ -305,7 +305,7 @@ export default function InformeTecnicoDialog({
     <p style="font-size:10pt;margin-bottom:8px;"><strong>Población objetivo:</strong> ${totalRiesgo} estudiantes en riesgo académico.<br>
     <strong>Período de ejecución:</strong> Segundo Trimestre 2026 (con acciones de choque iniciando en las primeras dos semanas).</p>
 
-    <h4 style="font-size:10pt;color:#0d9488;margin:10px 0 6px;">6.1 Estrategias de Refuerzo Académico Focalizado</h4>
+    <h4 style="font-size:10pt;color:#1b6b3a;margin:10px 0 6px;">6.1 Estrategias de Refuerzo Académico Focalizado</h4>
     <table class="tabla">
       <thead><tr><th>Estrategia</th><th>Descripción</th><th>Responsable</th><th>Frecuencia</th></tr></thead>
       <tbody>
@@ -316,7 +316,7 @@ export default function InformeTecnicoDialog({
       </tbody>
     </table>
 
-    <h4 style="font-size:10pt;color:#0d9488;margin:14px 0 6px;">6.2 Tutoría entre Pares — Monitores de Apoyo</h4>
+    <h4 style="font-size:10pt;color:#1b6b3a;margin:14px 0 6px;">6.2 Tutoría entre Pares — Monitores de Apoyo</h4>
     <p style="font-size:9.5pt;margin-bottom:8px;text-align:justify;">
       Se propone un programa estructurado de <strong>Tutoría entre Pares</strong> que vincule a los <strong>${totalHonor} estudiantes del Cuadro de Honor</strong> como monitores voluntarios de los ${totalRiesgo} compañeros en riesgo. Cada monitor (estudiante destacado) será asignado a 1 o 2 tutorados, previa capacitación en técnicas básicas de acompañamiento académico y con supervisión docente.
     </p>
@@ -331,7 +331,7 @@ export default function InformeTecnicoDialog({
       </tbody>
     </table>
 
-    <h4 style="font-size:10pt;color:#0d9488;margin:14px 0 6px;">6.3 Plan de Vinculación Familiar</h4>
+    <h4 style="font-size:10pt;color:#1b6b3a;margin:14px 0 6px;">6.3 Plan de Vinculación Familiar</h4>
     <table class="tabla">
       <thead><tr><th>Acción</th><th>Descripción</th><th>Responsable</th><th>Plazo</th></tr></thead>
       <tbody>
@@ -428,7 +428,7 @@ export default function InformeTecnicoDialog({
   </div>
 
   <div class="no-print" style="position:fixed;top:10px;right:10px;display:flex;gap:8px;">
-    <button onclick="window.print()" style="padding:8px 16px;background:#0d9488;color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px;">🖨️ Imprimir</button>
+    <button onclick="window.print()" style="padding:8px 16px;background:#1b6b3a;color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px;">🖨️ Imprimir</button>
   </div>
 
 </body>

@@ -13,9 +13,9 @@ export const PromedioCircular = memo(function PromedioCircular({ valor, darkMode
   const normalizedRadius = radius - stroke;
   const circumference = normalizedRadius * 2 * Math.PI;
   const strokeDashoffset = valor != null ? circumference - (valor / 10) * circumference : circumference;
-  const tealColor = darkMode ? "oklch(0.65 0.12 155)" : "oklch(0.44 0.13 155)";
+  const greenColor = darkMode ? "oklch(0.60 0.10 140)" : "oklch(0.45 0.10 140)";
   const redColor = darkMode ? "oklch(0.58 0.22 28)" : "oklch(0.52 0.20 28)";
-  const color = valor != null && Math.round(valor) >= 5 ? tealColor : redColor;
+  const color = valor != null && Math.round(valor) >= 5 ? greenColor : redColor;
 
   return (
     <div className="flex flex-col items-center">
