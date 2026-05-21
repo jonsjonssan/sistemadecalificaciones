@@ -215,6 +215,90 @@
   --slate-800: oklch(0.20 0.008 140);
   --slate-900: oklch(0.15 0.008 140);
 
+  /* ── GREEN (acento principal — light, verde bosque) ── */
+  --green-50:  oklch(0.94 0.035 140);
+  --green-100: oklch(0.90 0.05 140);
+  --green-200: oklch(0.82 0.07 140);
+  --green-300: oklch(0.70 0.09 140);
+  --green-400: oklch(0.55 0.10 140);
+  --green-500: oklch(0.42 0.10 140);
+  --green-600: oklch(0.35 0.09 140);
+  --green-700: oklch(0.28 0.08 140);
+  --green-800: oklch(0.20 0.06 140);
+  --green-900: oklch(0.15 0.04 140);
+
+  /* ── EMERALD (light) ── */
+  --emerald-50:  oklch(0.95 0.03 155);
+  --emerald-100: oklch(0.90 0.05 155);
+  --emerald-200: oklch(0.82 0.08 155);
+  --emerald-300: oklch(0.70 0.12 155);
+  --emerald-400: oklch(0.55 0.15 155);
+  --emerald-500: oklch(0.45 0.17 155);
+  --emerald-600: oklch(0.40 0.14 155);
+  --emerald-700: oklch(0.35 0.12 155);
+  --emerald-800: oklch(0.28 0.09 155);
+  --emerald-900: oklch(0.20 0.06 155);
+
+  /* ── AMBER (warning — light) ── */
+  --amber-50:  oklch(0.95 0.02 85);
+  --amber-100: oklch(0.91 0.04 85);
+  --amber-200: oklch(0.86 0.06 85);
+  --amber-300: oklch(0.78 0.09 85);
+  --amber-400: oklch(0.70 0.12 85);
+  --amber-500: oklch(0.62 0.12 85);
+  --amber-600: oklch(0.55 0.11 85);
+  --amber-700: oklch(0.45 0.10 85);
+  --amber-800: oklch(0.35 0.08 85);
+  --amber-900: oklch(0.25 0.05 85);
+
+  /* ── BLUE (info — light) ── */
+  --blue-50:  oklch(0.95 0.02 250);
+  --blue-100: oklch(0.90 0.03 250);
+  --blue-200: oklch(0.82 0.05 250);
+  --blue-300: oklch(0.70 0.08 250);
+  --blue-400: oklch(0.58 0.10 250);
+  --blue-500: oklch(0.48 0.12 250);
+  --blue-600: oklch(0.42 0.11 250);
+  --blue-700: oklch(0.35 0.09 250);
+  --blue-800: oklch(0.28 0.07 250);
+  --blue-900: oklch(0.20 0.04 250);
+
+  /* ── RED (danger — light) ── */
+  --red-50:  oklch(0.95 0.02 28);
+  --red-100: oklch(0.90 0.04 28);
+  --red-200: oklch(0.82 0.07 28);
+  --red-300: oklch(0.70 0.11 28);
+  --red-400: oklch(0.58 0.15 28);
+  --red-500: oklch(0.48 0.18 28);
+  --red-600: oklch(0.42 0.16 28);
+  --red-700: oklch(0.35 0.14 28);
+  --red-800: oklch(0.28 0.10 28);
+  --red-900: oklch(0.20 0.06 28);
+
+  /* ── VIOLET (light) ── */
+  --violet-50:  oklch(0.95 0.02 290);
+  --violet-100: oklch(0.90 0.03 290);
+  --violet-200: oklch(0.82 0.05 290);
+  --violet-300: oklch(0.72 0.08 290);
+  --violet-400: oklch(0.60 0.10 290);
+  --violet-500: oklch(0.50 0.12 290);
+  --violet-600: oklch(0.42 0.11 290);
+  --violet-700: oklch(0.35 0.09 290);
+  --violet-800: oklch(0.28 0.07 290);
+  --violet-900: oklch(0.20 0.04 290);
+
+  /* ── LIME (light) ── */
+  --lime-50:  oklch(0.95 0.03 145);
+  --lime-100: oklch(0.90 0.05 145);
+  --lime-200: oklch(0.85 0.08 145);
+  --lime-300: oklch(0.75 0.12 145);
+  --lime-400: oklch(0.65 0.15 145);
+  --lime-500: oklch(0.55 0.17 145);
+  --lime-600: oklch(0.50 0.15 145);
+  --lime-700: oklch(0.40 0.12 145);
+  --lime-800: oklch(0.30 0.08 145);
+  --lime-900: oklch(0.20 0.05 145);
+
   /* ── CHARTS (LIGHT) — gama verde cohesionada ── */
   --chart-1: oklch(0.55 0.14 140);
   --chart-2: oklch(0.60 0.12 100);
@@ -467,9 +551,15 @@
     position: fixed;
     inset: 0;
     background:
-      radial-gradient(ellipse at 15% 20%, oklch(0.42 0.10 140 / 0.03) 0%, transparent 50%);
+      radial-gradient(ellipse at 15% 15%, oklch(0.42 0.10 140 / 0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 85% 85%, oklch(0.42 0.10 140 / 0.03) 0%, transparent 50%);
     pointer-events: none;
     z-index: -1;
+  }
+  .dark .page-atmosphere::before {
+    background:
+      radial-gradient(ellipse at 15% 15%, oklch(0.58 0.10 140 / 0.10) 0%, transparent 50%),
+      radial-gradient(ellipse at 85% 85%, oklch(0.58 0.10 140 / 0.05) 0%, transparent 50%);
   }
 
   @keyframes fade-slide-up {

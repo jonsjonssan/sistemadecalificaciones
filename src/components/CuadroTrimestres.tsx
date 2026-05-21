@@ -324,9 +324,9 @@ const CuadroTrimestres = memo(function CuadroTrimestres({ gradoId, gradoNumero, 
                                 (e.target as HTMLInputElement).blur();
                               }
                             }}
-                            className={`w-16 text-center text-xs sm:text-sm rounded border px-1 py-0.5 outline-none focus:ring-2 focus:ring-emerald-500 ${
+                            className={`w-16 text-center text-xs sm:text-sm rounded border px-1 py-0.5 outline-none focus:ring-2 focus:ring-primary ${
                               darkMode
-                                ? "bg-slate-700 border-white/30 text-emerald-200 placeholder-slate-500"
+                                ? "bg-slate-700 border-white/30 text-foreground placeholder-slate-500"
                                 : "bg-white border-slate-300 text-slate-800 placeholder-slate-400"
                             }`}
                             placeholder="—"
