@@ -334,27 +334,35 @@ export async function POST(request: NextRequest) {
       where: { materiaId, trimestre: parseInt(String(trimestre)) },
     });
 
+    // Buscar calificación existente para preservar examen/recuperación en el cálculo del promedioFinal
+    const existingForCalc = await db.calificacion.findFirst({
+      where: { estudianteId, materiaId, trimestre: parseInt(String(trimestre)) },
+      select: { examenTrimestral: true, recuperacion: true },
+    });
+    const examenEfectivo = examenTrimestral !== undefined ? examenTrimestral : existingForCalc?.examenTrimestral ?? null;
+    const recupEfectiva = recuperacion !== undefined ? recuperacion : existingForCalc?.recuperacion ?? null;
+
     let promedioFinal: number | null = null;
     if (config) {
       const porcAC = config.porcentajeAC / 100;
       const porcAI = config.porcentajeAI / 100;
       const porcExam = (config.porcentajeExamen ?? 30) / 100;
 
-      const tieneNotas = calificacionAC !== null || calificacionAI !== null || examenTrimestral !== null;
+      const tieneNotas = calificacionAC !== null || calificacionAI !== null || examenEfectivo !== null;
       if (tieneNotas) {
-        const suma = (calificacionAC ?? 0) * porcAC + (calificacionAI ?? 0) * porcAI + ((examenTrimestral ?? 0)) * porcExam;
+        const suma = (calificacionAC ?? 0) * porcAC + (calificacionAI ?? 0) * porcAI + ((examenEfectivo ?? 0)) * porcExam;
         promedioFinal = isNaN(suma) ? null : suma;
-        if (recuperacion !== null && recuperacion !== undefined) {
-          promedioFinal = Math.min(10, (promedioFinal ?? 0) + recuperacion);
+        if (recupEfectiva !== null && recupEfectiva !== undefined) {
+          promedioFinal = Math.min(10, (promedioFinal ?? 0) + recupEfectiva);
         }
       }
     } else {
-      const tieneNotas = calificacionAC !== null || calificacionAI !== null || examenTrimestral !== null;
+      const tieneNotas = calificacionAC !== null || calificacionAI !== null || examenEfectivo !== null;
       if (tieneNotas) {
-        const suma = (calificacionAC ?? 0) * 0.35 + (calificacionAI ?? 0) * 0.35 + ((examenTrimestral ?? 0)) * 0.30;
+        const suma = (calificacionAC ?? 0) * 0.35 + (calificacionAI ?? 0) * 0.35 + ((examenEfectivo ?? 0)) * 0.30;
         promedioFinal = isNaN(suma) ? null : suma;
-        if (recuperacion !== null && recuperacion !== undefined) {
-          promedioFinal = Math.min(10, (promedioFinal ?? 0) + recuperacion);
+        if (recupEfectiva !== null && recupEfectiva !== undefined) {
+          promedioFinal = Math.min(10, (promedioFinal ?? 0) + recupEfectiva);
         }
       }
     }
