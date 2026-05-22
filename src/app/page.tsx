@@ -101,7 +101,7 @@ export default function Home() {
       />
 
       {/* Header */}
-      <header className="shadow-sm bg-card text-card-foreground border-b border-border mobile-header">
+      <header className="header-gradient text-card-foreground mobile-header">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <div className="h-9 w-9 sm:h-10 sm:w-10 shrink-0 rounded-full flex items-center justify-center bg-muted/50 ring-1 ring-border">

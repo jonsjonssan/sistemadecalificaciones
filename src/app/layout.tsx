@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Sora, JetBrains_Mono } from "next/font/google";
+import { Roboto, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -9,7 +9,7 @@ import { ClientComponents } from "@/components/ClientComponents";
 import { QueryProvider } from "@/lib/query-provider";
 import { SkipLink } from "@/components/A11y";
 
-const sora = Sora({
+const roboto = Roboto({
   variable: "--font-body",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
@@ -53,7 +53,7 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body
-        className={`${sora.variable} ${jetbrainsMono.variable} antialiased bg-background text-foreground font-body`}
+        className={`${roboto.variable} ${jetbrainsMono.variable} antialiased bg-background text-foreground font-body`}
       >
         <SkipLink />
         <ErrorBoundary>
