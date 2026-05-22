@@ -148,11 +148,19 @@ export default function CalificacionesTab({ d, darkMode, usuario }: Props) {
               </div>
             </div>
 
-            {/* Threshold badge */}
-            <Badge variant="outline" className={`gap-1 text-[10px] font-semibold px-2 py-0.5 border ${darkMode ? 'bg-red-950/40 border-red-800 text-red-400' : 'bg-red-50 border-red-200 text-red-700'}`}>
-              <AlertTriangle className="h-2.5 w-2.5" />
-              Umbral: &lt;{(d.configuracion?.umbralCondicionado ?? 4.5).toFixed(1)} R / ≥{(d.configuracion?.umbralAprobado ?? 6.5).toFixed(1)} A
-            </Badge>
+            {/* Marco Normativo */}
+            <div className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-semibold">
+              <AlertTriangle className="h-2.5 w-2.5 text-muted-foreground/50" />
+              <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded ${darkMode ? 'bg-red-900/60 text-red-300 ring-1 ring-red-700' : 'bg-red-100 text-red-800 ring-1 ring-red-300'}`}>
+                0–{(d.configuracion?.umbralCondicionado ?? 4.5) < 10 ? ((d.configuracion?.umbralCondicionado ?? 4.5) - 0.01).toFixed(2) : ''} Reprobado
+              </span>
+              <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded ${darkMode ? 'bg-amber-900/60 text-amber-300 ring-1 ring-amber-700' : 'bg-amber-100 text-amber-800 ring-1 ring-amber-300'}`}>
+                {(d.configuracion?.umbralCondicionado ?? 4.5).toFixed(2)}–{((d.configuracion?.umbralAprobado ?? 6.5) - 0.01).toFixed(2)} Condicionado
+              </span>
+              <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded ${darkMode ? 'bg-emerald-900/60 text-emerald-300 ring-1 ring-emerald-700' : 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-300'}`}>
+                ≥{(d.configuracion?.umbralAprobado ?? 6.5).toFixed(2)} Aprobado
+              </span>
+            </div>
 
             {/* Auto-save status */}
             <div className="ml-auto flex items-center gap-1">
