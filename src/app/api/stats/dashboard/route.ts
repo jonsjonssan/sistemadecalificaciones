@@ -113,18 +113,20 @@ export async function GET(req: Request) {
         }
       });
 
-      const umbralCondicionado = 4.5;
-      const umbralAprobado = 6.5;
+      const configRows = await sql`SELECT "umbralCondicionado", "umbralAprobado" FROM "ConfiguracionSistema" LIMIT 1`;
+      const cfg = configRows?.[0] || {};
+      const umbralCondicionado = Number(cfg.umbralCondicionado) || 4.5;
+      const umbralAprobado = Number(cfg.umbralAprobado) || 6.5;
 
       const estudianteEstado: Record<string, string> = {};
 
       calificaciones.forEach((c: any) => {
         const tieneNotas = c.calificacionAC !== null || c.calificacionAI !== null || c.examenTrimestral !== null;
         if (!tieneNotas || c.promedioFinal === null) return;
-        const baseProm = Number(c.promedioFinal) - (c.recuperacion !== null ? Number(c.recuperacion) : 0);
+        const tieneRecup = c.recuperacion !== null && c.recuperacion !== undefined && Number(c.recuperacion) > 0;
+        const baseProm = Number(c.promedioFinal) - (tieneRecup ? Number(c.recuperacion) : 0);
         let materiaEstado = 'APROBADO';
         if (baseProm < umbralCondicionado) materiaEstado = 'REPROBADO';
-        else if (baseProm < umbralAprobado && c.recuperacion !== null) materiaEstado = 'CONDICIONADO';
         else if (baseProm < umbralAprobado) materiaEstado = 'CONDICIONADO';
 
         const actual = estudianteEstado[c.estudianteId];

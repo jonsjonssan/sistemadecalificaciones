@@ -247,181 +247,107 @@ export default function Home() {
                 </CardContent>
               </Card>
             ) : (
-              <Card className="shadow-lg border bg-card border-border">
-                <CardContent className="p-4 sm:p-5">
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <div className="space-y-2">
-                        <Label className={`text-sm font-medium ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>Grado</Label>
-                        <Select value={d.gradoSeleccionado || ""} onValueChange={(val) => { d.setGradoSeleccionado(val); d.setAsignaturaSeleccionada(""); }}>
-                          <SelectTrigger className={`h-11 text-sm ${darkMode ? 'bg-card border-white/30 text-white' : ''}`}>
-                            <SelectValue placeholder="Seleccionar grado" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {d.gradosFiltrados?.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}" - {g.año}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label className={`text-sm font-medium ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>Asignatura</Label>
-                        <Select value={d.asignaturaSeleccionada || ""} onValueChange={(val) => d.setAsignaturaSeleccionada(val)}>
-                          <SelectTrigger className={`h-11 text-sm ${darkMode ? 'bg-card border-white/30 text-white' : ''}`}>
-                            <SelectValue placeholder="Seleccionar asignatura" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {d.asignaturasFiltradas?.map(m => <SelectItem key={m.id} value={m.id} className="text-sm">{m.nombre}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label className={`text-sm font-medium ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>Trimestre</Label>
-                        <Select value={d.trimestreSeleccionado || ""} onValueChange={d.setTrimestreSeleccionado}>
-                          <SelectTrigger className={`h-11 text-sm ${darkMode ? 'bg-card border-white/30 text-white' : ''}`}>
-                            <SelectValue placeholder="Seleccionar trimestre" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="1" className="text-sm">I</SelectItem>
-                            <SelectItem value="2" className="text-sm">II</SelectItem>
-                            <SelectItem value="3" className="text-sm">III</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <div className="border-t border-border" />
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                      {d.configActual && (
-                        <div className={`flex items-center gap-2 sm:gap-3 text-xs font-medium px-2 sm:px-3 py-2 rounded-lg w-full sm:w-auto overflow-x-auto hide-scrollbar ${darkMode ? 'text-slate-300 bg-slate-950/40 backdrop-blur-md' : 'text-slate-600 bg-slate-50'}`}>
-                          <span className="flex items-center gap-1 whitespace-nowrap">
-                            <span className={`w-2 h-2 rounded-full ${darkMode ? 'bg-blue-500' : 'bg-blue-600'}`} />
-                            {d.configActual.numActividadesCotidianas} AC ({d.configActual.porcentajeAC}%)
-                          </span>
-                          <span className="flex items-center gap-1 whitespace-nowrap">
-                            <span className={`w-2 h-2 rounded-full ${darkMode ? 'bg-purple-500' : 'bg-purple-600'}`} />
-                            {d.configActual.numActividadesIntegradoras} AI ({d.configActual.porcentajeAI}%)
-                          </span>
-                          {d.configActual.tieneExamen && (
-                            <span className="flex items-center gap-1 whitespace-nowrap">
-                              <span className={`w-2 h-2 rounded-full ${darkMode ? 'bg-orange-500' : 'bg-orange-600'}`} />
-                              Ex ({d.configActual.porcentajeExamen}%)
-                            </span>
-                          )}
-                        </div>
-                      )}
-                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 w-full sm:w-auto">
-                        <Button size="sm" className="h-9 sm:h-10 px-2 sm:px-4 font-semibold text-xs sm:text-sm gap-1 sm:gap-2 bg-primary hover:bg-primary/90 text-primary-foreground" onClick={d.handleGuardarTodo} disabled={d.saving}>
-                          <Save className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                          <span className="hidden sm:inline">{d.saving ? 'Guardando…' : 'Guardar Todo'}</span>
-                          <span className="sm:hidden">{d.saving ? '…' : 'Guardar'}</span>
-                        </Button>
-                        <Button size="sm" variant="outline" className={`h-9 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm gap-1 sm:gap-2 ${darkMode ? 'bg-slate-100/10 border-border text-slate-300 hover-gradient-strong' : ''}`} onClick={d.handleRefrescar} disabled={d.refreshing}>
-                          <RefreshCw className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${d.refreshing ? 'animate-spin' : ''}`} />
-                          <span className="hidden sm:inline">{d.refreshing ? 'Refrescando…' : 'Refrescar'}</span>
-                        </Button>
-                        <Button size="sm" variant="outline" className={`h-9 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm gap-1 sm:gap-2 ${darkMode ? 'bg-slate-100/10 border-border text-slate-300 hover-gradient-strong' : ''}`} onClick={() => { d.setEditConfig(d.configActual); d.setConfigDialogOpen(true); }}>
-                          <Settings className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                          <span className="hidden sm:inline">Configurar</span>
-                        </Button>
-                        <Button size="sm" variant="outline" className={`h-9 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm gap-1 sm:gap-2 ${darkMode ? 'bg-slate-100/10 border-border text-slate-300 hover-gradient-strong' : ''}`} onClick={() => d.setImportDialogOpen(true)}>
-                          <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                          <span className="hidden sm:inline">Importar</span>
-                        </Button>
-                        <Button size="sm" variant={d.promedioDecimal ? "default" : "outline"} className="h-9 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm gap-1 sm:gap-2" onClick={() => d.setPromedioDecimal(!d.promedioDecimal)}>
-                          <Hash className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                        </Button>
-                        {isAdmin(usuario.rol) && (
-                          <Button size="sm" variant="destructive" className="h-9 sm:h-10 px-2 sm:px-4 text-xs sm:text-sm gap-1 sm:gap-2" onClick={() => { d.setBorrarCalifTipo("grado"); d.setBorrarCalifDialogOpen(true); }}>
-                            <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                            <span className="hidden sm:inline">Borrar</span>
-                          </Button>
-                        )}
-                      </div>
+              <div className={`rounded-xl border ${darkMode ? 'bg-slate-900/60 border-white/10' : 'bg-white border-slate-200'} shadow-sm`}>
+                <div className="p-3 sm:p-4 space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
+                    <Select value={d.gradoSeleccionado || ""} onValueChange={(val) => { d.setGradoSeleccionado(val); d.setAsignaturaSeleccionada(""); }}>
+                      <SelectTrigger className={`h-10 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-white/20 text-white' : ''}`}>
+                        <SelectValue placeholder="Grado" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {d.gradosFiltrados?.map(g => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}"</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <Select value={d.asignaturaSeleccionada || ""} onValueChange={(val) => d.setAsignaturaSeleccionada(val)}>
+                      <SelectTrigger className={`h-10 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-white/20 text-white' : ''}`}>
+                        <SelectValue placeholder="Asignatura" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {d.asignaturasFiltradas?.map(m => <SelectItem key={m.id} value={m.id} className="text-sm">{m.nombre}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <Select value={d.trimestreSeleccionado || ""} onValueChange={d.setTrimestreSeleccionado}>
+                      <SelectTrigger className={`h-10 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-white/20 text-white' : ''}`}>
+                        <SelectValue placeholder="Trimestre" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1" className="text-sm">I</SelectItem>
+                        <SelectItem value="2" className="text-sm">II</SelectItem>
+                        <SelectItem value="3" className="text-sm">III</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <div className="flex gap-1.5 flex-wrap">
+                      <Button size="sm" className="h-10 px-3 text-xs font-semibold gap-1.5 bg-primary hover:bg-primary/90 text-primary-foreground flex-1 sm:flex-none" onClick={d.handleGuardarTodo} disabled={d.saving}>
+                        <Save className="h-3.5 w-3.5" /><span>{d.saving ? '…' : 'Guardar'}</span>
+                      </Button>
+                      <Button size="sm" variant="outline" className={`h-10 px-2.5 text-xs ${darkMode ? 'bg-slate-800 border-white/20 text-slate-300 hover-gradient-strong' : ''}`} onClick={d.handleRefrescar} disabled={d.refreshing}>
+                        <RefreshCw className={`h-3.5 w-3.5 ${d.refreshing ? 'animate-spin' : ''}`} />
+                      </Button>
+                      <Button size="sm" variant="outline" className={`h-10 px-2.5 text-xs ${darkMode ? 'bg-slate-800 border-white/20 text-slate-300 hover-gradient-strong' : ''}`} onClick={() => { d.setEditConfig(d.configActual); d.setConfigDialogOpen(true); }}>
+                        <Settings className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button size="sm" variant={d.promedioDecimal ? "default" : "outline"} className="h-10 px-2.5 text-xs" onClick={() => d.setPromedioDecimal(!d.promedioDecimal)}>
+                        <Hash className="h-3.5 w-3.5" />
+                      </Button>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            )}
-            {d.gradoSeleccionado && d.asignaturaSeleccionada && d.trimestreSeleccionado && (
-              <>
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3 px-2 sm:px-4 py-2 rounded-lg border border-border bg-muted/50 text-muted-foreground text-xs sm:text-sm">
-                  <span className="font-medium text-muted-foreground/60 text-[10px] sm:text-xs uppercase tracking-wider">Digitación</span>
-                  <div className="flex items-center gap-1">
-                    <span className="inline-block w-2 h-2 rounded-full bg-emerald-500" />
-                    <span className="text-xs sm:text-sm font-semibold text-emerald-600 dark:text-emerald-400">{d.estadosCompletitud.completo}</span>
-                    <span className="text-[10px] sm:text-xs hidden sm:inline">completo{d.estadosCompletitud.completo !== 1 ? 's' : ''}</span>
-                  </div>
-                  <div className={`h-3 w-px ${darkMode ? 'bg-slate-600' : 'bg-slate-300'}`} />
-                  <div className="flex items-center gap-1">
-                    <span className="inline-block w-2 h-2 rounded-full bg-amber-400" />
-                    <span className="text-xs sm:text-sm font-semibold text-amber-600 dark:text-amber-400">{d.estadosCompletitud.parcial}</span>
-                    <span className="text-[10px] sm:text-xs hidden sm:inline">incompleto{d.estadosCompletitud.parcial !== 1 ? 's' : ''}</span>
-                  </div>
-                  <div className={`h-3 w-px ${darkMode ? 'bg-slate-600' : 'bg-slate-300'}`} />
-                  <div className="flex items-center gap-1">
-                    <span className="inline-block w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600" />
-                    <span className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400">{d.estadosCompletitud.vacio}</span>
-                    <span className="text-[10px] sm:text-xs hidden sm:inline">sin datos</span>
-                  </div>
-                  <div className="flex-1 min-w-[60px]" />
-                  <div className={`flex items-center gap-2 min-w-[80px] sm:min-w-[120px] max-w-[160px] sm:max-w-[200px]`}>
-                    <div className={`flex-1 h-1.5 rounded-full overflow-hidden flex ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`}>
-                      {d.estadosCompletitud.total > 0 && (
-                        <>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px]">
+                    {d.configActual && (
+                      <div className={`flex items-center gap-2 px-2 py-1 rounded-md font-medium ${darkMode ? 'bg-slate-800 text-slate-300' : 'bg-slate-50 text-slate-600'}`}>
+                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500" />{d.configActual.numActividadesCotidianas}AC</span>
+                        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-purple-500" />{d.configActual.numActividadesIntegradoras}AI</span>
+                        {d.configActual.tieneExamen && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-orange-500" />Ex</span>}
+                        <span className="text-muted-foreground">({d.configActual.porcentajeAC}%/{d.configActual.porcentajeAI}%/{d.configActual.porcentajeExamen ?? 30}%)</span>
+                      </div>
+                    )}
+                    <div className={`flex items-center gap-2 px-2 py-1 rounded-md ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
+                      <span className="font-medium text-muted-foreground/60 uppercase tracking-wider">Progreso</span>
+                      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500" /><span className="font-semibold text-emerald-600 dark:text-emerald-400">{d.estadosCompletitud.completo}</span></span>
+                      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-400" /><span className="font-semibold text-amber-600 dark:text-amber-400">{d.estadosCompletitud.parcial}</span></span>
+                      <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600" /><span className="font-semibold text-slate-500 dark:text-slate-400">{d.estadosCompletitud.vacio}</span></span>
+                    </div>
+                    <div className="flex items-center gap-1.5 flex-1 min-w-[100px] max-w-[160px]">
+                      <div className={`flex-1 h-1.5 rounded-full overflow-hidden flex ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`}>
+                        {d.estadosCompletitud.total > 0 && <>
                           <div className="h-full bg-emerald-500 transition-all duration-500" style={{ width: `${(d.estadosCompletitud.completo / d.estadosCompletitud.total) * 100}%` }} />
                           <div className="h-full bg-amber-400 transition-all duration-500" style={{ width: `${(d.estadosCompletitud.parcial / d.estadosCompletitud.total) * 100}%` }} />
                           <div className="h-full bg-slate-300 dark:bg-slate-600 transition-all duration-500" style={{ width: `${(d.estadosCompletitud.vacio / d.estadosCompletitud.total) * 100}%` }} />
-                        </>
-                      )}
+                        </>}
+                      </div>
+                      <span className="text-[10px] font-mono text-slate-500">{d.estadosCompletitud.total > 0 ? Math.round((d.estadosCompletitud.completo / d.estadosCompletitud.total) * 100) : 0}%</span>
                     </div>
-                    <span className="text-[10px] sm:text-xs font-mono text-slate-500 whitespace-nowrap">
-                      {d.estadosCompletitud.total > 0 ? Math.round((d.estadosCompletitud.completo / d.estadosCompletitud.total) * 100) : 0}%
+                    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold ${darkMode ? 'bg-red-900/60 text-red-200' : 'bg-red-100 text-red-800'}`}>
+                      <AlertTriangle className="h-2.5 w-2.5" /> {(d.configuracion?.umbralCondicionado ?? 4.5).toFixed(1)}– ≤{(d.configuracion?.umbralAprobado ?? 6.5).toFixed(1)}
                     </span>
+                    <div className="flex items-center gap-1.5 ml-auto">
+                      <div className="relative">
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-slate-400" />
+                        <Input placeholder="Buscar…" value={d.busquedaEstudiante} onChange={(e) => startTransition(() => d.setBusquedaEstudiante(e.target.value))} className={`pl-7 h-8 text-xs w-[110px] sm:w-[140px] ${darkMode ? 'bg-slate-800 border-white/20 text-white' : ''}`} />
+                      </div>
+                      <Select value={d.filtroEstado} onValueChange={d.setFiltroEstado}>
+                        <SelectTrigger className={`h-8 w-[100px] text-xs ${darkMode ? 'bg-slate-800 border-white/20 text-white' : ''}`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="todos">Todos</SelectItem>
+                          <SelectItem value="aprobados">Aprobados</SelectItem>
+                          <SelectItem value="riesgo">En riesgo</SelectItem>
+                          <SelectItem value="honor">Cuadro honor</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button size="sm" variant="outline" onClick={d.handleExportarPDF} className={`h-8 text-xs px-2 ${darkMode ? 'bg-slate-800 border-white/20' : ''}`}>
+                        <FileText className="h-3 w-3 sm:mr-1" /><span className="hidden sm:inline">PDF</span>
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={d.handleExportarExcel} className={`h-8 text-xs px-2 ${darkMode ? 'bg-slate-800 border-white/20' : ''}`}>
+                        <Download className="h-3 w-3 sm:mr-1" /><span className="hidden sm:inline">CSV</span>
+                      </Button>
+                    </div>
                   </div>
                 </div>
-
-                <div className="flex flex-wrap items-center gap-1.5 sm:gap-3 px-2 sm:px-4 py-2 rounded-lg border border-border bg-muted/50 text-muted-foreground text-[10px] sm:text-xs">
-                  <span className="font-semibold uppercase tracking-wider dark:text-white text-muted-foreground/60 hidden sm:inline">Marco Normativo</span>
-                  <span className={`inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-md font-semibold whitespace-nowrap ${darkMode ? 'bg-red-900/60 text-red-200 ring-1 ring-red-600' : 'bg-red-100 text-red-800 ring-1 ring-red-300'}`}>
-                    <AlertTriangle className="h-2.5 w-2.5 sm:h-3 sm:w-3" /> 0–{Math.max(0, (d.configuracion?.umbralCondicionado ?? 4.5) - 0.01).toFixed(2)} <span className="hidden sm:inline">Reprobado</span>
-                  </span>
-                  <span className={`inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-md font-semibold whitespace-nowrap ${darkMode ? 'bg-amber-900/60 text-amber-200 ring-1 ring-amber-600' : 'bg-amber-100 text-amber-800 ring-1 ring-amber-300'}`}>
-                    {(d.configuracion?.umbralCondicionado ?? 4.5).toFixed(2)}–{Math.max((d.configuracion?.umbralCondicionado ?? 4.5), (d.configuracion?.umbralAprobado ?? 6.5) - 0.01).toFixed(2)} <span className="hidden sm:inline">Condicionado</span>
-                  </span>
-                  <span className={`inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-md font-semibold whitespace-nowrap ${darkMode ? 'bg-emerald-900/60 text-emerald-200 ring-1 ring-emerald-600' : 'bg-emerald-100 text-emerald-800 ring-1 ring-emerald-300'}`}>
-                    ≥{(d.configuracion?.umbralAprobado ?? 6.5).toFixed(2)} <span className="hidden sm:inline">Aprobado</span>
-                  </span>
-                </div>
-
-                <Card className="shadow-sm border bg-card border-border">
-                  <CardContent className="p-2 sm:p-3">
-                    <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                      <div className="flex-1 min-w-[140px] sm:min-w-[200px] order-1">
-                        <div className="relative">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-slate-400" />
-                          <Input placeholder="Buscar…" aria-label="Buscar estudiante" value={d.busquedaEstudiante} onChange={(e) => startTransition(() => d.setBusquedaEstudiante(e.target.value))} className={`pl-8 sm:pl-9 h-9 text-xs sm:text-sm ${darkMode ? 'bg-card border-white/30 text-white' : ''}`} />
-                        </div>
-                      </div>
-                      <div className="order-3 sm:order-2">
-                        <Select value={d.filtroEstado} onValueChange={d.setFiltroEstado}>
-                          <SelectTrigger className={`w-[130px] sm:w-[150px] h-9 text-xs sm:text-sm ${darkMode ? 'bg-card border-white/30 text-white' : ''}`}>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="todos">Todos</SelectItem>
-                            <SelectItem value="aprobados">Aprobados</SelectItem>
-                            <SelectItem value="riesgo">En riesgo</SelectItem>
-                            <SelectItem value="honor">Cuadro honor</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <Button size="sm" variant="outline" onClick={d.handleExportarPDF} className={`h-9 text-xs sm:text-sm px-2 sm:px-3 order-2 sm:order-3 ${darkMode ? 'bg-card border-white/30' : ''}`}>
-                        <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1" /> <span className="hidden sm:inline">PDF</span><span className="sm:hidden">PDF</span>
-                      </Button>
-                      <Button size="sm" variant="outline" onClick={d.handleExportarExcel} className={`h-9 text-xs sm:text-sm px-2 sm:px-3 order-4 ${darkMode ? 'bg-card border-white/30' : ''}`}>
-                        <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4 sm:mr-1" /> <span className="hidden sm:inline">Excel</span><span className="sm:hidden">CSV</span>
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+              </div>
+            )}
+            {d.gradoSeleccionado && d.asignaturaSeleccionada && d.trimestreSeleccionado && (
+              <>
 
                 <Card className="shadow-xl border overflow-hidden bg-card border-border">
                   <CardContent className="p-0">
