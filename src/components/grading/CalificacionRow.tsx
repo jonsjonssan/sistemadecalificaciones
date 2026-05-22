@@ -633,11 +633,11 @@ useEffect(() => {
 
   const rowBg = evenRow
     ? darkMode
-      ? "bg-card hover:bg-slate-700/80"
-      : "bg-white hover:bg-slate-50"
+      ? "bg-card hover-gradient"
+      : "bg-white hover-gradient"
     : darkMode
-      ? "bg-muted hover:bg-slate-700/80"
-      : "bg-slate-50/50 hover:bg-slate-100";
+      ? "bg-muted hover-gradient"
+      : "bg-slate-50/50 hover-gradient";
   const cellBorder = darkMode ? "border-white/20" : "border-slate-200";
   const stickyBg = evenRow
     ? darkMode

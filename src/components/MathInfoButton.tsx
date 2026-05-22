@@ -62,8 +62,8 @@ export function MathInfoModal({ isOpen, onClose, darkMode, explanation }: MathIn
             onClick={onClose}
             className={`p-2 rounded-lg transition-colors ${
               darkMode
-                ? "hover:bg-slate-700 text-slate-400 hover:text-white"
-                : "hover:bg-slate-200 text-slate-500 hover:text-slate-900"
+                ? "hover-gradient text-slate-400"
+                : "hover-gradient text-slate-500"
             }`}
           >
             <X className="h-4 w-4" />
@@ -199,8 +199,8 @@ export function MathInfoButton({ darkMode, explanation, size = "sm" }: MathInfoB
             : "w-6 h-6"
         } ${
           darkMode
-            ? "bg-slate-700 hover:bg-slate-600 text-slate-400 hover:text-emerald-400"
-            : "bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-emerald-600"
+            ? "bg-slate-700 hover-gradient text-slate-400 hover:text-emerald-400"
+            : "bg-slate-100 hover-gradient text-slate-400 hover:text-emerald-600"
         }`}
         title="Ver proceso de cálculo matemático"
       >

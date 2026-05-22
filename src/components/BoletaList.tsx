@@ -1373,7 +1373,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
         const califs = getCalifs(est.id), prom = calcProm(califs), open = expandedBoleta === est.id;
         return (
           <Card key={est.id} className={`shadow-sm ${darkMode ? 'bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl' : ''}`}>
-            <div className={`p-2.5 flex items-center justify-between cursor-pointer ${darkMode ? 'hover:bg-slate-800' : 'hover:bg-slate-50'}`} onClick={() => setExpandedBoleta(open ? null : est.id)}>
+            <div className={`p-2.5 flex items-center justify-between cursor-pointer hover-gradient`} onClick={() => setExpandedBoleta(open ? null : est.id)}>
               <div className="flex items-center gap-2"><span className={`text-xs w-5 ${darkMode ? 'text-slate-300' : 'text-slate-400'}`}>{est.numero}</span><span className={`text-xs sm:text-sm font-medium ${darkMode ? 'text-white' : ''}`}>{est.nombre}</span><Badge variant={prom !== null && prom >= ua ? "default" : prom !== null && prom >= uc ? "secondary" : "destructive"} className={`text-[10px] h-5 ${prom !== null && prom >= ua ? (darkMode ? 'bg-emerald-600 text-black' : 'bg-emerald-600 text-white') : prom !== null && prom >= uc ? (darkMode ? 'bg-amber-600 text-black' : 'bg-amber-600 text-white') : ''}`}>Prom: {prom !== null ? prom.toFixed(2) : "N/A"}</Badge></div>
               <div className="flex items-center gap-1">
                 <Button size="sm" variant="ghost" title="Anual con Recuperación" className={`h-6 px-2 text-xs ${darkMode ? 'text-amber-400' : 'text-amber-600'}`} onClick={e => { e.stopPropagation(); imprimirAnualConRecuperacion(est.id); }}>

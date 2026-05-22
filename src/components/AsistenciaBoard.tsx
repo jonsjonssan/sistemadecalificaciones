@@ -766,7 +766,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
             <Button
               variant={view === "pass" ? "default" : "ghost"}
               size="sm"
-              className={`h-9 text-sm px-4 ${view === "pass" ? (darkMode ? "bg-slate-600 text-white shadow-sm hover:bg-slate-500" : "bg-white text-slate-800 shadow-sm hover:bg-white") : (darkMode ? "text-slate-400" : "text-slate-500")}`}
+              className={`h-9 text-sm px-4 ${view === "pass" ? (darkMode ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90") : (darkMode ? "text-slate-400" : "text-slate-500")}`}
               onClick={() => setView("pass")}
             >
               Pasar Lista
@@ -774,7 +774,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
             <Button
               variant={view === "summary" ? "default" : "ghost"}
               size="sm"
-              className={`h-9 text-sm px-4 ${view === "summary" ? (darkMode ? "bg-slate-600 text-white shadow-sm hover:bg-slate-500" : "bg-white text-slate-800 shadow-sm hover:bg-white") : (darkMode ? "text-slate-400" : "text-slate-500")}`}
+              className={`h-9 text-sm px-4 ${view === "summary" ? (darkMode ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90") : (darkMode ? "text-slate-400" : "text-slate-500")}`}
               onClick={() => setView("summary")}
             >
               Resumen
@@ -921,7 +921,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                         size="sm"
                         variant="outline"
                         disabled={asistenciaBloqueada}
-                        className={`flex-1 sm:flex-none h-9 text-xs font-semibold px-2 sm:px-4 ${darkMode ? 'border-white/30 text-white hover:bg-slate-800' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+                        className={`flex-1 sm:flex-none h-9 text-xs font-semibold px-2 sm:px-4 hover-gradient ${darkMode ? 'border-white/30 text-white' : 'border-slate-200 text-slate-600'}`}
                         onClick={() => {
                           if (asistenciaBloqueada) return;
                           setAsistencias({});
@@ -982,7 +982,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                       };
 
                       return (
-                        <TableRow key={est.id} className={`${rowBg} ${darkMode ? 'hover:bg-slate-700/50' : 'hover:bg-slate-100/50'} transition-colors`}>
+                        <TableRow key={est.id} className={`${rowBg} hover-gradient transition-colors`}>
                           <TableCell className={`text-center font-bold sticky-col left-0 z-10 shadow-right ${darkMode ? 'text-slate-500' : 'text-slate-400'}`} style={{ backgroundColor: stickyBg }}>
                             {est.numero}
                           </TableCell>
@@ -1132,7 +1132,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                         return (
                           <React.Fragment key={r.id}>
                             <TableRow
-                              className={`h-10 cursor-pointer transition-colors ${idx % 2 === 0 ? '' : (darkMode ? 'bg-white/[0.03]' : 'bg-slate-50/30')} ${darkMode ? 'hover:bg-slate-700/50' : 'hover:bg-slate-100'}`}
+                              className={`h-10 cursor-pointer hover-gradient ${idx % 2 === 0 ? '' : (darkMode ? 'bg-white/[0.03]' : 'bg-slate-50/30')}`}
                               onClick={() => setExpandedStudent(isExpanded ? null : r.id)}
                             >
                               <TableCell className={`text-center font-bold ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>{r.numero}</TableCell>

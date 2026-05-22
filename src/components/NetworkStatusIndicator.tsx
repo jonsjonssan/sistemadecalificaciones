@@ -90,7 +90,7 @@ export function NetworkStatusIndicator() {
               <button
                 onClick={handleSync}
                 disabled={isSyncing}
-                className="ml-2 rounded-md bg-white/20 px-2 py-1 hover:bg-white/30 disabled:opacity-50"
+                className="ml-2 rounded-md bg-white/20 px-2 py-1 hover-gradient-strong disabled:opacity-50"
               >
                 {isSyncing ? (
                   <Loader2 className="h-3 w-3 animate-spin" />

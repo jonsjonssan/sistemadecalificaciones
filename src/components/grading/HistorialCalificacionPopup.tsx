@@ -218,10 +218,10 @@ export function HistorialCalificacionPopup({
         </div>
         <button
           onClick={onClose}
-          className={`p-1.5 rounded-lg transition-colors ${
+          className={`p-1.5 rounded-lg hover-gradient ${
             darkMode
-              ? "hover:bg-slate-700 text-slate-400 hover:text-white"
-              : "hover:bg-slate-200 text-slate-500 hover:text-slate-900"
+              ? "text-slate-400"
+              : "text-slate-500"
           }`}
         >
           <X className="h-4 w-4" />
@@ -276,10 +276,10 @@ export function HistorialCalificacionPopup({
               <button
                 onClick={goPrev}
                 disabled={index >= total - 1}
-                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
+                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium hover-gradient disabled:opacity-30 disabled:cursor-not-allowed ${
                   darkMode
-                    ? "bg-slate-700 hover:bg-slate-600 text-slate-200"
-                    : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                    ? "bg-slate-700 text-slate-200"
+                    : "bg-slate-100 text-slate-700"
                 }`}
                 title="Más antiguo"
               >
@@ -303,10 +303,10 @@ export function HistorialCalificacionPopup({
               <button
                 onClick={goNext}
                 disabled={index <= 0}
-                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors disabled:opacity-30 disabled:cursor-not-allowed ${
+                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium hover-gradient disabled:opacity-30 disabled:cursor-not-allowed ${
                   darkMode
-                    ? "bg-slate-700 hover:bg-slate-600 text-slate-200"
-                    : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                    ? "bg-slate-700 text-slate-200"
+                    : "bg-slate-100 text-slate-700"
                 }`}
                 title="Más reciente"
               >
@@ -325,8 +325,8 @@ export function HistorialCalificacionPopup({
                     i === index
                       ? "w-5 bg-emerald-500"
                       : darkMode
-                      ? "w-2 bg-slate-600 hover:bg-slate-500"
-                      : "w-2 bg-slate-300 hover:bg-slate-400"
+                      ? "w-2 bg-slate-600 hover-gradient"
+                      : "w-2 bg-slate-300 hover-gradient"
                   }`}
                   title={`Registro ${i + 1}`}
                 />
@@ -480,9 +480,7 @@ export function HistorialCalificacionPopup({
                         ? darkMode
                           ? "bg-emerald-900/20 text-emerald-300 ring-1 ring-emerald-700/40"
                           : "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
-                        : darkMode
-                        ? "hover:bg-slate-700/50 text-slate-300"
-                        : "hover:bg-slate-100 text-slate-600"
+                        : "hover-gradient " + (darkMode ? "text-slate-300" : "text-slate-600")
                     }`}
                   >
                     <span

@@ -130,7 +130,7 @@ export const CiclosSection = memo(function CiclosSection({
           <Card key={ciclo.nombre} className={`shadow-sm overflow-hidden border-border bg-card`}>
             <div className={`h-1 w-full ${darkMode ? d.bg.replace('/20', '') : ciclo.colorBg}`} />
             <CardHeader
-              className={`flex flex-row items-center justify-between cursor-pointer py-3 px-4 ${darkMode ? 'hover:bg-slate-800/50' : 'hover:bg-slate-50'} transition-colors`}
+              className={`flex flex-row items-center justify-between cursor-pointer py-3 px-4 hover-gradient`}
               onClick={() => toggleCiclo(ciclo.nombre)}
             >
               <div className="flex items-center gap-3">

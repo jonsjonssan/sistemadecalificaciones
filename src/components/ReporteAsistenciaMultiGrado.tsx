@@ -196,8 +196,8 @@ export default function ReporteAsistenciaMultiGrado({ grados, darkMode: darkMode
               <span className={`text-sm font-semibold ${darkMode ? "text-white" : "text-slate-700"}`}>Grados a incluir</span>
             </div>
             <div className="flex gap-2">
-              <Button size="sm" variant="outline" className={`h-8 text-xs ${darkMode ? "border-white/30 text-white hover:bg-white/10" : ""}`} onClick={seleccionarTodos}>Seleccionar Todos</Button>
-              <Button size="sm" variant="outline" className={`h-8 text-xs ${darkMode ? "border-white/30 text-white hover:bg-white/10" : ""}`} onClick={limpiarSeleccion}>Limpiar</Button>
+              <Button size="sm" variant="outline" className={`h-8 text-xs ${darkMode ? "border-white/30 text-white hover-gradient-strong" : ""}`} onClick={seleccionarTodos}>Seleccionar Todos</Button>
+              <Button size="sm" variant="outline" className={`h-8 text-xs ${darkMode ? "border-white/30 text-white hover-gradient-strong" : ""}`} onClick={limpiarSeleccion}>Limpiar</Button>
             </div>
           </div>
           <div className={`flex flex-wrap gap-1.5 mt-3 pt-3 border-t ${darkMode ? "border-white/10" : "border-slate-200"}`}>
@@ -210,7 +210,7 @@ export default function ReporteAsistenciaMultiGrado({ grados, darkMode: darkMode
                   className={`px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium border transition-all duration-150 ${
                     selected
                       ? darkMode ? "bg-emerald-900/40 border-emerald-500 text-emerald-400 shadow-sm" : "bg-emerald-50 border-emerald-400 text-emerald-700 shadow-sm"
-                      : darkMode ? "bg-muted border-white/20 text-slate-400 hover:border-white/40 hover:text-slate-300" : "bg-white border-slate-200 text-slate-600 hover:border-slate-400 hover:text-slate-800"
+                      : darkMode ? "bg-muted border-white/20 text-slate-400 hover-gradient-border" : "bg-white border-slate-200 text-slate-600 hover-gradient-border"
                   }`}
                 >
                   {g.numero}° &quot;{g.seccion}&quot;
@@ -245,7 +245,7 @@ export default function ReporteAsistenciaMultiGrado({ grados, darkMode: darkMode
                   <Button size="sm" className="h-9 text-xs font-bold flex-1 sm:flex-initial" onClick={exportPDF} disabled={!data}>
                     <Download className="h-4 w-4 mr-1" /> PDF
                   </Button>
-                  <Button size="sm" variant="outline" className={`h-9 text-xs font-bold flex-1 sm:flex-initial ${darkMode ? "border-white/30 text-white hover:bg-white/10" : ""}`} onClick={exportCSV} disabled={!data}>
+                  <Button size="sm" variant="outline" className={`h-9 text-xs font-bold flex-1 sm:flex-initial ${darkMode ? "border-white/30 text-white hover-gradient-strong" : ""}`} onClick={exportCSV} disabled={!data}>
                     <Download className="h-4 w-4 mr-1" /> CSV
                   </Button>
                 </>
@@ -309,7 +309,7 @@ export default function ReporteAsistenciaMultiGrado({ grados, darkMode: darkMode
           {data.grados.map(grado => (
             <Card key={grado.gradoId} className={`shadow-sm border overflow-hidden ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5" : "bg-white border-slate-200"}`}>
               <div
-                className={`px-4 py-3 flex items-center justify-between cursor-pointer border-b ${darkMode ? "bg-slate-800/50 border-white/10 hover:bg-slate-800" : "bg-slate-50 border-slate-200 hover:bg-slate-100"}`}
+                className={`px-4 py-3 flex items-center justify-between cursor-pointer border-b hover-gradient ${darkMode ? "bg-slate-800/50 border-white/10" : "bg-slate-50 border-slate-200"}`}
                 onClick={() => setExpandedGrado(expandedGrado === grado.gradoId ? null : grado.gradoId)}
               >
                 <div className="flex items-center gap-2">
@@ -343,7 +343,7 @@ export default function ReporteAsistenciaMultiGrado({ grados, darkMode: darkMode
                       {grado.resumen.map((r, idx) => (
                         <React.Fragment key={r.id}>
                           <TableRow
-                            className={`cursor-pointer transition-colors ${idx % 2 === 0 ? "" : (darkMode ? "bg-white/[0.03]" : "bg-slate-50/30")} ${darkMode ? "hover:bg-slate-700/50" : "hover:bg-slate-100"}`}
+                            className={`cursor-pointer hover-gradient ${idx % 2 === 0 ? "" : (darkMode ? "bg-white/[0.03]" : "bg-slate-50/30")}`}
                             onClick={() => setExpandedStudent(expandedStudent === r.id ? null : r.id)}
                           >
                             <TableCell className={`text-center font-bold ${darkMode ? "text-slate-500" : "text-slate-400"}`}>{r.numero}</TableCell>

@@ -110,7 +110,7 @@ export function ContextualHelp({ section, darkMode }: ContextualHelpProps) {
       <Tooltip>
         <TooltipTrigger asChild>
           <button
-            className={`p-1.5 rounded-md transition-colors ${darkMode ? 'hover:bg-slate-700 text-slate-400' : 'hover:bg-slate-100 text-slate-500'
+            className={`p-1.5 rounded-md hover-gradient ${darkMode ? 'text-slate-400' : 'text-slate-500'
               }`}
             aria-label="Ayuda contextual"
           >

@@ -26,7 +26,7 @@ export default function EnlacesInstitucionales({ darkMode }: { darkMode: boolean
               rel="noopener noreferrer"
               className={`group flex items-start gap-3 rounded-lg border p-3.5 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${
                 darkMode
-                  ? "border-white/10 hover:border-white/30 hover:bg-slate-950/40 backdrop-blur-md"
+                  ? "border-white/10 hover:border-white/30 hover-gradient backdrop-blur-md"
                   : "border-slate-200 hover:border-emerald-200 hover:bg-emerald-50/50"
               }`}
             >

@@ -313,15 +313,15 @@ export default function Home() {
                           <span className="hidden sm:inline">{d.saving ? 'Guardando…' : 'Guardar Todo'}</span>
                           <span className="sm:hidden">{d.saving ? '…' : 'Guardar'}</span>
                         </Button>
-                        <Button size="sm" variant="outline" className={`h-9 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm gap-1 sm:gap-2 ${darkMode ? 'bg-slate-100/10 border-border text-slate-300 hover:bg-slate-100/20' : ''}`} onClick={d.handleRefrescar} disabled={d.refreshing}>
+                        <Button size="sm" variant="outline" className={`h-9 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm gap-1 sm:gap-2 ${darkMode ? 'bg-slate-100/10 border-border text-slate-300 hover-gradient-strong' : ''}`} onClick={d.handleRefrescar} disabled={d.refreshing}>
                           <RefreshCw className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${d.refreshing ? 'animate-spin' : ''}`} />
                           <span className="hidden sm:inline">{d.refreshing ? 'Refrescando…' : 'Refrescar'}</span>
                         </Button>
-                        <Button size="sm" variant="outline" className={`h-9 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm gap-1 sm:gap-2 ${darkMode ? 'bg-slate-100/10 border-border text-slate-300 hover:bg-slate-100/20' : ''}`} onClick={() => { d.setEditConfig(d.configActual); d.setConfigDialogOpen(true); }}>
+                        <Button size="sm" variant="outline" className={`h-9 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm gap-1 sm:gap-2 ${darkMode ? 'bg-slate-100/10 border-border text-slate-300 hover-gradient-strong' : ''}`} onClick={() => { d.setEditConfig(d.configActual); d.setConfigDialogOpen(true); }}>
                           <Settings className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                           <span className="hidden sm:inline">Configurar</span>
                         </Button>
-                        <Button size="sm" variant="outline" className={`h-9 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm gap-1 sm:gap-2 ${darkMode ? 'bg-slate-100/10 border-border text-slate-300 hover:bg-slate-100/20' : ''}`} onClick={() => d.setImportDialogOpen(true)}>
+                        <Button size="sm" variant="outline" className={`h-9 sm:h-10 px-2 sm:px-3 text-xs sm:text-sm gap-1 sm:gap-2 ${darkMode ? 'bg-slate-100/10 border-border text-slate-300 hover-gradient-strong' : ''}`} onClick={() => d.setImportDialogOpen(true)}>
                           <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                           <span className="hidden sm:inline">Importar</span>
                         </Button>
@@ -430,7 +430,7 @@ export default function Home() {
                         <thead>
                           <tr className={darkMode ? 'bg-gradient-to-r from-slate-200 to-slate-300 text-white' : 'bg-gradient-to-r from-slate-700 to-slate-600 text-white'}>
                             <th className={`w-10 p-2 text-center font-semibold sticky-col shadow-right left-0 z-20 border-r border-b ${darkMode ? 'bg-slate-200 border-slate-400' : 'bg-slate-700 border-slate-500'}`}>N°</th>
-                            <th className={`min-w-[140px] sm:min-w-[180px] p-2 text-left font-semibold sticky-col shadow-right left-10 z-20 border-r border-b cursor-pointer hover:bg-slate-600 transition-colors ${darkMode ? 'bg-slate-200 border-slate-400' : 'bg-slate-700 border-slate-500'}`} onClick={() => d.handleSort('nombre')}>
+                            <th className={`min-w-[140px] sm:min-w-[180px] p-2 text-left font-semibold sticky-col shadow-right left-10 z-20 border-r border-b cursor-pointer hover-gradient ${darkMode ? 'bg-slate-200 border-slate-400' : 'bg-slate-700 border-slate-500'}`} onClick={() => d.handleSort('nombre')}>
                               <div className="flex items-center gap-1">Estudiante {d.sortColumn === 'nombre' && <ArrowUpDown className="h-3 w-3" />}</div>
                             </th>
                             {d.configActual ? (
@@ -443,7 +443,7 @@ export default function Home() {
                                 <th className={`w-16 p-2 text-center font-semibold border-l border-b cursor-pointer hover:bg-purple-800 transition-colors ${darkMode ? 'bg-purple-900/60 border-slate-600 text-purple-300' : 'bg-purple-50 border-slate-500 text-purple-700'}`} onClick={() => d.handleSort('promAI')}>
                                   <div className="flex items-center justify-center gap-1">Prom AI {d.sortColumn === 'promAI' && <ArrowUpDown className="h-3 w-3" />}</div>
                                 </th>
-                                <th className={`w-16 p-2 text-center font-semibold border-l border-b cursor-pointer hover:bg-slate-600 transition-colors ${darkMode ? 'border-slate-600' : 'border-slate-500'}`} onClick={() => d.handleSort('examen')}>
+                                <th className={`w-16 p-2 text-center font-semibold border-l border-b cursor-pointer hover-gradient ${darkMode ? 'border-slate-600' : 'border-slate-500'}`} onClick={() => d.handleSort('examen')}>
                                   <div className="flex items-center justify-center gap-1">Examen {d.sortColumn === 'examen' && <ArrowUpDown className="h-3 w-3" />}</div>
                                 </th>
                                 <th className={`w-16 p-2 text-center font-semibold border-l border-b ${darkMode ? 'bg-amber-900/60 border-slate-600 text-amber-400' : 'bg-amber-50 border-slate-500 text-amber-700'}`}>Prom Ex</th>
@@ -566,7 +566,7 @@ export default function Home() {
                 {(isAdmin(usuario.rol) || usuario.rol === "docente" || usuario.rol === "docente-orientador") && (
                   <div className="flex gap-2">
                     <Dialog open={d.listaDialogOpen} onOpenChange={d.setListaDialogOpen}>
-                      <DialogTrigger asChild><Button size="sm" variant="outline" className={`h-10 text-xs sm:text-sm ${darkMode ? 'border-white/30 text-white hover:bg-white/10' : ''}`}><ListPlus className="h-5 w-5 mr-1" />Lista</Button></DialogTrigger>
+                      <DialogTrigger asChild><Button size="sm" variant="outline" className={`h-10 text-xs sm:text-sm ${darkMode ? 'border-white/30 text-white hover-gradient-strong' : ''}`}><ListPlus className="h-5 w-5 mr-1" />Lista</Button></DialogTrigger>
                       <DialogContent className="max-w-md bg-card border-border">
                         <DialogHeader><DialogTitle>Agregar Lista de Estudiantes</DialogTitle><DialogDescription>Ingresa los nombres de los estudiantes, uno por línea.</DialogDescription></DialogHeader>
                         <div className="space-y-2"><Label>Un nombre por línea</Label><textarea className={`w-full h-48 p-2 text-sm border rounded-md ${darkMode ? 'bg-card border-white/30 text-white' : ''}`} value={d.listaEstudiantes} onChange={e => d.setListaEstudiantes(e.target.value)} placeholder="Apellido, Nombre&#10;Apellido, Nombre, correo@email.com&#10;…" aria-label="Lista de estudiantes, uno por línea" /></div>
@@ -590,7 +590,7 @@ export default function Home() {
                     <SelectTrigger className={`w-full md:w-[250px] h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-card border-white/30 text-white' : ''}`}><SelectValue /></SelectTrigger>
                     <SelectContent>{d.gradosFiltrados.map((g: any) => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}" ({g._count?.estudiantes || 0})</SelectItem>)}</SelectContent>
                   </Select>
-                  <Button size="sm" variant="outline" onClick={d.imprimirListadoEstudiantesPDF} className={`h-10 text-xs sm:text-sm ${darkMode ? 'border-white/30 text-white hover:bg-white/10' : ''}`}>
+                  <Button size="sm" variant="outline" onClick={d.imprimirListadoEstudiantesPDF} className={`h-10 text-xs sm:text-sm ${darkMode ? 'border-white/30 text-white hover-gradient-strong' : ''}`}>
                     <Printer className="h-4 w-4 mr-1" />Imprimir PDF
                   </Button>
                 </div>
@@ -675,7 +675,7 @@ export default function Home() {
                                       d.setMateriasEnBoleta(d.materiasEnBoleta.includes(m.id) ? d.materiasEnBoleta.filter((id: string) => id !== m.id) : [...d.materiasEnBoleta, m.id]);
                                     }
                                   }}
-                                  className={`px-3 py-1 rounded-full text-xs font-medium border transition-all duration-150 ${isSelected ? (darkMode ? 'bg-primary/20 text-black border-emerald-500/50' : 'bg-emerald-50 text-emerald-700 border-emerald-300') : (darkMode ? 'bg-muted text-slate-300 border-white/30 hover:border-white/50 hover:text-white' : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 hover:text-slate-700')}`}
+                                  className={`px-3 py-1 rounded-full text-xs font-medium border transition-all duration-150 hover-gradient ${isSelected ? (darkMode ? 'bg-primary/20 text-black border-emerald-500/50' : 'bg-emerald-50 text-emerald-700 border-emerald-300') : (darkMode ? 'bg-muted text-slate-300 border-white/30' : 'bg-white text-slate-500 border-slate-200')}`}
                                 >
                                   {m.nombre}
                                 </button>
@@ -919,7 +919,7 @@ export default function Home() {
                                 <div className={`px-2 py-1 text-xs font-medium ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>{grado.numero}° "{grado.seccion}"</div>
                                 <div className="p-2 grid grid-cols-2 gap-1">
                                   {d.todasAsignaturas.filter((m: any) => m.gradoId === grado.id).map((m: any) => (
-                                    <label key={m.id} className={`flex items-center gap-1 text-xs p-1 rounded cursor-pointer ${darkMode ? 'hover:bg-slate-800' : 'hover:bg-slate-50'}`}>
+                                    <label key={m.id} className={`flex items-center gap-1 text-xs p-1 rounded cursor-pointer hover-gradient`}>
                                       <input type="checkbox" checked={d.nuevoUsuario.materiasAsignadas.includes(m.id)} onChange={e => d.setNuevoUsuario({ ...d.nuevoUsuario, materiasAsignadas: e.target.checked ? [...d.nuevoUsuario.materiasAsignadas, m.id] : d.nuevoUsuario.materiasAsignadas.filter((id: string) => id !== m.id) })} className="h-3 w-3" />
                                       {m.nombre}
                                     </label>
@@ -986,7 +986,7 @@ export default function Home() {
                 <CardHeader className="py-3 px-4 flex-row items-center justify-between space-y-0 border-border">
                   <div><CardTitle className="text-sm sm:text-base">Año Escolar</CardTitle><CardDescription className="text-xs text-muted-foreground">Configure el año lectivo actual del sistema</CardDescription></div>
                   <Dialog open={d.añoDialogOpen} onOpenChange={d.setAñoDialogOpen}>
-                    <DialogTrigger asChild><Button size="sm" variant="outline" className={`h-7 text-xs ${darkMode ? 'border-white/30 text-white hover:bg-white/10' : ''}`}><Calendar className="h-3.5 w-3.5 mr-1" />Cambiar Año</Button></DialogTrigger>
+                    <DialogTrigger asChild><Button size="sm" variant="outline" className={`h-7 text-xs ${darkMode ? 'border-white/30 text-white hover-gradient-strong' : ''}`}><Calendar className="h-3.5 w-3.5 mr-1" />Cambiar Año</Button></DialogTrigger>
                     <DialogContent className="max-w-sm bg-card border-border">
                       <DialogHeader><DialogTitle>Cambiar Año Escolar</DialogTitle><DialogDescription>El nuevo año solo mostrará datos correspondientes a ese período.</DialogDescription></DialogHeader>
                       <div className="space-y-3">
@@ -1091,8 +1091,8 @@ export default function Home() {
           <DialogHeader><DialogTitle>Importar Calificaciones</DialogTitle><DialogDescription>Carga un archivo CSV con las notas de los estudiantes.</DialogDescription></DialogHeader>
           <div className="space-y-3">
             <div className="flex gap-2">
-              <Button size="sm" variant="outline" onClick={d.generateTemplate} className={`flex-1 text-xs ${darkMode ? 'border-white/30 text-white hover:bg-white/10' : ''}`}><Download className="h-3.5 w-3.5 mr-1" />Plantilla</Button>
-              <Button size="sm" variant="outline" onClick={() => (document.querySelector<HTMLInputElement>('input[type="file"]')?.click())} className={`flex-1 text-xs ${darkMode ? 'border-white/30 text-white hover:bg-white/10' : ''}`}><Upload className="h-3.5 w-3.5 mr-1" />Cargar</Button>
+              <Button size="sm" variant="outline" onClick={d.generateTemplate} className={`flex-1 text-xs ${darkMode ? 'border-white/30 text-white hover-gradient-strong' : ''}`}><Download className="h-3.5 w-3.5 mr-1" />Plantilla</Button>
+              <Button size="sm" variant="outline" onClick={() => (document.querySelector<HTMLInputElement>('input[type="file"]')?.click())} className={`flex-1 text-xs ${darkMode ? 'border-white/30 text-white hover-gradient-strong' : ''}`}><Upload className="h-3.5 w-3.5 mr-1" />Cargar</Button>
               <input type="file" accept=".csv,.txt" className="hidden" onChange={d.handleFileUpload} />
             </div>
             {d.importData && <div className={`p-2 rounded text-xs max-h-24 overflow-auto ${darkMode ? 'bg-slate-950/40 backdrop-blur-md text-slate-300' : 'bg-slate-50'}`}>{d.importData.slice(0, 200)}…</div>}

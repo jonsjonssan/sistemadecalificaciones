@@ -88,7 +88,7 @@ export default function ResumenAsignaturas({
       <button
         onClick={() => setOpen(!open)}
         className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium transition-colors ${
-          darkMode ? 'hover:bg-slate-800/60 text-slate-200' : 'hover:bg-slate-50 text-slate-700'
+          'hover-gradient' + (darkMode ? ' text-slate-200' : ' text-slate-700')
         }`}
       >
         <div className="flex items-center gap-2">
@@ -130,9 +130,7 @@ export default function ResumenAsignaturas({
                   {estudiantesOrdenados.map((est) => {
                     const califsEst = calificaciones.filter((c) => c.estudianteId === est.id);
                     return (
-                      <tr key={est.id} className={`${
-                        darkMode ? 'hover:bg-slate-800/40' : 'hover:bg-slate-50'
-                      }`}>
+                      <tr key={est.id} className={`hover-gradient`}>
                         <td className={`px-2 py-1 border-b text-[11px] font-medium sticky left-0 z-10 ${
                           darkMode ? 'border-white/5 text-slate-300 bg-slate-900/50' : 'border-slate-100 text-slate-600 bg-white'
                         }`}>

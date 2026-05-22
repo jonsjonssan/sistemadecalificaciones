@@ -403,7 +403,7 @@ function SectionCard({ title, subtitle, icon: Icon, expanded, onToggle, count, d
   return (
     <Card className={`shadow-sm ${darkMode ? 'bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl' : ''}`}>
       <CardHeader
-        className={`pb-3 cursor-pointer hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors ${darkMode ? 'border-white/10' : ''}`}
+        className={`pb-3 cursor-pointer hover-gradient border-b ${darkMode ? 'border-white/10' : ''}`}
         onClick={onToggle}
       >
         <div className="flex items-center justify-between">
