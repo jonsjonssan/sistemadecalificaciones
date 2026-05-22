@@ -901,16 +901,26 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                             newAsistencias[est.id] = "presente";
                           });
                           setAsistencias(newAsistencias);
-                          activeStudents.forEach(est => {
-                            if (autoSaveTimersRef.current[est.id]) {
-                              clearTimeout(autoSaveTimersRef.current[est.id]);
-                            }
-                            const currentGradoId = gradoId;
-                            const currentFecha = fecha;
-                            autoSaveTimersRef.current[est.id] = setTimeout(() => {
-                              guardarEstudianteIndividual(est.id, "presente", currentGradoId, currentFecha);
-                            }, 800);
-                          });
+                          // Batch save único en lugar de N llamadas individuales
+                          setSaving(true);
+                          const records = activeStudents.map(est => ({
+                            estudianteId: est.id,
+                            estado: "presente" as const,
+                          }));
+                          fetch("/api/asistencia", {
+                            method: "POST",
+                            credentials: "include",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              asistencias: records,
+                              fecha: `${fecha}T00:00:00.000Z`,
+                              gradoId,
+                            }),
+                          }).then(res => {
+                            if (!res.ok) toast({ title: "Error al guardar asistencia", variant: "destructive" });
+                          }).catch(() => {
+                            toast({ title: "Error de red al guardar", variant: "destructive" });
+                          }).finally(() => setSaving(false));
                         }}
                       >
                         <CheckCircle2 className="h-4 w-4 sm:mr-1.5" />

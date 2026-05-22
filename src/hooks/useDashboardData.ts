@@ -1071,13 +1071,18 @@ export function useDashboardData() {
     finally { setPasswordLoading(false); }
   };
 
+  const observacionesRetryRef = useRef<Record<string, { count: number; timer: NodeJS.Timeout | null }>>({});
+
   const handleAsistenciaManualChange = useCallback((estudianteId: string, field: string, value: string) => {
     setAsistenciaManualData(prev => {
       const current = prev[estudianteId] || { asistencias: '', inasistencias: '', tardanzas: '', justificadas: '', totalDias: '', observaciones: '' };
       return { ...prev, [estudianteId]: { ...current, [field]: value } };
     });
     if (observacionesSaveTimersRef.current.has(estudianteId)) clearTimeout(observacionesSaveTimersRef.current.get(estudianteId)!);
-    const timer = setTimeout(async () => {
+    if (observacionesRetryRef.current[estudianteId]?.timer) {
+      clearTimeout(observacionesRetryRef.current[estudianteId].timer!);
+    }
+    const doSave = async (retryCount = 0) => {
       const entry = asistenciaManualDataRef.current[estudianteId];
       if (!entry || !gradoSeleccionado) return;
       const effectiveTrimestre = trimestreSeleccionado || "1";
@@ -1088,13 +1093,24 @@ export function useDashboardData() {
         if (!res.ok) {
           const errBody = await res.text();
           console.error(`[observaciones] Error ${res.status} al guardar:`, errBody);
+          toast({ title: "Error al guardar observaciones", variant: "destructive" });
         }
       } catch (e) {
         console.error("[observaciones] Error de red al guardar:", e);
+        if (retryCount < 4) {
+          const delay = Math.min(2000 * Math.pow(2, retryCount), 30000);
+          observacionesRetryRef.current[estudianteId] = {
+            count: retryCount + 1,
+            timer: setTimeout(() => doSave(retryCount + 1), delay),
+          };
+        } else {
+          toast({ title: "Error de red al guardar observaciones", variant: "destructive" });
+        }
       }
-    }, 2000);
+    };
+    const timer = setTimeout(() => doSave(0), 2000);
     observacionesSaveTimersRef.current.set(estudianteId, timer);
-  }, [gradoSeleccionado, trimestreSeleccionado, gradosFiltrados]);
+  }, [gradoSeleccionado, trimestreSeleccionado, gradosFiltrados, toast]);
 
   const handleBorrarCalifAlumno = async () => {
     if (!borrarCalifEstudianteId || !asignaturaSeleccionada || !trimestreSeleccionado) return;
