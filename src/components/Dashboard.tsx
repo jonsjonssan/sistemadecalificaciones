@@ -5,17 +5,15 @@ import { useTheme } from "next-themes";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { type LucideIcon, Users, BookOpen, School, GraduationCap, Book, FileText, Target, TrendingUp, ChevronDown, ChevronRight, Trophy, AlertTriangle, ClipboardList, CalendarDays } from "lucide-react";
+import { type LucideIcon, Users, BookOpen, School, GraduationCap, Book, Target, TrendingUp, ChevronDown, ChevronRight, Trophy, AlertTriangle, ClipboardList, CalendarDays } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend, Cell } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/ui/stat-card";
 import { GradeChart } from "@/components/ui/grade-chart";
-import InformeTecnicoDialog from "./InformeTecnicoDialog";
 import { MathInfoButton, mathExplanations } from "./MathInfoButton";
 import { CiclosSection } from "./CiclosSection";
-import { DescargaCompletaButton } from "./DescargaCompletaButton";
 import { PromedioCircular } from "./PromedioCircular";
 import { CheckCircle2, AlertCircle, MinusCircle } from "lucide-react";
 import { CICLOS, getCicloDark, CicloAsignaturas } from "@/lib/ciclos";
@@ -153,7 +151,6 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
   const [stats, setStats] = useState<GradeStats[]>([]);
   const [selectedGradoId, setSelectedGradoId] = useState<string>("all");
   const [loading, setLoading] = useState(true);
-  const [informeOpen, setInformeOpen] = useState(false);
   const [selectedMaterias, setSelectedMaterias] = useState<Set<string>>(new Set());
   const [miAvance, setMiAvance] = useState<{
     porcentajeGlobal: number;
@@ -646,27 +643,9 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
             <MathInfoButton darkMode={darkMode} explanation={mathExplanations.asignaturasPorCiclo} />
           </div>
           <CiclosSection asignaturas={todasAsignaturasList} stats={stats} grados={grados} darkMode={darkMode} selectedMaterias={selectedMaterias} setSelectedMaterias={setSelectedMaterias} />
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <Button size="sm" onClick={() => setInformeOpen(true)} className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm">
-              <FileText className="h-4 w-4 mr-2" />
-              Generar Informe Técnico
-            </Button>
-            <DescargaCompletaButton darkMode={darkMode} />
-          </div>
         </div>
       )}
 
-      {/* Dialog de Informe */}
-      {esDirectiva && configuracion && (
-        <InformeTecnicoDialog
-          open={informeOpen}
-          onOpenChange={setInformeOpen}
-          darkMode={darkMode}
-          usuario={{ nombre: usuario.nombre, rol: usuario.rol }}
-          configuracion={configuracion}
-          grados={grados}
-        />
-      )}
     </div>
   );
 });
