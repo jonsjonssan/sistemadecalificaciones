@@ -330,11 +330,11 @@ export default function Home() {
                   {d.gradoSeleccionado && d.estudiantes.length > 0 && (
                     <>
                       {(isAdmin(usuario.rol) || usuario.rol === "docente-orientador") && (
-                        <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl' : 'bg-white border-slate-200/70 shadow-sm'}`}>
+                        <div className={`p-4 rounded-xl border ${darkMode ? 'bg-[#28a745]/80 text-white border-[#1e7e34]' : 'bg-[#28a745] text-white border-[#1e7e34]'}`}>
                           <div className="flex items-center justify-between mb-3">
-                            <Label className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>Asignaturas en boleta</Label>
+                            <Label className="text-xs font-semibold uppercase tracking-wider text-white">Asignaturas en boleta</Label>
                             <Select value={d.materiasEnBoleta.length === 0 ? "todas" : "personalizado"} onValueChange={(v) => { if (v === "todas") { d.setMateriasEnBoleta([]); } }}>
-                              <SelectTrigger className={`w-36 h-8 text-xs ${darkMode ? 'bg-card border-white/30 text-white' : 'bg-white border-slate-300'}`}><SelectValue /></SelectTrigger>
+                              <SelectTrigger className="w-36 h-8 text-xs bg-white/20 text-white border-white/30 hover:bg-white/30"><SelectValue /></SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="todas" className="text-xs">Todas ({d.todasAsignaturas.filter((m: any) => m.gradoId === d.gradoSeleccionado).length})</SelectItem>
                                 <SelectItem value="personalizado" className="text-xs">Seleccionar…</SelectItem>

@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CalendarDays, Download, AlertTriangle, CheckCircle2, Clock, XCircle } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { escapeHtml } from "@/lib/utils/index";
 
 interface Grado { id: string; numero: number; seccion: string; }
@@ -302,6 +303,42 @@ export default function ReporteAsistenciaMultiGrado({ grados, darkMode: darkMode
                   </div>
                 ))}
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Gráfico de Asistencia */}
+          <Card className={`shadow-sm border overflow-hidden ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5" : "bg-white border-slate-200"}`}>
+            <div className={`h-1 w-full bg-gradient-to-r from-emerald-500 to-emerald-400`} />
+            <CardContent className="p-4">
+              <h3 className={`text-sm font-semibold mb-3 ${darkMode ? "text-white" : "text-slate-800"}`}>
+                Distribución de Asistencia por Grado
+              </h3>
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart
+                  data={data.grados.map(g => ({
+                    nombre: `${g.gradoNumero}°`,
+                    Asistencias: g.resumen.reduce((s, r) => s + r.asistencias, 0),
+                    Ausencias: g.resumen.reduce((s, r) => s + r.ausencias, 0),
+                    Tardanzas: g.resumen.reduce((s, r) => s + r.tardanzas, 0),
+                    Justificadas: g.resumen.reduce((s, r) => s + r.justificadas, 0),
+                  }))}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#374151" : "#e5e7eb"} />
+                  <XAxis dataKey="nombre" tick={{ fontSize: 12, fill: darkMode ? "#94a3b8" : "#64748b" }} />
+                  <YAxis tick={{ fontSize: 11, fill: darkMode ? "#94a3b8" : "#64748b" }} />
+                  <Tooltip
+                    contentStyle={{
+                      borderRadius: "8px", border: "none", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                      fontSize: "12px", backgroundColor: darkMode ? "#1e293b" : "#fff", color: darkMode ? "#e8e8e8" : "#111",
+                    }}
+                  />
+                  <Bar dataKey="Asistencias" fill="#10b981" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Ausencias" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Tardanzas" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="Justificadas" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </CardContent>
           </Card>
 

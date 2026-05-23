@@ -300,6 +300,71 @@ async function generarPDF(data: ApiResponse) {
     }
   }
 
+  // Add summary chart page
+  doc.addPage();
+  const chartWidth = 260;
+  const chartHeight = 140;
+  const chartX = 14;
+  let chartY = 30;
+
+  // Per-grade summary
+  for (const grado of gradosOrdenados) {
+    const califsGrado = (data.datos || []).filter(c => c.gradoId === grado.id);
+    const estudiantesUnicos = new Set(califsGrado.map(c => c.estudianteId));
+    const totalEst = estudiantesUnicos.size;
+    const aprobados = califsGrado.filter(c => c.promedioFinal !== null && c.promedioFinal >= 6.5).length;
+    const condicionados = califsGrado.filter(c => c.promedioFinal !== null && c.promedioFinal >= 4.5 && c.promedioFinal < 6.5).length;
+    const reprobados = califsGrado.filter(c => c.promedioFinal !== null && c.promedioFinal < 4.5).length;
+    const sinDatos = califsGrado.filter(c => c.promedioFinal === null).length;
+    const total = aprobados + condicionados + reprobados;
+
+    if (chartY > 180) { doc.addPage(); chartY = 30; }
+
+    doc.setFontSize(9);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`${getGradoLabel(grado.numero, grado.seccion)} — A:${aprobados} C:${condicionados} R:${reprobados}`, chartX, chartY);
+    chartY += 6;
+
+    const barW = chartWidth / (total || 1);
+    const barH = 14;
+    if (aprobados > 0) {
+      doc.setFillColor(16, 185, 129);
+      doc.rect(chartX, chartY, (aprobados / (total || 1)) * chartWidth, barH, "F");
+    }
+    if (condicionados > 0) {
+      doc.setFillColor(245, 158, 11);
+      doc.rect(chartX + (aprobados / (total || 1)) * chartWidth, chartY, (condicionados / (total || 1)) * chartWidth, barH, "F");
+    }
+    if (reprobados > 0) {
+      doc.setFillColor(239, 68, 68);
+      doc.rect(chartX + ((aprobados + condicionados) / (total || 1)) * chartWidth, chartY, (reprobados / (total || 1)) * chartWidth, barH, "F");
+    }
+    doc.setDrawColor(0);
+    doc.rect(chartX, chartY, chartWidth, barH, "S");
+
+    doc.setFontSize(7);
+    doc.setTextColor(100);
+    // Legend: colored boxes
+    const legendY = chartY + barH + 3;
+    let lx = chartX;
+    if (aprobados > 0) {
+      doc.setFillColor(16, 185, 129); doc.rect(lx, legendY, 4, 4, "F");
+      doc.text(`Aprobados: ${aprobados}`, lx + 6, legendY + 3);
+      lx += 40;
+    }
+    if (condicionados > 0) {
+      doc.setFillColor(245, 158, 11); doc.rect(lx, legendY, 4, 4, "F");
+      doc.text(`Cond: ${condicionados}`, lx + 6, legendY + 3);
+      lx += 35;
+    }
+    if (reprobados > 0) {
+      doc.setFillColor(239, 68, 68); doc.rect(lx, legendY, 4, 4, "F");
+      doc.text(`Reprobados: ${reprobados}`, lx + 6, legendY + 3);
+    }
+
+    chartY = legendY + 12;
+  }
+
   const totalPages = pdfDoc.internal.getNumberOfPages();
   if (pdfDoc.lastAutoTable?.finalY && totalPages > 1) {
     pdfDoc.deletePage(totalPages);

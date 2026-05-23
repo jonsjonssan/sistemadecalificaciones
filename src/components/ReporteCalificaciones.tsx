@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid, Cell, LabelList } from "recharts";
 import { FileText, Download, AlertTriangle, CheckCircle2, HelpCircle, X, Check } from "lucide-react";
 
 type CalificacionRow = {
@@ -161,6 +162,20 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
     return { reprobado, condicionado, aprobado, sinDatos };
   }, [estudiantes, materiasFiltradas, matriz]);
 
+  const chartData = useMemo(() => {
+    return materiasFiltradas.map(mat => {
+      const notas = estudiantes.map(est => matriz.get(est.id)?.get(mat.id) ?? null);
+      let aprobado = 0, condicionado = 0, reprobado = 0, sinDatos = 0;
+      for (const n of notas) {
+        if (n === null) { sinDatos++; continue; }
+        if (n < umbralCondicionado) reprobado++;
+        else if (n < umbralAprobado) condicionado++;
+        else aprobado++;
+      }
+      return { nombre: mat.nombre, Aprobados: aprobado, Condicionados: condicionado, Reprobados: reprobado };
+    });
+  }, [materiasFiltradas, estudiantes, matriz]);
+
   // Exportar a CSV
   const exportarCSV = useCallback(() => {
     if (!grado) return;
@@ -260,6 +275,79 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
     doc.save(`reporte_estados_${grado.numero}${grado.seccion}_T${trimestre}.pdf`);
   }, [grado, estudiantes, materiasFiltradas, matriz, trimestre]);
 
+  const exportarPDFBatch = useCallback(async () => {
+    const { default: jsPDF } = await import("jspdf");
+    const autoTable = (await import("jspdf-autotable")).default;
+    const gradosBatch = grados.filter(g => g.numero >= 2 && g.numero <= 9);
+
+    const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+    doc.setFontSize(14);
+    doc.text("Reporte de Estados - Todos los Grados (2° a 9°)", 14, 12);
+    doc.setFontSize(9);
+    doc.text(`Trimestre ${trimestre} - ${new Date().toLocaleDateString("es-ES")}`, 14, 18);
+
+    for (const g of gradosBatch) {
+      try {
+        const [estRes, matRes, calRes] = await Promise.all([
+          fetch(`/api/estudiantes?gradoId=${g.id}&_=${Date.now()}`, { cache: "no-store", credentials: "include" }),
+          fetch(`/api/materias?gradoId=${g.id}&_=${Date.now()}`, { cache: "no-store", credentials: "include" }),
+          fetch(`/api/calificaciones?gradoId=${g.id}&_=${Date.now()}`, { cache: "no-store", credentials: "include" }),
+        ]);
+        if (!estRes.ok || !matRes.ok || !calRes.ok) continue;
+        const [estData, matData, calData] = await Promise.all([estRes.json(), matRes.json(), calRes.json()]);
+        const batchEstudiantes: any[] = estData;
+        const batchMaterias: any[] = matData;
+        const batchCalif: any[] = Array.isArray(calData) ? calData.filter((c: any) => c.trimestre === parseInt(trimestre)) : [];
+
+        if (batchEstudiantes.length === 0 || batchMaterias.length === 0) continue;
+
+        const matMap = new Map<string, Map<string, number | null>>();
+        for (const cal of batchCalif) {
+          if (!matMap.has(cal.estudianteId)) matMap.set(cal.estudianteId, new Map());
+          matMap.get(cal.estudianteId)!.set(cal.materiaId, cal.promedioFinal);
+        }
+
+        const headers = ["N°", "Estudiante", ...batchMaterias.map((m: any) => m.nombre.length > 12 ? m.nombre.substring(0, 12) + "…" : m.nombre)];
+        const body = batchEstudiantes.map((est: any) => {
+          const estados = batchMaterias.map((mat: any) => {
+            const nota = matMap.get(est.id)?.get(mat.id) ?? null;
+            const r = nota === null ? "—" : nota < umbralCondicionado ? "Reprobado" : nota < umbralAprobado ? "Condicionado" : "Aprobado";
+            return r;
+          });
+          return [est.numero.toString(), est.nombre, ...estados];
+        });
+
+        if ((doc as any).lastAutoTable?.finalY && (doc as any).lastAutoTable.finalY > 240) doc.addPage();
+
+        const startY = (doc as any).lastAutoTable?.finalY ? (doc as any).lastAutoTable.finalY + 8 : 24;
+        doc.setFontSize(11);
+        doc.setTextColor(0, 123, 255);
+        doc.text(`${g.numero}° "${g.seccion}"`, 14, startY);
+
+        autoTable(doc, {
+          head: [headers],
+          body,
+          startY: startY + 3,
+          styles: { fontSize: 6.5, cellPadding: 1.5 },
+          headStyles: { fillColor: [0, 123, 255], textColor: 255, fontStyle: "bold" },
+          columnStyles: { 0: { cellWidth: 8 }, 1: { cellWidth: 38 } },
+          didParseCell: (data: any) => {
+            if (data.column.index >= 2 && data.row.section === "body") {
+              const val = String(data.cell.raw).trim();
+              if (val === "Reprobado") { data.cell.styles.textColor = [220, 38, 38]; data.cell.styles.fontStyle = "bold"; }
+              else if (val === "Condicionado") { data.cell.styles.textColor = [217, 119, 6]; data.cell.styles.fontStyle = "bold"; }
+              else if (val === "Aprobado") { data.cell.styles.textColor = [5, 150, 105]; data.cell.styles.fontStyle = "bold"; }
+            }
+          },
+        });
+      } catch (e) {
+        continue;
+      }
+    }
+
+    doc.save(`reporte_estados_completo_T${trimestre}.pdf`);
+  }, [grados, trimestre]);
+
   if (!grados || grados.length === 0) {
     return (
       <Card className={`shadow-sm border ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl text-white" : "bg-white border-slate-200"}`}>
@@ -339,6 +427,9 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
                 </Button>
                 <Button size="sm" variant="outline" onClick={exportarPDF} className={`h-11 sm:h-12 text-sm ${darkMode ? "bg-card border-white/30 text-white hover-gradient-strong" : ""}`}>
                   <FileText className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">PDF</span>
+                </Button>
+                <Button size="sm" variant="outline" onClick={exportarPDFBatch} className={`h-11 sm:h-12 text-sm ${darkMode ? "bg-card border-white/30 text-white hover-gradient-strong" : ""}`}>
+                  <Download className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Todo PDF</span>
                 </Button>
               </>
             )}
@@ -434,11 +525,11 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
               <div className="overflow-x-auto">
                 <table className="w-full text-xs sm:text-sm font-medium border-collapse">
                   <thead>
-                    <tr className={darkMode ? "bg-gradient-to-r from-slate-200 to-slate-300 text-white" : "bg-gradient-to-r from-slate-700 to-slate-600 text-white"}>
-                      <th className={`w-10 p-2 text-center font-semibold sticky left-0 z-20 border-r border-b ${darkMode ? 'bg-slate-200 border-slate-400' : 'bg-slate-700 border-slate-500'}`}>N°</th>
-                      <th className={`min-w-[140px] sm:min-w-[160px] p-2 text-left font-semibold sticky left-10 z-20 border-r border-b ${darkMode ? 'bg-slate-200 border-slate-400' : 'bg-slate-700 border-slate-500'}`}>Estudiante</th>
+                    <tr className="bg-[#007BFF] text-white">
+                      <th className="w-10 p-2 text-center font-semibold sticky left-0 z-20 border-r border-b border-[#0056B3] bg-[#007BFF]">N°</th>
+                      <th className="min-w-[140px] sm:min-w-[160px] p-2 text-left font-semibold sticky left-10 z-20 border-r border-b border-[#0056B3] bg-[#007BFF]">Estudiante</th>
                        {materiasFiltradas.map(mat => (
-                        <th key={mat.id} className={`p-2 text-center font-semibold border-r border-b ${darkMode ? "border-slate-400 bg-slate-200" : "border-slate-500 bg-slate-700"}`}
+                        <th key={mat.id} className="p-2 text-center font-semibold border-r border-b border-[#0056B3] bg-[#007BFF] text-white"
                           style={{ writingMode: "vertical-rl", minWidth: "2.5rem", maxWidth: "3rem" }}>
                           <div className="rotate-180 whitespace-nowrap text-[10px] sm:text-xs py-1">{mat.nombre}</div>
                         </th>
@@ -450,14 +541,12 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
                       const rowBg = idx % 2 === 0
                         ? (darkMode ? "bg-card" : "bg-white")
                         : (darkMode ? "bg-muted" : "bg-slate-50/50");
-                      const cellBorder = darkMode ? "border-slate-700" : "border-slate-200";
-
                       return (
                         <tr key={est.id} className={`border-b transition-colors ${rowBg}`}>
-                          <td className={`p-2 text-center font-semibold sticky left-0 z-10 border-r ${cellBorder} ${rowBg}`}>
+                          <td className={`p-2 text-center font-semibold sticky left-0 z-10 border-r border-[#0056B3] ${rowBg}`}>
                             {est.numero}
                           </td>
-                          <td className={`p-2 font-medium sticky left-10 z-10 whitespace-nowrap border-r ${cellBorder} ${rowBg}`}>
+                          <td className={`p-2 font-medium sticky left-10 z-10 whitespace-nowrap border-r border-[#0056B3] ${rowBg}`}>
                             {est.nombre}
                           </td>
                           {materiasFiltradas.map(mat => {
@@ -465,7 +554,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
                             const rango = getRangoNota(nota, umbralCondicionado, umbralAprobado);
                             const label = getRangoLabel(rango);
                             return (
-                              <td key={mat.id} className={`p-1 text-center border-r ${cellBorder}`}>
+                              <td key={mat.id} className="p-1 text-center border-r border-[#0056B3]">
                                 <span className={`inline-block px-1.5 py-0.5 rounded-md text-[10px] sm:text-[11px] font-bold whitespace-nowrap ${getRangoColor(rango, darkMode)}`}>
                                   {label}
                                 </span>
@@ -499,6 +588,42 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
               </div>
             </CardContent>
           </Card>
+
+          {/* Gráfico Estadístico */}
+          {materiasFiltradas.length > 0 && (
+            <Card className={`shadow-sm border overflow-hidden ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5" : "bg-white border-slate-200"}`}>
+              <div className={`h-1 w-full bg-[#007BFF]`} />
+              <CardContent className="p-4">
+                <h3 className={`text-sm font-semibold mb-1 ${darkMode ? "text-white" : "text-slate-800"}`}>
+                  Distribución por Asignatura
+                </h3>
+                <p className={`text-xs mb-4 ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
+                  Estudiantes aprobados, condicionados y reprobados por asignatura
+                </p>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#374151" : "#e5e7eb"} />
+                    <XAxis dataKey="nombre" tick={{ fontSize: 10, fill: darkMode ? "#94a3b8" : "#64748b" }} angle={-45} textAnchor="end" height={60} />
+                    <YAxis tick={{ fontSize: 11, fill: darkMode ? "#94a3b8" : "#64748b" }} />
+                    <Tooltip
+                      contentStyle={{
+                        borderRadius: "8px",
+                        border: "none",
+                        boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                        fontSize: "12px",
+                        backgroundColor: darkMode ? "#1e293b" : "#fff",
+                        color: darkMode ? "#e8e8e8" : "#111",
+                      }}
+                    />
+                    <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "10px" }} />
+                    <Bar dataKey="Aprobados" stackId="a" fill="#10b981" radius={[0, 0, 0, 0]} />
+                    <Bar dataKey="Condicionados" stackId="a" fill="#f59e0b" radius={[0, 0, 0, 0]} />
+                    <Bar dataKey="Reprobados" stackId="a" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          )}
 
         </>
       )}
