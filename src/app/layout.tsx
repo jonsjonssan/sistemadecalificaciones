@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Roboto, JetBrains_Mono } from "next/font/google";
+import { Outfit, Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -9,7 +9,13 @@ import { ClientComponents } from "@/components/ClientComponents";
 import { QueryProvider } from "@/lib/query-provider";
 import { SkipLink } from "@/components/A11y";
 
-const roboto = Roboto({
+const outfit = Outfit({
+  variable: "--font-display",
+  subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
+});
+
+const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-body",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
@@ -53,7 +59,7 @@ export default function RootLayout({
   return (
     <html lang="es" suppressHydrationWarning>
       <body
-        className={`${roboto.variable} ${jetbrainsMono.variable} antialiased bg-background text-foreground font-body`}
+        className={`${plusJakartaSans.variable} ${outfit.variable} ${jetbrainsMono.variable} antialiased bg-background text-foreground font-body`}
       >
         <SkipLink />
         <ErrorBoundary>

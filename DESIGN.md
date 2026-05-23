@@ -2,29 +2,31 @@
 name: Sistema de Calificaciones
 description: Gestión de calificaciones, asistencia y boletas para CEC San José de la Montaña
 colors:
-  primary: "#1b6b3a"
-  primary-hover: "#15582e"
-  neutral-bg: "#f4f6f3"
-  neutral-surface: "#eaede8"
-  neutral-text: "#000000"
-  neutral-muted: "#000000"
+  primary: "#1d624a"
+  primary-hover: "#17503c"
+  neutral-bg: "#fcfdfa"
+  neutral-surface: "#eff2ed"
+  neutral-text: "#15241e"
+  neutral-muted: "#5a6a62"
   destructive: "#b33a3a"
-  success: "#2d7a4a"
+  success: "#256f45"
   warning: "#b8912a"
-  info: "#3a72b3"
+  info: "#1d5b94"
   chart-1: "#b85a2a"
-  chart-2: "#2d7a4a"
-  chart-3: "#3a5a8a"
+  chart-2: "#256f45"
+  chart-3: "#1d5b94"
   chart-4: "#c4a030"
   chart-5: "#b84a6a"
 typography:
+  display:
+    fontFamily: "Outfit, system-ui, sans-serif"
   body:
-    fontFamily: "Roboto, system-ui, sans-serif"
+    fontFamily: "Plus Jakarta Sans, system-ui, sans-serif"
     fontSize: "0.875rem"
     fontWeight: 400
     lineHeight: 1.6
   label:
-    fontFamily: "Roboto, system-ui, sans-serif"
+    fontFamily: "Plus Jakarta Sans, system-ui, sans-serif"
     fontSize: "0.75rem"
     fontWeight: 500
     letterSpacing: "0.02em"
@@ -74,75 +76,62 @@ components:
 
 ## 1. Overview
 
-**Creative North Star: "Pizarra y Tiza"**
+**Creative North Star: "Esmeralda Imperial"**
 
-Un sistema de calificaciones escolar que se siente como una pizarra bien organizada: contraste nítido, información clara, sin adornos. Negro profundo sobre blanco, con acentos en verde bosque institucional. El degradado lineal en el header evoca el horizonte de una pizarra al atardecer, pero sin interferir con la legibilidad.
-
-Este sistema usa tres colores base: **negro**, **blanco** y **verde bosque**. Los colores semánticos (rojo, ámbar, azul) existen solo para estados funcionales: error, advertencia, información.
+Un sistema de calificaciones escolar que evoca el prestigio de la excelencia académica mediante una paleta refinada de color esmeralda y oro, complementada con un fondo cálido de alabastro. Diseñado para ofrecer una legibilidad impecable, un contraste nítido bajo cualquier condición de iluminación y una apariencia moderna libre de grises aburridos.
 
 **Key Characteristics:**
-- Alto contraste: texto negro puro sobre fondo blanco, blanco puro sobre fondo oscuro.
-- Tipografía Roboto: geométrica, legible, neutral. Una sola familia para toda la interfaz.
-- Degradado lineal sutil en el header para identidad institucional.
-- Consistencia monolítica: un solo vocabulario visual en toda la superficie.
-- Modo oscuro para uso nocturno, con fondos verde negruzco profundo.
+- **Alto contraste refinado**: Textos en verde-carbono profundo sobre fondos cálidos de alabastro en modo claro, y menta luminosa sobre obsidiana en modo oscuro.
+- **Tipografía Dual**: Tipografía Outfit para títulos y acentos (estética amigable y moderna), y Plus Jakarta Sans para el texto de contenido (legibilidad excepcional en pantalla).
+- **Detalles dorados y degradados sutiles**: Para elementos activos, alertas o accesos importantes, aportando un toque premium de calidad.
+- **Micro-interacciones**: Transiciones fluidas en hover de botones y celdas de tabla.
 
 ## 2. Colors
 
-La paleta es minimalista: negro, blanco y verde. El verde bosque es el color institucional. Los neutros se tintan hacia el verde para cohesionar sin competir.
+La paleta se centra en tonos esmeralda/jade, con acentos en oro champagne y neutros cálidos.
 
 ### Primary
-- **Verde Bosque** (`oklch(0.42 0.12 140)` / `#1b6b3a`): Acciones primarias, botones principales, encabezados de tabla activos, indicador de "aprobado". Es el color institucional.
-- **Verde Bosque Hover** (`oklch(0.37 0.12 140)` / `#15582e`): Estado hover de botones primarios.
+- **Esmeralda Imperial** (`oklch(0.38 0.09 155)` / `#1d624a`): Botones principales, pestañas activas, aprobado institucional.
+- **Esmeralda Hover** (`oklch(0.32 0.08 155)` / `#17503c`): Estados hover.
+- **Menta Eléctrico** (`oklch(0.72 0.12 155)` / `#68dbab`): Primario en modo oscuro para alta legibilidad.
 
 ### Neutral
-- **Fondo Página** (`oklch(0.97 0.005 140)` / `#f7f8f5`): Fondo general casi blanco, tintado verde tenue.
-- **Superficie Elevada** (`oklch(0.90 0.03 140)` / `#dce6d8`): Fondos alternos, inputs, superficies secundarias.
-- **Card** (`oklch(1 0 0)` / `#ffffff`): Fondo de tarjetas, popovers, modales.
-- **Texto** (`oklch(0 0 0)` / `#000000`): Negro puro para máximo contraste.
-- **Borde** (`oklch(0.65 0.02 140)` / `#8fa88b`): Bordes de componentes tintados verde.
+- **Fondo Página** (`oklch(0.985 0.004 155)` / `#fcfdfa`): Fondo claro sumamente suave para reducir el cansancio visual.
+- **Superficie Elevada** (`oklch(0.94 0.012 155)` / `#eff2ed`): Fondos alternos, inputs.
+- **Card** (`oklch(1 0 0)` / `#ffffff`): Superficies de tarjeta puras.
+- **Texto** (`oklch(0.18 0.025 155)` / `#15241e`): Contraste óptimo y suave.
+- **Borde** (`oklch(0.92 0.008 155)` / `#e1e6e0`): Bordes sutiles.
 
-### Semantic (mantenidos como están)
-- **Destructivo / Error** (`oklch(0.50 0.20 28)` / `#b33a3a`): Botones destructivos, estado reprobado.
-- **Éxito / Aprobado** (`oklch(0.52 0.12 145)` / `#2d7a4a`): Confirmaciones, guardado exitoso.
-- **Advertencia / Condicionado** (`oklch(0.65 0.10 85)` / `#b8912a`): Estados parciales, advertencias.
-- **Info** (`oklch(0.52 0.10 250)` / `#3a72b3`): Información contextual, ayuda.
-
-### Header Gradient
-El header usa un degradado lineal de 135 grados: desde verde bosque con baja opacidad hacia blanco puro (light) o desde verde bosque más intenso hacia fondo oscuro (dark). Esto le da identidad sin recargar.
+### Semantic
+- **Destructivo / Error** (`oklch(0.50 0.18 28)` / `#b33a3a`): Estados reprobados o destructivos.
+- **Éxito** (`oklch(0.55 0.15 155)`): Guardados exitosos.
+- **Advertencia** (`oklch(0.72 0.13 85)`): Condicionados o alertas intermedias.
+- **Info** (`oklch(0.52 0.14 220)`): Detalles e información contextual.
 
 ## 3. Typography
 
-**Body Font:** Roboto (400–700), con fallback `system-ui, sans-serif`
-**Mono Font:** JetBrains Mono (400–600), solo para datos numéricos
-
-Roboto es una sans-serif geométrica con excelente legibilidad en pantalla. Su neutralidad la hace ideal para interfaces de producto donde la herramienta debe desaparecer. Una sola familia cubre headings, botones, labels, cuerpo y datos.
+**Display Font:** Outfit (500–800), con fallback `system-ui, sans-serif`
+**Body Font:** Plus Jakarta Sans (400–700), con fallback `system-ui, sans-serif`
+**Mono Font:** JetBrains Mono (400–600), para números y calificaciones
 
 ### Hierarchy
-- **Headline** (Roboto 700, 1.25rem, 1.3): Títulos de sección. Solo 1–2 por vista.
-- **Title** (Roboto 600, 1rem, 1.4): Subtítulos, encabezados de panel y tabla.
-- **Body** (Roboto 400, 0.875rem, 1.6): Texto corriente, celdas de tabla.
-- **Label** (Roboto 500, 0.75rem, 1.4, +0.02em tracking): Labels de formulario, badges, tabs.
-- **Caption** (Roboto 400, 0.6875rem, 1.4): Texto auxiliar, timestamps.
-- **Mono** (JetBrains Mono 500, 0.8125rem): Inputs de notas numéricas.
+- **Headline** (Outfit 700, 1.25rem, 1.2): Encabezados de sección y títulos de página.
+- **Title** (Outfit 600, 1rem, 1.3): Subtítulos, encabezados de tarjeta.
+- **Body** (Plus Jakarta Sans 400, 0.875rem, 1.6): Lectura de listas y celdas.
+- **Label** (Plus Jakarta Sans 500, 0.75rem, 1.4, +0.02em): Etiquetas de formulario, botones.
+- **Mono** (JetBrains Mono 500, 0.8125rem): Ingreso de notas y números.
 
-## 4. Elevation
+## 4. Elevation & Radius
 
-Sin cambios respecto a la versión anterior: capas tonales, sombras sutiles solo para elementos interactivos.
+Se utilizan bordes redondeados medianamente amplios (`0.625rem`) y sombras sumamente suaves para separar paneles sin sobrecargar la pantalla.
 
-## 5. Components
-
-Sin cambios en la estructura de componentes. Los colores de fondo, texto y borde se actualizan según la nueva paleta.
-
-## 6. Do's and Don'ts
+## 5. Do's and Don'ts
 
 ### Do:
-- **Do** usar negro puro (`#000`) para texto sobre fondo claro, blanco puro (`#fff`) para texto sobre fondo oscuro.
-- **Do** usar el degradado lineal en el header como único elemento decorativo en la interfaz.
-- **Do** mantener los colores semánticos (rojo, ámbar, azul, verde) para estados funcionales.
-- **Do** usar Roboto en 400/500/600/700 para toda la jerarquía tipográfica.
+- Usar el verde esmeralda institucional para el contenido principal y botones primarios.
+- Utilizar el degradado del header con opacidad moderada para la firma institucional.
+- Emplear JetBrains Mono exclusivamente para números de calificaciones.
 
 ### Don't:
-- **Don't** usar grises. Todo texto es negro puro o blanco puro. La jerarquía se logra con peso (weight) y tamaño, no con opacidad o matiz.
-- **Don't** añadir gradientes decorativos fuera del header.
-- **Don't** usar display fonts. Roboto es la única familia sans-serif.
+- Evitar grises puros. Todas las superficies y bordes deben contener una pizca de saturación esmeralda/jade (`hue 155`).
+- No usar fuentes de tipo script o serifas pesadas; Outfit y Plus Jakarta Sans resuelven la personalidad del sistema.
