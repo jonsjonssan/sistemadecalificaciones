@@ -55,16 +55,36 @@ export default function InformeTecnicoDialog({
               integradora: notas.reduce((s: number, n: any) => s + n.ai, 0) / notas.length,
               examen: notas.reduce((s: number, n: any) => s + n.ex, 0) / notas.length,
             } : { cotidiana: 0, integradora: 0, examen: 0 };
-            const top = [...gradosCalif]
-              .filter((c: any) => c.promedioFinal !== null)
-              .sort((a: any, b: any) => b.promedioFinal - a.promedioFinal)
+
+            // Agrupar por estudiante para evitar duplicados (un estudiante aparece por cada materia)
+            const estudiantesMap = new Map<string, { nombre: string; numero: number; promedios: number[] }>();
+            for (const c of gradosCalif) {
+              if (c.promedioFinal === null) continue;
+              const eId = c.estudiante?.id;
+              if (!eId) continue;
+              if (!estudiantesMap.has(eId)) {
+                estudiantesMap.set(eId, { nombre: c.estudiante.nombre || "—", numero: c.estudiante.numero || 0, promedios: [] });
+              }
+              estudiantesMap.get(eId)!.promedios.push(c.promedioFinal);
+            }
+
+            const estudiantes = Array.from(estudiantesMap.values()).map(e => ({
+              nombre: e.nombre,
+              numero: e.numero,
+              promedioFinal: e.promedios.reduce((a, b) => a + b, 0) / e.promedios.length,
+            }));
+
+            const top = [...estudiantes]
+              .sort((a, b) => b.promedioFinal - a.promedioFinal)
               .slice(0, 10)
-              .map((c: any) => ({ nombre: c.estudiante?.nombre || "—", promedio: c.promedioFinal, numero: c.estudiante?.numero || 0, estado: c.promedioFinal >= 6.5 ? "APROBADO" : c.promedioFinal >= 4.5 ? "CONDICIONADO" : "REPROBADO" }));
-            const alertas = [...gradosCalif]
-              .filter((c: any) => c.promedioFinal !== null && c.promedioFinal < 5.0)
-              .sort((a: any, b: any) => a.promedioFinal - b.promedioFinal)
+              .map(e => ({ nombre: e.nombre, promedio: e.promedioFinal, numero: e.numero, estado: e.promedioFinal >= 6.5 ? "APROBADO" : e.promedioFinal >= 4.5 ? "CONDICIONADO" : "REPROBADO" }));
+
+            const alertas = [...estudiantes]
+              .filter(e => e.promedioFinal < 5.0)
+              .sort((a, b) => a.promedioFinal - b.promedioFinal)
               .slice(0, 10)
-              .map((c: any) => ({ nombre: c.estudiante?.nombre || "—", promedio: c.promedioFinal, numero: c.estudiante?.numero || 0, estado: "REPROBADO" }));
+              .map(e => ({ nombre: e.nombre, promedio: e.promedioFinal, numero: e.numero, estado: "REPROBADO" }));
+
             statsMap[g.id] = { nombre: `${g.numero}° "${g.seccion}"`, promedios, topEstudiantes: top, alertas };
           }
         }
