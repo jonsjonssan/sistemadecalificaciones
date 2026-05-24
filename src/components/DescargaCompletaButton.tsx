@@ -260,6 +260,9 @@ async function generarPDF(data: ApiResponse) {
       }
       head.push("Prom Final");
 
+      const pctAC = (config?.porcentajeAC ?? 35) / 100;
+      const pctAI = (config?.porcentajeAI ?? 35) / 100;
+      const pctEx = (config?.porcentajeExamen ?? 30) / 100;
       const body = estudiantes.map((est) => {
         const calif = califMap.get(est.id);
         const getNotas = (notas: (number | null)[] | undefined, count: number): string[] => {
@@ -272,10 +275,10 @@ async function generarPDF(data: ApiResponse) {
         const acs = getNotas(calif?.actividadesCotidianas, numAC);
         const ais = getNotas(calif?.actividadesIntegradoras, numAI);
         const exs = getNotas(calif?.actividadesExamen, numEX);
-        const promAC = calif?.calificacionAC != null ? calif.calificacionAC.toFixed(1) : "";
-        const promAI = calif?.calificacionAI != null ? calif.calificacionAI.toFixed(1) : "";
-        const promEX = calif?.examenTrimestral != null ? formatValor(calif.examenTrimestral) : "";
-        const promFinal = calif?.promedioFinal != null ? calif.promedioFinal.toFixed(1) : "";
+        const promAC = calif?.calificacionAC != null ? (calif.calificacionAC * pctAC).toFixed(2) : "";
+        const promAI = calif?.calificacionAI != null ? (calif.calificacionAI * pctAI).toFixed(2) : "";
+        const promEX = calif?.examenTrimestral != null ? (calif.examenTrimestral * pctEx).toFixed(2) : "";
+        const promFinal = calif?.promedioFinal != null ? calif.promedioFinal.toFixed(2) : "";
         const row = [String(est.numero), est.nombre, ...acs, promAC, ...ais, promAI];
         if (tieneExamen) {
           row.push(...exs, promEX);
@@ -582,21 +585,24 @@ async function generarExcel(data: ApiResponse) {
         const numEX = (config?.tieneExamen ? (config?.numExamenes ?? 1) : 0);
         const tieneExamen = config?.tieneExamen ?? true;
 
+        const pctAC_x = (config?.porcentajeAC ?? 35) / 100;
+        const pctAI_x = (config?.porcentajeAI ?? 35) / 100;
+        const pctEx_x = (config?.porcentajeExamen ?? 30) / 100;
         for (let i = 0; i < numAC; i++) {
           row.push(calif?.actividadesCotidianas[i] ?? "");
         }
-        row.push(calif?.calificacionAC ?? "");
+        row.push(calif?.calificacionAC != null ? +(calif.calificacionAC * pctAC_x).toFixed(2) : "");
         for (let i = 0; i < numAI; i++) {
           row.push(calif?.actividadesIntegradoras[i] ?? "");
         }
-        row.push(calif?.calificacionAI ?? "");
+        row.push(calif?.calificacionAI != null ? +(calif.calificacionAI * pctAI_x).toFixed(2) : "");
         if (tieneExamen) {
           for (let i = 0; i < numEX; i++) {
             row.push((calif?.actividadesExamen ?? [])[i] ?? "");
           }
-          row.push(calif?.examenTrimestral ?? "");
+          row.push(calif?.examenTrimestral != null ? +(calif.examenTrimestral * pctEx_x).toFixed(2) : "");
         }
-        row.push(calif?.promedioFinal ?? "");
+        row.push(calif?.promedioFinal != null ? +(calif.promedioFinal).toFixed(2) : "");
       }
       rows.push(row);
     }
@@ -670,24 +676,27 @@ async function generarWord(data: ApiResponse) {
       const estudiantes = grado.estudiantes || [];
       const califMap = new Map(califsMateria.map((c) => [c.estudianteId, c]));
 
+      const pctAC_w = (config?.porcentajeAC ?? 35) / 100;
+      const pctAI_w = (config?.porcentajeAI ?? 35) / 100;
+      const pctEx_w = (config?.porcentajeExamen ?? 30) / 100;
       for (const est of estudiantes) {
         const calif = califMap.get(est.id);
         html += `<tr><td>${est.numero}</td><td>${escHtml(est.nombre)}</td>`;
         for (let i = 0; i < numAC; i++) {
           html += `<td>${formatValor(calif?.actividadesCotidianas[i] ?? null)}</td>`;
         }
-        html += `<td>${formatValor(calif?.calificacionAC ?? null)}</td>`;
+        html += `<td>${calif?.calificacionAC != null ? (calif.calificacionAC * pctAC_w).toFixed(2) : ""}</td>`;
         for (let i = 0; i < numAI; i++) {
           html += `<td>${formatValor(calif?.actividadesIntegradoras[i] ?? null)}</td>`;
         }
-        html += `<td>${formatValor(calif?.calificacionAI ?? null)}</td>`;
+        html += `<td>${calif?.calificacionAI != null ? (calif.calificacionAI * pctAI_w).toFixed(2) : ""}</td>`;
         if (tieneExamen) {
           for (let i = 0; i < numEX; i++) {
             html += `<td>${formatValor((calif?.actividadesExamen ?? [])[i] ?? null)}</td>`;
           }
-          html += `<td>${formatValor(calif?.examenTrimestral ?? null)}</td>`;
+          html += `<td>${calif?.examenTrimestral != null ? (calif.examenTrimestral * pctEx_w).toFixed(2) : ""}</td>`;
         }
-        html += `<td><strong>${formatValor(calif?.promedioFinal ?? null)}</strong></td>`;
+        html += `<td><strong>${calif?.promedioFinal != null ? calif.promedioFinal.toFixed(2) : ""}</strong></td>`;
         html += `</tr>`;
       }
 
