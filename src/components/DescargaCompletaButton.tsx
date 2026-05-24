@@ -329,75 +329,72 @@ async function generarPDF(data: ApiResponse) {
       const pw = pdfDoc.internal.pageSize.getWidth();
       const ph = pdfDoc.internal.pageSize.getHeight();
       const chartStartY = finalY + 2;
-      const barH = 12;
+      const barH = 7;
       const chartW = pw - 28;
-      const labelY = chartStartY - 2;
 
       // Check if there is enough space; if not, add a new page
       let currentY = chartStartY;
-      if (currentY + barH + 18 > ph - 15) {
+      if (currentY + barH + 14 > ph - 15) {
         doc.addPage();
         currentY = 30;
-        // Redraw header
         doc.setFontSize(7);
         doc.text(`${gradoLabel} - ${materia.nombre} (gráfico)`, pw / 2, 10, { align: "center" });
       }
 
       // Title
-      doc.setFontSize(8);
-      doc.setTextColor(80);
-      doc.text("Distribución de estudiantes:", 14, currentY - 2);
+      doc.setFontSize(7);
+      doc.setTextColor(100);
+      doc.text("Distribución de estudiantes:", 14, currentY - 1);
 
       // Stacked bar
-      const cw = chartW / (totalChart || 1);
       let barX = 14;
       if (aprobados > 0) {
         doc.setFillColor(16, 185, 129);
-        doc.rect(barX, currentY, (aprobados / (totalChart || 1)) * chartW, barH, "F");
-        doc.setFontSize(7);
+        doc.roundedRect(barX, currentY, (aprobados / (totalChart || 1)) * chartW, barH, 1, 1, "F");
+        doc.setFontSize(6);
         doc.setTextColor(255);
-        doc.text(`${aprobados}`, barX + 2, currentY + barH / 2 + 2);
+        if ((aprobados / (totalChart || 1)) * chartW > 10) doc.text(`${aprobados}`, barX + 1.5, currentY + barH / 2 + 1.5);
         barX += (aprobados / (totalChart || 1)) * chartW;
       }
       if (condicionados > 0) {
         doc.setFillColor(245, 158, 11);
-        doc.rect(barX, currentY, (condicionados / (totalChart || 1)) * chartW, barH, "F");
-        doc.setFontSize(7);
+        doc.roundedRect(barX, currentY, (condicionados / (totalChart || 1)) * chartW, barH, 1, 1, "F");
+        doc.setFontSize(6);
         doc.setTextColor(255);
-        doc.text(`${condicionados}`, barX + 2, currentY + barH / 2 + 2);
+        if ((condicionados / (totalChart || 1)) * chartW > 10) doc.text(`${condicionados}`, barX + 1.5, currentY + barH / 2 + 1.5);
         barX += (condicionados / (totalChart || 1)) * chartW;
       }
       if (reprobados > 0) {
         doc.setFillColor(239, 68, 68);
-        doc.rect(barX, currentY, (reprobados / (totalChart || 1)) * chartW, barH, "F");
-        doc.setFontSize(7);
+        doc.roundedRect(barX, currentY, (reprobados / (totalChart || 1)) * chartW, barH, 1, 1, "F");
+        doc.setFontSize(6);
         doc.setTextColor(255);
-        doc.text(`${reprobados}`, barX + 2, currentY + barH / 2 + 2);
+        if ((reprobados / (totalChart || 1)) * chartW > 10) doc.text(`${reprobados}`, barX + 1.5, currentY + barH / 2 + 1.5);
       }
-      doc.setDrawColor(0);
-      doc.setLineWidth(0.3);
-      doc.rect(14, currentY, chartW, barH, "S");
+      doc.setDrawColor(180);
+      doc.setLineWidth(0.2);
+      doc.roundedRect(14, currentY, chartW, barH, 1, 1, "S");
       doc.setLineWidth(0.1);
 
       // Legend below bar
-      const legY = currentY + barH + 3;
+      const legY = currentY + barH + 2.5;
       let lx = 14;
       if (aprobados > 0) {
-        doc.setFillColor(16, 185, 129); doc.rect(lx, legY, 4, 4, "F");
-        doc.setFontSize(6.5); doc.setTextColor(80);
-        doc.text(`Aprobados: ${aprobados}`, lx + 6, legY + 3);
-        lx += 38;
+        doc.setFillColor(16, 185, 129); doc.rect(lx, legY, 3, 3, "F");
+        doc.setFontSize(6); doc.setTextColor(100);
+        doc.text(`Aprobados: ${aprobados}`, lx + 4.5, legY + 2.5);
+        lx += 32;
       }
       if (condicionados > 0) {
-        doc.setFillColor(245, 158, 11); doc.rect(lx, legY, 4, 4, "F");
-        doc.setFontSize(6.5); doc.setTextColor(80);
-        doc.text(`Condicionados: ${condicionados}`, lx + 6, legY + 3);
-        lx += 42;
+        doc.setFillColor(245, 158, 11); doc.rect(lx, legY, 3, 3, "F");
+        doc.setFontSize(6); doc.setTextColor(100);
+        doc.text(`Condicionados: ${condicionados}`, lx + 4.5, legY + 2.5);
+        lx += 36;
       }
       if (reprobados > 0) {
-        doc.setFillColor(239, 68, 68); doc.rect(lx, legY, 4, 4, "F");
-        doc.setFontSize(6.5); doc.setTextColor(80);
-        doc.text(`Reprobados: ${reprobados}`, lx + 6, legY + 3);
+        doc.setFillColor(239, 68, 68); doc.rect(lx, legY, 3, 3, "F");
+        doc.setFontSize(6); doc.setTextColor(100);
+        doc.text(`Reprobados: ${reprobados}`, lx + 4.5, legY + 2.5);
       }
 
       // Track if we added an extra blank page from the loop
@@ -427,7 +424,7 @@ async function generarPDF(data: ApiResponse) {
   chartY += 8;
 
   const chartW = pageWidth - 28;
-  const chartH = 14;
+  const chartH = 8;
 
   for (const grado of gradosOrdenados) {
     const califsGrado = (data.datos || []).filter(c => c.gradoId === grado.id);
@@ -439,7 +436,7 @@ async function generarPDF(data: ApiResponse) {
     const total = aprobados + condicionados + reprobados;
 
     // Check if we need a new page
-    if (chartY + chartH + 20 > pageHeight - 15) {
+    if (chartY + chartH + 16 > pageHeight - 15) {
       doc.addPage();
       chartY = 25;
       doc.setFontSize(14);
@@ -449,69 +446,69 @@ async function generarPDF(data: ApiResponse) {
     }
 
     // Grade label
-    doc.setFontSize(9);
-    doc.setTextColor(0, 0, 0);
-    doc.text(`${getGradoLabel(grado.numero, grado.seccion)}  —  A:${aprobados}  C:${condicionados}  R:${reprobados}`, 14, chartY - 2);
+    doc.setFontSize(8);
+    doc.setTextColor(60);
+    doc.text(`${getGradoLabel(grado.numero, grado.seccion)}`, 14, chartY - 1);
 
     // Stacked bar
     let bx = 14;
     if (aprobados > 0) {
       doc.setFillColor(16, 185, 129);
-      doc.rect(bx, chartY, (aprobados / (total || 1)) * chartW, chartH, "F");
-      doc.setFontSize(7);
+      doc.roundedRect(bx, chartY, (aprobados / (total || 1)) * chartW, chartH, 1, 1, "F");
+      doc.setFontSize(6);
       doc.setTextColor(255);
-      doc.text(`${aprobados}`, bx + 2, chartY + chartH / 2 + 2);
+      if ((aprobados / (total || 1)) * chartW > 10) doc.text(`${aprobados}`, bx + 1.5, chartY + chartH / 2 + 1.5);
       bx += (aprobados / (total || 1)) * chartW;
     }
     if (condicionados > 0) {
       doc.setFillColor(245, 158, 11);
-      doc.rect(bx, chartY, (condicionados / (total || 1)) * chartW, chartH, "F");
-      doc.setFontSize(7);
+      doc.roundedRect(bx, chartY, (condicionados / (total || 1)) * chartW, chartH, 1, 1, "F");
+      doc.setFontSize(6);
       doc.setTextColor(255);
-      doc.text(`${condicionados}`, bx + 2, chartY + chartH / 2 + 2);
+      if ((condicionados / (total || 1)) * chartW > 10) doc.text(`${condicionados}`, bx + 1.5, chartY + chartH / 2 + 1.5);
       bx += (condicionados / (total || 1)) * chartW;
     }
     if (reprobados > 0) {
       doc.setFillColor(239, 68, 68);
-      doc.rect(bx, chartY, (reprobados / (total || 1)) * chartW, chartH, "F");
-      doc.setFontSize(7);
+      doc.roundedRect(bx, chartY, (reprobados / (total || 1)) * chartW, chartH, 1, 1, "F");
+      doc.setFontSize(6);
       doc.setTextColor(255);
-      doc.text(`${reprobados}`, bx + 2, chartY + chartH / 2 + 2);
+      if ((reprobados / (total || 1)) * chartW > 10) doc.text(`${reprobados}`, bx + 1.5, chartY + chartH / 2 + 1.5);
     }
-    doc.setDrawColor(100);
-    doc.setLineWidth(0.3);
-    doc.rect(14, chartY, chartW, chartH, "S");
+    doc.setDrawColor(180);
+    doc.setLineWidth(0.2);
+    doc.roundedRect(14, chartY, chartW, chartH, 1, 1, "S");
     doc.setLineWidth(0.1);
 
     // Legend inline
     const legY = chartY + chartH + 2;
     let lx = 14;
-    doc.setFontSize(6.5);
-    doc.setTextColor(80);
+    doc.setFontSize(6);
+    doc.setTextColor(100);
     if (aprobados > 0) {
-      doc.setFillColor(16, 185, 129); doc.rect(lx, legY, 3, 3, "F");
-      doc.text(`Aprob:${aprobados}`, lx + 5, legY + 2.5);
-      lx += 32;
+      doc.setFillColor(16, 185, 129); doc.rect(lx, legY, 2.5, 2.5, "F");
+      doc.text(`Aprob:${aprobados}`, lx + 4, legY + 2);
+      lx += 28;
     }
     if (condicionados > 0) {
-      doc.setFillColor(245, 158, 11); doc.rect(lx, legY, 3, 3, "F");
-      doc.text(`Cond:${condicionados}`, lx + 5, legY + 2.5);
-      lx += 32;
+      doc.setFillColor(245, 158, 11); doc.rect(lx, legY, 2.5, 2.5, "F");
+      doc.text(`Cond:${condicionados}`, lx + 4, legY + 2);
+      lx += 28;
     }
     if (reprobados > 0) {
-      doc.setFillColor(239, 68, 68); doc.rect(lx, legY, 3, 3, "F");
-      doc.text(`Reprob:${reprobados}`, lx + 5, legY + 2.5);
+      doc.setFillColor(239, 68, 68); doc.rect(lx, legY, 2.5, 2.5, "F");
+      doc.text(`Reprob:${reprobados}`, lx + 4, legY + 2);
     }
 
     // Percentage bar label
-    doc.setFontSize(7);
-    doc.setTextColor(120);
+    doc.setFontSize(6);
+    doc.setTextColor(140);
     const pctA = total > 0 ? ((aprobados / total) * 100).toFixed(0) : "0";
     const pctC = total > 0 ? ((condicionados / total) * 100).toFixed(0) : "0";
     const pctR = total > 0 ? ((reprobados / total) * 100).toFixed(0) : "0";
-    doc.text(`${pctA}% | ${pctC}% | ${pctR}%`, pageWidth - 50, legY + 2.5);
+    doc.text(`${pctA}% | ${pctC}% | ${pctR}%`, pageWidth - 45, legY + 2);
 
-    chartY = legY + 6;
+    chartY = legY + 4.5;
   }
 
   // Clean up: remove the duplicate last page only if it's truly blank
