@@ -295,19 +295,126 @@ async function generarPDF(data: ApiResponse) {
         },
       });
 
-      if (body.length > 0) doc.addPage();
-      pageNum++;
+      // Calculate stats for chart
+      const aprobados = body.filter(r => {
+        const lastVal = r[r.length - 1];
+        return lastVal !== "" && parseFloat(lastVal as string) >= 6.5;
+      }).length;
+      const condicionados = body.filter(r => {
+        const lastVal = r[r.length - 1];
+        return lastVal !== "" && parseFloat(lastVal as string) >= 4.5 && parseFloat(lastVal as string) < 6.5;
+      }).length;
+      const reprobados = body.filter(r => {
+        const lastVal = r[r.length - 1];
+        return lastVal !== "" && parseFloat(lastVal as string) < 4.5;
+      }).length;
+      const totalChart = aprobados + condicionados + reprobados;
+
+      // Draw mini chart below table
+      const finalY = (pdfDoc.lastAutoTable?.finalY ?? 32) + 4;
+      const pw = pdfDoc.internal.pageSize.getWidth();
+      const ph = pdfDoc.internal.pageSize.getHeight();
+      const chartStartY = finalY + 2;
+      const barH = 12;
+      const chartW = pw - 28;
+      const labelY = chartStartY - 2;
+
+      // Check if there is enough space; if not, add a new page
+      let currentY = chartStartY;
+      if (currentY + barH + 18 > ph - 15) {
+        doc.addPage();
+        currentY = 30;
+        // Redraw header
+        doc.setFontSize(7);
+        doc.text(`${gradoLabel} - ${materia.nombre} (gráfico)`, pw / 2, 10, { align: "center" });
+      }
+
+      // Title
+      doc.setFontSize(8);
+      doc.setTextColor(80);
+      doc.text("Distribución de estudiantes:", 14, currentY - 2);
+
+      // Stacked bar
+      const cw = chartW / (totalChart || 1);
+      let barX = 14;
+      if (aprobados > 0) {
+        doc.setFillColor(16, 185, 129);
+        doc.rect(barX, currentY, (aprobados / (totalChart || 1)) * chartW, barH, "F");
+        doc.setFontSize(7);
+        doc.setTextColor(255);
+        doc.text(`${aprobados}`, barX + 2, currentY + barH / 2 + 2);
+        barX += (aprobados / (totalChart || 1)) * chartW;
+      }
+      if (condicionados > 0) {
+        doc.setFillColor(245, 158, 11);
+        doc.rect(barX, currentY, (condicionados / (totalChart || 1)) * chartW, barH, "F");
+        doc.setFontSize(7);
+        doc.setTextColor(255);
+        doc.text(`${condicionados}`, barX + 2, currentY + barH / 2 + 2);
+        barX += (condicionados / (totalChart || 1)) * chartW;
+      }
+      if (reprobados > 0) {
+        doc.setFillColor(239, 68, 68);
+        doc.rect(barX, currentY, (reprobados / (totalChart || 1)) * chartW, barH, "F");
+        doc.setFontSize(7);
+        doc.setTextColor(255);
+        doc.text(`${reprobados}`, barX + 2, currentY + barH / 2 + 2);
+      }
+      doc.setDrawColor(0);
+      doc.setLineWidth(0.3);
+      doc.rect(14, currentY, chartW, barH, "S");
+      doc.setLineWidth(0.1);
+
+      // Legend below bar
+      const legY = currentY + barH + 3;
+      let lx = 14;
+      if (aprobados > 0) {
+        doc.setFillColor(16, 185, 129); doc.rect(lx, legY, 4, 4, "F");
+        doc.setFontSize(6.5); doc.setTextColor(80);
+        doc.text(`Aprobados: ${aprobados}`, lx + 6, legY + 3);
+        lx += 38;
+      }
+      if (condicionados > 0) {
+        doc.setFillColor(245, 158, 11); doc.rect(lx, legY, 4, 4, "F");
+        doc.setFontSize(6.5); doc.setTextColor(80);
+        doc.text(`Condicionados: ${condicionados}`, lx + 6, legY + 3);
+        lx += 42;
+      }
+      if (reprobados > 0) {
+        doc.setFillColor(239, 68, 68); doc.rect(lx, legY, 4, 4, "F");
+        doc.setFontSize(6.5); doc.setTextColor(80);
+        doc.text(`Reprobados: ${reprobados}`, lx + 6, legY + 3);
+      }
+
+      // Track if we added an extra blank page from the loop
+      if (body.length > 0) {
+        doc.addPage();
+        pageNum++;
+      }
     }
   }
 
-  // Add summary chart page
-  doc.addPage();
-  const chartWidth = 260;
-  const chartHeight = 140;
-  const chartX = 14;
-  let chartY = 30;
+  // Check if we need to remove the blank page created by the last addPage
+  const totalPagesBefore = pdfDoc.internal.getNumberOfPages();
+  // The last page is blank; we'll reuse it for the summary or create a fresh one
 
-  // Per-grade summary
+  // Summary chart page
+  const pageWidth = pdfDoc.internal.pageSize.getWidth();
+  const pageHeight = pdfDoc.internal.pageSize.getHeight();
+  let chartY = 25;
+
+  // Try to reuse the blank last page if it's truly empty
+  // (the last addPage() created it, so it should be blank)
+  // We just stay on the current page and draw
+
+  doc.setFontSize(14);
+  doc.setTextColor(0, 0, 0);
+  doc.text("Resumen General por Grado", 14, chartY);
+  chartY += 8;
+
+  const chartW = pageWidth - 28;
+  const chartH = 14;
+
   for (const grado of gradosOrdenados) {
     const califsGrado = (data.datos || []).filter(c => c.gradoId === grado.id);
     const estudiantesUnicos = new Set(califsGrado.map(c => c.estudianteId));
@@ -315,59 +422,95 @@ async function generarPDF(data: ApiResponse) {
     const aprobados = califsGrado.filter(c => c.promedioFinal !== null && c.promedioFinal >= 6.5).length;
     const condicionados = califsGrado.filter(c => c.promedioFinal !== null && c.promedioFinal >= 4.5 && c.promedioFinal < 6.5).length;
     const reprobados = califsGrado.filter(c => c.promedioFinal !== null && c.promedioFinal < 4.5).length;
-    const sinDatos = califsGrado.filter(c => c.promedioFinal === null).length;
     const total = aprobados + condicionados + reprobados;
 
-    if (chartY > 180) { doc.addPage(); chartY = 30; }
+    // Check if we need a new page
+    if (chartY + chartH + 20 > pageHeight - 15) {
+      doc.addPage();
+      chartY = 25;
+      doc.setFontSize(14);
+      doc.setTextColor(0, 0, 0);
+      doc.text("Resumen General por Grado (cont.)", 14, chartY);
+      chartY += 8;
+    }
 
+    // Grade label
     doc.setFontSize(9);
     doc.setTextColor(0, 0, 0);
-    doc.text(`${getGradoLabel(grado.numero, grado.seccion)} — A:${aprobados} C:${condicionados} R:${reprobados}`, chartX, chartY);
-    chartY += 6;
+    doc.text(`${getGradoLabel(grado.numero, grado.seccion)}  —  A:${aprobados}  C:${condicionados}  R:${reprobados}`, 14, chartY - 2);
 
-    const barW = chartWidth / (total || 1);
-    const barH = 14;
+    // Stacked bar
+    let bx = 14;
     if (aprobados > 0) {
       doc.setFillColor(16, 185, 129);
-      doc.rect(chartX, chartY, (aprobados / (total || 1)) * chartWidth, barH, "F");
+      doc.rect(bx, chartY, (aprobados / (total || 1)) * chartW, chartH, "F");
+      doc.setFontSize(7);
+      doc.setTextColor(255);
+      doc.text(`${aprobados}`, bx + 2, chartY + chartH / 2 + 2);
+      bx += (aprobados / (total || 1)) * chartW;
     }
     if (condicionados > 0) {
       doc.setFillColor(245, 158, 11);
-      doc.rect(chartX + (aprobados / (total || 1)) * chartWidth, chartY, (condicionados / (total || 1)) * chartWidth, barH, "F");
+      doc.rect(bx, chartY, (condicionados / (total || 1)) * chartW, chartH, "F");
+      doc.setFontSize(7);
+      doc.setTextColor(255);
+      doc.text(`${condicionados}`, bx + 2, chartY + chartH / 2 + 2);
+      bx += (condicionados / (total || 1)) * chartW;
     }
     if (reprobados > 0) {
       doc.setFillColor(239, 68, 68);
-      doc.rect(chartX + ((aprobados + condicionados) / (total || 1)) * chartWidth, chartY, (reprobados / (total || 1)) * chartWidth, barH, "F");
+      doc.rect(bx, chartY, (reprobados / (total || 1)) * chartW, chartH, "F");
+      doc.setFontSize(7);
+      doc.setTextColor(255);
+      doc.text(`${reprobados}`, bx + 2, chartY + chartH / 2 + 2);
     }
-    doc.setDrawColor(0);
-    doc.rect(chartX, chartY, chartWidth, barH, "S");
+    doc.setDrawColor(100);
+    doc.setLineWidth(0.3);
+    doc.rect(14, chartY, chartW, chartH, "S");
+    doc.setLineWidth(0.1);
 
-    doc.setFontSize(7);
-    doc.setTextColor(100);
-    // Legend: colored boxes
-    const legendY = chartY + barH + 3;
-    let lx = chartX;
+    // Legend inline
+    const legY = chartY + chartH + 2;
+    let lx = 14;
+    doc.setFontSize(6.5);
+    doc.setTextColor(80);
     if (aprobados > 0) {
-      doc.setFillColor(16, 185, 129); doc.rect(lx, legendY, 4, 4, "F");
-      doc.text(`Aprobados: ${aprobados}`, lx + 6, legendY + 3);
-      lx += 40;
+      doc.setFillColor(16, 185, 129); doc.rect(lx, legY, 3, 3, "F");
+      doc.text(`Aprob:${aprobados}`, lx + 5, legY + 2.5);
+      lx += 32;
     }
     if (condicionados > 0) {
-      doc.setFillColor(245, 158, 11); doc.rect(lx, legendY, 4, 4, "F");
-      doc.text(`Cond: ${condicionados}`, lx + 6, legendY + 3);
-      lx += 35;
+      doc.setFillColor(245, 158, 11); doc.rect(lx, legY, 3, 3, "F");
+      doc.text(`Cond:${condicionados}`, lx + 5, legY + 2.5);
+      lx += 32;
     }
     if (reprobados > 0) {
-      doc.setFillColor(239, 68, 68); doc.rect(lx, legendY, 4, 4, "F");
-      doc.text(`Reprobados: ${reprobados}`, lx + 6, legendY + 3);
+      doc.setFillColor(239, 68, 68); doc.rect(lx, legY, 3, 3, "F");
+      doc.text(`Reprob:${reprobados}`, lx + 5, legY + 2.5);
     }
 
-    chartY = legendY + 12;
+    // Percentage bar label
+    doc.setFontSize(7);
+    doc.setTextColor(120);
+    const pctA = total > 0 ? ((aprobados / total) * 100).toFixed(0) : "0";
+    const pctC = total > 0 ? ((condicionados / total) * 100).toFixed(0) : "0";
+    const pctR = total > 0 ? ((reprobados / total) * 100).toFixed(0) : "0";
+    doc.text(`${pctA}% | ${pctC}% | ${pctR}%`, pageWidth - 50, legY + 2.5);
+
+    chartY = legY + 6;
   }
 
-  const totalPages = pdfDoc.internal.getNumberOfPages();
-  if (pdfDoc.lastAutoTable?.finalY && totalPages > 1) {
-    pdfDoc.deletePage(totalPages);
+  // Clean up: remove the duplicate last page only if it's truly blank
+  const finalTotalPages = pdfDoc.internal.getNumberOfPages();
+  if (finalTotalPages > 1 && finalTotalPages > totalPagesBefore) {
+    // The summary chart created a new page - that's fine
+    // But we might have an extra blank page before it
+    // Check the page before the summary
+    const pageBeforeSummary = totalPagesBefore;
+    if (pageBeforeSummary > 1) {
+      // Check if the page before the summary page has content
+      // We can't easily check, so we skip deletion
+    }
   }
 
   doc.save(`calificaciones_completas_T${data.trimestre}_${new Date().toISOString().slice(0, 10)}.pdf`);
