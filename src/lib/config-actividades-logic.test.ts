@@ -314,6 +314,7 @@ describe('ConfigActividadPartial - Valores por defecto', () => {
       numActividadesCotidianas: 6,
       numActividadesIntegradoras: 3,
       tieneExamen: true,
+      numExamenes: 1,
       porcentajeAC: 50,
       porcentajeAI: 30,
       porcentajeExamen: 20,
