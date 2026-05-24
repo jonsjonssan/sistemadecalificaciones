@@ -293,9 +293,15 @@ export const CalificacionRow = React.memo(function CalificacionRow({
   const [aiNotas, setAiNotas] = useState<(number | null)[]>(() =>
     parseNotas(calificacion?.actividadesIntegradoras ?? null, numAI)
   );
-  const [examenNotas, setExamenNotas] = useState<(number | null)[]>(() =>
-    parseNotas(calificacion?.actividadesExamen ?? null, numEx)
-  );
+  const [examenNotas, setExamenNotas] = useState<(number | null)[]>(() => {
+    const parsed = parseNotas(calificacion?.actividadesExamen ?? null, numEx);
+    if ((!parsed || parsed.every(n => n === null)) && calificacion?.examenTrimestral !== null && calificacion?.examenTrimestral !== undefined && numEx > 0) {
+      const migrated = Array(numEx).fill(null);
+      migrated[0] = calificacion.examenTrimestral;
+      return migrated;
+    }
+    return parsed;
+  });
   const [examen, setExamen] = useState<number | null>(() => calificacion?.examenTrimestral ?? null);
   const [recup, setRecup] = useState<number | null>(() => calificacion?.recuperacion ?? null);
   const [dirty, setDirty] = useState(false);
@@ -358,7 +364,14 @@ useEffect(() => {
 
     setAcNotas(newAC);
     setAiNotas(newAI);
-    setExamenNotas(newExNotas);
+    // Si no hay actividadesExamen (datos viejos), migrar desde examenTrimestral
+    if ((!newExNotas || newExNotas.every(n => n === null)) && newEx !== null && numEx > 0) {
+      const migrated = Array(numEx).fill(null);
+      migrated[0] = newEx;
+      setExamenNotas(migrated);
+    } else {
+      setExamenNotas(newExNotas);
+    }
     setExamen(newEx);
     setRecup(newRc);
     setSaveError(false);
