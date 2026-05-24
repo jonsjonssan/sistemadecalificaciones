@@ -637,7 +637,7 @@ export function useDashboardData() {
         body: JSON.stringify({
           estudianteId: est.id, materiaId: asignaturaSeleccionada, trimestre,
           actividadesCotidianas: calif.actividadesCotidianas, actividadesIntegradoras: calif.actividadesIntegradoras,
-          examenTrimestral: calif.examenTrimestral, recuperacion: calif.recuperacion,
+          actividadesExamen: calif.actividadesExamen, examenTrimestral: calif.examenTrimestral, recuperacion: calif.recuperacion,
         }),
       });
     }).filter(Boolean) as Promise<Response>[];

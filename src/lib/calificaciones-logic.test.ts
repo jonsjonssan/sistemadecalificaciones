@@ -16,6 +16,7 @@ const calificacionSchema = z.object({
   actividadesIntegradoras: z
     .union([z.string(), z.array(z.number().min(0).max(10).nullable())])
     .optional(),
+  actividadesExamen: z.union([z.string(), z.array(z.number().min(0).max(10).nullable())]).optional(),
   examenTrimestral: z.number().min(0).max(10).nullable().optional(),
   recuperacion: z.number().min(0).max(10).nullable().optional(),
 });
@@ -279,6 +280,56 @@ describe('Zod Schema - Validacion de entrada', () => {
         materiaId: 'mat456',
         trimestre: 1,
         recuperacion: -0.1,
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it('acepta actividadesExamen como string JSON', () => {
+      const result = calificacionSchema.safeParse({
+        estudianteId: 'est123',
+        materiaId: 'mat456',
+        trimestre: 1,
+        actividadesExamen: '[7, 8, 9]',
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it('acepta actividadesExamen como array', () => {
+      const result = calificacionSchema.safeParse({
+        estudianteId: 'est123',
+        materiaId: 'mat456',
+        trimestre: 1,
+        actividadesExamen: [7, 8, 9],
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it('acepta actividadesExamen con nulls y valores válidos mixtos', () => {
+      const result = calificacionSchema.safeParse({
+        estudianteId: 'est123',
+        materiaId: 'mat456',
+        trimestre: 1,
+        actividadesExamen: [7, null, 9],
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it('rechaza actividadesExamen con nota fuera de rango (>10)', () => {
+      const result = calificacionSchema.safeParse({
+        estudianteId: 'est123',
+        materiaId: 'mat456',
+        trimestre: 1,
+        actividadesExamen: [11, 8, 9],
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it('rechaza actividadesExamen con nota negativa', () => {
+      const result = calificacionSchema.safeParse({
+        estudianteId: 'est123',
+        materiaId: 'mat456',
+        trimestre: 1,
+        actividadesExamen: [-1, 8, 9],
       });
       expect(result.success).toBe(false);
     });
@@ -612,5 +663,244 @@ describe('Reglas de negocio - casos de borde', () => {
     // (8 * 0.50) + (8 * 0.50) + (8 * 0.50) = 4 + 4 + 4 = 12 (no cap sin recuperacion!)
     const result = calcularPromedioFinal(8, 8, 8, null, config);
     expect(result).toBe(12);
+  });
+});
+
+// ==================== Multi-Examen Tests ====================
+
+describe('Multi-examen: parseo de actividadesExamen', () => {
+  type ParseResult = { notas: (number | null)[]; promedio: number | null };
+  function parseExamenNotas(input: unknown): ParseResult {
+    let exNotas: (number | null)[] = [];
+    if (input) {
+      try {
+        const parsed = typeof input === 'string' ? JSON.parse(input) : input;
+        if (Array.isArray(parsed)) exNotas = parsed.map((n: unknown) => (typeof n === 'number' && !isNaN(n) && n >= 0 && n <= 10) ? n : null);
+      } catch { exNotas = []; }
+    }
+    const validas = exNotas.filter((n): n is number => n !== null);
+    const promedio = validas.length > 0 ? validas.reduce((a, b) => a + b, 0) / validas.length : null;
+    return { notas: exNotas, promedio };
+  }
+
+  it('parsea string JSON de 3 examenes correctamente', () => {
+    const result = parseExamenNotas('[7, 8, 9]');
+    expect(result.notas).toEqual([7, 8, 9]);
+    expect(result.promedio).toBe(8);
+  });
+
+  it('parsea array directo de 5 examenes', () => {
+    const result = parseExamenNotas([8, 8, 8, 8, 8]);
+    expect(result.notas).toEqual([8, 8, 8, 8, 8]);
+    expect(result.promedio).toBe(8);
+  });
+
+  it('parsea array con nulls', () => {
+    const result = parseExamenNotas('[7, null, 9]');
+    expect(result.notas).toEqual([7, null, 9]);
+    expect(result.promedio).toBe(8);
+  });
+
+  it('retorna vacío con input null/undefined', () => {
+    expect(parseExamenNotas(null)).toEqual({ notas: [], promedio: null });
+    expect(parseExamenNotas(undefined)).toEqual({ notas: [], promedio: null });
+  });
+
+  it('retorna vacío con input inválido', () => {
+    const result = parseExamenNotas('not-json');
+    expect(result).toEqual({ notas: [], promedio: null });
+  });
+
+  it('convierte NaN a null (desde array directo)', () => {
+    const result = parseExamenNotas([7, NaN, 9]);
+    expect(result.notas).toEqual([7, null, 9]);
+    expect(result.promedio).toBe(8);
+  });
+
+  it('convierte notas fuera de rango a null (>10)', () => {
+    const result = parseExamenNotas('[7, 15, 9]');
+    expect(result.notas).toEqual([7, null, 9]);
+    expect(result.promedio).toBe(8);
+  });
+
+  it('convierte notas negativas a null', () => {
+    const result = parseExamenNotas('[7, -3, 9]');
+    expect(result.notas).toEqual([7, null, 9]);
+    expect(result.promedio).toBe(8);
+  });
+});
+
+describe('Multi-examen: flujo completo desde partes de examen hasta promedio final', () => {
+  type ConfigEx = { porcentajeAC: number; porcentajeAI: number; porcentajeExamen: number; tieneExamen: boolean };
+
+  function fullFlow(
+    actividadesCotidianas: string | (number | null)[],
+    actividadesIntegradoras: string | (number | null)[],
+    actividadesExamen: string | (number | null)[] | null | undefined,
+    config: ConfigEx,
+    examenTrimestral?: number | null,
+    recuperacion?: number | null,
+  ) {
+    // Replicar lógica de la API
+    const parse = (input: unknown): (number | null)[] => {
+      if (!input) return [];
+      try {
+        const parsed = typeof input === 'string' ? JSON.parse(input as string) : input;
+        if (Array.isArray(parsed)) return parsed.map((n: unknown) => (typeof n === 'number' && !isNaN(n) && n >= 0 && n <= 10) ? n : null);
+      } catch { /* ignore */ }
+      return [];
+    };
+
+    const acNotas = parse(actividadesCotidianas);
+    const aiNotas = parse(actividadesIntegradoras);
+    const exNotas = parse(actividadesExamen);
+
+    const calcProm = (notas: (number | null)[]): number | null => {
+      const validas = notas.filter((n): n is number => n !== null);
+      return validas.length > 0 ? validas.reduce((a, b) => a + b, 0) / validas.length : null;
+    };
+
+    const promAC = calcProm(acNotas);
+    const promAI = calcProm(aiNotas);
+    const promExParts = calcProm(exNotas);
+
+    // Si se enviaron actividadesExamen, calcular promedio; sino usar examenTrimestral explícito
+    const examenEfectivo = examenTrimestral !== undefined ? examenTrimestral : (actividadesExamen !== undefined ? promExParts : null);
+
+    const porcAC = config.porcentajeAC / 100;
+    const porcAI = config.porcentajeAI / 100;
+    const porcEx = config.porcentajeExamen / 100;
+
+    const tieneNotas = promAC !== null || promAI !== null || examenEfectivo !== null;
+    if (!tieneNotas) return null;
+
+    let pf = (promAC ?? 0) * porcAC + (promAI ?? 0) * porcAI + (examenEfectivo ?? 0) * porcEx;
+    pf = isNaN(pf) ? 0 : pf;
+
+    if (recuperacion !== null && recuperacion !== undefined) {
+      pf = Math.min(10, pf + recuperacion);
+    }
+    return pf;
+  }
+
+  const config3Ex: ConfigEx = { porcentajeAC: 35, porcentajeAI: 35, porcentajeExamen: 30, tieneExamen: true };
+
+  it('3 examenes: promedio de partes -> examenTrimestral -> promedioFinal', () => {
+    const pf = fullFlow(
+      [8, 7, 9, 6],  // AC: prom=7.5
+      [8],            // AI: prom=8
+      [7, 8, 9],      // Ex: prom=8
+      config3Ex,
+    );
+    // (7.5 * 0.35) + (8 * 0.35) + (8 * 0.30) = 2.625 + 2.8 + 2.4 = 7.825
+    expect(pf).toBeCloseTo(7.825, 3);
+  });
+
+  it('3 examenes con un null: promedia solo válidos', () => {
+    const pf = fullFlow(
+      [8, 7, 9, 6],
+      [8],
+      [7, null, 9],   // Ex: prom=(7+9)/2=8
+      config3Ex,
+    );
+    expect(pf).toBeCloseTo(7.825, 3);
+  });
+
+  it('3 examenes todos null: examenTrimestral=null, promedio usa 0', () => {
+    const pf = fullFlow(
+      [8, 7, 9, 6],
+      [8],
+      [null, null, null],
+      config3Ex,
+    );
+    // (7.5 * 0.35) + (8 * 0.35) + (0 * 0.30) = 2.625 + 2.8 + 0 = 5.425
+    expect(pf).toBeCloseTo(5.425, 3);
+  });
+
+  it('5 examenes con config de 5 partes', () => {
+    const config5Ex: ConfigEx = { ...config3Ex };
+    const pf = fullFlow(
+      [10, 10, 10, 10],
+      [10],
+      [8, 8, 8, 8, 8],
+      config5Ex,
+    );
+    expect(pf).toBeCloseTo(10 * 0.35 + 10 * 0.35 + 8 * 0.30, 5);
+    expect(pf).toBeCloseTo(9.4, 2);
+  });
+
+  it('examenTrimestral explícito sobreescribe promedio de partes', () => {
+    const pf = fullFlow(
+      [8, 7, 9, 6],
+      [8],
+      [7, 8, 9],    // prom de partes = 8
+      config3Ex,
+      9,             // examenTrimestral explícito = 9
+    );
+    // Debe usar examenTrimestral=9 en vez del promedio de partes (8)
+    const expected = (7.5 * 0.35) + (8 * 0.35) + (9 * 0.30);
+    expect(pf).toBeCloseTo(expected, 3);
+  });
+
+  it('actividadesExamen undefined + examenTrimestral presente = usa examenTrimestral (backward compat)', () => {
+    const pf = fullFlow(
+      [8, 7, 9, 6],
+      [8],
+      undefined,    // no envía actividadesExamen (datos viejos)
+      config3Ex,
+      7.5,          // examenTrimestral legacy
+    );
+    const expected = (7.5 * 0.35) + (8 * 0.35) + (7.5 * 0.30);
+    expect(pf).toBeCloseTo(expected, 3);
+  });
+
+  it('actividadesExamen undefined + examenTrimestral undefined = no examen', () => {
+    const pf = fullFlow(
+      [8, 7, 9, 6],
+      [8],
+      undefined,
+      config3Ex,
+      undefined,
+    );
+    const expected = (7.5 * 0.35) + (8 * 0.35) + (0 * 0.30);
+    expect(pf).toBeCloseTo(expected, 3);
+  });
+
+  it('con recuperación: se suma al promedio final y cap en 10', () => {
+    const pf = fullFlow(
+      [8, 7, 9, 6],
+      [8],
+      [7, 8, 9],
+      config3Ex,
+      undefined,
+      1.5,
+    );
+    // base = 7.825, recup = 1.5 → 9.325
+    expect(pf).toBeCloseTo(9.325, 3);
+  });
+
+  it('recuperación no puede exceder 10', () => {
+    const pf = fullFlow(
+      [10, 10, 10, 10],
+      [10],
+      [10, 10, 10],
+      config3Ex,
+      undefined,
+      10,
+    );
+    expect(pf).toBe(10);
+  });
+
+  it('backend compat: datos viejos con solo examenTrimestral no pierden datos', () => {
+    // Simular: calificacion vieja enviada desde handleGuardarTodo (sin actividadesExamen)
+    const pf = fullFlow(
+      '[8,7,9,6]',
+      '[8]',
+      undefined,    // <-- clave: no se envía actividadesExamen
+      config3Ex,
+      7,            // examenTrimestral legacy
+    );
+    const expected = (7.5 * 0.35) + (8 * 0.35) + (7 * 0.30);
+    expect(pf).toBeCloseTo(expected, 3);
   });
 });

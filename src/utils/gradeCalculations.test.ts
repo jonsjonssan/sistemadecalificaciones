@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { parseNotas, calcularPromedio, calcularPromedioFinal } from './gradeCalculations';
-import { ConfigActividadPartial } from '@/types';
+import { parseNotas, calcularPromedio, calcularPromedioFinal, getEstadoCompletitud } from './gradeCalculations';
+import { ConfigActividadPartial, Calificacion } from '@/types';
 
 const defaultConfig: ConfigActividadPartial = {
   numActividadesCotidianas: 4,
@@ -264,5 +264,170 @@ describe('calcularPromedioFinal edge cases', () => {
     const result = calcularPromedioFinal(8, 7, 9, configSinExamen);
     // (8 * 0.50) + (7 * 0.50) + (9 * 0) = 4 + 3.5 + 0 = 7.5
     expect(result).toBe(7.5);
+  });
+});
+
+describe('getEstadoCompletitud - multi-examen', () => {
+  const baseConfig: ConfigActividadPartial = {
+    numActividadesCotidianas: 4,
+    numActividadesIntegradoras: 1,
+    tieneExamen: true,
+    numExamenes: 3,
+    porcentajeAC: 35,
+    porcentajeAI: 35,
+    porcentajeExamen: 30,
+  };
+
+  const baseCalif: Calificacion = {
+    id: 'test', estudianteId: 'e1', materiaId: 'm1', trimestre: 1,
+    calificacionAC: null, calificacionAI: null, examenTrimestral: null,
+    promedioFinal: null,
+    actividadesCotidianas: JSON.stringify(Array(4).fill(null)),
+    actividadesIntegradoras: JSON.stringify(Array(1).fill(null)),
+    actividadesExamen: JSON.stringify(Array(3).fill(null)),
+  };
+
+  it('retorna vacio cuando todas las notas examen son null', () => {
+    const calif = {
+      ...baseCalif,
+      actividadesCotidianas: JSON.stringify([null, null, null, null]),
+      actividadesIntegradoras: JSON.stringify([null]),
+      actividadesExamen: JSON.stringify([null, null, null]),
+    };
+    expect(getEstadoCompletitud(calif, baseConfig)).toBe('vacio');
+  });
+
+  it('retorna completo cuando todas las notas (incluyendo examen) están llenas', () => {
+    const calif = {
+      ...baseCalif,
+      actividadesCotidianas: JSON.stringify([8, 7, 9, 6]),
+      actividadesIntegradoras: JSON.stringify([8]),
+      actividadesExamen: JSON.stringify([7, 8, 9]),
+    };
+    expect(getEstadoCompletitud(calif, baseConfig)).toBe('completo');
+  });
+
+  it('retorna parcial cuando solo algunas notas de examen están llenas', () => {
+    const calif = {
+      ...baseCalif,
+      actividadesCotidianas: JSON.stringify([8, 7, 9, 6]),
+      actividadesIntegradoras: JSON.stringify([8]),
+      actividadesExamen: JSON.stringify([7, null, null]),
+    };
+    expect(getEstadoCompletitud(calif, baseConfig)).toBe('parcial');
+  });
+
+  it('retorna parcial con solo examen lleno y AC/AI vacío', () => {
+    const calif = {
+      ...baseCalif,
+      actividadesCotidianas: JSON.stringify(Array(4).fill(null)),
+      actividadesIntegradoras: JSON.stringify([null]),
+      actividadesExamen: JSON.stringify([7, 8, 9]),
+    };
+    expect(getEstadoCompletitud(calif, baseConfig)).toBe('parcial');
+  });
+
+  it('considera numExamenes=0 igual que no tener examen', () => {
+    const configSinExamen: ConfigActividadPartial = {
+      ...baseConfig, tieneExamen: false, numExamenes: 0,
+    };
+    const calif = {
+      ...baseCalif,
+      actividadesCotidianas: JSON.stringify([8, 7, 9, 6]),
+      actividadesIntegradoras: JSON.stringify([8]),
+      actividadesExamen: JSON.stringify(Array(0).fill(null)),
+    };
+    expect(getEstadoCompletitud(calif, configSinExamen)).toBe('completo');
+  });
+
+  it('retorna vacio para calificacion undefined', () => {
+    expect(getEstadoCompletitud(undefined, baseConfig)).toBe('vacio');
+  });
+
+  it('retorna vacio para config null', () => {
+    expect(getEstadoCompletitud(baseCalif, null)).toBe('vacio');
+  });
+
+  it('maneja actividadesExamen como null (backward compat)', () => {
+    const calif = {
+      ...baseCalif,
+      actividadesCotidianas: JSON.stringify([8, 7, 9, 6]),
+      actividadesIntegradoras: JSON.stringify([8]),
+      actividadesExamen: null,
+    };
+    // null → parseNotas returns all nulls → 0 filled = vacio
+    // But AC+AI are filled (4+1=5 filled, total with config.numExamenes (3) = 4+1+3=8, 5<8 = parcial)
+    expect(getEstadoCompletitud(calif, baseConfig)).toBe('parcial');
+  });
+});
+
+describe('Flujo completo multi-examen - notas de examen a promedio final', () => {
+  const config3Ex: ConfigActividadPartial = {
+    numActividadesCotidianas: 4, numActividadesIntegradoras: 1, tieneExamen: true, numExamenes: 3,
+    porcentajeAC: 35, porcentajeAI: 35, porcentajeExamen: 30,
+  };
+  const config1Ex: ConfigActividadPartial = {
+    numActividadesCotidianas: 4, numActividadesIntegradoras: 1, tieneExamen: true, numExamenes: 1,
+    porcentajeAC: 35, porcentajeAI: 35, porcentajeExamen: 30,
+  };
+
+  it('promedia 3 examenes y calcula promedio final', () => {
+    const ac = calcularPromedio([8, 7, 9, 6]); // 7.5
+    const ai = calcularPromedio([8]);           // 8
+    const ex = calcularPromedio([7, 8, 9]);     // 8
+    const pf = calcularPromedioFinal(ac, ai, ex, config3Ex);
+    // (7.5 * 0.35) + (8 * 0.35) + (8 * 0.30) = 2.625 + 2.8 + 2.4 = 7.825
+    expect(pf).toBeCloseTo(7.825, 3);
+  });
+
+  it('promedia 3 examenes con algunos null (usa solo válidos)', () => {
+    const ex = calcularPromedio([7, null, 9]); // 8
+    expect(ex).toBe(8);
+  });
+
+  it('examen con 5 partes en config', () => {
+    const config5Ex: ConfigActividadPartial = {
+      ...config3Ex, numExamenes: 5,
+    };
+    const ac = calcularPromedio([10, 10, 10, 10]); // 10
+    const ai = calcularPromedio([10]);              // 10
+    const ex = calcularPromedio([8, 8, 8, 8, 8]);   // 8
+    const pf = calcularPromedioFinal(ac, ai, ex, config5Ex);
+    expect(pf).toBeCloseTo(10 * 0.35 + 10 * 0.35 + 8 * 0.30, 5); // 3.5 + 3.5 + 2.4 = 9.4
+    expect(pf).toBeCloseTo(9.4, 2);
+  });
+
+  it('examen con null y numExamenes=1 se comporta como examenTrimestral simple', () => {
+    const ex = calcularPromedio([null]); // null
+    expect(ex).toBeNull();
+    const pf = calcularPromedioFinal(7.5, 8, ex, config1Ex);
+    expect(pf).toBeCloseTo(7.5 * 0.35 + 8 * 0.35 + 0 * 0.30, 2); // 5.425
+    expect(pf).toBeCloseTo(5.425, 3);
+  });
+
+  it('actividadesExamen parseadas correctamente con JSON.stringify', () => {
+    const notas = [7, 8, 9];
+    const str = JSON.stringify(notas);
+    expect(parseNotas(str, 3)).toEqual([7, 8, 9]);
+  });
+
+  it('actividadesExamen con menos partes que numExamenes se rellena con null', () => {
+    expect(parseNotas('[7, 8]', 5)).toEqual([7, 8, null, null, null]);
+  });
+
+  it('actividadesExamen con más partes que numExamenes se recorta', () => {
+    expect(parseNotas('[7, 8, 9, 10, 11]', 3)).toEqual([7, 8, 9]);
+  });
+
+  it('parseNotas con count=0 cuando no hay examen', () => {
+    expect(parseNotas('[7, 8]', 0)).toEqual([]);
+  });
+
+  it('parseNotas con null y count>0', () => {
+    expect(parseNotas(null, 3)).toEqual([null, null, null]);
+  });
+
+  it('parseNotas con string vacío', () => {
+    expect(parseNotas('[]', 3)).toEqual([null, null, null]);
   });
 });
