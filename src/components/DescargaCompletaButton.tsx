@@ -262,15 +262,16 @@ async function generarPDF(data: ApiResponse) {
 
       const body = estudiantes.map((est) => {
         const calif = califMap.get(est.id);
-        const acs = calif
-          ? calif.actividadesCotidianas.map((n) => formatValor(n))
-          : Array(numAC).fill("");
-        const ais = calif
-          ? calif.actividadesIntegradoras.map((n) => formatValor(n))
-          : Array(numAI).fill("");
-        const exs = calif
-          ? (calif.actividadesExamen || []).map((n) => formatValor(n))
-          : Array(numEX).fill("");
+        const getNotas = (notas: (number | null)[] | undefined, count: number): string[] => {
+          const arr: string[] = [];
+          for (let i = 0; i < count; i++) {
+            arr.push(notas && i < notas.length ? formatValor(notas[i]) : "");
+          }
+          return arr;
+        };
+        const acs = getNotas(calif?.actividadesCotidianas, numAC);
+        const ais = getNotas(calif?.actividadesIntegradoras, numAI);
+        const exs = getNotas(calif?.actividadesExamen, numEX);
         const promAC = calif?.calificacionAC != null ? calif.calificacionAC.toFixed(1) : "";
         const promAI = calif?.calificacionAI != null ? calif.calificacionAI.toFixed(1) : "";
         const promEX = calif?.examenTrimestral != null ? formatValor(calif.examenTrimestral) : "";

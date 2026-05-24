@@ -12,11 +12,15 @@ export const getEstadoCompletitud = (
   const aiNotas = parseNotas(calificacion.actividadesIntegradoras ?? null, config.numActividadesIntegradoras);
   const examenNotas = parseNotas(calificacion.actividadesExamen ?? null, config.tieneExamen ? (config.numExamenes || 1) : 0);
 
+  // Migrate: if actividadesExamen is empty but examenTrimestral has a value, count it as filled
+  const examenFilled = examenNotas.filter(n => n !== null).length;
+  const hasExamenTrimestralFallback = config.tieneExamen && examenFilled === 0 && calificacion.examenTrimestral != null;
+
   const totalFields = config.numActividadesCotidianas + config.numActividadesIntegradoras + (config.tieneExamen ? (config.numExamenes || 1) : 0);
   const filledFields =
     acNotas.filter(n => n !== null).length +
     aiNotas.filter(n => n !== null).length +
-    examenNotas.filter(n => n !== null).length;
+    (hasExamenTrimestralFallback ? 1 : examenFilled);
 
   if (filledFields === 0) return 'vacio';
   if (filledFields >= totalFields) return 'completo';

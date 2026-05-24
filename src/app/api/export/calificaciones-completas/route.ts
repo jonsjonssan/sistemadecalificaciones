@@ -116,6 +116,10 @@ export async function GET(req: NextRequest) {
         const na = c.notasActividad.find((n: any) => n.tipo === "examen" && n.numeroActividad === i);
         examenes.push(na?.nota ?? null);
       }
+      // Migrate: if no exam parts found in notasActividad but examenTrimestral exists, use it
+      if (numEX > 0 && examenes.every(e => e === null) && c.examenTrimestral != null) {
+        examenes[0] = c.examenTrimestral;
+      }
       return {
         estudianteId: c.estudianteId,
         estudianteNombre: c.estudiante.nombre,
