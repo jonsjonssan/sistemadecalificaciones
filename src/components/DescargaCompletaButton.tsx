@@ -329,7 +329,7 @@ async function generarPDF(data: ApiResponse) {
       const pw = pdfDoc.internal.pageSize.getWidth();
       const ph = pdfDoc.internal.pageSize.getHeight();
       const chartStartY = finalY + 2;
-      const barH = 7;
+      const barH = 5;
       const chartW = pw - 28;
 
       // Check if there is enough space; if not, add a new page
@@ -377,7 +377,7 @@ async function generarPDF(data: ApiResponse) {
       doc.setLineWidth(0.1);
 
       // Legend below bar
-      const legY = currentY + barH + 2.5;
+      const legY = currentY + barH + 3;
       let lx = 14;
       if (aprobados > 0) {
         doc.setFillColor(16, 185, 129); doc.rect(lx, legY, 3, 3, "F");
@@ -424,7 +424,7 @@ async function generarPDF(data: ApiResponse) {
   chartY += 8;
 
   const chartW = pageWidth - 28;
-  const chartH = 8;
+  const chartH = 6;
 
   for (const grado of gradosOrdenados) {
     const califsGrado = (data.datos || []).filter(c => c.gradoId === grado.id);
@@ -482,7 +482,7 @@ async function generarPDF(data: ApiResponse) {
     doc.setLineWidth(0.1);
 
     // Legend inline
-    const legY = barY + chartH + 3;
+    const legY = barY + chartH + 4;
     let lx = 14;
     doc.setFontSize(6);
     doc.setTextColor(100);
@@ -509,7 +509,7 @@ async function generarPDF(data: ApiResponse) {
     const pctR = total > 0 ? ((reprobados / total) * 100).toFixed(0) : "0";
     doc.text(`${pctA}% | ${pctC}% | ${pctR}%`, pageWidth - 45, legY + 2);
 
-    chartY = legY + 7;
+    chartY = legY + 9;
   }
 
   // Clean up: remove the duplicate last page only if it's truly blank
