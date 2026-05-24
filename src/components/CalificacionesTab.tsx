@@ -125,7 +125,7 @@ export default function CalificacionesTab({ d, darkMode, usuario }: Props) {
                 <span>{d.configActual.numActividadesCotidianas}AC</span>
                 <span className="text-muted-foreground/40">·</span>
                 <span>{d.configActual.numActividadesIntegradoras}AI</span>
-                {d.configActual.tieneExamen && <><span className="text-muted-foreground/40">·</span><span>Ex</span></>}
+                {d.configActual.tieneExamen && <><span className="text-muted-foreground/40">·</span><span>Ex{d.configActual.numExamenes > 1 ? `×${d.configActual.numExamenes}` : ''}</span></>}
                 <span className="text-muted-foreground/50 ml-0.5">({d.configActual.porcentajeAC}/{d.configActual.porcentajeAI}/{d.configActual.porcentajeExamen ?? 30})</span>
               </div>
             )}
@@ -260,11 +260,9 @@ export default function CalificacionesTab({ d, darkMode, usuario }: Props) {
                               {d.sortColumn === 'promAI' && <ChevronDown className="h-3 w-3" />}
                             </div>
                           </th>
-                          <th className={`w-16 p-2 text-center text-[11px] font-semibold border-l border-b cursor-pointer ${darkMode ? 'border-slate-700 bg-slate-800' : 'bg-slate-800 border-slate-700'}`} onClick={() => d.handleSort('examen')}>
-                            <div className="flex items-center justify-center gap-1">
-                              <span className="opacity-70">Examen</span>
-                              {d.sortColumn === 'examen' && <ChevronDown className="h-3 w-3" />}
-                            </div>
+                          <th colSpan={d.configActual.numExamenes || 1} className={`p-2 text-center text-[11px] font-semibold uppercase tracking-wider border-l border-b ${darkMode ? 'border-slate-700 bg-slate-800' : 'bg-slate-800 border-slate-700'}`}>
+                            <span className="opacity-70">Examen</span>
+                            <span className="ml-1.5 text-[10px] px-1 py-0.5 rounded bg-slate-700 text-slate-300 font-mono">{d.configActual.numExamenes || 1}</span>
                           </th>
                           <th className={`w-14 p-2 text-center text-[11px] font-semibold border-l border-b ${darkMode ? 'border-slate-700 bg-slate-800' : 'bg-slate-800 border-slate-700'}`}>
                             <span className="opacity-70">Prom Ex</span>
@@ -294,7 +292,7 @@ export default function CalificacionesTab({ d, darkMode, usuario }: Props) {
                         <tr key={`skel-${idx}`} className={idx % 2 === 0 ? 'bg-card' : 'bg-muted/30'}>
                           <td className="p-2 text-center"><Skeleton className={`h-4 w-6 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
                           <td className="p-2"><Skeleton className={`h-4 w-40 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
-                          {Array.from({ length: d.configActual ? (d.configActual.numActividadesCotidianas + d.configActual.numActividadesIntegradoras + 5) : 5 }).map((_, i) => (
+                          {Array.from({ length: d.configActual ? (d.configActual.numActividadesCotidianas + d.configActual.numActividadesIntegradoras + (d.configActual.tieneExamen ? (d.configActual.numExamenes || 1) : 0) + 5) : 5 }).map((_, i) => (
                             <td key={i} className="p-2"><Skeleton className={`h-8 w-12 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>
                           ))}
                           <td className="p-2"><Skeleton className={`h-4 w-4 mx-auto ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} /></td>

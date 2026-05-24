@@ -438,8 +438,8 @@ export function useDashboardData() {
     try {
       const res = await fetch(`/api/config-actividades?materiaId=${asignaturaSeleccionada}&trimestre=${trimestreSeleccionado}`, { cache: "no-store", credentials: "include" });
       if (res.ok) { const data = await res.json(); setConfigActual(data); }
-      else { setConfigActual({ numActividadesCotidianas: 4, numActividadesIntegradoras: 1, tieneExamen: true, porcentajeAC: 35, porcentajeAI: 35, porcentajeExamen: 30 }); }
-    } catch { setConfigActual({ numActividadesCotidianas: 4, numActividadesIntegradoras: 1, tieneExamen: true, porcentajeAC: 35, porcentajeAI: 35, porcentajeExamen: 30 }); }
+      else { setConfigActual({ numActividadesCotidianas: 4, numActividadesIntegradoras: 1, tieneExamen: true, numExamenes: 1, porcentajeAC: 35, porcentajeAI: 35, porcentajeExamen: 30 }); }
+    } catch { setConfigActual({ numActividadesCotidianas: 4, numActividadesIntegradoras: 1, tieneExamen: true, numExamenes: 1, porcentajeAC: 35, porcentajeAI: 35, porcentajeExamen: 30 }); }
   }, [asignaturaSeleccionada, trimestreSeleccionado]);
 
   const loadConfigsGrado = useCallback(async () => {
@@ -558,7 +558,7 @@ export function useDashboardData() {
     else { dirtyStudentsRef.current.delete(studentId); }
   }, []);
 
-  const handleSaveCalificacion = useCallback(async (estudianteId: string, materiaId: string, data: { actividadesCotidianas: (number | null)[]; actividadesIntegradoras: (number | null)[]; examenTrimestral?: number | null; recuperacion?: number | null; }): Promise<Calificacion> => {
+  const handleSaveCalificacion = useCallback(async (estudianteId: string, materiaId: string, data: { actividadesCotidianas: (number | null)[]; actividadesIntegradoras: (number | null)[]; actividadesExamen?: (number | null)[]; examenTrimestral?: number | null; recuperacion?: number | null; }): Promise<Calificacion> => {
     const est = estudiantes.find(e => e.id === estudianteId);
     const mat = asignaturas.find(a => a.id === materiaId);
     const estGrado = grados.find(g => g.id === est?.gradoId);
@@ -578,7 +578,7 @@ export function useDashboardData() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ estudianteId, materiaId, trimestre, actividadesCotidianas: JSON.stringify(data.actividadesCotidianas), actividadesIntegradoras: JSON.stringify(data.actividadesIntegradoras), examenTrimestral: data.examenTrimestral, recuperacion: data.recuperacion }),
+        body: JSON.stringify({ estudianteId, materiaId, trimestre, actividadesCotidianas: JSON.stringify(data.actividadesCotidianas), actividadesIntegradoras: JSON.stringify(data.actividadesIntegradoras), actividadesExamen: data.actividadesExamen ? JSON.stringify(data.actividadesExamen) : undefined, examenTrimestral: data.examenTrimestral, recuperacion: data.recuperacion }),
       });
       if (res.ok) {
         const saved: Calificacion = await res.json();
@@ -675,7 +675,7 @@ export function useDashboardData() {
     if (!gradoSeleccionado) { toast({ title: "No hay grado seleccionado", variant: "destructive" }); return; }
     try {
       const trimestreNum = parseInt(trimestreSeleccionado);
-      const payload = { materiaId: asignaturaSeleccionada, trimestre: trimestreNum, numActividadesCotidianas: Number(editConfig.numActividadesCotidianas), numActividadesIntegradoras: Number(editConfig.numActividadesIntegradoras), tieneExamen: Boolean(editConfig.tieneExamen), porcentajeAC: Number(editConfig.porcentajeAC), porcentajeAI: Number(editConfig.porcentajeAI), porcentajeExamen: Number(editConfig.porcentajeExamen), aplicarATodasLasMateriasDelGrado: Boolean(configAplicarATodas), gradoId: gradoSeleccionado };
+      const payload = { materiaId: asignaturaSeleccionada, trimestre: trimestreNum, numActividadesCotidianas: Number(editConfig.numActividadesCotidianas), numActividadesIntegradoras: Number(editConfig.numActividadesIntegradoras), tieneExamen: Boolean(editConfig.tieneExamen), numExamenes: Number(editConfig.numExamenes ?? 1), porcentajeAC: Number(editConfig.porcentajeAC), porcentajeAI: Number(editConfig.porcentajeAI), porcentajeExamen: Number(editConfig.porcentajeExamen), aplicarATodasLasMateriasDelGrado: Boolean(configAplicarATodas), gradoId: gradoSeleccionado };
       const res = await fetch("/api/config-actividades", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(payload) });
       const data = await res.json();
       if (!res.ok) { toast({ title: data.error || "Error al guardar configuración", variant: "destructive" }); return; }

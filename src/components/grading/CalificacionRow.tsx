@@ -16,6 +16,7 @@ interface CalificacionRowProps {
   onSave: (id: string, matId: string, data: {
     actividadesCotidianas: (number | null)[];
     actividadesIntegradoras: (number | null)[];
+    actividadesExamen?: (number | null)[];
     examenTrimestral?: number | null;
     recuperacion?: number | null;
   }) => Promise<Calificacion | void> | void;
@@ -281,9 +282,10 @@ export const CalificacionRow = React.memo(function CalificacionRow({
 }: CalificacionRowProps) {
   const numAC = config?.numActividadesCotidianas ?? 4;
   const numAI = config?.numActividadesIntegradoras ?? 1;
+  const numEx = (config?.tieneExamen ? (config?.numExamenes ?? 1) : 0);
   const tieneExamen = config?.tieneExamen ?? true;
 
-  const key = `${materiaId}-${trimestre}-${calificacion?.id || "none"}-${numAC}-${numAI}`;
+  const key = `${materiaId}-${trimestre}-${calificacion?.id || "none"}-${numAC}-${numAI}-${numEx}`;
 
   const [acNotas, setAcNotas] = useState<(number | null)[]>(() =>
     parseNotas(calificacion?.actividadesCotidianas ?? null, numAC)
@@ -291,13 +293,16 @@ export const CalificacionRow = React.memo(function CalificacionRow({
   const [aiNotas, setAiNotas] = useState<(number | null)[]>(() =>
     parseNotas(calificacion?.actividadesIntegradoras ?? null, numAI)
   );
+  const [examenNotas, setExamenNotas] = useState<(number | null)[]>(() =>
+    parseNotas(calificacion?.actividadesExamen ?? null, numEx)
+  );
   const [examen, setExamen] = useState<number | null>(() => calificacion?.examenTrimestral ?? null);
   const [recup, setRecup] = useState<number | null>(() => calificacion?.recuperacion ?? null);
   const [dirty, setDirty] = useState(false);
   const [saveError, setSaveError] = useState(false);
   const [acErrors, setAcErrors] = useState<Set<number>>(new Set());
   const [aiErrors, setAiErrors] = useState<Set<number>>(new Set());
-  const [examenError, setExamenError] = useState(false);
+  const [examenErrors, setExamenErrors] = useState<Set<number>>(new Set());
   const [recupError, setRecupError] = useState(false);
   const retryCountRef = useRef(0);
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -322,6 +327,7 @@ useEffect(() => {
   if (wasDeleted.current) {
     setAcNotas(Array(numAC).fill(null));
     setAiNotas(Array(numAI).fill(null));
+    setExamenNotas(Array(numEx).fill(null));
     setExamen(null);
     setRecup(null);
     setDirty(false);
@@ -339,11 +345,12 @@ useEffect(() => {
     const prevSynced = syncedFromPropsRef.current;
     const newAC = parseNotas(calificacion?.actividadesCotidianas ?? null, numAC);
     const newAI = parseNotas(calificacion?.actividadesIntegradoras ?? null, numAI);
+    const newExNotas = parseNotas(calificacion?.actividadesExamen ?? null, numEx);
     const newEx = calificacion?.examenTrimestral ?? null;
     const newRc = calificacion?.recuperacion ?? null;
 
-    const localHasData = acNotas.some(n => n !== null) || aiNotas.some(n => n !== null) || examen !== null || recup !== null;
-    const incomingHasData = newAC.some(n => n !== null) || newAI.some(n => n !== null) || newEx !== null || newRc !== null;
+    const localHasData = acNotas.some(n => n !== null) || aiNotas.some(n => n !== null) || examenNotas.some(n => n !== null) || examen !== null || recup !== null;
+    const incomingHasData = newAC.some(n => n !== null) || newAI.some(n => n !== null) || newExNotas.some(n => n !== null) || newEx !== null || newRc !== null;
     if (localHasData && !incomingHasData && Date.now() - lastSavedAtRef.current < 5000) {
       if (!prevSynced) syncedFromPropsRef.current = true;
       return;
@@ -351,6 +358,7 @@ useEffect(() => {
 
     setAcNotas(newAC);
     setAiNotas(newAI);
+    setExamenNotas(newExNotas);
     setExamen(newEx);
     setRecup(newRc);
     setSaveError(false);
@@ -360,26 +368,27 @@ useEffect(() => {
       retryTimerRef.current = null;
     }
     syncedFromPropsRef.current = true;
-  }, [key, numAC, numAI, calificacion?.actividadesCotidianas, calificacion?.actividadesIntegradoras, calificacion?.examenTrimestral, calificacion?.recuperacion, dirty]);
+  }, [key, numAC, numAI, numEx, calificacion?.actividadesCotidianas, calificacion?.actividadesIntegradoras, calificacion?.actividadesExamen, calificacion?.examenTrimestral, calificacion?.recuperacion, dirty]);
 
-  const stateRef = useRef({ dirty, acNotas, aiNotas, examen, recup });
+  const stateRef = useRef({ dirty, acNotas, aiNotas, examenNotas, examen, recup });
   const savingRef = useRef(false);
   useEffect(() => {
-    stateRef.current = { dirty, acNotas, aiNotas, examen, recup };
-  }, [dirty, acNotas, aiNotas, examen, recup]);
+    stateRef.current = { dirty, acNotas, aiNotas, examenNotas, examen, recup };
+  }, [dirty, acNotas, aiNotas, examenNotas, examen, recup]);
   const califRef = useRef(calificacion);
   useEffect(() => { califRef.current = calificacion; }, [calificacion]);
 
   const promAC = calcularPromedio(acNotas),
-    promAI = calcularPromedio(aiNotas);
+    promAI = calcularPromedio(aiNotas),
+    promEx = (numEx > 0 ? calcularPromedio(examenNotas) : examen);
   const promACPeso = config && promAC !== null ? promAC * (config.porcentajeAC / 100) : promAC !== null ? promAC * 0.35 : null;
   const promAIPeso = config && promAI !== null ? promAI * (config.porcentajeAI / 100) : promAI !== null ? promAI * 0.35 : null;
-  const promExPeso = config && config.tieneExamen && examen !== null ? examen * (config.porcentajeExamen / 100) : examen !== null ? examen * 0.30 : null;
+  const promExPeso = config && config.tieneExamen && promEx !== null ? promEx * (config.porcentajeExamen / 100) : promEx !== null ? promEx * 0.30 : null;
   const recupEfectiva = mostrarRecuperacion ? recup : null;
   const promFinal = config
-    ? calcularPromedioFinal(promAC, promAI, examen, config, recupEfectiva)
-    : promAC !== null || promAI !== null || examen !== null
-      ? ((promAC ?? 0) * 0.35 + (promAI ?? 0) * 0.35 + (examen ?? 0) * 0.30)
+    ? calcularPromedioFinal(promAC, promAI, promEx, config, recupEfectiva)
+    : promAC !== null || promAI !== null || promEx !== null
+      ? ((promAC ?? 0) * 0.35 + (promAI ?? 0) * 0.35 + (promEx ?? 0) * 0.30)
       : null;
 
   // Helper para formatear números: muestra entero si es entero, decimal si tiene decimales
@@ -449,6 +458,31 @@ useEffect(() => {
     },
     [parseVal]
   );
+  const updateExamen = useCallback(
+    (i: number, v: string) => {
+      const newVal = parseVal(v);
+      let changed = false;
+      setExamenNotas(n => {
+        const arr = [...n];
+        if (arr[i] !== newVal) {
+          arr[i] = newVal;
+          changed = true;
+        }
+        return arr;
+      });
+      if (changed) {
+        setDirty(true);
+      }
+      if (v !== "")
+        setExamenErrors(prev => {
+          const next = new Set(prev);
+          next.delete(i);
+          return next;
+        });
+    },
+    [parseVal]
+  );
+
   const handleExamen = useCallback(
     (v: string) => {
       const newVal = parseVal(v);
@@ -458,7 +492,7 @@ useEffect(() => {
         }
         return newVal;
       });
-      if (v !== "") setExamenError(false);
+      if (v !== "") setExamenErrors(new Set());
     },
     [parseVal]
   );
@@ -491,21 +525,30 @@ useEffect(() => {
       return next;
     });
   }, []);
+  const blurExamenNota = useCallback((i: number, v: string | number | null) => {
+    setExamenErrors(prev => {
+      const next = new Set(prev);
+      if (v === "" || v === null) next.add(i);
+      else next.delete(i);
+      return next;
+    });
+  }, []);
   const blurExamen = useCallback((v: string | number | null) => {
-    setExamenError(v === "" || v === null);
+    setExamenErrors(new Set());
   }, []);
   const blurRecup = useCallback((v: string | number | null) => {
     setRecupError(v === "" || v === null);
   }, []);
 
   // Helper para navegación por teclado
-  // Columnas: AC(0..numAC-1), AI(numAC..numAC+numAI-1), Examen(numAC+numAI), Recuperación(numAC+numAI+1)
-  const getColIndex = useCallback((type: 'ac' | 'ai' | 'examen' | 'recup', index: number = 0): number => {
+  // Columnas: AC(0..numAC-1), AI(numAC..numAC+numAI-1), Examen(numAC+numAI..numAC+numAI+numEx-1), Prom Ex, Recuperación
+  const getColIndex = useCallback((type: 'ac' | 'ai' | 'examen' | 'promEx' | 'recup', index: number = 0): number => {
     if (type === 'ac') return index;
     if (type === 'ai') return numAC + index;
-    if (type === 'examen') return numAC + numAI;
-    return numAC + numAI + (tieneExamen ? 1 : 0); // recup
-  }, [numAC, numAI, tieneExamen]);
+    if (type === 'examen') return numAC + numAI + index;
+    if (type === 'promEx') return numAC + numAI + numEx;
+    return numAC + numAI + numEx + (tieneExamen ? 1 : 0); // recup
+  }, [numAC, numAI, numEx, tieneExamen]);
 
   const handleNavigate = useCallback((type: 'ac' | 'ai' | 'examen' | 'recup', index: number = 0) => {
     return (direction: 'up' | 'down' | 'left' | 'right') => {
@@ -523,16 +566,28 @@ useEffect(() => {
       const payload: {
         actividadesCotidianas: (number | null)[];
         actividadesIntegradoras: (number | null)[];
+        actividadesExamen?: (number | null)[];
         examenTrimestral?: number | null;
         recuperacion?: number | null;
       } = {
         actividadesCotidianas: stateRef.current.acNotas,
         actividadesIntegradoras: stateRef.current.aiNotas,
       };
-      // Solo enviar examen/recup si el valor local cambió vs la prop entrante
-      const propExam = c?.examenTrimestral ?? null;
-      if (stateRef.current.examen !== propExam) {
-        payload.examenTrimestral = stateRef.current.examen;
+      // Enviar actividadesExamen solo si hay cambios reales
+      const localExNotas = stateRef.current.examenNotas;
+      const propExNotas = parseNotas(c?.actividadesExamen ?? null, numEx);
+      const exNotasChanged = localExNotas.length !== propExNotas.length ||
+        localExNotas.some((n, i) => n !== propExNotas[i]);
+      if (localExNotas && localExNotas.length > 0 && exNotasChanged) {
+        payload.actividadesExamen = localExNotas;
+        const validas = localExNotas.filter((n): n is number => n !== null);
+        payload.examenTrimestral = validas.length > 0 ? validas.reduce((a, b) => a + b, 0) / validas.length : null;
+      } else if (!localExNotas || localExNotas.length === 0) {
+        // Fallback: enviar examen individual directamente
+        const propExam = c?.examenTrimestral ?? null;
+        if (stateRef.current.examen !== propExam) {
+          payload.examenTrimestral = stateRef.current.examen;
+        }
       }
       const propRecup = c?.recuperacion ?? null;
       if (stateRef.current.recup !== propRecup) {
@@ -542,6 +597,7 @@ useEffect(() => {
       if (result && typeof result === "object") {
         setAcNotas(parseNotas(result.actividadesCotidianas ?? null, numAC));
         setAiNotas(parseNotas(result.actividadesIntegradoras ?? null, numAI));
+        setExamenNotas(parseNotas(result.actividadesExamen ?? null, numEx));
         setExamen(result.examenTrimestral ?? null);
         setRecup(result.recuperacion ?? null);
       }
@@ -559,7 +615,7 @@ useEffect(() => {
     } finally {
       savingRef.current = false;
     }
-  }, [estudiante.id, materiaId, onSave, numAC, numAI]);
+  }, [estudiante.id, materiaId, onSave, numAC, numAI, numEx]);
 
   useEffect(() => {
     scheduleRetryRef.current = () => {
@@ -602,9 +658,19 @@ useEffect(() => {
           actividadesCotidianas: JSON.stringify(stateRef.current.acNotas),
           actividadesIntegradoras: JSON.stringify(stateRef.current.aiNotas),
         };
-        const propExam = c?.examenTrimestral ?? null;
-        if (stateRef.current.examen !== propExam) {
-          cleanBody.examenTrimestral = stateRef.current.examen;
+        const localExNotas = stateRef.current.examenNotas;
+        const propExNotas = parseNotas(c?.actividadesExamen ?? null, numEx);
+        const exNotasChanged = localExNotas.length !== propExNotas.length ||
+          localExNotas.some((n, i) => n !== propExNotas[i]);
+        if (localExNotas && localExNotas.length > 0 && exNotasChanged) {
+          cleanBody.actividadesExamen = JSON.stringify(localExNotas);
+          const validas = localExNotas.filter((n): n is number => n !== null);
+          cleanBody.examenTrimestral = validas.length > 0 ? validas.reduce((a, b) => a + b, 0) / validas.length : null;
+        } else if (!localExNotas || localExNotas.length === 0) {
+          const propExam = c?.examenTrimestral ?? null;
+          if (stateRef.current.examen !== propExam) {
+            cleanBody.examenTrimestral = stateRef.current.examen;
+          }
         }
         const propRecup = c?.recuperacion ?? null;
         if (stateRef.current.recup !== propRecup) {
@@ -629,7 +695,7 @@ useEffect(() => {
       doSave();
     }, 800);
     return () => clearTimeout(handler);
-  }, [acNotas, aiNotas, examen, recup, dirty, saveError, doSave]);
+  }, [acNotas, aiNotas, examenNotas, examen, recup, dirty, saveError, doSave]);
 
   const rowBg = evenRow
     ? darkMode
@@ -650,7 +716,7 @@ useEffect(() => {
   const promAIBg = darkMode ? "bg-purple-900/50" : "bg-purple-50/70";
   const promExBg = darkMode ? "bg-amber-900/50" : "bg-amber-50/70";
   const finalBg = darkMode ? "bg-emerald-900/60" : "bg-emerald-50/80";
-  const hasData = acNotas.some(n => n !== null) || aiNotas.some(n => n !== null) || examen !== null;
+  const hasData = acNotas.some(n => n !== null) || aiNotas.some(n => n !== null) || examenNotas.some(n => n !== null) || examen !== null;
   const estadoCompletitud = useMemo(() => getEstadoCompletitud(calificacion, config), [calificacion, config]);
 const statusIcon =
     saveError ? (
@@ -751,7 +817,7 @@ const statusIcon =
               value={examen ?? ""}
               onChange={handleExamen}
               darkMode={darkMode}
-              hasError={examenError}
+              hasError={examenErrors.size > 0}
               onBlur={() => blurExamen(examen)}
               onNavigate={handleNavigate('examen')}
               inputKey={`${estudiante.id}-${getColIndex('examen')}`}
@@ -871,25 +937,25 @@ const statusIcon =
       <td data-label="Prom AI" className={`p-2 text-center font-bold border-l ${cellBorder} ${promAIBg} text-sm sm:text-base`}>
         {promAIPeso !== null ? formatNumber(promAIPeso) : "-"}
       </td>
-      {config.tieneExamen && (
-        <td data-label="Examen" className={`p-1 border-l ${cellBorder}`}>
+      {config.tieneExamen && Array.from({ length: config.numExamenes || 1 }).map((_, i) => (
+        <td key={`ex-${i}`} data-label={`Ex ${i + 1}`} className={`p-1 border-l ${cellBorder}`}>
           <NotaInput
-            value={examen ?? ""}
-            onChange={handleExamen}
+            value={examenNotas[i] ?? ""}
+            onChange={v => updateExamen(i, v)}
             darkMode={darkMode}
-            hasError={examenError}
-            onBlur={() => blurExamen(examen)}
-            onNavigate={handleNavigate('examen')}
-            inputKey={`${estudiante.id}-${getColIndex('examen')}`}
+            hasError={examenErrors.has(i)}
+            onBlur={() => blurExamenNota(i, examenNotas[i])}
+            onNavigate={handleNavigate('examen', i)}
+            inputKey={`${estudiante.id}-${getColIndex('examen', i)}`}
             inputRefs={inputRefs}
             onShowHistory={onShowHistory}
             calificacionId={calificacion?.id}
-            tipoCampo="examenTrimestral"
-            campoLabel="Examen"
+            tipoCampo={`examen_${i + 1}`}
+            campoLabel={`Ex ${i + 1}`}
             activeHistoryCell={activeHistoryCell}
           />
         </td>
-      )}
+      ))}
       {config.tieneExamen && (
         <td data-label="Prom Ex" className={`p-2 text-center font-bold border-l ${cellBorder} ${promExBg} text-sm sm:text-base`}>
           {promExPeso !== null ? formatNumber(promExPeso) : "-"}

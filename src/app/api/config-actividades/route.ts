@@ -73,6 +73,7 @@ export async function GET(request: NextRequest) {
             numActividadesCotidianas: 4,
             numActividadesIntegradoras: 1,
             tieneExamen: true,
+            numExamenes: 1,
             porcentajeAC: 35.0,
             porcentajeAI: 35.0,
             porcentajeExamen: 30.0
@@ -87,6 +88,7 @@ export async function GET(request: NextRequest) {
         numActividadesCotidianas: config.numActividadesCotidianas,
         numActividadesIntegradoras: config.numActividadesIntegradoras,
         tieneExamen: config.tieneExamen,
+        numExamenes: config.numExamenes,
         porcentajeAC: config.porcentajeAC,
         porcentajeAI: config.porcentajeAI,
         porcentajeExamen: config.porcentajeExamen,
@@ -131,6 +133,7 @@ export async function GET(request: NextRequest) {
                 numActividadesCotidianas: 4,
                 numActividadesIntegradoras: 1,
                 tieneExamen: true,
+                numExamenes: 1,
                 porcentajeAC: 35.0,
                 porcentajeAI: 35.0,
                 porcentajeExamen: 30.0
@@ -145,6 +148,7 @@ export async function GET(request: NextRequest) {
             numActividadesCotidianas: config.numActividadesCotidianas,
             numActividadesIntegradoras: config.numActividadesIntegradoras,
             tieneExamen: config.tieneExamen,
+            numExamenes: config.numExamenes,
             porcentajeAC: config.porcentajeAC,
             porcentajeAI: config.porcentajeAI,
             porcentajeExamen: config.porcentajeExamen,
@@ -173,7 +177,7 @@ export async function POST(request: NextRequest) {
 
     const data = await request.json();
 
-    const { materiaId, gradoId, aplicarATodasLasMateriasDelGrado, trimestre: trimestreValue, numActividadesCotidianas, numActividadesIntegradoras, tieneExamen, porcentajeAC, porcentajeAI, porcentajeExamen } = data;
+    const { materiaId, gradoId, aplicarATodasLasMateriasDelGrado, trimestre: trimestreValue, numActividadesCotidianas, numActividadesIntegradoras, tieneExamen, numExamenes, porcentajeAC, porcentajeAI, porcentajeExamen } = data;
 
     if (session.rol === "docente") {
       const materiasAsignadasIds = session.asignaturasAsignadas?.map((m: any) => m.id) || [];
@@ -199,6 +203,7 @@ export async function POST(request: NextRequest) {
 
     const numAC = numActividadesCotidianas !== undefined && numActividadesCotidianas !== null ? Math.max(0, parseInt(String(numActividadesCotidianas)) || 4) : 4;
     const numAI = numActividadesIntegradoras !== undefined && numActividadesIntegradoras !== null ? Math.max(0, parseInt(String(numActividadesIntegradoras)) || 1) : 1;
+    const numEx = numExamenes !== undefined && numExamenes !== null ? Math.max(1, Math.min(5, parseInt(String(numExamenes)) || 1)) : 1;
     const tieneEx = tieneExamen === true || tieneExamen === "true" || tieneExamen === 1;
     const porcAC = porcentajeAC !== undefined && porcentajeAC !== null ? parseFloat(String(porcentajeAC)) || 35.0 : 35.0;
     const porcAI = porcentajeAI !== undefined && porcentajeAI !== null ? parseFloat(String(porcentajeAI)) || 35.0 : 35.0;
@@ -232,6 +237,7 @@ export async function POST(request: NextRequest) {
               numActividadesCotidianas: numAC,
               numActividadesIntegradoras: numAI,
               tieneExamen: tieneEx,
+              numExamenes: numEx,
               porcentajeAC: porcAC,
               porcentajeAI: porcAI,
               porcentajeExamen: porcEx
@@ -242,6 +248,7 @@ export async function POST(request: NextRequest) {
               numActividadesCotidianas: numAC,
               numActividadesIntegradoras: numAI,
               tieneExamen: tieneEx,
+              numExamenes: numEx,
               porcentajeAC: porcAC,
               porcentajeAI: porcAI,
               porcentajeExamen: porcEx
@@ -268,6 +275,7 @@ export async function POST(request: NextRequest) {
         numActividadesCotidianas: numAC,
         numActividadesIntegradoras: numAI,
         tieneExamen: tieneEx,
+        numExamenes: numEx,
         porcentajeAC: porcAC,
         porcentajeAI: porcAI,
         porcentajeExamen: porcEx
@@ -278,6 +286,7 @@ export async function POST(request: NextRequest) {
         numActividadesCotidianas: numAC,
         numActividadesIntegradoras: numAI,
         tieneExamen: tieneEx,
+        numExamenes: numEx,
         porcentajeAC: porcAC,
         porcentajeAI: porcAI,
         porcentajeExamen: porcEx
@@ -296,6 +305,7 @@ export async function POST(request: NextRequest) {
           trimestre: trimestreNum,
           numAC,
           numAI,
+          numEx,
           tieneExamen: tieneEx,
           porcAC,
           porcAI,

@@ -54,6 +54,7 @@ export interface ConfigActividad {
   numActividadesCotidianas: number;
   numActividadesIntegradoras: number;
   tieneExamen: boolean;
+  numExamenes: number;
   porcentajeAC: number;
   porcentajeAI: number;
   porcentajeExamen: number;
@@ -64,6 +65,7 @@ export type ConfigActividadPartial = Partial<ConfigActividad> & {
   numActividadesCotidianas: number;
   numActividadesIntegradoras: number;
   tieneExamen: boolean;
+  numExamenes: number;
   porcentajeAC: number;
   porcentajeAI: number;
   porcentajeExamen: number;
@@ -78,6 +80,7 @@ export interface Calificacion {
   calificacionAC: number | null;
   actividadesIntegradoras: string | null;
   calificacionAI: number | null;
+  actividadesExamen: string | null;
   examenTrimestral: number | null;
   promedioFinal: number | null;
   recuperacion: number | null;

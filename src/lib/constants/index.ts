@@ -41,3 +41,4 @@ export const NOTA_MINIMA_APROBATORIA = 5.0;
 
 export const MAX_ACTIVIDADES_COTIDIANAS = 10;
 export const MAX_ACTIVIDADES_INTEGRADORAS = 5;
+export const MAX_EXAMENES = 5;

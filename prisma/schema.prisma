@@ -124,6 +124,7 @@ model ConfigActividad {
   numActividadesCotidianas   Int      @default(4)
   numActividadesIntegradoras Int      @default(1)
   tieneExamen                Boolean  @default(true)
+  numExamenes                Int      @default(1)
   
   // Porcentajes (deben sumar 100%)
   porcentajeAC       Float @default(35.0)
@@ -212,7 +213,7 @@ model Calificacion {
 model NotaActividad {
   id              String   @id @default(cuid())
   calificacionId  String
-  tipo            String   // "cotidiana" | "integradora"
+  tipo            String   // "cotidiana" | "integradora" | "examen"
   numeroActividad Int      // 1, 2, 3, 4...
   nota            Float    // Nota individual (0-10)
   createdAt       DateTime @default(now())

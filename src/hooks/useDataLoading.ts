@@ -95,6 +95,7 @@ export function useDataLoading(): UseDataLoadingReturn {
     numActividadesCotidianas: 4,
     numActividadesIntegradoras: 1,
     tieneExamen: true,
+    numExamenes: 1,
     porcentajeAC: 35,
     porcentajeAI: 35,
     porcentajeExamen: 30,

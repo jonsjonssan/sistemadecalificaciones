@@ -10,12 +10,13 @@ export const getEstadoCompletitud = (
 
   const acNotas = parseNotas(calificacion.actividadesCotidianas ?? null, config.numActividadesCotidianas);
   const aiNotas = parseNotas(calificacion.actividadesIntegradoras ?? null, config.numActividadesIntegradoras);
+  const examenNotas = parseNotas(calificacion.actividadesExamen ?? null, config.tieneExamen ? (config.numExamenes || 1) : 0);
 
-  const totalFields = config.numActividadesCotidianas + config.numActividadesIntegradoras + (config.tieneExamen ? 1 : 0);
+  const totalFields = config.numActividadesCotidianas + config.numActividadesIntegradoras + (config.tieneExamen ? (config.numExamenes || 1) : 0);
   const filledFields =
     acNotas.filter(n => n !== null).length +
     aiNotas.filter(n => n !== null).length +
-    (config.tieneExamen && calificacion.examenTrimestral !== null ? 1 : 0);
+    examenNotas.filter(n => n !== null).length;
 
   if (filledFields === 0) return 'vacio';
   if (filledFields >= totalFields) return 'completo';

@@ -12,6 +12,7 @@ const calificacionSchema = z.object({
   trimestre: z.number().int().min(1).max(3, "Trimestre inválido"),
   actividadesCotidianas: z.union([z.string(), z.array(z.number().min(0).max(10).nullable())]).optional(),
   actividadesIntegradoras: z.union([z.string(), z.array(z.number().min(0).max(10).nullable())]).optional(),
+  actividadesExamen: z.union([z.string(), z.array(z.number().min(0).max(10).nullable())]).optional(),
   examenTrimestral: z.number().min(0).max(10).nullable().optional(),
   recuperacion: z.number().min(0).max(10).nullable().optional(),
 });
@@ -35,8 +36,10 @@ function canAccessMateria(session: any, materiaId: string): boolean {
 function transformCalificacion(cal: any) {
   const notasCotidianasMap = new Map<number, number>();
   const notasIntegradorasMap = new Map<number, number>();
+  const notasExamenMap = new Map<number, number>();
   let maxCotidiana = 0;
   let maxIntegradora = 0;
+  let maxExamen = 0;
 
   // Primero pasamos: construir mapa y encontrar el máximo (limitado para evitar DoS)
   const MAX_ACTIVIDADES = 50;
@@ -49,6 +52,10 @@ function transformCalificacion(cal: any) {
       const num = Math.min(nota.numeroActividad, MAX_ACTIVIDADES);
       notasIntegradorasMap.set(num, nota.nota);
       if (num > maxIntegradora) maxIntegradora = num;
+    } else if (nota.tipo === "examen") {
+      const num = Math.min(nota.numeroActividad, MAX_ACTIVIDADES);
+      notasExamenMap.set(num, nota.nota);
+      if (num > maxExamen) maxExamen = num;
     }
   }
 
@@ -63,10 +70,16 @@ function transformCalificacion(cal: any) {
     notasIntegradoras.push(notasIntegradorasMap.has(i) ? notasIntegradorasMap.get(i)! : null);
   }
 
+  const notasExamen: (number | null)[] = [];
+  for (let i = 1; i <= maxExamen; i++) {
+    notasExamen.push(notasExamenMap.has(i) ? notasExamenMap.get(i)! : null);
+  }
+
   return {
     ...cal,
     actividadesCotidianas: JSON.stringify(notasCotidianas),
     actividadesIntegradoras: JSON.stringify(notasIntegradoras),
+    actividadesExamen: JSON.stringify(notasExamen),
   };
 }
 
@@ -158,8 +171,8 @@ export async function GET(request: NextRequest) {
         }
         const cfg = cfgMap.get(`${cal.materiaId}_${cal.trimestre}`);
         const pct = cfg
-          ? { porcentajeAC: cfg.porcentajeAC, porcentajeAI: cfg.porcentajeAI, porcentajeExamen: cfg.porcentajeExamen, tieneExamen: cfg.tieneExamen, numActividadesCotidianas: cfg.numActividadesCotidianas, numActividadesIntegradoras: cfg.numActividadesIntegradoras }
-          : { porcentajeAC: 35, porcentajeAI: 35, porcentajeExamen: 30, tieneExamen: true, numActividadesCotidianas: 0, numActividadesIntegradoras: 0 };
+          ? { porcentajeAC: cfg.porcentajeAC, porcentajeAI: cfg.porcentajeAI, porcentajeExamen: cfg.porcentajeExamen, tieneExamen: cfg.tieneExamen, numExamenes: cfg.numExamenes ?? 1, numActividadesCotidianas: cfg.numActividadesCotidianas, numActividadesIntegradoras: cfg.numActividadesIntegradoras }
+          : { porcentajeAC: 35, porcentajeAI: 35, porcentajeExamen: 30, tieneExamen: true, numExamenes: 1, numActividadesCotidianas: 0, numActividadesIntegradoras: 0 };
         cal.promedioFinal = calcularPromedioFinal(cal.calificacionAC, cal.calificacionAI, cal.examenTrimestral, pct, cal.recuperacion);
       }
 
@@ -215,8 +228,8 @@ export async function GET(request: NextRequest) {
         for (const cal of calificaciones) {
           const cfg = cfgMap.get(`${cal.materiaId}_${cal.trimestre}`);
           const pct = cfg
-            ? { porcentajeAC: cfg.porcentajeAC, porcentajeAI: cfg.porcentajeAI, porcentajeExamen: cfg.porcentajeExamen, tieneExamen: cfg.tieneExamen, numActividadesCotidianas: cfg.numActividadesCotidianas, numActividadesIntegradoras: cfg.numActividadesIntegradoras }
-            : { porcentajeAC: 35, porcentajeAI: 35, porcentajeExamen: 30, tieneExamen: true, numActividadesCotidianas: 0, numActividadesIntegradoras: 0 };
+            ? { porcentajeAC: cfg.porcentajeAC, porcentajeAI: cfg.porcentajeAI, porcentajeExamen: cfg.porcentajeExamen, tieneExamen: cfg.tieneExamen, numExamenes: cfg.numExamenes ?? 1, numActividadesCotidianas: cfg.numActividadesCotidianas, numActividadesIntegradoras: cfg.numActividadesIntegradoras }
+            : { porcentajeAC: 35, porcentajeAI: 35, porcentajeExamen: 30, tieneExamen: true, numExamenes: 1, numActividadesCotidianas: 0, numActividadesIntegradoras: 0 };
           cal.promedioFinal = calcularPromedioFinal(cal.calificacionAC, cal.calificacionAI, cal.examenTrimestral, pct, cal.recuperacion);
         }
       }
@@ -342,6 +355,7 @@ export async function POST(request: NextRequest) {
       trimestre,
       actividadesCotidianas,
       actividadesIntegradoras,
+      actividadesExamen,
       examenTrimestral,
       recuperacion,
     } = parsed.data;
@@ -374,6 +388,7 @@ export async function POST(request: NextRequest) {
     // Parsear notas de actividades
     let acNotas: (number | null)[] = [];
     let aiNotas: (number | null)[] = [];
+    let exNotas: (number | null)[] = [];
 
     if (actividadesCotidianas) {
       try {
@@ -395,12 +410,28 @@ export async function POST(request: NextRequest) {
       } catch { aiNotas = []; }
     }
 
+    if (actividadesExamen) {
+      try {
+        exNotas = typeof actividadesExamen === 'string'
+          ? JSON.parse(actividadesExamen)
+          : actividadesExamen;
+        if (!Array.isArray(exNotas)) exNotas = [];
+        exNotas = exNotas.map(n => (typeof n === 'number' && !isNaN(n) && n >= 0 && n <= 10) ? n : null);
+      } catch { exNotas = []; }
+    }
+
     // Calcular promedios
     const notasValidasAC = acNotas.filter((n): n is number => n !== null && n !== undefined);
     const calificacionAC = notasValidasAC.length > 0 ? notasValidasAC.reduce((a, b) => a + b, 0) / notasValidasAC.length : null;
 
     const notasValidasAI = aiNotas.filter((n): n is number => n !== null && n !== undefined);
     const calificacionAI = notasValidasAI.length > 0 ? notasValidasAI.reduce((a, b) => a + b, 0) / notasValidasAI.length : null;
+
+    // Si se enviaron actividadesExamen, calcular examenTrimestral como promedio
+    const notasValidasEx = exNotas.filter((n): n is number => n !== null && n !== undefined);
+    const calificacionExFromParts = notasValidasEx.length > 0 ? notasValidasEx.reduce((a, b) => a + b, 0) / notasValidasEx.length : null;
+    // examenTrimestral explícito gana sobre el calculado de partes
+    const examenEfectivoFromParts = examenTrimestral !== undefined ? examenTrimestral : calificacionExFromParts;
 
     const config = await db.configActividad.findFirst({
       where: { materiaId, trimestre: parseInt(String(trimestre)) },
@@ -411,7 +442,7 @@ export async function POST(request: NextRequest) {
       where: { estudianteId, materiaId, trimestre: parseInt(String(trimestre)) },
       select: { examenTrimestral: true, recuperacion: true },
     });
-    const examenEfectivo = examenTrimestral !== undefined ? examenTrimestral : existingForCalc?.examenTrimestral ?? null;
+    const examenEfectivo = examenTrimestral !== undefined ? examenTrimestral : (calificacionExFromParts !== null ? calificacionExFromParts : existingForCalc?.examenTrimestral ?? null);
     const recupEfectiva = recuperacion !== undefined ? recuperacion : existingForCalc?.recuperacion ?? null;
 
     let promedioFinal: number | null = null;
@@ -445,9 +476,12 @@ export async function POST(request: NextRequest) {
 
     // Solo sobrescribir examenTrimestral/recuperacion si el frontend los envió explícitamente
     // Si no se enviaron (undefined), preservar el valor existente en la BD
+    // Si se envió actividadesExamen (pero no examenTrimestral), usar el promedio calculado
     const examenVal = examenTrimestral !== undefined
       ? (examenTrimestral !== null && !isNaN(examenTrimestral) ? examenTrimestral : null)
-      : undefined;
+      : (actividadesExamen !== undefined
+        ? (calificacionExFromParts !== null && !isNaN(calificacionExFromParts) ? calificacionExFromParts : null)
+        : undefined);
     const recupVal = recuperacion !== undefined
       ? (recuperacion !== null && !isNaN(recuperacion) ? recuperacion : null)
       : undefined;
@@ -469,6 +503,15 @@ export async function POST(request: NextRequest) {
           tipo: "integradora",
           numeroActividad: i + 1,
           nota: aiNotas[i] as number,
+        });
+      }
+    }
+    for (let i = 0; i < exNotas.length; i++) {
+      if (exNotas[i] !== null && exNotas[i] !== undefined) {
+        notasCreateData.push({
+          tipo: "examen",
+          numeroActividad: i + 1,
+          nota: exNotas[i] as number,
         });
       }
     }
@@ -589,6 +632,30 @@ export async function POST(request: NextRequest) {
                 : newVal === null
                   ? `AI${i + 1}: ${oldVal} → vacío`
                   : `AI${i + 1}: ${oldVal} → ${newVal}`;
+              
+              historialEntries.push({
+                calificacionId: result.id,
+                usuarioId: session.id,
+                tipoCampo: key,
+                valorAnterior: oldVal,
+                valorNuevo: newVal,
+                descripcion,
+              });
+            }
+          }
+
+          // Comparar notas de examen individuales
+          for (let i = 0; i < exNotas.length; i++) {
+            const key = `examen_${i + 1}`;
+            const oldVal = oldNotasMap.has(key) ? oldNotasMap.get(key) : null;
+            const newVal = exNotas[i] !== null && exNotas[i] !== undefined ? exNotas[i] as number : null;
+            
+            if (oldVal !== newVal) {
+              const descripcion = oldVal === null
+                ? `Examen ${i + 1}: vacío → ${newVal}`
+                : newVal === null
+                  ? `Examen ${i + 1}: ${oldVal} → vacío`
+                  : `Examen ${i + 1}: ${oldVal} → ${newVal}`;
               
               historialEntries.push({
                 calificacionId: result.id,
