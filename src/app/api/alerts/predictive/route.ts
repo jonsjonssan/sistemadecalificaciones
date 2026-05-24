@@ -34,10 +34,18 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Obtener asistencias del grado
-    const asistencias = await db.asistencia.findMany({
+    // Obtener asistencias del grado (deduplicadas por estudiante+fecha)
+    const asistenciasRaw = await db.asistencia.findMany({
       where: { estudiante: { gradoId } },
       include: { estudiante: true },
+      orderBy: { fecha: "desc" },
+    });
+    const seen = new Set<string>();
+    const asistencias = asistenciasRaw.filter(a => {
+      const key = `${a.estudianteId}_${new Date(a.fecha).toISOString().split('T')[0]}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
     });
 
     // Obtener configs para promedios ponderados

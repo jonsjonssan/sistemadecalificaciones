@@ -51,17 +51,17 @@ export async function GET(req: Request) {
       let asistenciaQuery;
       if (startDate && endDate) {
         asistenciaQuery = await sql`
-          SELECT fecha, estado
+          SELECT DISTINCT ON (fecha::date) fecha, estado
           FROM "Asistencia"
           WHERE "estudianteId" = ${est.id} AND "gradoId" = ${gradoId} ${materiaFilter} AND fecha >= ${startDate} AND fecha <= ${endDate}
-          ORDER BY fecha ASC
+          ORDER BY fecha::date, fecha DESC
         `;
       } else {
         asistenciaQuery = await sql`
-          SELECT fecha, estado
+          SELECT DISTINCT ON (fecha::date) fecha, estado
           FROM "Asistencia"
           WHERE "estudianteId" = ${est.id} AND "gradoId" = ${gradoId} ${materiaFilter}
-          ORDER BY fecha ASC
+          ORDER BY fecha::date, fecha DESC
         `;
       }
 

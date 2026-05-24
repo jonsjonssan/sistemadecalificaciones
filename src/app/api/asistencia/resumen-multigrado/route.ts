@@ -65,7 +65,7 @@ export async function GET(req: Request) {
             a.estado, a.fecha, a."estudianteId", e.nombre as estudiante_nombre, e.numero as estudiante_numero
           FROM "Asistencia" a
           JOIN "Estudiante" e ON a."estudianteId" = e.id
-          WHERE a."gradoId" = ${grado.id} AND a.fecha >= ${startDate} AND a.fecha <= ${endDate}
+          WHERE a."gradoId" = ${grado.id} AND e.activo = true AND a.fecha >= ${startDate} AND a.fecha <= ${endDate}
           ORDER BY a."estudianteId", a.fecha::date, a.fecha DESC
         `;
       } else {
@@ -74,7 +74,7 @@ export async function GET(req: Request) {
             a.estado, a.fecha, a."estudianteId", e.nombre as estudiante_nombre, e.numero as estudiante_numero
           FROM "Asistencia" a
           JOIN "Estudiante" e ON a."estudianteId" = e.id
-          WHERE a."gradoId" = ${grado.id}
+          WHERE a."gradoId" = ${grado.id} AND e.activo = true
           ORDER BY a."estudianteId", a.fecha::date, a.fecha DESC
         `;
       }

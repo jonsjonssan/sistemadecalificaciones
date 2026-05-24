@@ -58,19 +58,21 @@ export async function GET(req: Request) {
       // Resumen por materia específica (grados 6-9)
       if (startDate && endDate) {
         asistencia = await sql`
-          SELECT a.estado, a.fecha, a."estudianteId", e.nombre as estudiante_nombre, e.numero as estudiante_numero
+          SELECT DISTINCT ON (a."estudianteId", a.fecha::date)
+            a.estado, a.fecha, a."estudianteId", e.nombre as estudiante_nombre, e.numero as estudiante_numero
           FROM "Asistencia" a
           JOIN "Estudiante" e ON a."estudianteId" = e.id
-          WHERE a."gradoId" = ${gradoId} AND a."materiaId" = ${materiaId} AND a.fecha >= ${startDate} AND a.fecha <= ${endDate}
-          ORDER BY a.fecha DESC
+          WHERE a."gradoId" = ${gradoId} AND a."materiaId" = ${materiaId} AND e.activo = true AND a.fecha >= ${startDate} AND a.fecha <= ${endDate}
+          ORDER BY a."estudianteId", a.fecha::date, a.fecha DESC
         `;
       } else {
         asistencia = await sql`
-          SELECT a.estado, a.fecha, a."estudianteId", e.nombre as estudiante_nombre, e.numero as estudiante_numero
+          SELECT DISTINCT ON (a."estudianteId", a.fecha::date)
+            a.estado, a.fecha, a."estudianteId", e.nombre as estudiante_nombre, e.numero as estudiante_numero
           FROM "Asistencia" a
           JOIN "Estudiante" e ON a."estudianteId" = e.id
-          WHERE a."gradoId" = ${gradoId} AND a."materiaId" = ${materiaId}
-          ORDER BY a.fecha DESC
+          WHERE a."gradoId" = ${gradoId} AND a."materiaId" = ${materiaId} AND e.activo = true
+          ORDER BY a."estudianteId", a.fecha::date, a.fecha DESC
         `;
       }
     } else {
@@ -81,7 +83,7 @@ export async function GET(req: Request) {
             a.estado, a.fecha, a."estudianteId", e.nombre as estudiante_nombre, e.numero as estudiante_numero
           FROM "Asistencia" a
           JOIN "Estudiante" e ON a."estudianteId" = e.id
-          WHERE a."gradoId" = ${gradoId} AND a.fecha >= ${startDate} AND a.fecha <= ${endDate}
+          WHERE a."gradoId" = ${gradoId} AND e.activo = true AND a.fecha >= ${startDate} AND a.fecha <= ${endDate}
           ORDER BY a."estudianteId", a.fecha::date, a.fecha DESC
         `;
       } else {
@@ -90,7 +92,7 @@ export async function GET(req: Request) {
             a.estado, a.fecha, a."estudianteId", e.nombre as estudiante_nombre, e.numero as estudiante_numero
           FROM "Asistencia" a
           JOIN "Estudiante" e ON a."estudianteId" = e.id
-          WHERE a."gradoId" = ${gradoId}
+          WHERE a."gradoId" = ${gradoId} AND e.activo = true
           ORDER BY a."estudianteId", a.fecha::date, a.fecha DESC
         `;
       }

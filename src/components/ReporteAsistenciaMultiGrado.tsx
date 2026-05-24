@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CalendarDays, Download, AlertTriangle, CheckCircle2, Clock, XCircle } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 import { escapeHtml } from "@/lib/utils/index";
 
 interface Grado { id: string; numero: number; seccion: string; }
@@ -309,11 +309,24 @@ export default function ReporteAsistenciaMultiGrado({ grados, darkMode: darkMode
           {/* Gráfico de Asistencia */}
           <Card className={`shadow-sm border overflow-hidden ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5" : "bg-white border-slate-200"}`}>
             <div className={`h-1 w-full bg-gradient-to-r from-emerald-500 to-emerald-400`} />
-            <CardContent className="p-4">
-              <h3 className={`text-sm font-semibold mb-3 ${darkMode ? "text-white" : "text-slate-800"}`}>
-                Distribución de Asistencia por Grado
-              </h3>
-              <ResponsiveContainer width="100%" height={280}>
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h3 className={`text-sm font-semibold ${darkMode ? "text-white" : "text-slate-800"}`}>
+                    Distribución de Asistencia por Grado
+                  </h3>
+                  <p className={`text-xs mt-0.5 ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
+                    Consolidado de asistencias, ausencias, tardanzas y justificadas
+                  </p>
+                </div>
+                <div className={`hidden sm:flex items-center gap-3 text-[10px] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
+                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-[#10b981]" /> Asistencias</span>
+                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-[#ef4444]" /> Ausencias</span>
+                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-[#f59e0b]" /> Tardanzas</span>
+                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-[#3b82f6]" /> Justificadas</span>
+                </div>
+              </div>
+              <ResponsiveContainer width="100%" height={Math.max(250, Math.min(400, (data?.grados.length || 1) * 70))}>
                 <BarChart
                   data={data.grados.map(g => ({
                     nombre: `${g.gradoNumero}°`,
@@ -322,21 +335,23 @@ export default function ReporteAsistenciaMultiGrado({ grados, darkMode: darkMode
                     Tardanzas: g.resumen.reduce((s, r) => s + r.tardanzas, 0),
                     Justificadas: g.resumen.reduce((s, r) => s + r.justificadas, 0),
                   }))}
-                  margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                  margin={{ top: 8, right: 16, left: 0, bottom: 8 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#374151" : "#e5e7eb"} />
-                  <XAxis dataKey="nombre" tick={{ fontSize: 12, fill: darkMode ? "#94a3b8" : "#64748b" }} />
-                  <YAxis tick={{ fontSize: 11, fill: darkMode ? "#94a3b8" : "#64748b" }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#374151" : "#e5e7eb"} vertical={false} />
+                  <XAxis dataKey="nombre" tick={{ fontSize: 12, fill: darkMode ? "#94a3b8" : "#64748b" }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: darkMode ? "#94a3b8" : "#64748b" }} axisLine={false} tickLine={false} allowDecimals={false} />
                   <Tooltip
                     contentStyle={{
-                      borderRadius: "8px", border: "none", boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                      borderRadius: "8px", border: "none", boxShadow: "0 4px 12px -2px rgb(0 0 0 / 0.15)",
                       fontSize: "12px", backgroundColor: darkMode ? "#1e293b" : "#fff", color: darkMode ? "#e8e8e8" : "#111",
                     }}
+                    cursor={{ fill: darkMode ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)" }}
                   />
-                  <Bar dataKey="Asistencias" fill="#10b981" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="Ausencias" fill="#ef4444" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="Tardanzas" fill="#f59e0b" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="Justificadas" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                  <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} />
+                  <Bar dataKey="Asistencias" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={32} />
+                  <Bar dataKey="Ausencias" fill="#ef4444" radius={[4, 4, 0, 0]} maxBarSize={32} />
+                  <Bar dataKey="Tardanzas" fill="#f59e0b" radius={[4, 4, 0, 0]} maxBarSize={32} />
+                  <Bar dataKey="Justificadas" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={32} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>

@@ -593,32 +593,42 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
           {materiasFiltradas.length > 0 && (
             <Card className={`shadow-sm border overflow-hidden ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5" : "bg-white border-slate-200"}`}>
               <div className={`h-1 w-full bg-[#007BFF]`} />
-              <CardContent className="p-4">
-                <h3 className={`text-sm font-semibold mb-1 ${darkMode ? "text-white" : "text-slate-800"}`}>
-                  Distribución por Asignatura
-                </h3>
-                <p className={`text-xs mb-4 ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
-                  Estudiantes aprobados, condicionados y reprobados por asignatura
-                </p>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#374151" : "#e5e7eb"} />
-                    <XAxis dataKey="nombre" tick={{ fontSize: 10, fill: darkMode ? "#94a3b8" : "#64748b" }} angle={-45} textAnchor="end" height={60} />
-                    <YAxis tick={{ fontSize: 11, fill: darkMode ? "#94a3b8" : "#64748b" }} />
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h3 className={`text-sm font-semibold ${darkMode ? "text-white" : "text-slate-800"}`}>
+                      Distribución por Asignatura
+                    </h3>
+                    <p className={`text-xs mt-0.5 ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
+                      Aprobados, condicionados y reprobados por asignatura
+                    </p>
+                  </div>
+                  <div className={`hidden sm:flex items-center gap-3 text-[10px] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
+                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-[#10b981]" /> Aprobados</span>
+                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-[#f59e0b]" /> Cond.</span>
+                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-[#ef4444]" /> Reprobados</span>
+                  </div>
+                </div>
+                <ResponsiveContainer width="100%" height={Math.max(250, Math.min(400, chartData.length * 60))}>
+                  <BarChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }} layout="horizontal">
+                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#374151" : "#e5e7eb"} vertical={false} />
+                    <XAxis dataKey="nombre" tick={{ fontSize: 10, fill: darkMode ? "#94a3b8" : "#64748b" }} axisLine={false} tickLine={false} interval={0} angle={-30} textAnchor="end" height={50} />
+                    <YAxis tick={{ fontSize: 11, fill: darkMode ? "#94a3b8" : "#64748b" }} axisLine={false} tickLine={false} allowDecimals={false} />
                     <Tooltip
                       contentStyle={{
                         borderRadius: "8px",
                         border: "none",
-                        boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                        boxShadow: "0 4px 12px -2px rgb(0 0 0 / 0.15)",
                         fontSize: "12px",
                         backgroundColor: darkMode ? "#1e293b" : "#fff",
                         color: darkMode ? "#e8e8e8" : "#111",
                       }}
+                      cursor={{ fill: darkMode ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)" }}
                     />
-                    <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "10px" }} />
-                    <Bar dataKey="Aprobados" stackId="a" fill="#10b981" radius={[0, 0, 0, 0]} />
-                    <Bar dataKey="Condicionados" stackId="a" fill="#f59e0b" radius={[0, 0, 0, 0]} />
-                    <Bar dataKey="Reprobados" stackId="a" fill="#ef4444" radius={[4, 4, 0, 0]} />
+                    <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} />
+                    <Bar dataKey="Aprobados" stackId="a" fill="#10b981" radius={[0, 0, 0, 0]} maxBarSize={40} />
+                    <Bar dataKey="Condicionados" stackId="a" fill="#f59e0b" radius={[0, 0, 0, 0]} maxBarSize={40} />
+                    <Bar dataKey="Reprobados" stackId="a" fill="#ef4444" radius={[4, 4, 0, 0]} maxBarSize={40} />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>

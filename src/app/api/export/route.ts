@@ -86,13 +86,19 @@ export async function GET(request: NextRequest) {
         SELECT 
           e.nombre as estudiante,
           e.numero,
-          COUNT(*) FILTER (WHERE a.estado = 'presente') as total_presentes,
-          COUNT(*) FILTER (WHERE a.estado = 'ausente') as total_ausentes,
-          COUNT(*) FILTER (WHERE a.estado = 'justificada') as total_justificadas,
-          COUNT(*) FILTER (WHERE a.estado = 'tarde') as total_tardes
-        FROM "Asistencia" a
-        JOIN "Estudiante" e ON a."estudianteId" = e.id
-        WHERE e."gradoId" = ${gradoId}
+          COALESCE(SUM(CASE WHEN sub.estado = 'presente' THEN 1 ELSE 0 END), 0) as total_presentes,
+          COALESCE(SUM(CASE WHEN sub.estado = 'ausente' THEN 1 ELSE 0 END), 0) as total_ausentes,
+          COALESCE(SUM(CASE WHEN sub.estado = 'justificada' THEN 1 ELSE 0 END), 0) as total_justificadas,
+          COALESCE(SUM(CASE WHEN sub.estado = 'tarde' THEN 1 ELSE 0 END), 0) as total_tardes
+        FROM (
+          SELECT DISTINCT ON (a."estudianteId", a.fecha::date)
+            a."estudianteId", a.estado, e.nombre, e.numero, e.id as eid
+          FROM "Asistencia" a
+          JOIN "Estudiante" e ON a."estudianteId" = e.id
+          WHERE e."gradoId" = ${gradoId} AND e.activo = true
+          ORDER BY a."estudianteId", a.fecha::date, a.fecha DESC
+        ) sub
+        JOIN "Estudiante" e ON sub."estudianteId" = e.id
         GROUP BY e.id, e.nombre, e.numero
         ORDER BY e.numero
       `;
