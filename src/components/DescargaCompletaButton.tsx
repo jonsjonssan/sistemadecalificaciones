@@ -436,7 +436,7 @@ async function generarPDF(data: ApiResponse) {
     const total = aprobados + condicionados + reprobados;
 
     // Check if we need a new page
-    if (chartY + chartH + 16 > pageHeight - 15) {
+    if (chartY + chartH + 20 > pageHeight - 15) {
       doc.addPage();
       chartY = 25;
       doc.setFontSize(14);
@@ -447,41 +447,42 @@ async function generarPDF(data: ApiResponse) {
 
     // Grade label
     doc.setFontSize(8);
-    doc.setTextColor(60);
-    doc.text(`${getGradoLabel(grado.numero, grado.seccion)}`, 14, chartY - 1);
+    doc.setTextColor(40);
+    doc.text(`${getGradoLabel(grado.numero, grado.seccion)}`, 14, chartY - 3);
 
     // Stacked bar
+    const barY = chartY;
     let bx = 14;
     if (aprobados > 0) {
       doc.setFillColor(16, 185, 129);
-      doc.roundedRect(bx, chartY, (aprobados / (total || 1)) * chartW, chartH, 1, 1, "F");
+      doc.roundedRect(bx, barY, (aprobados / (total || 1)) * chartW, chartH, 1, 1, "F");
       doc.setFontSize(6);
       doc.setTextColor(255);
-      if ((aprobados / (total || 1)) * chartW > 10) doc.text(`${aprobados}`, bx + 1.5, chartY + chartH / 2 + 1.5);
+      if ((aprobados / (total || 1)) * chartW > 10) doc.text(`${aprobados}`, bx + 1.5, barY + chartH / 2 + 1.5);
       bx += (aprobados / (total || 1)) * chartW;
     }
     if (condicionados > 0) {
       doc.setFillColor(245, 158, 11);
-      doc.roundedRect(bx, chartY, (condicionados / (total || 1)) * chartW, chartH, 1, 1, "F");
+      doc.roundedRect(bx, barY, (condicionados / (total || 1)) * chartW, chartH, 1, 1, "F");
       doc.setFontSize(6);
       doc.setTextColor(255);
-      if ((condicionados / (total || 1)) * chartW > 10) doc.text(`${condicionados}`, bx + 1.5, chartY + chartH / 2 + 1.5);
+      if ((condicionados / (total || 1)) * chartW > 10) doc.text(`${condicionados}`, bx + 1.5, barY + chartH / 2 + 1.5);
       bx += (condicionados / (total || 1)) * chartW;
     }
     if (reprobados > 0) {
       doc.setFillColor(239, 68, 68);
-      doc.roundedRect(bx, chartY, (reprobados / (total || 1)) * chartW, chartH, 1, 1, "F");
+      doc.roundedRect(bx, barY, (reprobados / (total || 1)) * chartW, chartH, 1, 1, "F");
       doc.setFontSize(6);
       doc.setTextColor(255);
-      if ((reprobados / (total || 1)) * chartW > 10) doc.text(`${reprobados}`, bx + 1.5, chartY + chartH / 2 + 1.5);
+      if ((reprobados / (total || 1)) * chartW > 10) doc.text(`${reprobados}`, bx + 1.5, barY + chartH / 2 + 1.5);
     }
     doc.setDrawColor(180);
     doc.setLineWidth(0.2);
-    doc.roundedRect(14, chartY, chartW, chartH, 1, 1, "S");
+    doc.roundedRect(14, barY, chartW, chartH, 1, 1, "S");
     doc.setLineWidth(0.1);
 
     // Legend inline
-    const legY = chartY + chartH + 2;
+    const legY = barY + chartH + 3;
     let lx = 14;
     doc.setFontSize(6);
     doc.setTextColor(100);
@@ -500,7 +501,7 @@ async function generarPDF(data: ApiResponse) {
       doc.text(`Reprob:${reprobados}`, lx + 4, legY + 2);
     }
 
-    // Percentage bar label
+    // Percentage bar label (right-aligned)
     doc.setFontSize(6);
     doc.setTextColor(140);
     const pctA = total > 0 ? ((aprobados / total) * 100).toFixed(0) : "0";
@@ -508,7 +509,7 @@ async function generarPDF(data: ApiResponse) {
     const pctR = total > 0 ? ((reprobados / total) * 100).toFixed(0) : "0";
     doc.text(`${pctA}% | ${pctC}% | ${pctR}%`, pageWidth - 45, legY + 2);
 
-    chartY = legY + 4.5;
+    chartY = legY + 7;
   }
 
   // Clean up: remove the duplicate last page only if it's truly blank
@@ -635,6 +636,16 @@ async function generarWord(data: ApiResponse) {
     td:nth-child(2) { text-align: left; }
     tr:nth-child(even) { background-color: #f0fdfa; }
     .footer { text-align: center; font-size: 8pt; color: #999; margin-top: 20px; border-top: 1px solid #ccc; padding-top: 5px; }
+    .chart-section { margin-top: 25px; }
+    .chart-grado { margin-bottom: 18px; }
+    .chart-title { font-size: 13pt; font-weight: bold; color: #1b6b3a; margin-bottom: 10px; border-bottom: 2px solid #1b6b3a; padding-bottom: 3px; }
+    .chart-grado-label { font-size: 10pt; font-weight: bold; color: #444; margin-bottom: 4px; }
+    .chart-bar-container { width: 100%; height: 18px; border-radius: 4px; overflow: hidden; display: flex; border: 1px solid #bbb; }
+    .chart-segment { height: 100%; display: inline-block; font-size: 7pt; color: #fff; text-align: center; line-height: 18px; font-weight: bold; }
+    .chart-legend { margin-top: 4px; font-size: 8pt; color: #555; }
+    .chart-legend-item { display: inline-block; margin-right: 18px; }
+    .legend-square { display: inline-block; width: 9px; height: 9px; margin-right: 3px; vertical-align: middle; }
+    .chart-pct { font-size: 7.5pt; color: #888; text-align: right; margin-top: 2px; }
   </style>
 </head>
 <body>
@@ -700,6 +711,37 @@ async function generarWord(data: ApiResponse) {
       html += `</tbody></table>`;
     }
   }
+
+  // --- Resumen General por Grado (bar charts) ---
+  html += `<div class="chart-section"><div class="chart-title">Resumen General por Grado</div>`;
+  for (const grado of gradosOrdenados) {
+    const califsGrado = (data.datos || []).filter(c => c.gradoId === grado.id);
+    const aprobados = califsGrado.filter(c => c.promedioFinal !== null && c.promedioFinal >= 6.5).length;
+    const condicionados = califsGrado.filter(c => c.promedioFinal !== null && c.promedioFinal >= 4.5 && c.promedioFinal < 6.5).length;
+    const reprobados = califsGrado.filter(c => c.promedioFinal !== null && c.promedioFinal < 4.5).length;
+    const total = aprobados + condicionados + reprobados;
+    if (total === 0) continue;
+
+    const pctA = ((aprobados / total) * 100).toFixed(0);
+    const pctC = ((condicionados / total) * 100).toFixed(0);
+    const pctR = ((reprobados / total) * 100).toFixed(0);
+
+    html += `<div class="chart-grado">`;
+    html += `<div class="chart-grado-label">${getGradoLabel(grado.numero, grado.seccion)}</div>`;
+    html += `<div class="chart-bar-container">`;
+    if (aprobados > 0) html += `<div class="chart-segment" style="width:${pctA}%;background:#10b981;">${aprobados}</div>`;
+    if (condicionados > 0) html += `<div class="chart-segment" style="width:${pctC}%;background:#f59e0b;">${condicionados}</div>`;
+    if (reprobados > 0) html += `<div class="chart-segment" style="width:${pctR}%;background:#ef4444;">${reprobados}</div>`;
+    html += `</div>`;
+    html += `<div class="chart-legend">`;
+    if (aprobados > 0) html += `<span class="chart-legend-item"><span class="legend-square" style="background:#10b981;"></span>Aprobados: ${aprobados}</span>`;
+    if (condicionados > 0) html += `<span class="chart-legend-item"><span class="legend-square" style="background:#f59e0b;"></span>Condicionados: ${condicionados}</span>`;
+    if (reprobados > 0) html += `<span class="chart-legend-item"><span class="legend-square" style="background:#ef4444;"></span>Reprobados: ${reprobados}</span>`;
+    html += `</div>`;
+    html += `<div class="chart-pct">${pctA}% Aprobados | ${pctC}% Condicionados | ${pctR}% Reprobados</div>`;
+    html += `</div>`;
+  }
+  html += `</div>`;
 
   html += `<div class="footer">${COUNTRY_CONFIG.name} - Sistema de Calificaciones</div></body></html>`;
 
