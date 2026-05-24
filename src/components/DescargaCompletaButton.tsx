@@ -43,6 +43,7 @@ type CalificacionData = {
   trimestre: number;
   actividadesCotidianas: (number | null)[];
   actividadesIntegradoras: (number | null)[];
+  actividadesExamen: (number | null)[];
   calificacionAC: number | null;
   calificacionAI: number | null;
   examenTrimestral: number | null;
@@ -52,6 +53,7 @@ type CalificacionData = {
     numActividadesCotidianas: number;
     numActividadesIntegradoras: number;
     tieneExamen: boolean;
+    numExamenes: number;
     porcentajeAC: number;
     porcentajeAI: number;
     porcentajeExamen: number;
@@ -246,13 +248,16 @@ async function generarPDF(data: ApiResponse) {
       const config = califsMateria[0]?.config;
       const numAC = config?.numActividadesCotidianas ?? 4;
       const numAI = config?.numActividadesIntegradoras ?? 1;
+      const numEX = (config?.tieneExamen ? (config?.numExamenes ?? 1) : 0);
       const tieneExamen = config?.tieneExamen ?? true;
 
       const estudiantes = grado.estudiantes || [];
       const califMap = new Map(califsMateria.map((c) => [c.estudianteId, c]));
 
       const head = ["N°", "Estudiante", ...Array(numAC).fill("AC"), "Prom AC", ...Array(numAI).fill("AI"), "Prom AI"];
-      if (tieneExamen) head.push("Examen");
+      if (tieneExamen) {
+        head.push(...Array(numEX).fill("EX"), "Prom EX");
+      }
       head.push("Prom Final");
 
       const body = estudiantes.map((est) => {
@@ -263,12 +268,17 @@ async function generarPDF(data: ApiResponse) {
         const ais = calif
           ? calif.actividadesIntegradoras.map((n) => formatValor(n))
           : Array(numAI).fill("");
+        const exs = calif
+          ? (calif.actividadesExamen || []).map((n) => formatValor(n))
+          : Array(numEX).fill("");
         const promAC = calif?.calificacionAC != null ? calif.calificacionAC.toFixed(1) : "";
         const promAI = calif?.calificacionAI != null ? calif.calificacionAI.toFixed(1) : "";
-        const examen = calif?.examenTrimestral != null ? formatValor(calif.examenTrimestral) : "";
+        const promEX = calif?.examenTrimestral != null ? formatValor(calif.examenTrimestral) : "";
         const promFinal = calif?.promedioFinal != null ? calif.promedioFinal.toFixed(1) : "";
         const row = [String(est.numero), est.nombre, ...acs, promAC, ...ais, promAI];
-        if (tieneExamen) row.push(examen);
+        if (tieneExamen) {
+          row.push(...exs, promEX);
+        }
         row.push(promFinal);
         return row;
       });
@@ -536,6 +546,7 @@ async function generarExcel(data: ApiResponse) {
       const config = califs[0]?.config;
       const numAC = config?.numActividadesCotidianas ?? 4;
       const numAI = config?.numActividadesIntegradoras ?? 1;
+      const numEX = (config?.tieneExamen ? (config?.numExamenes ?? 1) : 0);
       const tieneExamen = config?.tieneExamen ?? true;
 
       for (let i = 1; i <= numAC; i++) {
@@ -546,7 +557,12 @@ async function generarExcel(data: ApiResponse) {
         headers.push(`${materia.nombre} AI${i}`);
       }
       headers.push(`${materia.nombre} Prom AI`);
-      if (tieneExamen) headers.push(`${materia.nombre} Examen`);
+      if (tieneExamen) {
+        for (let i = 1; i <= numEX; i++) {
+          headers.push(`${materia.nombre} EX${i}`);
+        }
+        headers.push(`${materia.nombre} Prom EX`);
+      }
       headers.push(`${materia.nombre} Prom Final`);
     }
 
@@ -562,6 +578,7 @@ async function generarExcel(data: ApiResponse) {
         const config = calif?.config;
         const numAC = config?.numActividadesCotidianas ?? 4;
         const numAI = config?.numActividadesIntegradoras ?? 1;
+        const numEX = (config?.tieneExamen ? (config?.numExamenes ?? 1) : 0);
         const tieneExamen = config?.tieneExamen ?? true;
 
         for (let i = 0; i < numAC; i++) {
@@ -572,7 +589,12 @@ async function generarExcel(data: ApiResponse) {
           row.push(calif?.actividadesIntegradoras[i] ?? "");
         }
         row.push(calif?.calificacionAI ?? "");
-        if (tieneExamen) row.push(calif?.examenTrimestral ?? "");
+        if (tieneExamen) {
+          for (let i = 0; i < numEX; i++) {
+            row.push((calif?.actividadesExamen ?? [])[i] ?? "");
+          }
+          row.push(calif?.examenTrimestral ?? "");
+        }
         row.push(calif?.promedioFinal ?? "");
       }
       rows.push(row);
@@ -630,6 +652,7 @@ async function generarWord(data: ApiResponse) {
       const config = califsMateria[0]?.config;
       const numAC = config?.numActividadesCotidianas ?? 4;
       const numAI = config?.numActividadesIntegradoras ?? 1;
+      const numEX = (config?.tieneExamen ? (config?.numExamenes ?? 1) : 0);
       const tieneExamen = config?.tieneExamen ?? true;
 
       html += `<table><thead><tr><th>N°</th><th>Estudiante</th>`;
@@ -637,7 +660,10 @@ async function generarWord(data: ApiResponse) {
       html += `<th>Prom AC</th>`;
       for (let i = 1; i <= numAI; i++) html += `<th>AI${i}</th>`;
       html += `<th>Prom AI</th>`;
-      if (tieneExamen) html += `<th>Examen</th>`;
+      if (tieneExamen) {
+        for (let i = 1; i <= numEX; i++) html += `<th>EX${i}</th>`;
+        html += `<th>Prom EX</th>`;
+      }
       html += `<th>Prom Final</th></tr></thead><tbody>`;
 
       const estudiantes = grado.estudiantes || [];
@@ -654,7 +680,12 @@ async function generarWord(data: ApiResponse) {
           html += `<td>${formatValor(calif?.actividadesIntegradoras[i] ?? null)}</td>`;
         }
         html += `<td>${formatValor(calif?.calificacionAI ?? null)}</td>`;
-        if (tieneExamen) html += `<td>${formatValor(calif?.examenTrimestral ?? null)}</td>`;
+        if (tieneExamen) {
+          for (let i = 0; i < numEX; i++) {
+            html += `<td>${formatValor((calif?.actividadesExamen ?? [])[i] ?? null)}</td>`;
+          }
+          html += `<td>${formatValor(calif?.examenTrimestral ?? null)}</td>`;
+        }
         html += `<td><strong>${formatValor(calif?.promedioFinal ?? null)}</strong></td>`;
         html += `</tr>`;
       }

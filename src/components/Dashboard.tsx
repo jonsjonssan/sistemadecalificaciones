@@ -329,7 +329,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
           {/* Rendimiento Institucional */}
           {esDirectiva && (
             <div className="animate-fade-slide-up" style={{ animationDelay: '0.1s' }}>
-              <Card className="shadow-sm overflow-hidden bg-card border-border">
+              <Card className="shadow-sm overflow-hidden bg-card border-border module-card">
                 <div className="h-px bg-primary/20 w-full" />
                 <CardHeader className="pb-3 flex flex-row items-center justify-between">
                   <CardTitle className="font-display text-sm flex items-center gap-2 text-card-foreground">
@@ -372,7 +372,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
           )}
 
           {/* Rendimiento Académico */}
-          <Card className="shadow-sm overflow-hidden bg-card border-border">
+          <Card className="shadow-sm overflow-hidden bg-card border-border module-card">
             <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-border gap-3 bg-muted/20">
               <div>
                 <CardTitle className="font-display text-sm flex items-center gap-2 text-card-foreground">
@@ -492,7 +492,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
         <div className="space-y-4">
 
           {/* Gestión Rápida */}
-          <Card className="shadow-sm bg-card border-border">
+          <Card className="shadow-sm bg-card border-border module-card">
             <CardHeader className="py-3 px-4 border-b border-border">
               <CardTitle className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Gestión Rápida</CardTitle>
             </CardHeader>
@@ -507,7 +507,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
 
           {/* Mis Asignaturas (docente only) */}
           {esDocente && asignaturasAsignadas && asignaturasAsignadas.length > 0 && (
-            <Card className="shadow-sm bg-card border-border">
+            <Card className="shadow-sm bg-card border-border module-card">
               <CardHeader className="py-3 px-4 border-b border-border">
                 <CardTitle className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Mis Asignaturas</CardTitle>
               </CardHeader>
@@ -524,7 +524,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
 
           {/* Mi Avance (docente only) */}
           {esDocente && miAvance && (
-            <Card className="shadow-sm bg-card border-border">
+            <Card className="shadow-sm bg-card border-border module-card">
               <CardHeader className="py-3 px-4 border-b border-border">
                 <CardTitle className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
                   <CheckCircle2 className="h-3 w-3 inline mr-1 text-accent" />

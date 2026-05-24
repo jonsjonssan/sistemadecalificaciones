@@ -350,7 +350,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
 
   if (!grados || grados.length === 0) {
     return (
-      <Card className={`shadow-sm border ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl text-white" : "bg-white border-slate-200"}`}>
+      <Card className={`shadow-md border ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl text-white" : "bg-white border-slate-200"}`}>
         <CardContent className="p-6 text-center text-slate-500">No hay grados disponibles.</CardContent>
       </Card>
     );
@@ -359,7 +359,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
   return (
     <div className="space-y-3">
       {/* Leyenda normativa */}
-      <Card className={`shadow-sm border ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl text-white" : "bg-white border-slate-200"}`}>
+      <Card className={`shadow-md border ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl text-white" : "bg-white border-slate-200"}`}>
         <CardContent className="p-3">
           <div className="flex flex-wrap items-center gap-3 text-xs">
             <span className="font-semibold uppercase tracking-wider text-slate-500 dark:text-white text-[10px]">Marco Normativo</span>
@@ -391,7 +391,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
       </Card>
 
       {/* Selectores */}
-      <Card className={`shadow-sm border ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl" : "bg-white border-slate-200"}`}>
+      <Card className={`shadow-md border ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl" : "bg-white border-slate-200"}`}>
         <CardContent className="p-2 sm:p-3">
           <div className="flex flex-wrap items-end gap-2 sm:gap-3">
             <div className="flex-1 min-w-[140px]">
@@ -473,7 +473,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
           <CardContent className="p-6 text-center text-slate-500">Selecciona un grado y trimestre para ver el reporte.</CardContent>
         </Card>
       ) : loading ? (
-        <Card className={`shadow-sm border ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl" : "bg-white border-slate-200"}`}>
+        <Card className={`shadow-md border ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl" : "bg-white border-slate-200"}`}>
           <CardContent className="p-3">
             <div className="space-y-2">
               <Skeleton className={`h-4 w-48 ${darkMode ? "bg-slate-700" : "bg-slate-200"}`} />
@@ -484,7 +484,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
           </CardContent>
         </Card>
       ) : error ? (
-        <Card className={`shadow-sm border ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl" : "bg-white border-slate-200"}`}>
+        <Card className={`shadow-md border ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl" : "bg-white border-slate-200"}`}>
           <CardContent className="p-4 text-center text-red-500">{error}</CardContent>
         </Card>
       ) : (

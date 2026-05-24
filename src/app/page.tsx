@@ -240,7 +240,7 @@ export default function Home() {
 
           {/* Estudiantes */}
           <TabsContent value="estudiantes" className="mt-3">
-            <Card className="shadow-sm bg-card border-border">
+            <Card className="shadow-sm bg-card border-border module-card">
               <CardHeader className="py-3 px-4 flex-row items-center justify-between space-y-0 border-border">
                 <div><CardTitle className="text-base">Lista de Estudiantes</CardTitle><CardDescription className="text-sm sm:text-base font-medium text-muted-foreground">Gestiona los estudiantes por grado</CardDescription></div>
                 {(isAdmin(usuario.rol) || usuario.rol === "docente" || usuario.rol === "docente-orientador") && (
@@ -292,11 +292,11 @@ export default function Home() {
           {/* Boletas */}
           <TabsContent value="boletas" className="mt-3">
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease: "easeOut" }}>
-              <Card className={`shadow-md border-0 overflow-hidden ${darkMode ? 'bg-card' : 'bg-gradient-to-br from-white to-slate-50/60'}`}>
+              <Card className={`shadow-md border-0 overflow-hidden module-card ${darkMode ? 'bg-card' : 'bg-gradient-to-br from-white to-slate-50/60'}`}>
                 <div className={`h-1 w-full ${darkMode ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : 'bg-gradient-to-r from-emerald-600 to-emerald-500'}`} />
                 <CardHeader className="pb-3 px-5">
                   <div className="flex items-center gap-2.5">
-                    <div className={`p-2 rounded-lg ${darkMode ? 'bg-emerald-900/40 text-emerald-400' : 'bg-emerald-50 text-emerald-700'}`}><FileText className="h-4 w-4" /></div>
+                    <div className={`p-2 rounded-lg icon-container ${darkMode ? 'bg-emerald-900/40 text-emerald-400' : 'bg-emerald-50 text-emerald-700'}`}><FileText className="h-4 w-4" /></div>
                     <div>
                       <CardTitle className={`text-base font-semibold tracking-tight ${darkMode ? 'text-white' : 'text-slate-800'}`}>Generación de Boletas</CardTitle>
                       <CardDescription className="text-xs mt-0.5 text-muted-foreground">Selecciona grado y trimestre para visualizar las boletas</CardDescription>
@@ -451,11 +451,11 @@ export default function Home() {
           <TabsContent value="reportes" className="mt-3">
             <div className="space-y-4">
               {/* Sección: Reporte de Calificaciones */}
-              <Card className={`shadow-sm border overflow-hidden ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5" : "bg-white border-slate-200"}`}>
+              <Card className={`shadow-md border overflow-hidden module-card ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5" : "bg-white border-slate-200"}`}>
                 <div className={`h-1 w-full ${darkMode ? "bg-gradient-to-r from-blue-500 to-blue-400" : "bg-gradient-to-r from-blue-600 to-blue-500"}`} />
                 <CardHeader className="pb-2 px-4 pt-3">
                   <div className="flex items-center gap-2">
-                    <div className={`p-1.5 rounded-lg ${darkMode ? "bg-blue-900/40 text-blue-400" : "bg-blue-50 text-blue-700"}`}>
+                    <div className={`p-1.5 rounded-lg icon-container ${darkMode ? "bg-blue-900/40 text-blue-400" : "bg-blue-50 text-blue-700"}`}>
                       <FileText className="h-4 w-4" />
                     </div>
                     <div>
@@ -476,11 +476,11 @@ export default function Home() {
               </Card>
 
               {/* Sección: Consolidado de Calificaciones */}
-              <Card className={`shadow-sm border overflow-hidden ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5" : "bg-white border-slate-200"}`}>
+              <Card className={`shadow-md border overflow-hidden module-card ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5" : "bg-white border-slate-200"}`}>
                 <div className={`h-1 w-full ${darkMode ? "bg-gradient-to-r from-purple-500 to-purple-400" : "bg-gradient-to-r from-purple-600 to-purple-500"}`} />
                 <CardHeader className="pb-2 px-4 pt-3">
                   <div className="flex items-center gap-2">
-                    <div className={`p-1.5 rounded-lg ${darkMode ? "bg-purple-900/40 text-purple-400" : "bg-purple-50 text-purple-700"}`}>
+                    <div className={`p-1.5 rounded-lg icon-container ${darkMode ? "bg-purple-900/40 text-purple-400" : "bg-purple-50 text-purple-700"}`}>
                       <Download className="h-4 w-4" />
                     </div>
                     <div>
@@ -500,11 +500,11 @@ export default function Home() {
               </Card>
 
               {/* Sección: Reporte de Asistencia Consolidado */}
-              <Card className={`shadow-sm border overflow-hidden ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5" : "bg-white border-slate-200"}`}>
+              <Card className={`shadow-md border overflow-hidden module-card ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5" : "bg-white border-slate-200"}`}>
                 <div className={`h-1 w-full ${darkMode ? "bg-gradient-to-r from-emerald-500 to-emerald-400" : "bg-gradient-to-r from-emerald-600 to-emerald-500"}`} />
                 <CardHeader className="pb-2 px-4 pt-3">
                   <div className="flex items-center gap-2">
-                    <div className={`p-1.5 rounded-lg ${darkMode ? "bg-emerald-900/40 text-emerald-400" : "bg-emerald-50 text-emerald-700"}`}>
+                    <div className={`p-1.5 rounded-lg icon-container ${darkMode ? "bg-emerald-900/40 text-emerald-400" : "bg-emerald-50 text-emerald-700"}`}>
                       <CalendarDays className="h-4 w-4" />
                     </div>
                     <div>
@@ -519,11 +519,11 @@ export default function Home() {
               </Card>
 
               {/* Sección: Informe Técnico */}
-              <Card className={`shadow-sm border overflow-hidden ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5" : "bg-white border-slate-200"}`}>
+              <Card className={`shadow-md border overflow-hidden module-card ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5" : "bg-white border-slate-200"}`}>
                 <div className={`h-1 w-full ${darkMode ? "bg-gradient-to-r from-amber-500 to-amber-400" : "bg-gradient-to-r from-amber-600 to-amber-500"}`} />
                 <CardHeader className="pb-2 px-4 pt-3">
                   <div className="flex items-center gap-2">
-                    <div className={`p-1.5 rounded-lg ${darkMode ? "bg-amber-900/40 text-amber-400" : "bg-amber-50 text-amber-700"}`}>
+                    <div className={`p-1.5 rounded-lg icon-container ${darkMode ? "bg-amber-900/40 text-amber-400" : "bg-amber-50 text-amber-700"}`}>
                       <FileText className="h-4 w-4" />
                     </div>
                     <div>
@@ -568,7 +568,7 @@ export default function Home() {
           {/* Admin */}
           {isAdmin(usuario.rol) && (
             <TabsContent value="admin" className="mt-3 space-y-3 sm:space-y-4">
-              <Card className="shadow-sm bg-card border-border">
+              <Card className="shadow-md bg-card border-border module-card">
                 <CardHeader className="py-3 px-4 flex-row items-center justify-between space-y-0 border-border">
                   <div><CardTitle className="text-sm sm:text-base">Gestión de Usuarios</CardTitle><CardDescription className="text-xs text-muted-foreground">Crea y administra usuarios del sistema</CardDescription></div>
                   <Dialog open={d.userDialogOpen} onOpenChange={d.setUserDialogOpen}>
@@ -648,7 +648,7 @@ export default function Home() {
                 </CardContent>
               </Card>
 
-              <Card className="shadow-sm bg-card border-border">
+              <Card className="shadow-md bg-card border-border module-card">
                 <CardHeader className="py-3 px-4 border-border"><CardTitle className="text-sm sm:text-base">Grados Registrados</CardTitle></CardHeader>
                 <CardContent className="pt-0">
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
@@ -662,7 +662,7 @@ export default function Home() {
                 </CardContent>
               </Card>
 
-              <Card className="shadow-sm bg-card border-border">
+              <Card className="shadow-md bg-card border-border module-card">
                 <CardHeader className="py-3 px-4 flex-row items-center justify-between space-y-0 border-border">
                   <div><CardTitle className="text-sm sm:text-base">Año Escolar</CardTitle><CardDescription className="text-xs text-muted-foreground">Configure el año lectivo actual del sistema</CardDescription></div>
                   <Dialog open={d.añoDialogOpen} onOpenChange={d.setAñoDialogOpen}>
@@ -699,7 +699,7 @@ export default function Home() {
                 loading={d.umbralesLoading}
               />
 
-              <Card className="shadow-sm bg-card border-border">
+              <Card className="shadow-md bg-card border-border module-card">
                 <CardHeader className="py-3 px-4 border-border">
                   <CardTitle className="text-sm sm:text-base">Historial de Auditoría</CardTitle>
                   <CardDescription className="text-xs text-muted-foreground">Registro de quién digitó o borró calificaciones</CardDescription>

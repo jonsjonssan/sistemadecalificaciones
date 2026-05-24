@@ -100,8 +100,10 @@ export async function GET(req: NextRequest) {
       const config = configMap.get(c.materiaId) as any;
       const cotidianas: (number | null)[] = [];
       const integradoras: (number | null)[] = [];
+      const examenes: (number | null)[] = [];
       const numAC = config?.numActividadesCotidianas ?? 4;
       const numAI = config?.numActividadesIntegradoras ?? 1;
+      const numEX = config?.numExamenes ?? (config?.tieneExamen ? 1 : 0);
       for (let i = 1; i <= numAC; i++) {
         const na = c.notasActividad.find((n: any) => n.tipo === "cotidiana" && n.numeroActividad === i);
         cotidianas.push(na?.nota ?? null);
@@ -109,6 +111,10 @@ export async function GET(req: NextRequest) {
       for (let i = 1; i <= numAI; i++) {
         const na = c.notasActividad.find((n: any) => n.tipo === "integradora" && n.numeroActividad === i);
         integradoras.push(na?.nota ?? null);
+      }
+      for (let i = 1; i <= numEX; i++) {
+        const na = c.notasActividad.find((n: any) => n.tipo === "examen" && n.numeroActividad === i);
+        examenes.push(na?.nota ?? null);
       }
       return {
         estudianteId: c.estudianteId,
@@ -120,6 +126,7 @@ export async function GET(req: NextRequest) {
         trimestre: c.trimestre,
         actividadesCotidianas: cotidianas,
         actividadesIntegradoras: integradoras,
+        actividadesExamen: examenes,
         calificacionAC: c.calificacionAC,
         calificacionAI: c.calificacionAI,
         examenTrimestral: c.examenTrimestral,
@@ -130,6 +137,7 @@ export async function GET(req: NextRequest) {
               numActividadesCotidianas: config.numActividadesCotidianas,
               numActividadesIntegradoras: config.numActividadesIntegradoras,
               tieneExamen: config.tieneExamen,
+              numExamenes: config.numExamenes,
               porcentajeAC: config.porcentajeAC,
               porcentajeAI: config.porcentajeAI,
               porcentajeExamen: config.porcentajeExamen,
