@@ -603,7 +603,9 @@ export function useDashboardData() {
       }
     } catch (e) {
       console.error("Error conexión:", e);
-      setAutoSaveStatus("idle");
+      if ((e as Error).message !== "GRADE_MISMATCH") {
+        setAutoSaveStatus("idle");
+      }
       throw e;
     } finally { setSaving(false); }
   }, [estudiantes, asignaturas, grados, gradoSeleccionado, toast]);
@@ -621,13 +623,17 @@ export function useDashboardData() {
       toast({ title: `Advertencia: ${omitidos} estudiante${omitidos > 1 ? "s" : ""} omitido${omitidos > 1 ? "s" : ""}`, description: "No pertenecen al grado de la materia seleccionada.", variant: "destructive" });
     }
 
-    const forceSaveFns = Array.from(forceSaveRefs.current.values());
-    const forceResults = await Promise.allSettled(forceSaveFns.map(saveFn => saveFn()));
+    const forceEntries = Array.from(forceSaveRefs.current.entries());
+    const forceStudentIds = new Set(forceEntries.map(([id]) => id));
+    const forceResults = await Promise.allSettled(forceEntries.map(([_, saveFn]) => saveFn()));
     const forceErrors = forceResults.filter((r): r is PromiseRejectedResult => r.status === 'rejected');
     forceSaveRefs.current.clear();
 
     const califsSnapshot = calificaciones;
-    const saves = estudiantesConsistentes.map(async (est) => {
+    // Excluir estudiantes ya guardados via forceSave para evitar doble POST
+    const saves = estudiantesConsistentes
+      .filter(est => !forceStudentIds.has(est.id))
+      .map(async (est) => {
       const calif = califsSnapshot.find(c => c.estudianteId === est.id && c.materiaId === asignaturaSeleccionada && c.trimestre === trimestre);
       if (!calif) return null;
       return fetch("/api/calificaciones", {
@@ -643,7 +649,11 @@ export function useDashboardData() {
     }).filter(Boolean) as Promise<Response>[];
 
     try {
-      if (forceSaveFns.length === 0 && saves.length > 0) {
+      if (forceStudentIds.size > 0) {
+        if (forceErrors.length > 0) toast({ title: `${forceErrors.length} calificación${forceErrors.length > 1 ? 'es' : ''} no se pudo${forceErrors.length > 1 ? 'n' : ''} guardar`, variant: "destructive" });
+        else if (saves.length === 0) toast({ title: "Calificaciones guardadas" });
+      }
+      if (saves.length > 0) {
         const results = await Promise.all(saves);
         const ok = results.filter(r => r.ok).length;
         const errores = results.filter(r => !r.ok);
@@ -653,10 +663,7 @@ export function useDashboardData() {
           toast({ title: `Error al guardar`, description: errData.message || `${errores.length} calificación${errores.length > 1 ? "es" : ""} no se pudo${errores.length > 1 ? "n" : ""} guardar`, variant: "destructive" });
         }
         if (ok > 0) toast({ title: `${ok} calificación${ok > 1 ? "es" : ""} guardada${ok > 1 ? "s" : ""}` });
-      } else if (forceSaveFns.length > 0) {
-        if (forceErrors.length > 0) toast({ title: `${forceErrors.length} calificación${forceErrors.length > 1 ? 'es' : ''} no se pudo${forceErrors.length > 1 ? 'n' : ''} guardar`, variant: "destructive" });
-        else toast({ title: "Calificaciones guardadas" });
-      } else { toast({ title: "No hay calificaciones para guardar" }); }
+      } else if (forceStudentIds.size === 0) { toast({ title: "No hay calificaciones para guardar" }); }
       loadCalificaciones();
       const mat2 = asignaturas.find(a => a.id === asignaturaSeleccionada);
       const grado = grados.find(g => g.id === gradoSeleccionado);
