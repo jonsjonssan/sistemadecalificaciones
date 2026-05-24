@@ -315,8 +315,8 @@ export const api = {
 
   // Stats
   stats: {
-    dashboard: () =>
-      request<unknown>("/api/stats/dashboard"),
+    dashboard: (params?: { gradoId?: string; trimestre?: number }) =>
+      request<unknown>("/api/stats/dashboard", { params: params as Record<string, string | number | undefined> }),
     avanceDocentes: () =>
       request<unknown>("/api/stats/avance-docentes"),
   },

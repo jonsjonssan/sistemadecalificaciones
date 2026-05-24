@@ -203,6 +203,7 @@ export default function Home() {
               totalDocentes={d.usuarios.filter((u: any) => (u.rol === "docente" || u.rol === "docente-orientador") && u.activo).length}
               configuracion={d.configuracion ? { añoEscolar: d.configuracion.añoEscolar, escuela: d.configuracion.escuela, umbralAprobado: d.configuracion?.umbralAprobado ?? 6.5 } : undefined}
               onNavigate={(tab: string) => d.setActiveTab(tab)}
+              trimestre={d.trimestreSeleccionado}
               asignaturasAsignadas={(
                 isAdmin(usuario.rol)
                   ? d.todasAsignaturas.map((m: any) => ({ id: m.id, nombre: m.nombre, gradoId: m.gradoId, grado: m.grado }))

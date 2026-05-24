@@ -37,6 +37,7 @@ interface DashboardProps {
   totalDocentes: number;
   configuracion?: { añoEscolar: number; escuela: string; umbralAprobado?: number };
   onNavigate?: (tab: string) => void;
+  trimestre?: string;
 }
 
 interface GradeStats {
@@ -145,7 +146,7 @@ function QuickActionRow({ icon: Icon, label, sub, onClick }: {
   );
 }
 
-const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, totalAsignaturas, asignaturasAsignadas, totalDocentes, configuracion, onNavigate }: DashboardProps) {
+const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, totalAsignaturas, asignaturasAsignadas, totalDocentes, configuracion, onNavigate, trimestre }: DashboardProps) {
   const { resolvedTheme } = useTheme();
   const darkMode = resolvedTheme === "dark";
   const [stats, setStats] = useState<GradeStats[]>([]);
@@ -186,9 +187,10 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
 
     const fetchStats = async () => {
       try {
-        const url = gradoAsignado
-          ? `/api/stats/dashboard?gradoId=${gradoAsignado}`
-          : "/api/stats/dashboard";
+        const trimestreNum = trimestre ? parseInt(trimestre) : 1;
+        const params = new URLSearchParams({ trimestre: String(trimestreNum) });
+        if (gradoAsignado) params.set("gradoId", gradoAsignado);
+        const url = `/api/stats/dashboard?${params}`;
         const res = await fetch(url, { credentials: "include" });
         if (res.ok && !cancelled) {
           const data = await res.json();
@@ -214,7 +216,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
     }
 
     return () => { cancelled = true; };
-  }, [gradoAsignado, esDocente]);
+  }, [gradoAsignado, esDocente, trimestre]);
 
   // Si es docente, seleccionar automáticamente su grado
   const selectedGradoIdEfectivo = esDocente && gradoAsignado ? gradoAsignado : selectedGradoId;
