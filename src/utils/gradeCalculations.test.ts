@@ -281,7 +281,7 @@ describe('getEstadoCompletitud - multi-examen', () => {
   const baseCalif: Calificacion = {
     id: 'test', estudianteId: 'e1', materiaId: 'm1', trimestre: 1,
     calificacionAC: null, calificacionAI: null, examenTrimestral: null,
-    promedioFinal: null,
+    promedioFinal: null, recuperacion: null,
     actividadesCotidianas: JSON.stringify(Array(4).fill(null)),
     actividadesIntegradoras: JSON.stringify(Array(1).fill(null)),
     actividadesExamen: JSON.stringify(Array(3).fill(null)),
