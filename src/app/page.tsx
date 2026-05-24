@@ -330,7 +330,7 @@ export default function Home() {
                   {d.gradoSeleccionado && d.estudiantes.length > 0 && (
                     <>
                       {(isAdmin(usuario.rol) || usuario.rol === "docente-orientador") && (
-                         <div className={`p-4 rounded-xl border ${darkMode ? 'bg-[#28a745] text-white border-[#1e7e34]' : 'bg-[#28a745] text-white border-[#1e7e34]'}`}>
+                          <div className={`p-4 rounded-xl border ${darkMode ? 'bg-[#28a745]/20 text-white border-[#1e7e34]/30' : 'bg-[#28a745] text-white border-[#1e7e34]'}`}>
                           <div className="flex items-center justify-between mb-3">
                             <Label className="text-xs font-semibold uppercase tracking-wider text-white">Asignaturas en boleta</Label>
                             <Select value={d.materiasEnBoleta.length === 0 ? "todas" : "personalizado"} onValueChange={(v) => { if (v === "todas") { d.setMateriasEnBoleta([]); } }}>
