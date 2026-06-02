@@ -429,7 +429,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
                   <FileText className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">PDF</span>
                 </Button>
                 <Button size="sm" variant="outline" onClick={exportarPDFBatch} className={`h-11 sm:h-12 text-sm ${darkMode ? "bg-card border-white/30 text-white hover-gradient-strong" : ""}`}>
-                  <Download className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Todo PDF</span>
+                  <Download className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Todos los Grados (Trimestre Actual)</span>
                 </Button>
               </>
             )}

@@ -11,6 +11,7 @@ export async function GET(req: Request) {
     const estudianteId = searchParams.get("estudianteId");
     const mes = searchParams.get("mes");
     const anual = searchParams.get("anual") === "true";
+    const añoParam = searchParams.get("año");
 
     if (!gradoId) {
       return NextResponse.json({ error: "Faltan parámetros requeridos" }, { status: 400 });
@@ -20,7 +21,11 @@ export async function GET(req: Request) {
     let endDate: string | undefined;
 
     if (anual) {
-      const año = new Date().getFullYear();
+      let año: number = añoParam ? parseInt(añoParam) : 0;
+      if (!año) {
+        const configResult = await sql`SELECT "añoEscolar" FROM "ConfiguracionSistema" LIMIT 1`;
+        año = configResult[0]?.añoEscolar ?? new Date().getFullYear();
+      }
       startDate = new Date(año, 0, 1).toISOString();
       endDate = new Date(año, 11, 31, 23, 59, 59).toISOString();
     } else if (mes) {

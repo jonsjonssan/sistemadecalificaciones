@@ -74,11 +74,13 @@ export function DescargaBoletasPorCiclo({ grados, darkMode, configuracion, paper
 
   const fetchGradoData = async (gradoId: string): Promise<GradoData | null> => {
     try {
+      const grado = grados.find(g => g.id === gradoId);
+      const añoParam = grado?.año ? `&año=${grado.año}` : '';
       const [estRes, matRes, calRes, asistRes] = await Promise.all([
         fetch(`/api/estudiantes?gradoId=${gradoId}&_=${Date.now()}`, { cache: "no-store", credentials: "include" }),
         fetch(`/api/materias?gradoId=${gradoId}&_=${Date.now()}`, { cache: "no-store", credentials: "include" }),
         fetch(`/api/calificaciones?gradoId=${gradoId}&_=${Date.now()}`, { cache: "no-store", credentials: "include" }),
-        fetch(`/api/asistencia/resumen?gradoId=${gradoId}&trimestre=${trimestre}`, { credentials: "include" }),
+        fetch(`/api/asistencia/resumen?gradoId=${gradoId}&trimestre=${trimestre}${añoParam}`, { credentials: "include" }),
       ]);
 
       if (!estRes.ok || !matRes.ok || !calRes.ok) return null;
@@ -90,7 +92,6 @@ export function DescargaBoletasPorCiclo({ grados, darkMode, configuracion, paper
         asistRes.ok ? asistRes.json() : [],
       ]);
 
-      const grado = grados.find(g => g.id === gradoId);
       if (!grado) return null;
 
       return {

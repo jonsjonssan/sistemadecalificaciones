@@ -32,13 +32,14 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
       if (!grado?.id) return;
       setLoadingAsistencia(true);
       try {
-        const res = await fetch(`/api/asistencia/resumen?gradoId=${grado.id}&trimestre=${trimestre}`, { credentials: "include" });
+        const añoParam = grado.año ? `&año=${grado.año}` : '';
+        const res = await fetch(`/api/asistencia/resumen?gradoId=${grado.id}&trimestre=${trimestre}${añoParam}`, { credentials: "include" });
         if (res.ok) setResumenAsistencia(await res.json());
       } catch (e) { console.error(e); }
       finally { setLoadingAsistencia(false); }
     };
     fetchAsistencia();
-  }, [grado?.id, trimestre]);
+  }, [grado?.id, grado?.año, trimestre]);
 
   useEffect(() => {
     const fetchDatosAnuales = async () => {
@@ -48,7 +49,8 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
         const resCal = await fetch(`/api/calificaciones?gradoId=${grado.id}&boleta=true`, { credentials: "include" });
         if (resCal.ok) setTodasCalificaciones(await resCal.json());
 
-        const resAsist = await fetch(`/api/asistencia/resumen?gradoId=${grado.id}&anual=true`, { credentials: "include" });
+        const añoParamAnual = grado.año ? `&año=${grado.año}` : '';
+        const resAsist = await fetch(`/api/asistencia/resumen?gradoId=${grado.id}&anual=true${añoParamAnual}`, { credentials: "include" });
         if (resAsist.ok) setResumenAsistenciaAnual(await resAsist.json());
 
         const resRec = await fetch(`/api/recuperacion-anual?gradoId=${grado.id}&año=${grado.año || new Date().getFullYear()}`, { credentials: "include" });

@@ -642,8 +642,8 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
 
       if (res.ok) {
         const data = await res.json();
-        if (data.actualizados && data.actualizados > 0) {
-          toast({ title: `Asistencia actualizada correctamente (${data.actualizados} registros)` });
+        if (data.guardados && data.guardados > 0) {
+          toast({ title: `Asistencia guardada correctamente (${data.guardados} registros)` });
         } else {
           toast({ title: "Asistencia guardada correctamente" });
         }
