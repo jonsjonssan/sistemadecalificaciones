@@ -45,6 +45,7 @@ import EnlacesInstitucionales from "@/components/EnlacesInstitucionales";
 import { SystemThresholdsCard } from "@/components/SystemThresholdsCard";
 import ReporteAsistenciaMultiGrado from "@/components/ReporteAsistenciaMultiGrado";
 import { DescargaCompletaButton } from "@/components/DescargaCompletaButton";
+import { DescargaBoletasPorCiclo } from "@/components/DescargaBoletasPorCiclo";
 import InformeTecnicoDialog from "@/components/InformeTecnicoDialog";
 import AvanceDocentes from "@/components/AvanceDocentes";
 import { MobileTabBar } from "@/components/MobileTabBar";
@@ -160,15 +161,15 @@ export default function Home() {
         }}>
           <TabsList className="shadow-lg h-11 overflow-x-auto rounded-xl hidden md:inline-flex w-auto shrink-0 hide-scrollbar justify-start space-x-1.5 bg-card/80 backdrop-blur-sm border border-border p-1" role="tablist" aria-label="Secciones del sistema">
             <motion.div className="flex space-x-1.5">
-              <TabsTrigger value="dashboard" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-muted-foreground hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><LayoutDashboard className="h-4 w-4" />Inicio</TabsTrigger>
-              <TabsTrigger value="calificaciones" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-muted-foreground hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><ClipboardList className="h-4 w-4" />Calificaciones</TabsTrigger>
-              <TabsTrigger value="asistencia" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-muted-foreground hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><CalendarDays className="h-4 w-4" />Asistencia</TabsTrigger>
-              <TabsTrigger value="estudiantes" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-muted-foreground hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><Users className="h-4 w-4" />Estudiantes</TabsTrigger>
-              <TabsTrigger value="boletas" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-muted-foreground hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><FileText className="h-4 w-4" />Boletas</TabsTrigger>
-              <TabsTrigger value="enlaces" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-muted-foreground hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><Globe className="h-4 w-4" />Enlaces</TabsTrigger>
-              <TabsTrigger value="reportes" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-muted-foreground hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><BarChart3 className="h-4 w-4" />Reportes</TabsTrigger>
-              {isAdmin(usuario.rol) && <TabsTrigger value="avance" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-muted-foreground hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><GraduationCap className="h-4 w-4" />Avance</TabsTrigger>}
-              {isAdmin(usuario.rol) && <TabsTrigger value="admin" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-muted-foreground hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><Settings className="h-4 w-4" />Admin</TabsTrigger>}
+              <TabsTrigger value="dashboard" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-foreground/70 hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><LayoutDashboard className="h-4 w-4" />Inicio</TabsTrigger>
+              <TabsTrigger value="calificaciones" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-foreground/70 hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><ClipboardList className="h-4 w-4" />Calificaciones</TabsTrigger>
+              <TabsTrigger value="asistencia" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-foreground/70 hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><CalendarDays className="h-4 w-4" />Asistencia</TabsTrigger>
+              <TabsTrigger value="estudiantes" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-foreground/70 hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><Users className="h-4 w-4" />Estudiantes</TabsTrigger>
+              <TabsTrigger value="boletas" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-foreground/70 hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><FileText className="h-4 w-4" />Boletas</TabsTrigger>
+              <TabsTrigger value="enlaces" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-foreground/70 hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><Globe className="h-4 w-4" />Enlaces</TabsTrigger>
+              <TabsTrigger value="reportes" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-foreground/70 hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><BarChart3 className="h-4 w-4" />Reportes</TabsTrigger>
+              {isAdmin(usuario.rol) && <TabsTrigger value="avance" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-foreground/70 hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><GraduationCap className="h-4 w-4" />Avance</TabsTrigger>}
+              {isAdmin(usuario.rol) && <TabsTrigger value="admin" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-foreground/70 hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><Settings className="h-4 w-4" />Admin</TabsTrigger>}
             </motion.div>
           </TabsList>
           <div className="flex items-center gap-2 ml-auto">
@@ -330,11 +331,11 @@ export default function Home() {
                   {d.gradoSeleccionado && d.estudiantes.length > 0 && (
                     <>
                       {(isAdmin(usuario.rol) || usuario.rol === "docente-orientador") && (
-                          <div className={`p-4 rounded-xl border ${darkMode ? 'bg-[#28a745]/20 text-white border-[#1e7e34]/30' : 'bg-[#28a745] text-white border-[#1e7e34]'}`}>
+                          <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-900/60 text-white border-white/10' : 'bg-white border-slate-200 shadow-sm'}`}>
                           <div className="flex items-center justify-between mb-3">
-                            <Label className="text-xs font-semibold uppercase tracking-wider text-white">Asignaturas en boleta</Label>
+                            <Label className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>Asignaturas en boleta</Label>
                             <Select value={d.materiasEnBoleta.length === 0 ? "todas" : "personalizado"} onValueChange={(v) => { if (v === "todas") { d.setMateriasEnBoleta([]); } }}>
-                              <SelectTrigger className="w-36 h-8 text-xs bg-white/20 text-white border-white/30 hover:bg-white/30"><SelectValue /></SelectTrigger>
+                              <SelectTrigger className={`w-36 h-8 text-xs ${darkMode ? 'bg-slate-800 text-slate-200 border-white/20 hover:bg-slate-700' : 'bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100'}`}><SelectValue /></SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="todas" className="text-xs">Todas ({d.todasAsignaturas.filter((m: any) => m.gradoId === d.gradoSeleccionado).length})</SelectItem>
                                 <SelectItem value="personalizado" className="text-xs">Seleccionar…</SelectItem>
@@ -355,7 +356,7 @@ export default function Home() {
                                       d.setMateriasEnBoleta(d.materiasEnBoleta.includes(m.id) ? d.materiasEnBoleta.filter((id: string) => id !== m.id) : [...d.materiasEnBoleta, m.id]);
                                     }
                                   }}
-                                  className={`px-3 py-1 rounded-full text-xs font-medium border transition-all duration-150 hover-gradient ${isSelected ? (darkMode ? 'bg-primary/20 text-black border-emerald-500/50' : 'bg-emerald-50 text-emerald-700 border-emerald-300') : (darkMode ? 'bg-muted text-slate-300 border-white/30' : 'bg-white text-slate-500 border-slate-200')}`}
+                                  className={`px-3 py-1 rounded-full text-xs font-medium border transition-all duration-150 ${isSelected ? (darkMode ? 'bg-emerald-600/30 text-emerald-300 border-emerald-500/50' : 'bg-emerald-50 text-emerald-700 border-emerald-300') : (darkMode ? 'bg-slate-800 text-slate-400 border-white/10 opacity-60' : 'bg-slate-100 text-slate-500 border-slate-200 opacity-60')}`}
                                 >
                                   {m.nombre}
                                 </button>
@@ -495,6 +496,35 @@ export default function Home() {
                       Selecciona el trimestre y descarga el reporte completo en PDF, Word o Excel.
                     </p>
                     <DescargaCompletaButton darkMode={darkMode} />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Sección: Descarga de Boletas por Lote */}
+              <Card className={`shadow-md border overflow-hidden module-card ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5" : "bg-white border-slate-200"}`}>
+                <div className={`h-1 w-full ${darkMode ? "bg-gradient-to-r from-indigo-500 to-indigo-400" : "bg-gradient-to-r from-indigo-600 to-indigo-500"}`} />
+                <CardHeader className="pb-2 px-4 pt-3">
+                  <div className="flex items-center gap-2">
+                    <div className={`p-1.5 rounded-lg icon-container ${darkMode ? "bg-indigo-900/40 text-indigo-400" : "bg-indigo-50 text-indigo-700"}`}>
+                      <Download className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <CardTitle className={`text-sm font-semibold ${darkMode ? "text-white" : "text-slate-800"}`}>Descarga de Boletas por Lote</CardTitle>
+                      <CardDescription className="text-[10px] mt-0.5">Descarga todas las boletas de 2° a 9° grado o por ciclo (Primer Ciclo: 2°-3°, Segundo Ciclo: 4°-6°, Tercer Ciclo: 7°-9°)</CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="px-4 pb-4 pt-2">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <p className={`text-xs ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
+                      Selecciona el trimestre y descarga las boletas de todos los grados o por ciclo en un solo documento.
+                    </p>
+                    <DescargaBoletasPorCiclo
+                      grados={d.gradosFiltrados}
+                      darkMode={darkMode}
+                      configuracion={d.configuracion ? { nombreDirectora: d.configuracion.nombreDirectora, umbralCondicionado: d.configuracion?.umbralCondicionado ?? 4.5, umbralAprobado: d.configuracion?.umbralAprobado ?? 6.5 } : undefined}
+                      paperSize={d.paperSize}
+                    />
                   </div>
                 </CardContent>
               </Card>
