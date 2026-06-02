@@ -4,10 +4,107 @@ import { cookies } from "next/headers";
 import { verifySession } from "@/lib/session";
 import { isAdmin } from "@/utils/roleHelpers";
 
+async function calcularStatsGrado(grado: any, trimestre: number) {
+  const calificaciones = await sql`
+    SELECT c.*, e.nombre as estudiante_nombre, e.numero as estudiante_numero, m.id as materia_id, m.nombre as materia_nombre
+    FROM "Calificacion" c
+    JOIN "Estudiante" e ON c."estudianteId" = e.id
+    JOIN "Materia" m ON c."materiaId" = m.id
+    WHERE c.trimestre = ${trimestre} AND e."gradoId" = ${grado.id}
+  `;
+
+  let sumAC = 0, countAC = 0;
+  let sumAI = 0, countAI = 0;
+  let sumEx = 0, countEx = 0;
+
+  const studentAverages: Record<string, { id: string, nombre: string, numero: number, suma: number, cuenta: number }> = {};
+  const materiaAverages: Record<string, { id: string, nombre: string, suma: number, cuenta: number }> = {};
+
+  calificaciones.forEach((c: any) => {
+    if (c.calificacionAC !== null) { sumAC += Number(c.calificacionAC); countAC++; }
+    if (c.calificacionAI !== null) { sumAI += Number(c.calificacionAI); countAI++; }
+    if (c.examenTrimestral !== null) { sumEx += Number(c.examenTrimestral); countEx++; }
+
+    if (!studentAverages[c.estudianteId]) {
+      studentAverages[c.estudianteId] = {
+        id: c.estudianteId,
+        nombre: c.estudiante_nombre,
+        numero: c.estudiante_numero,
+        suma: 0,
+        cuenta: 0
+      };
+    }
+
+    if (c.promedioFinal !== null) {
+      studentAverages[c.estudianteId].suma += Number(c.promedioFinal);
+      studentAverages[c.estudianteId].cuenta++;
+    }
+
+    if (c.materia_id && c.promedioFinal !== null) {
+      if (!materiaAverages[c.materia_id]) {
+        materiaAverages[c.materia_id] = { id: c.materia_id, nombre: c.materia_nombre, suma: 0, cuenta: 0 };
+      }
+      materiaAverages[c.materia_id].suma += Number(c.promedioFinal);
+      materiaAverages[c.materia_id].cuenta++;
+    }
+  });
+
+  const configRows = await sql`SELECT "umbralCondicionado", "umbralAprobado" FROM "ConfiguracionSistema" LIMIT 1`;
+  const cfg = configRows?.[0] || {};
+  const umbralCondicionado = Number(cfg.umbralCondicionado) || 4.5;
+  const umbralAprobado = Number(cfg.umbralAprobado) || 6.5;
+
+  const estudianteEstado: Record<string, string> = {};
+
+  calificaciones.forEach((c: any) => {
+    const tieneNotas = c.calificacionAC !== null || c.calificacionAI !== null || c.examenTrimestral !== null;
+    if (!tieneNotas || c.promedioFinal === null) return;
+    const tieneRecup = c.recuperacion !== null && c.recuperacion !== undefined && Number(c.recuperacion) > 0;
+    const baseProm = Number(c.promedioFinal) - (tieneRecup ? Number(c.recuperacion) : 0);
+    let materiaEstado = 'APROBADO';
+    if (baseProm < umbralCondicionado) materiaEstado = 'REPROBADO';
+    else if (baseProm < umbralAprobado) materiaEstado = 'CONDICIONADO';
+
+    const actual = estudianteEstado[c.estudianteId];
+    if (!actual || (materiaEstado === 'REPROBADO') || (materiaEstado === 'CONDICIONADO' && actual === 'APROBADO')) {
+      estudianteEstado[c.estudianteId] = materiaEstado;
+    }
+  });
+
+  const ranking = Object.values(studentAverages)
+    .filter(s => s.cuenta > 0)
+    .map(s => ({
+      id: s.id,
+      nombre: s.nombre,
+      numero: s.numero,
+      promedio: s.suma / s.cuenta,
+      estado: estudianteEstado[s.id] || 'APROBADO'
+    }))
+    .sort((a: any, b: any) => b.promedio - a.promedio);
+
+  const topIds = new Set(ranking.slice(0, 10).map(s => s.id));
+  return {
+    promedios: {
+      cotidiana: countAC > 0 ? sumAC / countAC : null,
+      integradora: countAI > 0 ? sumAI / countAI : null,
+      examen: countEx > 0 ? sumEx / countEx : null
+    },
+    topEstudiantes: ranking.slice(0, 10),
+    alertas: ranking.filter(s => !topIds.has(s.id)).slice(-10).reverse(),
+    materias: Object.values(materiaAverages).map((m: any) => ({
+      id: m.id,
+      nombre: m.nombre,
+      promedio: m.cuenta > 0 ? Math.round((m.suma / m.cuenta) * 100) / 100 : null
+    }))
+  };
+}
+
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
-    const trimestre = parseInt(searchParams.get("trimestre") || "1");
+    const trimestreParam = searchParams.get("trimestre") || "1";
+    const allTrimestres = trimestreParam === "all";
+    const trimestre = parseInt(trimestreParam);
     const gradoId = searchParams.get("gradoId");
 
     const cookieStore = await cookies();
@@ -69,102 +166,37 @@ export async function GET(req: Request) {
     }
 
     const statsPorGrado = await Promise.all(gradosFiltrados.map(async (grado: any) => {
-      const calificaciones = await sql`
-        SELECT c.*, e.nombre as estudiante_nombre, e.numero as estudiante_numero, m.id as materia_id, m.nombre as materia_nombre
-        FROM "Calificacion" c
-        JOIN "Estudiante" e ON c."estudianteId" = e.id
-        JOIN "Materia" m ON c."materiaId" = m.id
-        WHERE c.trimestre = ${trimestre} AND e."gradoId" = ${grado.id}
-      `;
+      if (allTrimestres) {
+        const [statsT1, statsT2, statsT3] = await Promise.all([
+          calcularStatsGrado(grado, 1),
+          calcularStatsGrado(grado, 2),
+          calcularStatsGrado(grado, 3)
+        ]);
 
-      let sumAC = 0, countAC = 0;
-      let sumAI = 0, countAI = 0;
-      let sumEx = 0, countEx = 0;
-
-      const studentAverages: Record<string, { id: string, nombre: string, numero: number, suma: number, cuenta: number }> = {};
-      const materiaAverages: Record<string, { id: string, nombre: string, suma: number, cuenta: number }> = {};
-
-      calificaciones.forEach((c: any) => {
-        if (c.calificacionAC !== null) { sumAC += Number(c.calificacionAC); countAC++; }
-        if (c.calificacionAI !== null) { sumAI += Number(c.calificacionAI); countAI++; }
-        if (c.examenTrimestral !== null) { sumEx += Number(c.examenTrimestral); countEx++; }
-
-        if (!studentAverages[c.estudianteId]) {
-          studentAverages[c.estudianteId] = {
-            id: c.estudianteId,
-            nombre: c.estudiante_nombre,
-            numero: c.estudiante_numero,
-            suma: 0,
-            cuenta: 0
-          };
-        }
-
-        if (c.promedioFinal !== null) {
-          studentAverages[c.estudianteId].suma += Number(c.promedioFinal);
-          studentAverages[c.estudianteId].cuenta++;
-        }
-
-        if (c.materia_id && c.promedioFinal !== null) {
-          if (!materiaAverages[c.materia_id]) {
-            materiaAverages[c.materia_id] = { id: c.materia_id, nombre: c.materia_nombre, suma: 0, cuenta: 0 };
+        return {
+          gradoId: grado.id,
+          nombre: `${grado.numero}° "${grado.seccion}"`,
+          numero: grado.numero,
+          seccion: grado.seccion,
+          trimestres: {
+            1: statsT1,
+            2: statsT2,
+            3: statsT3
           }
-          materiaAverages[c.materia_id].suma += Number(c.promedioFinal);
-          materiaAverages[c.materia_id].cuenta++;
-        }
-      });
-
-      const configRows = await sql`SELECT "umbralCondicionado", "umbralAprobado" FROM "ConfiguracionSistema" LIMIT 1`;
-      const cfg = configRows?.[0] || {};
-      const umbralCondicionado = Number(cfg.umbralCondicionado) || 4.5;
-      const umbralAprobado = Number(cfg.umbralAprobado) || 6.5;
-
-      const estudianteEstado: Record<string, string> = {};
-
-      calificaciones.forEach((c: any) => {
-        const tieneNotas = c.calificacionAC !== null || c.calificacionAI !== null || c.examenTrimestral !== null;
-        if (!tieneNotas || c.promedioFinal === null) return;
-        const tieneRecup = c.recuperacion !== null && c.recuperacion !== undefined && Number(c.recuperacion) > 0;
-        const baseProm = Number(c.promedioFinal) - (tieneRecup ? Number(c.recuperacion) : 0);
-        let materiaEstado = 'APROBADO';
-        if (baseProm < umbralCondicionado) materiaEstado = 'REPROBADO';
-        else if (baseProm < umbralAprobado) materiaEstado = 'CONDICIONADO';
-
-        const actual = estudianteEstado[c.estudianteId];
-        if (!actual || (materiaEstado === 'REPROBADO') || (materiaEstado === 'CONDICIONADO' && actual === 'APROBADO')) {
-          estudianteEstado[c.estudianteId] = materiaEstado;
-        }
-      });
-
-      const ranking = Object.values(studentAverages)
-        .filter(s => s.cuenta > 0)
-        .map(s => ({
-          id: s.id,
-          nombre: s.nombre,
-          numero: s.numero,
-          promedio: s.suma / s.cuenta,
-          estado: estudianteEstado[s.id] || 'APROBADO'
-        }))
-        .sort((a: any, b: any) => b.promedio - a.promedio);
-
-      const topIds = new Set(ranking.slice(0, 10).map(s => s.id));
-      return {
-        gradoId: grado.id,
-        nombre: `${grado.numero}° "${grado.seccion}"`,
-        numero: grado.numero,
-        seccion: grado.seccion,
-        promedios: {
-          cotidiana: countAC > 0 ? sumAC / countAC : null,
-          integradora: countAI > 0 ? sumAI / countAI : null,
-          examen: countEx > 0 ? sumEx / countEx : null
-        },
-        topEstudiantes: ranking.slice(0, 10),
-        alertas: ranking.filter(s => !topIds.has(s.id)).slice(-10).reverse(),
-        materias: Object.values(materiaAverages).map((m: any) => ({
-          id: m.id,
-          nombre: m.nombre,
-          promedio: m.cuenta > 0 ? Math.round((m.suma / m.cuenta) * 100) / 100 : null
-        }))
-      };
+        };
+      } else {
+        const stats = await calcularStatsGrado(grado, trimestre);
+        return {
+          gradoId: grado.id,
+          nombre: `${grado.numero}° "${grado.seccion}"`,
+          numero: grado.numero,
+          seccion: grado.seccion,
+          promedios: stats.promedios,
+          topEstudiantes: stats.topEstudiantes,
+          alertas: stats.alertas,
+          materias: stats.materias
+        };
+      }
     }));
 
     return NextResponse.json(statsPorGrado);

@@ -39,50 +39,69 @@ interface DashboardProps {
   onNavigate?: (tab: string) => void;
 }
 
+interface TrimestreStats {
+  promedios: {
+    cotidiana: number | null;
+    integradora: number | null;
+    examen: number | null;
+  };
+  topEstudiantes: { id: string; nombre: string; numero: number; promedio: number; estado?: string }[];
+  alertas: { id: string; nombre: string; numero: number; promedio: number; estado?: string }[];
+  materias?: { id: string; nombre: string; promedio: number | null }[];
+}
+
 interface GradeStats {
   gradoId: string;
   nombre: string;
-  promedios: {
+  numero: number;
+  seccion: string;
+  promedios?: {
     cotidiana: number;
     integradora: number;
     examen: number;
   };
-  topEstudiantes: { id: string, nombre: string, numero: number, promedio: number, estado?: string }[];
-  alertas: { id: string, nombre: string, numero: number, promedio: number, estado?: string }[];
+  topEstudiantes?: { id: string; nombre: string; numero: number; promedio: number; estado?: string }[];
+  alertas?: { id: string; nombre: string; numero: number; promedio: number; estado?: string }[];
   materias?: { id: string; nombre: string; promedio: number | null }[];
+  trimestres?: {
+    1: TrimestreStats;
+    2: TrimestreStats;
+    3: TrimestreStats;
+  };
 }
 
 function calcularPromedioGradoAjustado(
   stat: GradeStats | undefined,
-  selectedMaterias: Set<string>
+  selectedMaterias: Set<string>,
+  trimestreKey?: 1 | 2 | 3
 ): number | null {
   if (!stat) return null;
 
-  // Promedio original por categorias (metodo historico)
+  const tStats = trimestreKey && stat.trimestres ? stat.trimestres[trimestreKey] : undefined;
+  const promedios = tStats ? tStats.promedios : stat.promedios;
+  const materias = tStats ? tStats.materias : stat.materias;
+
   const tieneDatos =
-    stat.promedios?.cotidiana != null ||
-    stat.promedios?.integradora != null ||
-    stat.promedios?.examen != null;
+    promedios?.cotidiana != null ||
+    promedios?.integradora != null ||
+    promedios?.examen != null;
   if (!tieneDatos) return null;
 
   const promOriginal =
-    ((stat.promedios.cotidiana ?? 0) +
-      (stat.promedios.integradora ?? 0) +
-      (stat.promedios.examen ?? 0)) /
-    3;
+    ((promedios?.cotidiana ?? 0) +
+      (promedios?.integradora ?? 0) +
+      (promedios?.examen ?? 0)) / 3;
 
-  const allMaterias = stat.materias || [];
+  const allMaterias = materias || [];
   const materiasConDatos = allMaterias.filter(m => m.promedio != null);
   const selectedConDatos = materiasConDatos.filter(m => selectedMaterias.has(m.id));
 
   if (selectedConDatos.length === 0) return null;
 
-  // Si todas las materias con datos estan seleccionadas, devolver el original
   if (selectedConDatos.length === materiasConDatos.length) {
     return Math.round(promOriginal * 100) / 100;
   }
 
-  // Ajuste proporcional segun las materias seleccionadas
   const promTodas =
     materiasConDatos.reduce((a, m) => a + (m.promedio ?? 0), 0) /
     materiasConDatos.length;
@@ -169,15 +188,12 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
   const esDirectiva = ["admin", "admin-directora", "admin-codirectora"].includes(usuario.rol);
   const esDocente = ["docente", "docente-orientador"].includes(usuario.rol);
 
-  // Para docentes, obtener solo su grado asignado
   const gradoAsignado = esDocente ? (usuario.asignaturasAsignadas?.[0]?.gradoId || null) : null;
 
-  // Filtrar grados según rol
   const gradosVisibles = esDirectiva
     ? grados
     : grados.filter(g => gradoAsignado ? g.id === gradoAsignado : false);
 
-  // Calcular totales visibles
   const totalEstudiantesVisibles = gradosVisibles.reduce((sum, g) => sum + (g._count?.estudiantes || 0), 0);
   const totalAsignaturasVisibles = esDirectiva ? totalAsignaturas : asignaturasAsignadas?.length || 0;
 
@@ -187,8 +203,8 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
     const fetchStats = async () => {
       try {
         const url = gradoAsignado
-          ? `/api/stats/dashboard?gradoId=${gradoAsignado}`
-          : "/api/stats/dashboard";
+          ? `/api/stats/dashboard?gradoId=${gradoAsignado}&trimestre=all`
+          : "/api/stats/dashboard?trimestre=all";
         const res = await fetch(url, { credentials: "include" });
         if (res.ok && !cancelled) {
           const data = await res.json();
@@ -216,7 +232,6 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
     return () => { cancelled = true; };
   }, [gradoAsignado, esDocente]);
 
-  // Si es docente, seleccionar automáticamente su grado
   const selectedGradoIdEfectivo = esDocente && gradoAsignado ? gradoAsignado : selectedGradoId;
   const selectedStats = selectedGradoIdEfectivo === "all" ? null : stats.find(s => s.gradoId === selectedGradoIdEfectivo);
 
@@ -225,13 +240,50 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
     estudiantes: g._count?.estudiantes || 0
   })).filter(g => g.estudiantes > 0);
 
-  const categoryChartData = selectedStats ? [
+  const categoryChartData = selectedStats && selectedStats.promedios ? [
     { name: "Cotidianas", valor: selectedStats.promedios.cotidiana, color: darkMode ? "oklch(0.56 0.15 155)" : "oklch(0.44 0.13 155)" },
     { name: "Integradoras", valor: selectedStats.promedios.integradora, color: darkMode ? "oklch(0.65 0.12 85)" : "oklch(0.60 0.10 85)" },
     { name: "Exámenes", valor: selectedStats.promedios.examen, color: darkMode ? "oklch(0.28 0.055 160)" : "oklch(0.28 0.055 160)" }
   ] : [];
 
-  // Promedio por ciclo para la tarjeta institucional — basado en materias seleccionadas
+  // ====== NUEVO: Indicadores por trimestre ======
+  function calcularPromedioCiclo(trimestreKey?: 1 | 2 | 3): { nombre: string; prom: number | null; color: string }[] {
+    return CICLOS.map(ciclo => {
+      const gradosDelCiclo = grados.filter(g => ciclo.grados.includes(g.numero));
+      const promsGrado = gradosDelCiclo
+        .map(g => calcularPromedioGradoAjustado(stats.find(s => s.gradoId === g.id), selectedMaterias, trimestreKey))
+        .filter((p): p is number => p !== null);
+
+      const prom = promsGrado.length > 0
+        ? Math.round((promsGrado.reduce((a, b) => a + b, 0) / promsGrado.length) * 100) / 100
+        : null;
+
+      return { nombre: ciclo.nombre, prom, color: ciclo.ringColor };
+    });
+  }
+
+  function calcularPromedioInstitucional(trimestreKey?: 1 | 2 | 3): number | null {
+    const proms = calcularPromedioCiclo(trimestreKey);
+    const validos = proms.map(c => c.prom).filter((p): p is number => p !== null);
+    if (validos.length === 0) return null;
+    return Math.round((validos.reduce((a, b) => a + b, 0) / validos.length) * 100) / 100;
+  }
+
+  const promPorCicloT1 = calcularPromedioCiclo(1);
+  const promPorCicloT2 = calcularPromedioCiclo(2);
+  const promPorCicloT3 = calcularPromedioCiclo(3);
+
+  const promInstitucionalT1 = calcularPromedioInstitucional(1);
+  const promInstitucionalT2 = calcularPromedioInstitucional(2);
+  const promInstitucionalT3 = calcularPromedioInstitucional(3);
+
+  // Promedio anual: promedio de T1, T2, T3 si existen
+  const promsTrimestresValidos = [promInstitucionalT1, promInstitucionalT2, promInstitucionalT3].filter((p): p is number => p !== null);
+  const promAnual = promsTrimestresValidos.length > 0
+    ? Math.round((promsTrimestresValidos.reduce((a, b) => a + b, 0) / promsTrimestresValidos.length) * 100) / 100
+    : null;
+
+  // Promedio por ciclo para la tarjeta institucional (mantener compatibilidad)
   const promPorCiclo = CICLOS.map(ciclo => {
     const gradosDelCiclo = grados.filter(g => ciclo.grados.includes(g.numero));
     const promsGrado = gradosDelCiclo
@@ -245,7 +297,6 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
     return { nombre: ciclo.nombre, prom, color: ciclo.ringColor };
   });
 
-  // Promedio institucional: promedio de los promedios de ciclo validos
   const promsCicloValidos = promPorCiclo.map(c => c.prom).filter((p): p is number => p !== null);
   const promInstitucional = promsCicloValidos.length > 0
     ? Math.round((promsCicloValidos.reduce((a, b) => a + b, 0) / promsCicloValidos.length) * 100) / 100
@@ -253,18 +304,14 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
 
   const todasAsignaturasList = asignaturasAsignadas || [];
 
-  // Inicializar seleccion de materias con todas las disponibles
-  // Nota: usamos useEffect con ref de guarda para evitar cascadas innecesarias.
   const materiasInitRef = useRef(false);
   useEffect(() => {
     if (!materiasInitRef.current && todasAsignaturasList.length > 0) {
       materiasInitRef.current = true;
-       
       setSelectedMaterias(new Set(todasAsignaturasList.map(m => m.id)));
     }
   }, [todasAsignaturasList]);
 
-  // Datos para gráfico de evolución por categoría - solo contar datos no nulos
   const statsConAC = stats.filter(s => s.promedios?.cotidiana != null);
   const statsConAI = stats.filter(s => s.promedios?.integradora != null);
   const statsConEx = stats.filter(s => s.promedios?.examen != null);
@@ -326,7 +373,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
         {/* ----- LEFT COLUMN: Performance ----- */}
         <div className="space-y-5 min-w-0">
 
-          {/* Rendimiento Institucional */}
+          {/* Rendimiento Institucional por Trimestre */}
           {esDirectiva && (
             <div className="animate-fade-slide-up" style={{ animationDelay: '0.1s' }}>
               <Card className="shadow-sm overflow-hidden bg-card border-border module-card">
@@ -339,11 +386,12 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                   <MathInfoButton darkMode={darkMode} explanation={mathExplanations.rendimientoInstitucional} />
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center mb-4">
                     <div className="flex justify-center">
-                      <PromedioCircular valor={promInstitucional} darkMode={darkMode} />
+                      <PromedioCircular valor={promAnual} darkMode={darkMode} />
                     </div>
                     <div className="grid grid-cols-1 gap-2.5">
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/80">Promedio Anual</p>
                       {promPorCiclo.map(c => (
                         <div key={c.nombre} className="flex items-center justify-between rounded-sm border border-border p-2.5 bg-muted/20">
                           <span className="font-display text-xs text-muted-foreground/70">{c.nombre}</span>
@@ -358,6 +406,78 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                         </div>
                       ))}
                     </div>
+                  </div>
+
+                  {/* Tabla de evolución T1 T2 T3 */}
+                  <div className="border border-border rounded-sm overflow-hidden">
+                    <table className="w-full text-xs">
+                      <thead>
+                        <tr className="bg-muted/30 border-b border-border">
+                          <th className="text-left p-2 font-semibold text-muted-foreground/80">Ciclo</th>
+                          <th className="text-center p-2 font-semibold text-muted-foreground/80">I Trimestre</th>
+                          <th className="text-center p-2 font-semibold text-muted-foreground/80">II Trimestre</th>
+                          <th className="text-center p-2 font-semibold text-muted-foreground/80">III Trimestre</th>
+                          <th className="text-center p-2 font-semibold text-muted-foreground/80">Anual</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {CICLOS.map((ciclo, idx) => {
+                          const t1 = promPorCicloT1[idx];
+                          const t2 = promPorCicloT2[idx];
+                          const t3 = promPorCicloT3[idx];
+                          const vals = [t1?.prom, t2?.prom, t3?.prom].filter((p): p is number => p !== null);
+                          const anual = vals.length > 0 ? Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 100) / 100 : null;
+                          return (
+                            <tr key={ciclo.nombre} className="border-b border-border last:border-b-0">
+                              <td className="p-2 font-medium text-foreground/80">{ciclo.nombre}</td>
+                              {[t1, t2, t3].map((t, i) => (
+                                <td key={i} className="text-center p-2">
+                                  {t?.prom != null ? (
+                                    <span className={`font-mono font-semibold ${Math.round(t.prom) >= 5 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                                      {t.prom.toFixed(1)}
+                                    </span>
+                                  ) : (
+                                    <span className="text-muted-foreground/40">—</span>
+                                  )}
+                                </td>
+                              ))}
+                              <td className="text-center p-2">
+                                {anual != null ? (
+                                  <span className={`font-mono font-bold ${Math.round(anual) >= 5 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                                    {anual.toFixed(1)}
+                                  </span>
+                                ) : (
+                                  <span className="text-muted-foreground/40">—</span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                        <tr className="bg-muted/20 border-t border-border font-semibold">
+                          <td className="p-2 text-foreground/90">Institucional</td>
+                          {[promInstitucionalT1, promInstitucionalT2, promInstitucionalT3].map((p, i) => (
+                            <td key={i} className="text-center p-2">
+                              {p != null ? (
+                                <span className={`font-mono font-bold ${Math.round(p) >= 5 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                                  {p.toFixed(1)}
+                                </span>
+                              ) : (
+                                <span className="text-muted-foreground/40">—</span>
+                              )}
+                            </td>
+                          ))}
+                          <td className="text-center p-2">
+                            {promAnual != null ? (
+                              <span className={`font-mono font-bold text-base ${Math.round(promAnual) >= 5 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                                {promAnual.toFixed(1)}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground/40">—</span>
+                            )}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
                   </div>
                 </CardContent>
               </Card>
@@ -433,7 +553,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                         <Trophy className="h-3.5 w-3.5 text-amber-500" /> Cuadro de Honor
                       </h4>
                       <div className="space-y-1.5">
-                        {selectedStats.topEstudiantes.length > 0 ? selectedStats.topEstudiantes.slice(0, 10).map((est, i) => (
+                        {selectedStats.topEstudiantes && selectedStats.topEstudiantes.length > 0 ? selectedStats.topEstudiantes.slice(0, 10).map((est, i) => (
                           <div key={est.id} className="flex items-center justify-between text-xs gap-2">
                             <span className="flex items-center gap-1.5 truncate">
                               <span className={`font-mono text-[10px] w-4 text-right shrink-0 ${i === 0 ? 'text-amber-500' : 'text-muted-foreground/50'}`}>{i + 1}.</span>
@@ -459,7 +579,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                         <AlertTriangle className="h-3.5 w-3.5 text-red-500" /> Alertas
                       </h4>
                       <div className="space-y-1.5">
-                        {selectedStats.alertas.length > 0 ? selectedStats.alertas.slice(0, 10).map((est, i) => (
+                        {selectedStats.alertas && selectedStats.alertas.length > 0 ? selectedStats.alertas.slice(0, 10).map((est, i) => (
                           <div key={est.id} className="flex items-center justify-between text-xs gap-2">
                             <span className="truncate text-foreground/80">{est.nombre}</span>
                             <div className="flex items-center gap-1 shrink-0">
