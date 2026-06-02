@@ -316,7 +316,7 @@ export default function Home() {
                       </div>
                       <div className="w-full sm:w-36">
                         <Label className={`text-xs font-semibold uppercase tracking-wider mb-1.5 block ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>Trimestre</Label>
-                        <Select value={d.trimestreSeleccionado || ""} onValueChange={d.setTrimestreSeleccionado}>
+                        <Select value={d.trimestreSeleccionado || ""} onValueChange={d.handleTrimestreChange}>
                           <SelectTrigger className={`h-10 sm:h-11 text-sm ${darkMode ? 'bg-card border-white/30 text-white' : 'bg-white border-slate-300'}`}><SelectValue placeholder="Trimestre" /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="1">I</SelectItem>

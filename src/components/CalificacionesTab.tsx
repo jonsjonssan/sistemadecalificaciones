@@ -85,7 +85,7 @@ export default function CalificacionesTab({ d, darkMode, usuario }: Props) {
                   ))}
                 </SelectContent>
               </Select>
-              <Select value={d.trimestreSeleccionado || ""} onValueChange={d.setTrimestreSeleccionado}>
+              <Select value={d.trimestreSeleccionado || ""} onValueChange={d.handleTrimestreChange}>
                 <SelectTrigger className={`h-10 text-xs sm:text-sm ${darkMode ? 'bg-slate-800 border-white/20 text-white' : ''}`}>
                   <SelectValue placeholder="Trimestre" />
                 </SelectTrigger>

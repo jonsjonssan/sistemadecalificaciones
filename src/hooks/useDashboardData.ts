@@ -558,6 +558,18 @@ export function useDashboardData() {
     else { dirtyStudentsRef.current.delete(studentId); }
   }, []);
 
+  const handleTrimestreChange = useCallback((val: string) => {
+    if (dirtyStudentsRef.current.size > 0) {
+      if (!window.confirm("Tienes cambios sin guardar en el trimestre actual. Si cambias de trimestre los perderás. ¿Continuar?")) {
+        return;
+      }
+    }
+    dirtyStudentsRef.current.clear();
+    forceSaveRefs.current.clear();
+    setAsistenciaManualData({});
+    setTrimestreSeleccionado(val);
+  }, []);
+
   const handleSaveCalificacion = useCallback(async (estudianteId: string, materiaId: string, data: { actividadesCotidianas: (number | null)[]; actividadesIntegradoras: (number | null)[]; actividadesExamen?: (number | null)[]; examenTrimestral?: number | null; recuperacion?: number | null; }): Promise<Calificacion> => {
     const est = estudiantes.find(e => e.id === estudianteId);
     const mat = asignaturas.find(a => a.id === materiaId);
@@ -1340,7 +1352,7 @@ export function useDashboardData() {
     historialPopup, setHistorialPopup, activeHistoryCell,
     handleShowHistory, handleCloseHistory,
     handleSaveCalificacion, handleGuardarTodo, handleSaveConfig,
-    handleRegisterForceSave, handleDirtyChange,
+    handleRegisterForceSave, handleDirtyChange, handleTrimestreChange,
     handleRefrescar,
     handleFileUpload, generateTemplate, handleImport,
     handleExportarPDF, handleExportarExcel,
