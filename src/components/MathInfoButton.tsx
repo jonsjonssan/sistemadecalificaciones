@@ -1,7 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, Calculator, HelpCircle } from "lucide-react";
+import { Calculator, HelpCircle } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 interface MathExplanation {
   title: string;
@@ -11,38 +19,39 @@ interface MathExplanation {
   example?: string;
 }
 
-interface MathInfoModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+interface MathInfoButtonProps {
   darkMode: boolean;
   explanation: MathExplanation;
+  size?: "sm" | "md";
 }
 
-export function MathInfoModal({ isOpen, onClose, darkMode, explanation }: MathInfoModalProps) {
-  if (!isOpen) return null;
+export function MathInfoButton({ darkMode, explanation, size = "sm" }: MathInfoButtonProps) {
+  const [open, setOpen] = useState(false);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
-        onClick={onClose}
-      />
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
+        <button
+          className={`inline-flex items-center justify-center rounded-full transition-all hover:scale-110 ${
+            size === "sm" ? "w-5 h-5" : "w-6 h-6"
+          } ${
+            darkMode
+              ? "bg-slate-700 hover:bg-slate-600 text-slate-400 hover:text-emerald-400"
+              : "bg-slate-100 hover:bg-slate-200 text-slate-400 hover:text-emerald-600"
+          }`}
+          title="Ver proceso de cálculo matemático"
+        >
+          <HelpCircle className={size === "sm" ? "h-3 w-3" : "h-3.5 w-3.5"} />
+        </button>
+      </SheetTrigger>
 
-      {/* Modal */}
-      <div
-        className={`relative w-full max-w-md rounded-2xl shadow-2xl border overflow-hidden transform transition-all ${
-          darkMode
-            ? "bg-card border-border text-card-foreground"
-            : "bg-white border-slate-200 text-slate-900"
+      <SheetContent
+        side="right"
+        className={`w-full sm:max-w-md overflow-y-auto ${
+          darkMode ? "bg-card border-border text-card-foreground" : "bg-white border-slate-200 text-slate-900"
         }`}
       >
-        {/* Header */}
-        <div
-          className={`flex items-center justify-between px-5 py-4 border-b ${
-            darkMode ? "border-white/30 bg-card" : "border-slate-100 bg-slate-50"
-          }`}
-        >
+        <SheetHeader className="text-left">
           <div className="flex items-center gap-3">
             <div
               className={`flex items-center justify-center w-9 h-9 rounded-xl ${
@@ -52,41 +61,24 @@ export function MathInfoModal({ isOpen, onClose, darkMode, explanation }: MathIn
               <Calculator className="h-5 w-5 text-emerald-500" />
             </div>
             <div>
-              <h3 className="text-sm font-bold">{explanation.title}</h3>
-              <p className={`text-[11px] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
+              <SheetTitle className="text-sm font-bold">{explanation.title}</SheetTitle>
+              <SheetDescription className={`text-[11px] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
                 Proceso de cálculo
-              </p>
+              </SheetDescription>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className={`p-2 rounded-lg transition-colors ${
-              darkMode
-                ? "hover-gradient text-slate-400"
-                : "hover-gradient text-slate-500"
-            }`}
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
+        </SheetHeader>
 
-        {/* Content */}
-        <div className="p-5 space-y-4">
+        <div className="mt-5 space-y-4">
           {/* Description */}
-          <p
-            className={`text-sm leading-relaxed ${
-              darkMode ? "text-slate-400" : "text-slate-600"
-            }`}
-          >
+          <p className={`text-sm leading-relaxed ${darkMode ? "text-slate-400" : "text-slate-600"}`}>
             {explanation.description}
           </p>
 
           {/* Formula */}
           <div
             className={`rounded-xl border p-4 ${
-              darkMode
-                ? "bg-muted border-white/20"
-                : "bg-slate-50 border-slate-200"
+              darkMode ? "bg-muted border-white/20" : "bg-slate-50 border-slate-200"
             }`}
           >
             <p
@@ -140,9 +132,7 @@ export function MathInfoModal({ isOpen, onClose, darkMode, explanation }: MathIn
           {explanation.example && (
             <div
               className={`rounded-xl border p-4 ${
-                darkMode
-                  ? "bg-amber-900/20 border-amber-800/50"
-                  : "bg-amber-50 border-amber-200"
+                darkMode ? "bg-amber-900/20 border-amber-800/50" : "bg-amber-50 border-amber-200"
               }`}
             >
               <p
@@ -161,59 +151,19 @@ export function MathInfoModal({ isOpen, onClose, darkMode, explanation }: MathIn
               </p>
             </div>
           )}
+
+          <div
+            className={`pt-3 border-t text-center ${
+              darkMode ? "border-white/20 text-slate-500" : "border-slate-100 text-slate-400"
+            }`}
+          >
+            <p className="text-[11px]">
+              Los cálculos se realizan en tiempo real con los datos del sistema
+            </p>
+          </div>
         </div>
-
-        {/* Footer */}
-        <div
-          className={`px-5 py-3 border-t text-center ${
-            darkMode
-              ? "border-white/30 bg-muted text-slate-500"
-              : "border-slate-100 bg-slate-50 text-slate-400"
-          }`}
-        >
-          <p className="text-[11px]">
-            Los cálculos se realizan en tiempo real con los datos del sistema
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-interface MathInfoButtonProps {
-  darkMode: boolean;
-  explanation: MathExplanation;
-  size?: "sm" | "md";
-}
-
-export function MathInfoButton({ darkMode, explanation, size = "sm" }: MathInfoButtonProps) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <>
-      <button
-        onClick={() => setIsOpen(true)}
-        className={`inline-flex items-center justify-center rounded-full transition-all hover:scale-110 ${
-          size === "sm"
-            ? "w-5 h-5"
-            : "w-6 h-6"
-        } ${
-          darkMode
-            ? "bg-slate-700 hover-gradient text-slate-400 hover:text-emerald-400"
-            : "bg-slate-100 hover-gradient text-slate-400 hover:text-emerald-600"
-        }`}
-        title="Ver proceso de cálculo matemático"
-      >
-        <HelpCircle className={size === "sm" ? "h-3 w-3" : "h-3.5 w-3.5"} />
-      </button>
-
-      <MathInfoModal
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        darkMode={darkMode}
-        explanation={explanation}
-      />
-    </>
+      </SheetContent>
+    </Sheet>
   );
 }
 
