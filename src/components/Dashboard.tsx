@@ -112,9 +112,9 @@ function StatBadge({ icon: Icon, label, value, note, darkMode, action }: {
           <Icon className="h-4 w-4" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/50">{label}</p>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/80">{label}</p>
           <p className="text-lg font-bold font-mono text-foreground tabular-nums leading-tight">{value}</p>
-          <p className="text-[10px] text-muted-foreground/40">{note}</p>
+          <p className="text-[10px] text-muted-foreground/60">{note}</p>
         </div>
         {action && (
           <div className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -139,7 +139,7 @@ function QuickActionRow({ icon: Icon, label, sub, onClick }: {
       </div>
       <div>
         <h4 className="text-xs font-semibold text-foreground group-hover:text-accent transition-colors">{label}</h4>
-        <p className="text-[10px] text-muted-foreground/50">{sub}</p>
+        <p className="text-[10px] text-muted-foreground/70">{sub}</p>
       </div>
     </button>
   );
@@ -494,7 +494,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
           {/* Gestión Rápida */}
           <Card className="shadow-sm bg-card border-border module-card">
             <CardHeader className="py-3 px-4 border-b border-border">
-              <CardTitle className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Gestión Rápida</CardTitle>
+              <CardTitle className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground/90">Gestión Rápida</CardTitle>
             </CardHeader>
             <CardContent className="p-2.5 space-y-1.5">
               <QuickActionRow icon={ClipboardList} label="Pasar Notas" sub="Calificaciones" onClick={() => onNavigate?.('calificaciones')} />
@@ -509,13 +509,13 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
           {esDocente && asignaturasAsignadas && asignaturasAsignadas.length > 0 && (
             <Card className="shadow-sm bg-card border-border module-card">
               <CardHeader className="py-3 px-4 border-b border-border">
-                <CardTitle className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Mis Asignaturas</CardTitle>
+                <CardTitle className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground/90">Mis Asignaturas</CardTitle>
               </CardHeader>
               <CardContent className="p-2.5 max-h-[200px] overflow-y-auto space-y-1" tabIndex={0} role="region" aria-label="Mis asignaturas">
                 {asignaturasAsignadas.map(m => (
                   <div key={m.id} className="flex items-center justify-between p-2 text-xs bg-muted/20 border border-border rounded-sm">
-                    <span className="font-medium truncate mr-2 text-foreground/80">{m.nombre}</span>
-                    <span className="font-mono text-[10px] text-muted-foreground/60 shrink-0">{m.grado?.numero}°{m.grado?.seccion}</span>
+                    <span className="font-medium truncate mr-2 text-foreground">{m.nombre}</span>
+                    <span className="font-mono text-[10px] text-muted-foreground/80 shrink-0">{m.grado?.numero}°{m.grado?.seccion}</span>
                   </div>
                 ))}
               </CardContent>
@@ -526,7 +526,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
           {esDocente && miAvance && (
             <Card className="shadow-sm bg-card border-border module-card">
               <CardHeader className="py-3 px-4 border-b border-border">
-                <CardTitle className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
+                <CardTitle className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground/90">
                   <CheckCircle2 className="h-3 w-3 inline mr-1 text-accent" />
                   Mi Avance
                 </CardTitle>
@@ -590,23 +590,23 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
           {/* Información */}
           <Card className="shadow-sm bg-card border-border">
             <CardHeader className="py-3 px-4 border-b border-border">
-              <CardTitle className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">Información</CardTitle>
+              <CardTitle className="font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground/90">Información</CardTitle>
             </CardHeader>
             <CardContent className="p-3 space-y-2">
               <div className="p-2.5 text-xs bg-muted/20 border border-border rounded-sm space-y-1.5">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground/60">Rol</span>
+                  <span className="text-muted-foreground/80">Rol</span>
                   <span className="font-semibold text-foreground capitalize">{usuario.rol === "admin" ? "Administrador" : usuario.rol === "docente-orientador" ? "Docente Orientador" : "Docente"}</span>
                 </div>
                 {configuracion && (
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground/60">Año Escolar</span>
+                    <span className="text-muted-foreground/80">Año Escolar</span>
                     <span className="font-semibold text-foreground">{configuracion.añoEscolar}</span>
                   </div>
                 )}
                 {configuracion?.umbralAprobado && (
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground/60">Umbral Aprobado</span>
+                    <span className="text-muted-foreground/80">Umbral Aprobado</span>
                     <span className="font-semibold text-foreground">{configuracion.umbralAprobado}</span>
                   </div>
                 )}
@@ -620,12 +620,12 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
               <div className={`p-2.5 rounded-sm border text-center ${darkMode ? 'bg-emerald-900/10 border-emerald-800/30' : 'bg-emerald-50/50 border-emerald-100'}`}>
                 <Users className="h-4 w-4 mx-auto mb-1 text-emerald-500" />
                 <p className="text-lg font-bold font-mono tabular-nums text-foreground">{totalEstudiantesVisibles}</p>
-                <p className="text-[10px] text-muted-foreground/60">Estudiantes</p>
+                <p className="text-[10px] text-muted-foreground/80">Estudiantes</p>
               </div>
               <div className={`p-2.5 rounded-sm border text-center ${darkMode ? 'bg-emerald-900/10 border-emerald-800/30' : 'bg-emerald-50/50 border-emerald-100'}`}>
                 <BookOpen className="h-4 w-4 mx-auto mb-1 text-emerald-500" />
                 <p className="text-lg font-bold font-mono tabular-nums text-foreground">{totalAsignaturasVisibles}</p>
-                <p className="text-[10px] text-muted-foreground/60">Asignaturas</p>
+                <p className="text-[10px] text-muted-foreground/80">Asignaturas</p>
               </div>
             </div>
           )}

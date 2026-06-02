@@ -362,29 +362,29 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
       <Card className={`shadow-md border ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl text-white" : "bg-white border-slate-200"}`}>
         <CardContent className="p-3">
           <div className="flex flex-wrap items-center gap-3 text-xs">
-            <span className="font-semibold uppercase tracking-wider text-slate-500 dark:text-white text-[10px]">Marco Normativo</span>
+            <span className="font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-200 text-[10px]">Marco Normativo</span>
             <div className="flex items-center gap-1.5">
               <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold ${getRangoColor("reprobado", darkMode)}`}>
                 <AlertTriangle className="h-3 w-3" /> 0 – {(umbralCondicionado - 0.01).toFixed(2)}
               </span>
-              <span className="text-slate-500 dark:text-white">Reprobado (MINED + C.E.)</span>
+              <span className="text-slate-700 dark:text-slate-200">Reprobado (MINED + C.E.)</span>
             </div>
             <div className={`h-4 w-px ${darkMode ? "bg-slate-600" : "bg-slate-300"}`} />
             <div className="flex items-center gap-1.5">
               <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold ${getRangoColor("condicionado", darkMode)}`}>
                 <HelpCircle className="h-3 w-3" /> {umbralCondicionado.toFixed(2)} – {(umbralAprobado - 0.01).toFixed(2)}
               </span>
-              <span className="text-slate-500 dark:text-white">Condicionado (Aprueba MINED / Reprueba C.E.)</span>
+              <span className="text-slate-700 dark:text-slate-200">Condicionado (Aprueba MINED / Reprueba C.E.)</span>
             </div>
             <div className={`h-4 w-px ${darkMode ? "bg-slate-600" : "bg-slate-300"}`} />
             <div className="flex items-center gap-1.5">
               <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold ${getRangoColor("aprobado", darkMode)}`}>
                 <CheckCircle2 className="h-3 w-3" /> ≥ {umbralAprobado.toFixed(2)}
               </span>
-              <span className="text-slate-500 dark:text-white">Aprobado (MINED + C.E.)</span>
+              <span className="text-slate-700 dark:text-slate-200">Aprobado (MINED + C.E.)</span>
             </div>
           </div>
-          <div className={`mt-2 pt-2 border-t text-[10px] leading-relaxed ${darkMode ? "border-slate-700 text-white" : "border-slate-100 text-slate-400"}`}>
+          <div className={`mt-2 pt-2 border-t text-[10px] leading-relaxed ${darkMode ? "border-slate-700 text-slate-300" : "border-slate-200 text-slate-600"}`}>
             Según el marco normativo del Ministerio de Educación (MINED), todo estudiante con calificación de <strong>5.00 en adelante aprueba</strong> el grado. El Centro Escolar Católico San José de la Montaña establece un estándar de excelencia de <strong>{umbralAprobado.toFixed(2)}</strong>. Los estudiantes entre <strong>{umbralCondicionado.toFixed(2)} y {(umbralAprobado - 0.01).toFixed(2)}</strong> aprueban según el MINED pero se consideran <em>condicionados</em> por el Centro Escolar. Los estudiantes con calificación menor a <strong>{umbralCondicionado.toFixed(2)}</strong> se consideran <em>reprobados</em>.
           </div>
         </CardContent>
@@ -470,7 +470,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
       {/* Contenido */}
       {!gradoId ? (
         <Card className={`shadow-sm border ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl text-white" : "bg-white border-slate-200"}`}>
-          <CardContent className="p-6 text-center text-slate-500">Selecciona un grado y trimestre para ver el reporte.</CardContent>
+          <CardContent className="p-6 text-center text-slate-600 dark:text-slate-300">Selecciona un grado y trimestre para ver el reporte.</CardContent>
         </Card>
       ) : loading ? (
         <Card className={`shadow-md border ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl" : "bg-white border-slate-200"}`}>
@@ -525,11 +525,11 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
               <div className="overflow-x-auto">
                 <table className="w-full text-xs sm:text-sm font-medium border-collapse">
                   <thead>
-                    <tr className="bg-[#007BFF] text-white">
-                      <th className="w-10 p-2 text-center font-semibold sticky left-0 z-20 border-r border-b border-[#0056B3] bg-[#007BFF]">N°</th>
-                      <th className="min-w-[140px] sm:min-w-[160px] p-2 text-left font-semibold sticky left-10 z-20 border-r border-b border-[#0056B3] bg-[#007BFF]">Estudiante</th>
+                    <tr className={`${darkMode ? "bg-[#0d3b66]" : "bg-[#007BFF]"} text-white`}>
+                      <th className={`w-10 p-2 text-center font-semibold sticky left-0 z-20 border-r border-b ${darkMode ? "border-[#1a5276] bg-[#0d3b66]" : "border-[#0056B3] bg-[#007BFF]"}`}>N°</th>
+                      <th className={`min-w-[140px] sm:min-w-[160px] p-2 text-left font-semibold sticky left-10 z-20 border-r border-b ${darkMode ? "border-[#1a5276] bg-[#0d3b66]" : "border-[#0056B3] bg-[#007BFF]"}`}>Estudiante</th>
                        {materiasFiltradas.map(mat => (
-                        <th key={mat.id} className="p-2 text-center font-semibold border-r border-b border-[#0056B3] bg-[#007BFF] text-white"
+                        <th key={mat.id} className={`p-2 text-center font-semibold border-r border-b ${darkMode ? "border-[#1a5276] bg-[#0d3b66]" : "border-[#0056B3] bg-[#007BFF]"} text-white`}
                           style={{ writingMode: "vertical-rl", minWidth: "2.5rem", maxWidth: "3rem" }}>
                           <div className="rotate-180 whitespace-nowrap text-[10px] sm:text-xs py-1">{mat.nombre}</div>
                         </th>
@@ -543,10 +543,10 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
                         : (darkMode ? "bg-muted" : "bg-slate-50/50");
                       return (
                         <tr key={est.id} className={`border-b transition-colors ${rowBg}`}>
-                          <td className={`p-2 text-center font-semibold sticky left-0 z-10 border-r border-[#0056B3] ${rowBg}`}>
+                          <td className={`p-2 text-center font-semibold sticky left-0 z-10 border-r ${darkMode ? "border-[#1a5276]" : "border-[#0056B3]"} ${rowBg}`}>
                             {est.numero}
                           </td>
-                          <td className={`p-2 font-medium sticky left-10 z-10 whitespace-nowrap border-r border-[#0056B3] ${rowBg}`}>
+                          <td className={`p-2 font-medium sticky left-10 z-10 whitespace-nowrap border-r ${darkMode ? "border-[#1a5276]" : "border-[#0056B3]"} ${rowBg}`}>
                             {est.nombre}
                           </td>
                           {materiasFiltradas.map(mat => {
@@ -554,7 +554,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
                             const rango = getRangoNota(nota, umbralCondicionado, umbralAprobado);
                             const label = getRangoLabel(rango);
                             return (
-                              <td key={mat.id} className="p-1 text-center border-r border-[#0056B3]">
+                              <td key={mat.id} className={`p-1 text-center border-r ${darkMode ? "border-[#1a5276]" : "border-[#0056B3]"}`}>
                                 <span className={`inline-block px-1.5 py-0.5 rounded-md text-[10px] sm:text-[11px] font-bold whitespace-nowrap ${getRangoColor(rango, darkMode)}`}>
                                   {label}
                                 </span>
@@ -592,7 +592,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
           {/* Gráfico Estadístico */}
           {materiasFiltradas.length > 0 && (
             <Card className={`shadow-sm border overflow-hidden ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5" : "bg-white border-slate-200"}`}>
-              <div className={`h-1 w-full bg-[#007BFF]`} />
+              <div className={`h-1 w-full ${darkMode ? "bg-[#0d3b66]" : "bg-[#007BFF]"}`} />
               <CardContent className="p-3 sm:p-4">
                 <div className="flex items-start justify-between mb-4">
                   <div>
