@@ -1057,7 +1057,7 @@ export function useDashboardData() {
   const handleReordenarEstudiantes = async (nuevos: Estudiante[]) => {
     setEstudiantes(nuevos);
     try {
-      const res = await fetch("/api/estudiantes", { method: "PUT", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ estudiantes: nuevos.map((e, i) => ({ id: e.id, numero: i + 1 })) }) });
+      const res = await fetch("/api/estudiantes", { method: "PATCH", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ ordenes: nuevos.map((e, i) => ({ id: e.id, orden: i + 1 })) }) });
       if (!res.ok) { toast({ title: "Error al reordenar", variant: "destructive" }); loadEstudiantes(); }
     } catch { loadEstudiantes(); }
   };
@@ -1073,7 +1073,7 @@ export function useDashboardData() {
 
   const handleUpdateEstudiante = async (id: string, data: { nombre?: string; email?: string; activo?: boolean }) => {
     try {
-      const res = await fetch("/api/estudiantes", { method: "PATCH", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ id, ...data }) });
+      const res = await fetch(`/api/estudiantes/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(data) });
       if (res.ok) { toast({ title: "Estudiante actualizado" }); loadEstudiantes(); }
       else { toast({ title: "Error", variant: "destructive" }); }
     } catch { toast({ title: "Error", variant: "destructive" }); }
