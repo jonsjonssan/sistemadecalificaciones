@@ -118,7 +118,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground text-base font-medium;
+    @apply bg-background text-foreground text-base font-medium leading-relaxed;
     -webkit-text-size-adjust: 100%;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -127,7 +127,7 @@
     font-family: var(--font-display), system-ui, sans-serif;
     font-weight: 700;
     letter-spacing: -0.02em;
-    line-height: 1.2;
+    line-height: 1.25;
   }
   ::selection {
     background: oklch(0.38 0.09 155 / 0.30);
@@ -140,7 +140,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground text-base font-medium;
+    @apply bg-background text-foreground text-base font-medium leading-relaxed;
     -webkit-text-size-adjust: 100%;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -149,7 +149,7 @@
     font-family: var(--font-display), system-ui, sans-serif;
     font-weight: 700;
     letter-spacing: -0.02em;
-    line-height: 1.2;
+    line-height: 1.25;
   }
   ::selection {
     background: oklch(0.38 0.09 155 / 0.30);
@@ -413,7 +413,7 @@
 }
 
 @media (max-width: 480px) {
-  body { font-size: 16px; }
+  body { font-size: 18px; }
   .mobile-header { @apply py-1.5; }
   .mobile-tab-item { @apply px-2 py-1.5 text-xs; }
   .mobile-card-content { @apply p-3; }
@@ -498,9 +498,9 @@
   .grade-table th, .grade-table td { @apply px-1.5 py-2 text-sm; }
 }
 
-@media (min-width: 481px) and (max-width: 768px) { body { font-size: 15px; } }
-@media (min-width: 769px) and (max-width: 1024px) { body { font-size: 15px; } }
-@media (min-width: 1025px) { body { font-size: 16px; } }
+@media (min-width: 481px) and (max-width: 768px) { body { font-size: 17px; } }
+@media (min-width: 769px) and (max-width: 1024px) { body { font-size: 17px; } }
+@media (min-width: 1025px) { body { font-size: 18px; } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
