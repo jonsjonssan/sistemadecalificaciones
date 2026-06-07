@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, memo } from "react";
+import { useState, useEffect, useRef, useMemo, memo } from "react";
 import { useTheme } from "next-themes";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -47,7 +47,7 @@ interface TrimestreStats {
   };
   topEstudiantes: { id: string; nombre: string; numero: number; promedio: number; estado?: string }[];
   alertas: { id: string; nombre: string; numero: number; promedio: number; estado?: string }[];
-  materias?: { id: string; nombre: string; promedio: number | null }[];
+  materias?: { id: string; nombre: string; promedio: number | null; topEstudiantes?: { id: string; nombre: string; numero: number; promedio: number; estado?: string }[]; alertas?: { id: string; nombre: string; numero: number; promedio: number; estado?: string }[] }[];
 }
 
 interface GradeStats {
@@ -62,7 +62,7 @@ interface GradeStats {
   };
   topEstudiantes?: { id: string; nombre: string; numero: number; promedio: number; estado?: string }[];
   alertas?: { id: string; nombre: string; numero: number; promedio: number; estado?: string }[];
-  materias?: { id: string; nombre: string; promedio: number | null }[];
+  materias?: { id: string; nombre: string; promedio: number | null; topEstudiantes?: { id: string; nombre: string; numero: number; promedio: number; estado?: string }[]; alertas?: { id: string; nombre: string; numero: number; promedio: number; estado?: string }[] }[];
   trimestres?: {
     1: TrimestreStats;
     2: TrimestreStats;
@@ -171,6 +171,8 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
   const [selectedGradoId, setSelectedGradoId] = useState<string>("all");
   const [loading, setLoading] = useState(true);
   const [selectedMaterias, setSelectedMaterias] = useState<Set<string>>(new Set());
+  const [selectedTrimestre, setSelectedTrimestre] = useState<'anual' | 1 | 2 | 3>('anual');
+  const [selectedMateriaId, setSelectedMateriaId] = useState<string>('all');
   const [miAvance, setMiAvance] = useState<{
     porcentajeGlobal: number;
     globalCompleto: number;
@@ -235,15 +237,48 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
   const selectedGradoIdEfectivo = esDocente && gradoAsignado ? gradoAsignado : selectedGradoId;
   const selectedStats = selectedGradoIdEfectivo === "all" ? null : stats.find(s => s.gradoId === selectedGradoIdEfectivo);
 
+  // Effective stats based on selected trimester and subject
+  const effectiveStats = useMemo(() => {
+    if (!selectedStats) return null;
+
+    let baseStats: {
+      promedios?: { cotidiana: number | null; integradora: number | null; examen: number | null };
+      topEstudiantes?: { id: string; nombre: string; numero: number; promedio: number; estado?: string }[];
+      alertas?: { id: string; nombre: string; numero: number; promedio: number; estado?: string }[];
+      materias?: { id: string; nombre: string; promedio: number | null; topEstudiantes?: { id: string; nombre: string; numero: number; promedio: number; estado?: string }[]; alertas?: { id: string; nombre: string; numero: number; promedio: number; estado?: string }[] }[];
+    };
+
+    if (selectedTrimestre === 'anual') {
+      baseStats = selectedStats;
+    } else {
+      baseStats = selectedStats.trimestres?.[selectedTrimestre] || selectedStats;
+    }
+
+    if (selectedMateriaId === 'all') {
+      return baseStats;
+    }
+
+    // Per-subject view
+    const materia = baseStats.materias?.find(m => m.id === selectedMateriaId);
+    if (!materia) return baseStats;
+
+    return {
+      promedios: baseStats.promedios,
+      topEstudiantes: materia.topEstudiantes || [],
+      alertas: materia.alertas || [],
+      materias: baseStats.materias
+    };
+  }, [selectedStats, selectedTrimestre, selectedMateriaId]);
+
   const popChartData = gradosVisibles.map(g => ({
     name: `${g.numero}° ${g.seccion}`,
     estudiantes: g._count?.estudiantes || 0
   })).filter(g => g.estudiantes > 0);
 
-  const categoryChartData = selectedStats && selectedStats.promedios ? [
-    { name: "Cotidianas", valor: selectedStats.promedios.cotidiana, color: darkMode ? "oklch(0.56 0.15 155)" : "oklch(0.44 0.13 155)" },
-    { name: "Integradoras", valor: selectedStats.promedios.integradora, color: darkMode ? "oklch(0.65 0.12 85)" : "oklch(0.60 0.10 85)" },
-    { name: "Exámenes", valor: selectedStats.promedios.examen, color: darkMode ? "oklch(0.28 0.055 160)" : "oklch(0.28 0.055 160)" }
+  const categoryChartData = effectiveStats && effectiveStats.promedios ? [
+    { name: "Cotidianas", valor: effectiveStats.promedios.cotidiana, color: darkMode ? "oklch(0.56 0.15 155)" : "oklch(0.44 0.13 155)" },
+    { name: "Integradoras", valor: effectiveStats.promedios.integradora, color: darkMode ? "oklch(0.65 0.12 85)" : "oklch(0.60 0.10 85)" },
+    { name: "Exámenes", valor: effectiveStats.promedios.examen, color: darkMode ? "oklch(0.28 0.055 160)" : "oklch(0.28 0.055 160)" }
   ] : [];
 
   // ====== NUEVO: Indicadores por trimestre ======
@@ -500,22 +535,50 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                   Rendimiento Académico
                 </CardTitle>
                 <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                  {esDocente ? `Estadísticas de ${gradosVisibles[0]?.numero}° ${gradosVisibles[0]?.seccion}` : 'Promedios por categoría'}
+                  {esDocente ? `Estadísticas de ${gradosVisibles[0]?.numero}° ${gradosVisibles[0]?.seccion}` : selectedMateriaId === 'all' ? 'Promedios por categoría' : 'Promedios por asignatura'}
                 </CardDescription>
               </div>
-              {!esDocente && (
-                <Select value={selectedGradoId} onValueChange={setSelectedGradoId}>
-                  <SelectTrigger className="w-full sm:w-[160px] h-8 text-xs bg-background border-border text-foreground">
-                    <SelectValue placeholder="Seleccionar grado" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all" className="text-xs">Vista General</SelectItem>
-                    {stats.map(s => (
-                      <SelectItem key={s.gradoId} value={s.gradoId} className="text-xs">{s.nombre}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                {!esDocente && (
+                  <Select value={selectedGradoId} onValueChange={(v) => { setSelectedGradoId(v); setSelectedMateriaId('all'); }}>
+                    <SelectTrigger className="w-full sm:w-[160px] h-8 text-xs bg-background border-border text-foreground">
+                      <SelectValue placeholder="Seleccionar grado" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all" className="text-xs">Vista General</SelectItem>
+                      {stats.map(s => (
+                        <SelectItem key={s.gradoId} value={s.gradoId} className="text-xs">{s.nombre}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+                {selectedGradoIdEfectivo !== "all" && (
+                  <>
+                    <Select value={String(selectedTrimestre)} onValueChange={(v) => setSelectedTrimestre(v === 'anual' ? 'anual' : parseInt(v) as 1 | 2 | 3)}>
+                      <SelectTrigger className="w-full sm:w-[140px] h-8 text-xs bg-background border-border text-foreground">
+                        <SelectValue placeholder="Trimestre" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="anual" className="text-xs">Anual</SelectItem>
+                        <SelectItem value="1" className="text-xs">I Trimestre</SelectItem>
+                        <SelectItem value="2" className="text-xs">II Trimestre</SelectItem>
+                        <SelectItem value="3" className="text-xs">III Trimestre</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select value={selectedMateriaId} onValueChange={setSelectedMateriaId}>
+                      <SelectTrigger className="w-full sm:w-[160px] h-8 text-xs bg-background border-border text-foreground">
+                        <SelectValue placeholder="Asignatura" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all" className="text-xs">Todas las asignaturas</SelectItem>
+                        {(effectiveStats?.materias || []).map(m => (
+                          <SelectItem key={m.id} value={m.id} className="text-xs">{m.nombre}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </>
+                )}
+              </div>
             </CardHeader>
             <CardContent className="p-3 sm:p-4">
               {selectedGradoIdEfectivo === "all" ? (
@@ -530,7 +593,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
-              ) : selectedStats ? (
+              ) : effectiveStats ? (
                 <div className="space-y-4">
                   <div className="h-[160px] sm:h-[200px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
@@ -551,9 +614,19 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                     <div className={`p-3 rounded-md border ${darkMode ? 'bg-emerald-900/20 border-emerald-800/60' : 'bg-emerald-50/50 border-emerald-100'}`}>
                       <h4 className={`text-xs font-bold uppercase tracking-wider mb-2.5 flex items-center gap-1.5 ${darkMode ? 'text-emerald-400' : 'text-emerald-700'}`}>
                         <Trophy className="h-3.5 w-3.5 text-amber-500" /> Cuadro de Honor
+                        {selectedMateriaId !== 'all' && effectiveStats.materias && (
+                          <span className="text-[10px] font-normal normal-case ml-1">
+                            — {effectiveStats.materias.find(m => m.id === selectedMateriaId)?.nombre || ''}
+                          </span>
+                        )}
+                        {selectedTrimestre !== 'anual' && (
+                          <span className="text-[10px] font-normal normal-case ml-1">
+                            ({selectedTrimestre}° Trimestre)
+                          </span>
+                        )}
                       </h4>
                       <div className="space-y-1.5">
-                        {selectedStats.topEstudiantes && selectedStats.topEstudiantes.length > 0 ? selectedStats.topEstudiantes.slice(0, 10).map((est, i) => (
+                        {effectiveStats.topEstudiantes && effectiveStats.topEstudiantes.length > 0 ? effectiveStats.topEstudiantes.slice(0, 10).map((est, i) => (
                           <div key={est.id} className="flex items-center justify-between text-xs gap-2">
                             <span className="flex items-center gap-1.5 truncate">
                               <span className={`font-mono text-[10px] w-4 text-right shrink-0 ${i === 0 ? 'text-amber-500' : 'text-muted-foreground/50'}`}>{i + 1}.</span>
@@ -577,9 +650,19 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                     <div className={`p-3 rounded-md border ${darkMode ? 'bg-red-900/20 border-red-800/60' : 'bg-red-50/50 border-red-100'}`}>
                       <h4 className={`text-xs font-bold uppercase tracking-wider mb-2.5 flex items-center gap-1.5 ${darkMode ? 'text-red-400' : 'text-red-700'}`}>
                         <AlertTriangle className="h-3.5 w-3.5 text-red-500" /> Alertas
+                        {selectedMateriaId !== 'all' && effectiveStats.materias && (
+                          <span className="text-[10px] font-normal normal-case ml-1">
+                            — {effectiveStats.materias.find(m => m.id === selectedMateriaId)?.nombre || ''}
+                          </span>
+                        )}
+                        {selectedTrimestre !== 'anual' && (
+                          <span className="text-[10px] font-normal normal-case ml-1">
+                            ({selectedTrimestre}° Trimestre)
+                          </span>
+                        )}
                       </h4>
                       <div className="space-y-1.5">
-                        {selectedStats.alertas && selectedStats.alertas.length > 0 ? selectedStats.alertas.slice(0, 10).map((est, i) => (
+                        {effectiveStats.alertas && effectiveStats.alertas.length > 0 ? effectiveStats.alertas.slice(0, 10).map((est, i) => (
                           <div key={est.id} className="flex items-center justify-between text-xs gap-2">
                             <span className="truncate text-foreground/80">{est.nombre}</span>
                             <div className="flex items-center gap-1 shrink-0">

@@ -19,6 +19,7 @@ async function calcularStatsGrado(grado: any, trimestre: number) {
 
   const studentAverages: Record<string, { id: string, nombre: string, numero: number, suma: number, cuenta: number }> = {};
   const materiaAverages: Record<string, { id: string, nombre: string, suma: number, cuenta: number }> = {};
+  const materiaStudentAverages: Record<string, Record<string, { id: string, nombre: string, numero: number, suma: number, cuenta: number }>> = {};
 
   calificaciones.forEach((c: any) => {
     if (c.calificacionAC !== null) { sumAC += Number(c.calificacionAC); countAC++; }
@@ -46,6 +47,22 @@ async function calcularStatsGrado(grado: any, trimestre: number) {
       }
       materiaAverages[c.materia_id].suma += Number(c.promedioFinal);
       materiaAverages[c.materia_id].cuenta++;
+
+      // Per-subject student tracking
+      if (!materiaStudentAverages[c.materia_id]) {
+        materiaStudentAverages[c.materia_id] = {};
+      }
+      if (!materiaStudentAverages[c.materia_id][c.estudianteId]) {
+        materiaStudentAverages[c.materia_id][c.estudianteId] = {
+          id: c.estudianteId,
+          nombre: c.estudiante_nombre,
+          numero: c.estudiante_numero,
+          suma: 0,
+          cuenta: 0
+        };
+      }
+      materiaStudentAverages[c.materia_id][c.estudianteId].suma += Number(c.promedioFinal);
+      materiaStudentAverages[c.materia_id][c.estudianteId].cuenta++;
     }
   });
 
@@ -55,6 +72,7 @@ async function calcularStatsGrado(grado: any, trimestre: number) {
   const umbralAprobado = Number(cfg.umbralAprobado) || 6.5;
 
   const estudianteEstado: Record<string, string> = {};
+  const materiaEstudianteEstado: Record<string, Record<string, string>> = {};
 
   calificaciones.forEach((c: any) => {
     const tieneNotas = c.calificacionAC !== null || c.calificacionAI !== null || c.examenTrimestral !== null;
@@ -68,6 +86,17 @@ async function calcularStatsGrado(grado: any, trimestre: number) {
     const actual = estudianteEstado[c.estudianteId];
     if (!actual || (materiaEstado === 'REPROBADO') || (materiaEstado === 'CONDICIONADO' && actual === 'APROBADO')) {
       estudianteEstado[c.estudianteId] = materiaEstado;
+    }
+
+    // Per-subject estado
+    if (c.materia_id) {
+      if (!materiaEstudianteEstado[c.materia_id]) {
+        materiaEstudianteEstado[c.materia_id] = {};
+      }
+      const actualMateria = materiaEstudianteEstado[c.materia_id][c.estudianteId];
+      if (!actualMateria || (materiaEstado === 'REPROBADO') || (materiaEstado === 'CONDICIONADO' && actualMateria === 'APROBADO')) {
+        materiaEstudianteEstado[c.materia_id][c.estudianteId] = materiaEstado;
+      }
     }
   });
 
@@ -83,6 +112,31 @@ async function calcularStatsGrado(grado: any, trimestre: number) {
     .sort((a: any, b: any) => b.promedio - a.promedio);
 
   const topIds = new Set(ranking.slice(0, 10).map(s => s.id));
+
+  // Compute per-subject rankings
+  const materiasConRanking = Object.values(materiaAverages).map((m: any) => {
+    const subjectStudents = materiaStudentAverages[m.id] || {};
+    const subjectRanking = Object.values(subjectStudents)
+      .filter((s: any) => s.cuenta > 0)
+      .map((s: any) => ({
+        id: s.id,
+        nombre: s.nombre,
+        numero: s.numero,
+        promedio: s.suma / s.cuenta,
+        estado: materiaEstudianteEstado[m.id]?.[s.id] || estudianteEstado[s.id] || 'APROBADO'
+      }))
+      .sort((a: any, b: any) => b.promedio - a.promedio);
+
+    const subjectTopIds = new Set(subjectRanking.slice(0, 10).map((s: any) => s.id));
+    return {
+      id: m.id,
+      nombre: m.nombre,
+      promedio: m.cuenta > 0 ? Math.round((m.suma / m.cuenta) * 100) / 100 : null,
+      topEstudiantes: subjectRanking.slice(0, 10),
+      alertas: subjectRanking.filter((s: any) => !subjectTopIds.has(s.id)).slice(-10).reverse()
+    };
+  });
+
   return {
     promedios: {
       cotidiana: countAC > 0 ? sumAC / countAC : null,
@@ -91,11 +145,141 @@ async function calcularStatsGrado(grado: any, trimestre: number) {
     },
     topEstudiantes: ranking.slice(0, 10),
     alertas: ranking.filter(s => !topIds.has(s.id)).slice(-10).reverse(),
-    materias: Object.values(materiaAverages).map((m: any) => ({
+    materias: materiasConRanking
+  };
+}
+
+function combinarStats(statsArray: any[]) {
+  const overallStudentAverages: Record<string, { id: string, nombre: string, numero: number, suma: number, cuenta: number }> = {};
+  const overallMateriaAverages: Record<string, { id: string, nombre: string, suma: number, cuenta: number }> = {};
+  const overallMateriaStudentAverages: Record<string, Record<string, { id: string, nombre: string, numero: number, suma: number, cuenta: number }>> = {};
+  const overallEstudianteEstado: Record<string, string> = {};
+  const overallMateriaEstudianteEstado: Record<string, Record<string, string>> = {};
+
+  let sumAC = 0, countAC = 0;
+  let sumAI = 0, countAI = 0;
+  let sumEx = 0, countEx = 0;
+
+  for (const stats of statsArray) {
+    if (stats.promedios.cotidiana !== null) { sumAC += stats.promedios.cotidiana; countAC++; }
+    if (stats.promedios.integradora !== null) { sumAI += stats.promedios.integradora; countAI++; }
+    if (stats.promedios.examen !== null) { sumEx += stats.promedios.examen; countEx++; }
+
+    for (const est of stats.topEstudiantes) {
+      if (!overallStudentAverages[est.id]) {
+        overallStudentAverages[est.id] = { id: est.id, nombre: est.nombre, numero: est.numero, suma: 0, cuenta: 0 };
+      }
+      overallStudentAverages[est.id].suma += est.promedio;
+      overallStudentAverages[est.id].cuenta++;
+      const actual = overallEstudianteEstado[est.id];
+      if (!actual || (est.estado === 'REPROBADO') || (est.estado === 'CONDICIONADO' && actual === 'APROBADO')) {
+        overallEstudianteEstado[est.id] = est.estado;
+      }
+    }
+    for (const est of stats.alertas) {
+      if (!overallStudentAverages[est.id]) {
+        overallStudentAverages[est.id] = { id: est.id, nombre: est.nombre, numero: est.numero, suma: 0, cuenta: 0 };
+      }
+      overallStudentAverages[est.id].suma += est.promedio;
+      overallStudentAverages[est.id].cuenta++;
+      const actual = overallEstudianteEstado[est.id];
+      if (!actual || (est.estado === 'REPROBADO') || (est.estado === 'CONDICIONADO' && actual === 'APROBADO')) {
+        overallEstudianteEstado[est.id] = est.estado;
+      }
+    }
+
+    for (const m of stats.materias) {
+      if (!overallMateriaAverages[m.id]) {
+        overallMateriaAverages[m.id] = { id: m.id, nombre: m.nombre, suma: 0, cuenta: 0 };
+      }
+      if (m.promedio !== null) {
+        overallMateriaAverages[m.id].suma += m.promedio;
+        overallMateriaAverages[m.id].cuenta++;
+      }
+
+      // Subject students
+      for (const est of m.topEstudiantes) {
+        if (!overallMateriaStudentAverages[m.id]) {
+          overallMateriaStudentAverages[m.id] = {};
+        }
+        if (!overallMateriaStudentAverages[m.id][est.id]) {
+          overallMateriaStudentAverages[m.id][est.id] = { id: est.id, nombre: est.nombre, numero: est.numero, suma: 0, cuenta: 0 };
+        }
+        overallMateriaStudentAverages[m.id][est.id].suma += est.promedio;
+        overallMateriaStudentAverages[m.id][est.id].cuenta++;
+        const actualMateria = overallMateriaEstudianteEstado[m.id]?.[est.id];
+        if (!actualMateria || (est.estado === 'REPROBADO') || (est.estado === 'CONDICIONADO' && actualMateria === 'APROBADO')) {
+          if (!overallMateriaEstudianteEstado[m.id]) {
+            overallMateriaEstudianteEstado[m.id] = {};
+          }
+          overallMateriaEstudianteEstado[m.id][est.id] = est.estado;
+        }
+      }
+      for (const est of m.alertas) {
+        if (!overallMateriaStudentAverages[m.id]) {
+          overallMateriaStudentAverages[m.id] = {};
+        }
+        if (!overallMateriaStudentAverages[m.id][est.id]) {
+          overallMateriaStudentAverages[m.id][est.id] = { id: est.id, nombre: est.nombre, numero: est.numero, suma: 0, cuenta: 0 };
+        }
+        overallMateriaStudentAverages[m.id][est.id].suma += est.promedio;
+        overallMateriaStudentAverages[m.id][est.id].cuenta++;
+        const actualMateria = overallMateriaEstudianteEstado[m.id]?.[est.id];
+        if (!actualMateria || (est.estado === 'REPROBADO') || (est.estado === 'CONDICIONADO' && actualMateria === 'APROBADO')) {
+          if (!overallMateriaEstudianteEstado[m.id]) {
+            overallMateriaEstudianteEstado[m.id] = {};
+          }
+          overallMateriaEstudianteEstado[m.id][est.id] = est.estado;
+        }
+      }
+    }
+  }
+
+  const ranking = Object.values(overallStudentAverages)
+    .filter((s: any) => s.cuenta > 0)
+    .map((s: any) => ({
+      id: s.id,
+      nombre: s.nombre,
+      numero: s.numero,
+      promedio: s.suma / s.cuenta,
+      estado: overallEstudianteEstado[s.id] || 'APROBADO'
+    }))
+    .sort((a: any, b: any) => b.promedio - a.promedio);
+
+  const topIds = new Set(ranking.slice(0, 10).map((s: any) => s.id));
+
+  const materiasConRanking = Object.values(overallMateriaAverages).map((m: any) => {
+    const subjectStudents = overallMateriaStudentAverages[m.id] || {};
+    const subjectRanking = Object.values(subjectStudents)
+      .filter((s: any) => s.cuenta > 0)
+      .map((s: any) => ({
+        id: s.id,
+        nombre: s.nombre,
+        numero: s.numero,
+        promedio: s.suma / s.cuenta,
+        estado: overallMateriaEstudianteEstado[m.id]?.[s.id] || overallEstudianteEstado[s.id] || 'APROBADO'
+      }))
+      .sort((a: any, b: any) => b.promedio - a.promedio);
+
+    const subjectTopIds = new Set(subjectRanking.slice(0, 10).map((s: any) => s.id));
+    return {
       id: m.id,
       nombre: m.nombre,
-      promedio: m.cuenta > 0 ? Math.round((m.suma / m.cuenta) * 100) / 100 : null
-    }))
+      promedio: m.cuenta > 0 ? Math.round((m.suma / m.cuenta) * 100) / 100 : null,
+      topEstudiantes: subjectRanking.slice(0, 10),
+      alertas: subjectRanking.filter((s: any) => !subjectTopIds.has(s.id)).slice(-10).reverse()
+    };
+  });
+
+  return {
+    promedios: {
+      cotidiana: countAC > 0 ? sumAC / countAC : null,
+      integradora: countAI > 0 ? sumAI / countAI : null,
+      examen: countEx > 0 ? sumEx / countEx : null
+    },
+    topEstudiantes: ranking.slice(0, 10),
+    alertas: ranking.filter((s: any) => !topIds.has(s.id)).slice(-10).reverse(),
+    materias: materiasConRanking
   };
 }
 
@@ -173,11 +357,17 @@ export async function GET(req: Request) {
           calcularStatsGrado(grado, 3)
         ]);
 
+        const overall = combinarStats([statsT1, statsT2, statsT3]);
+
         return {
           gradoId: grado.id,
           nombre: `${grado.numero}° "${grado.seccion}"`,
           numero: grado.numero,
           seccion: grado.seccion,
+          promedios: overall.promedios,
+          topEstudiantes: overall.topEstudiantes,
+          alertas: overall.alertas,
+          materias: overall.materias,
           trimestres: {
             1: statsT1,
             2: statsT2,
