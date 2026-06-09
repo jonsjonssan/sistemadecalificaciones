@@ -113,9 +113,8 @@ export default function CalificacionesTab({ d, darkMode, usuario }: Props) {
                 <Hash className="h-3.5 w-3.5" />
               </Button>
               {isAdmin(usuario.rol) && (
-                <Button size="sm" variant="destructive" className="h-10 px-3 text-xs font-semibold gap-1.5" onClick={() => { d.setBorrarCalifTipo("grado"); d.setBorrarCalifDialogOpen(true); }}>
+                <Button size="sm" variant="outline" className={`h-10 w-10 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 border-red-200 ${darkMode ? 'bg-slate-800 border-red-900/50 text-red-400 hover:bg-red-950/50 hover:border-red-800' : ''}`} onClick={() => { d.setBorrarCalifTipo("grado"); d.setBorrarCalifDialogOpen(true); }} title="Borrar todas las calificaciones de este grado, materia y trimestre">
                   <Trash2 className="h-3.5 w-3.5" />
-                  <span>Borrar Todo</span>
                 </Button>
               )}
             </div>
