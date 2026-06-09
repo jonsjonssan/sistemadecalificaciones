@@ -108,17 +108,19 @@ export default function BatchActions({ gradoId, materiaId, trimestre, estudiante
   const clearGrades = async () => {
     if (!confirm(`¿Estás seguro de borrar las calificaciones de ${selectedStudents.length} estudiantes?`)) return;
     
-    let success = 0;
-    for (const estudianteId of selectedStudents) {
-      const res = await fetch(`/api/calificaciones?estudianteId=${estudianteId}&materiaId=${materiaId}&trimestre=${trimestre}`, {
-        method: "DELETE",
-        credentials: "include"
-      });
-      if (res.ok) success++;
-    }
+    // Usar el endpoint de borrado múltiple para mejor rendimiento
+    const res = await fetch(`/api/calificaciones?estudianteIds=${selectedStudents.join(",")}&materiaId=${materiaId}&trimestre=${trimestre}`, {
+      method: "DELETE",
+      credentials: "include"
+    });
     
-    toast({ title: "Calificaciones borradas", description: `${success}/${selectedStudents.length} eliminadas` });
-    onActionComplete();
+    if (res.ok) {
+      const data = await res.json();
+      toast({ title: "Calificaciones borradas", description: `${data.borradas} calificaciones eliminadas` });
+      onActionComplete();
+    } else {
+      toast({ title: "Error al borrar calificaciones", variant: "destructive" });
+    }
   };
 
   const setGradeForAll = async () => {
