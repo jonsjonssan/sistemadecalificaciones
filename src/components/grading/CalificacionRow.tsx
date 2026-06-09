@@ -347,7 +347,9 @@ useEffect(() => {
   const syncedFromPropsRef = useRef(false);
 
   useEffect(() => {
+    // Si está dirty (usuario editando), no sincronizar desde props
     if (dirty) return;
+    
     const prevSynced = syncedFromPropsRef.current;
     const newAC = parseNotas(calificacion?.actividadesCotidianas ?? null, numAC);
     const newAI = parseNotas(calificacion?.actividadesIntegradoras ?? null, numAI);
@@ -355,8 +357,34 @@ useEffect(() => {
     const newEx = calificacion?.examenTrimestral ?? null;
     const newRc = calificacion?.recuperacion ?? null;
 
-    const localHasData = acNotas.some(n => n !== null) || aiNotas.some(n => n !== null) || examenNotas.some(n => n !== null) || examen !== null || recup !== null;
-    const incomingHasData = newAC.some(n => n !== null) || newAI.some(n => n !== null) || newExNotas.some(n => n !== null) || newEx !== null || newRc !== null;
+    // Verificar si los datos entrantes están vacíos (post-borrado)
+    const incomingIsEmpty = !newAC.some(n => n !== null) && !newAI.some(n => n !== null) && 
+                           !newExNotas.some(n => n !== null) && newEx === null && newRc === null;
+    
+    // Si los datos entrantes están vacíos, SIEMPRE sincronizar (es un borrado)
+    if (incomingIsEmpty) {
+      setAcNotas(newAC);
+      setAiNotas(newAI);
+      setExamenNotas(newExNotas);
+      setExamen(newEx);
+      setRecup(newRc);
+      setDirty(false);
+      setSaveError(false);
+      retryCountRef.current = 0;
+      if (retryTimerRef.current) {
+        clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = null;
+      }
+      if (!prevSynced) syncedFromPropsRef.current = true;
+      return;
+    }
+
+    // Protección contra sobreescribir datos locales recientes con datos vacíos del servidor
+    const localHasData = acNotas.some(n => n !== null) || aiNotas.some(n => n !== null) || 
+                        examenNotas.some(n => n !== null) || examen !== null || recup !== null;
+    const incomingHasData = newAC.some(n => n !== null) || newAI.some(n => n !== null) || 
+                           newExNotas.some(n => n !== null) || newEx !== null || newRc !== null;
+    
     if (localHasData && !incomingHasData && Date.now() - lastSavedAtRef.current < 5000) {
       if (!prevSynced) syncedFromPropsRef.current = true;
       return;

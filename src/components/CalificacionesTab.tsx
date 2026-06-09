@@ -14,7 +14,7 @@ import ResumenAsignaturas from "@/components/ResumenAsignaturas";
 import {
   School, Save, RefreshCw, Settings, Hash, Search, FileText, Download,
   ChevronDown, ChevronUp, ClipboardList, AlertTriangle, GraduationCap,
-  BookOpen, Filter, BarChart3, CheckCircle, Clock, XCircle
+  BookOpen, Filter, BarChart3, CheckCircle, Clock, XCircle, Trash2
 } from "lucide-react";
 import { Calificacion } from "@/types";
 import { isAdmin } from "@/utils/roleHelpers";
@@ -112,6 +112,12 @@ export default function CalificacionesTab({ d, darkMode, usuario }: Props) {
               <Button size="sm" variant={d.promedioDecimal ? "default" : "outline"} className={`h-10 w-10 p-0 ${!d.promedioDecimal && darkMode ? 'bg-slate-800 border-white/20 text-slate-300' : ''}`} onClick={() => d.setPromedioDecimal(!d.promedioDecimal)}>
                 <Hash className="h-3.5 w-3.5" />
               </Button>
+              {isAdmin(usuario.rol) && (
+                <Button size="sm" variant="destructive" className="h-10 px-3 text-xs font-semibold gap-1.5" onClick={() => { d.setBorrarCalifTipo("grado"); d.setBorrarCalifDialogOpen(true); }}>
+                  <Trash2 className="h-3.5 w-3.5" />
+                  <span>Borrar Todo</span>
+                </Button>
+              )}
             </div>
           </div>
         </div>
