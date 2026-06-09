@@ -15,6 +15,7 @@ import { GradeChart } from "@/components/ui/grade-chart";
 import { MathInfoButton, mathExplanations } from "./MathInfoButton";
 import { CiclosSection } from "./CiclosSection";
 import { PromedioCircular } from "./PromedioCircular";
+import { EscalaDesempeno } from "./EscalaDesempeno";
 import { CheckCircle2, AlertCircle, MinusCircle } from "lucide-react";
 import { CICLOS, getCicloDark, CicloAsignaturas } from "@/lib/ciclos";
 
@@ -689,6 +690,11 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
               )}
             </CardContent>
           </Card>
+
+          {/* Escala de Desempeño */}
+          <div className="animate-fade-slide-up" style={{ animationDelay: '0.18s' }}>
+            <EscalaDesempeno gradoId={esDocente ? gradoAsignado || undefined : undefined} esAdmin={esDirectiva} />
+          </div>
         </div>
 
         {/* ----- RIGHT COLUMN: Sidebar ----- */}

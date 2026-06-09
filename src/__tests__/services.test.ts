@@ -14,6 +14,7 @@ describe("api service - integration checks", () => {
     expect(typeof api.asistencia).toBe("object");
     expect(typeof api.admin).toBe("object");
     expect(typeof api.init).toBe("object");
+    expect(typeof api.stats.escalaDesempeno).toBe("function");
   });
 
   it("ApiError es una clase Error", () => {

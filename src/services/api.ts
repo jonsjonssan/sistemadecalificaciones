@@ -319,6 +319,8 @@ export const api = {
       request<unknown>("/api/stats/dashboard"),
     avanceDocentes: () =>
       request<unknown>("/api/stats/avance-docentes"),
+    escalaDesempeno: (params?: { trimestre?: string; gradoId?: string }) =>
+      request<unknown>("/api/stats/escala-desempeno", { params }),
   },
 
   // Alerts

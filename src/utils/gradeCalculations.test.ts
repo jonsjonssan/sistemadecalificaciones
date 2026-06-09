@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseNotas, calcularPromedio, calcularPromedioFinal, getEstadoCompletitud } from './gradeCalculations';
+import { parseNotas, calcularPromedio, calcularPromedioFinal, getEstadoCompletitud, clasificarEscala } from './gradeCalculations';
 import { ConfigActividadPartial, Calificacion } from '@/types';
 
 const defaultConfig: ConfigActividadPartial = {
@@ -429,5 +429,35 @@ describe('Flujo completo multi-examen - notas de examen a promedio final', () =>
 
   it('parseNotas con string vacío', () => {
     expect(parseNotas('[]', 3)).toEqual([null, null, null]);
+  });
+});
+
+describe('clasificarEscala', () => {
+  const umbrales = { condicionado: 4.5, aprobado: 6.5 };
+
+  it('clasifica como REPROBADO cuando promedio < 4.5', () => {
+    expect(clasificarEscala(0, umbrales)).toBe('REPROBADO');
+    expect(clasificarEscala(2.5, umbrales)).toBe('REPROBADO');
+    expect(clasificarEscala(4.49, umbrales)).toBe('REPROBADO');
+  });
+
+  it('clasifica como CONDICIONADO cuando 4.5 <= promedio < 6.5', () => {
+    expect(clasificarEscala(4.5, umbrales)).toBe('CONDICIONADO');
+    expect(clasificarEscala(5.0, umbrales)).toBe('CONDICIONADO');
+    expect(clasificarEscala(6.49, umbrales)).toBe('CONDICIONADO');
+  });
+
+  it('clasifica como APROBADO cuando promedio >= 6.5', () => {
+    expect(clasificarEscala(6.5, umbrales)).toBe('APROBADO');
+    expect(clasificarEscala(8.0, umbrales)).toBe('APROBADO');
+    expect(clasificarEscala(10, umbrales)).toBe('APROBADO');
+  });
+
+  it('funciona con umbrales personalizados', () => {
+    const customUmbrales = { condicionado: 5.0, aprobado: 7.0 };
+    expect(clasificarEscala(4.9, customUmbrales)).toBe('REPROBADO');
+    expect(clasificarEscala(5.0, customUmbrales)).toBe('CONDICIONADO');
+    expect(clasificarEscala(6.9, customUmbrales)).toBe('CONDICIONADO');
+    expect(clasificarEscala(7.0, customUmbrales)).toBe('APROBADO');
   });
 });

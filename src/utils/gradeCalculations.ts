@@ -63,6 +63,15 @@ export const calcularPromedioFinal = (
   return base;
 };
 
+export const clasificarEscala = (
+  promedio: number,
+  umbrales: { condicionado: number; aprobado: number }
+): "REPROBADO" | "CONDICIONADO" | "APROBADO" => {
+  if (promedio < umbrales.condicionado) return "REPROBADO";
+  if (promedio < umbrales.aprobado) return "CONDICIONADO";
+  return "APROBADO";
+};
+
 export const parseNotas = (json: string | null, count: number): (number | null)[] => {
   if (!json) return Array(count).fill(null);
   try {

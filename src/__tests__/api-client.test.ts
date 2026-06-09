@@ -79,3 +79,31 @@ describe("api.estudiantes", () => {
     expect(callUrl).toContain("gradoId=grado-1");
   });
 });
+
+describe("api.stats", () => {
+  it("escalaDesempeno llama al endpoint correcto con params", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve([{ gradoId: "1", gradoNombre: "2° A" }]),
+      text: () => Promise.resolve(JSON.stringify([{ gradoId: "1", gradoNombre: "2° A" }])),
+    });
+
+    await api.stats.escalaDesempeno({ trimestre: "all", gradoId: "grado-1" });
+    const callUrl = mockFetch.mock.calls[0][0];
+    expect(callUrl).toContain("/api/stats/escala-desempeno");
+    expect(callUrl).toContain("trimestre=all");
+    expect(callUrl).toContain("gradoId=grado-1");
+  });
+
+  it("escalaDesempeno funciona sin params", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve([]),
+      text: () => Promise.resolve(JSON.stringify([])),
+    });
+
+    await api.stats.escalaDesempeno();
+    const callUrl = mockFetch.mock.calls[0][0];
+    expect(callUrl).toBe("/api/stats/escala-desempeno");
+  });
+});
