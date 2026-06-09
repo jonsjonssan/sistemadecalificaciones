@@ -18,6 +18,7 @@ import { PromedioCircular } from "./PromedioCircular";
 import { EscalaDesempeno } from "./EscalaDesempeno";
 import { CheckCircle2, AlertCircle, MinusCircle } from "lucide-react";
 import { CICLOS, getCicloDark, CicloAsignaturas } from "@/lib/ciclos";
+import { AgentAlertsPanel } from "./AgentAlertsPanel";
 
 interface UsuarioSesion { id: string; email: string; nombre: string; rol: string; asignaturasAsignadas?: Array<{ gradoId: string }>; }
 interface Grado { id: string; numero: number; seccion: string; _count?: { estudiantes: number; materias: number; }; }
@@ -707,6 +708,9 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
               )}
             </CardContent>
           </Card>
+
+          {/* Agent Monitor Alerts */}
+          <AgentAlertsPanel darkMode={darkMode} onNavigate={onNavigate} />
 
           {/* Mis Asignaturas (docente only) */}
           {esDocente && asignaturasAsignadas && asignaturasAsignadas.length > 0 && (

@@ -51,6 +51,7 @@ model Grado {
   materias      Materia[]
   asistencias   Asistencia[]
   observaciones ObservacionBoleta[]
+  agenteAlertas AgentAlert[]
   docente       Usuario? @relation("GradoOrientador", fields: [docenteId], references: [id])
 
   @@index([numero])
@@ -74,6 +75,7 @@ model Estudiante {
   asistencia    Asistencia[]
   observaciones ObservacionBoleta[]
   recuperacionesAnuales RecuperacionAnual[]
+  agentAlerts   AgentAlert[]
 
   @@index([gradoId, activo])
   @@index([nombre])
@@ -94,6 +96,7 @@ model Materia {
   docentesAsignados  DocenteMateria[] // Para grados 6-9
   asistencia        Asistencia[]
   recuperacionesAnuales RecuperacionAnual[]
+  agentAlerts       AgentAlert[]
 
   @@index([gradoId])
   @@index([nombre])
@@ -332,4 +335,54 @@ model LoginSession {
   @@index([usuarioId])
   @@index([loginAt])
   @@index([isActive])
+}
+
+// Alertas del Agente Monitor - detecta estudiantes en riesgo automáticamente
+model AgentAlert {
+  id              String   @id @default(cuid())
+  tipo            String   // "riesgo_alto" | "riesgo_medio" | "bajo_rendimiento" | "asistencia_critica"
+  estudianteId    String
+  gradoId         String
+  materiaId       String?  // null si es alerta general del grado
+  trimestre       Int      // trimestre analizado
+  puntajeRiesgo   Float    // 0.0 a 1.0 (probabilidad de reprobación)
+  factores        String   // JSON: array de factores que contribuyeron al riesgo
+  recomendacion   String   // texto con sugerencias de intervención
+  leido           Boolean  @default(false)
+  resuelto        Boolean  @default(false)
+  ejecucionId     String   // ID de la ejecución del agente que generó esta alerta
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  estudiante      Estudiante @relation(fields: [estudianteId], references: [id], onDelete: Cascade)
+  grado           Grado      @relation(fields: [gradoId], references: [id], onDelete: Cascade)
+  materia         Materia?   @relation(fields: [materiaId], references: [id], onDelete: SetNull)
+
+  @@index([estudianteId])
+  @@index([gradoId])
+  @@index([tipo])
+  @@index([leido])
+  @@index([resuelto])
+  @@index([ejecucionId])
+  @@index([createdAt])
+}
+
+// Log de ejecuciones del Agente Monitor
+model AgentLog {
+  id              String   @id @default(cuid())
+  tipo            String   // "ejecucion_mensual" | "ejecucion_manual" | "consulta"
+  iniciadoPor     String?  // usuario que inició (null si fue automático)
+  gradosAnalizados Int     @default(0)
+  estudiantesAnalizados Int @default(0)
+  alertasGeneradas Int     @default(0)
+  alertasAltoRiesgo Int    @default(0)
+  alertasMedioRiesgo Int   @default(0)
+  duracionMs      Int      @default(0)
+  errores         String?  // JSON con errores si los hubo
+  resumen         String?  // texto resumen de la ejecución
+  createdAt       DateTime @default(now())
+
+  @@index([tipo])
+  @@index([createdAt])
+  @@index([iniciadoPor])
 }

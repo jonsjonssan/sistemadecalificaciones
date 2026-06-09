@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informe Técnico-Pedagógico - Sistema de Gestión de Calificaciones Escolares</title>
+    <style>
+        @media print {
+            @page {
+                margin: 2cm;
+                size: A4;
+            }
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .no-print {
+                display: none;
+            }
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #1a1a1a;
+            max-width: 210mm;
+            margin: 0 auto;
+            padding: 20mm;
+            background: #fff;
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #1e40af;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            color: #1e40af;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header h2 {
+            font-size: 18px;
+            color: #374151;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .header .meta {
+            font-size: 12px;
+            color: #6b7280;
+            line-height: 1.8;
+        }
+        
+        .header .meta strong {
+            color: #374151;
+        }
+        
+        h2 {
+            font-size: 18px;
+            color: #1e40af;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e5e7eb;
+            font-weight: 700;
+        }
+        
+        h3 {
+            font-size: 15px;
+            color: #374151;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        h4 {
+            font-size: 13px;
+            color: #4b5563;
+            margin-top: 15px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        p {
+            margin-bottom: 12px;
+            text-align: justify;
+            font-size: 12px;
+        }
+        
+        ul, ol {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+        
+        li {
+            margin-bottom: 6px;
+            font-size: 12px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 11px;
+        }
+        
+        th {
+            background: #1e40af;
+            color: white;
+            padding: 10px 8px;
+            text-align: left;
+            font-weight: 600;
+            border: 1px solid #1e40af;
+        }
+        
+        td {
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            vertical-align: top;
+        }
+        
+        tr:nth-child(even) {
+            background: #f9fafb;
+        }
+        
+        .code-block {
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            margin: 12px 0;
+            overflow-x: auto;
+        }
+        
+        .highlight {
+            background: #fef3c7;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        
+        .section-divider {
+            border: none;
+            border-top: 2px solid #e5e7eb;
+            margin: 25px 0;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            padding-top: 15px;
+            border-top: 2px solid #e5e7eb;
+            text-align: center;
+            font-size: 10px;
+            color: #9ca3af;
+            font-style: italic;
+        }
+        
+        .print-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #1e40af;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        
+        .print-button:hover {
+            background: #1e3a8a;
+        }
+        
+        strong {
+            color: #1f2937;
+        }
+        
+        .anexo-title {
+            background: #f3f4f6;
+            padding: 8px 12px;
+            border-left: 4px solid #1e40af;
+            margin: 20px 0 10px 0;
+            font-weight: 600;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <button class="print-button no-print" onclick="window.print()">📄 Guardar como PDF</button>
+    
+    <div class="header">
+        <h1>INFORME TÉCNICO-PEDAGÓGICO</h1>
+        <h2>Sistema de Gestión de Calificaciones Escolares</h2>
+        <div class="meta">
+            <strong>Presentado ante:</strong> Panel de Docentes y Directivos<br>
+            <strong>Fecha:</strong> Junio 2026<br>
+            <strong>Elaborado por:</strong> Equipo de Desarrollo del Sistema<br>
+            <strong>Versión del sistema:</strong> 0.2.0
+        </div>
+    </div>
+
+    <h2>1. INTRODUCCIÓN</h2>
+    <p>El presente informe tiene como objetivo exponer ante el panel docente las características técnicas, pedagógicas y operativas del <strong>Sistema de Gestión de Calificaciones Escolares</strong> desarrollado para la institución. Este sistema nace como respuesta a la necesidad de digitalizar, centralizar y automatizar los procesos de evaluación académica, reemplazando los métodos manuales tradicionales por una plataforma web segura, confiable y de fácil uso.</p>
+    <p>El sistema permite registrar, calcular, almacenar y reportar las calificaciones de los estudiantes a lo largo del año escolar, brindando a docentes y directivos herramientas de análisis en tiempo real para la toma de decisiones pedagógicas fundamentadas.</p>
+
+    <h2>2. LÓGICA DE FUNCIONAMIENTO</h2>
+    <p>El sistema opera bajo un modelo de <strong>tres trimestres académicos</strong>, con una estructura jerárquica clara que refleja la organización natural de una institución educativa:</p>
+    <div class="code-block">
+Año Escolar
+  └── Grados (2° A, 3° A, ... 9° A)
+        ├── Estudiantes
+        └── Asignaturas (Matemáticas, Lengua, Ciencias...)
+              └── Calificaciones por Trimestre
+    </div>
+    
+    <h3>Principios de diseño:</h3>
+    <ul>
+        <li><strong>Centralización:</strong> toda la información académica reside en una única base de datos segura, accesible desde cualquier dispositivo con conexión a internet.</li>
+        <li><strong>Automatización:</strong> los cálculos de promedios, estados y rankings se ejecutan automáticamente al registrar o modificar una calificación, eliminando errores humanos.</li>
+        <li><strong>Multirol:</strong> cada usuario accede únicamente a la información pertinente a su rol (Administrador, Directora, Codirectora, Docente, Docente Orientador).</li>
+        <li><strong>Trazabilidad:</strong> cada modificación queda registrada en un historial de auditoría, garantizando transparencia y responsabilidad.</li>
+    </ul>
+
+    <h2>3. TECNOLOGÍA EMPLEADA</h2>
+    <p>El sistema ha sido construido con tecnologías modernas, robustas y de código abierto, garantizando su mantenimiento a largo plazo y su escalabilidad.</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Capa</th>
+                <th>Tecnología</th>
+                <th>Justificación</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Frontend</strong></td>
+                <td>Next.js 14 + React 18 + TypeScript</td>
+                <td>Framework líder para aplicaciones web interactivas, con renderizado rápido y tipado estricto.</td>
+            </tr>
+            <tr>
+                <td><strong>Estilos</strong></td>
+                <td>Tailwind CSS + shadcn/ui</td>
+                <td>Diseño responsivo y accesible, consistente en todos los dispositivos.</td>
+            </tr>
+            <tr>
+                <td><strong>Base de datos</strong></td>
+                <td>PostgreSQL (Neon Cloud) + Prisma ORM</td>
+                <td>Base de datos relacional robusta, con respaldo automático en la nube.</td>
+            </tr>
+            <tr>
+                <td><strong>Autenticación</strong></td>
+                <td>Sesiones HTTP + Google OAuth 2.0</td>
+                <td>Acceso seguro con credenciales institucionales o cuenta Google.</td>
+            </tr>
+            <tr>
+                <td><strong>Visualización</strong></td>
+                <td>Recharts</td>
+                <td>Gráficos interactivos para estadísticas y reportes.</td>
+            </tr>
+            <tr>
+                <td><strong>Exportación</strong></td>
+                <td>jsPDF + jspdf-autotable</td>
+                <td>Generación de boletas y reportes en formato PDF.</td>
+            </tr>
+            <tr>
+                <td><strong>Pruebas</strong></td>
+                <td>Vitest + Playwright</td>
+                <td>Validación automatizada del 100% de la lógica de cálculo.</td>
+            </tr>
+            <tr>
+                <td><strong>Infraestructura</strong></td>
+                <td>Vercel (hosting) + Neon (base de datos)</td>
+                <td>Despliegue continuo, alta disponibilidad y escalado automático.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>4. ESTRUCTURA GENERAL DEL SISTEMA</h2>
+    
+    <h3>4.1 Módulos principales</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Módulo</th>
+                <th>Descripción</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Inicio (Dashboard)</strong></td><td>Panel de control con estadísticas institucionales: promedios por trimestre y anual, escala de desempeño, cuadro de honor y alertas.</td></tr>
+            <tr><td><strong>Notas</strong></td><td>Registro y edición de calificaciones por grado, asignatura y trimestre.</td></tr>
+            <tr><td><strong>Lista (Asistencia)</strong></td><td>Control diario de asistencia con modos automático y manual.</td></tr>
+            <tr><td><strong>Alumnos</strong></td><td>Gestión del registro de estudiantes por grado.</td></tr>
+            <tr><td><strong>Boletas</strong></td><td>Generación e impresión de boletas individuales en PDF.</td></tr>
+            <tr><td><strong>Enlaces</strong></td><td>Repositorio de recursos y enlaces educativos.</td></tr>
+            <tr><td><strong>Reportes</strong></td><td>Exportación de datos en formatos CSV y PDF.</td></tr>
+            <tr><td><strong>Avance</strong></td><td>Seguimiento del progreso de calificación por docente (solo admin).</td></tr>
+            <tr><td><strong>Administración</strong></td><td>Gestión de usuarios, configuración del sistema y auditoría (solo admin).</td></tr>
+        </tbody>
+    </table>
+
+    <h3>4.2 Roles y permisos</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Rol</th>
+                <th>Acceso</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Administrador</strong></td><td>Control total del sistema: usuarios, configuración, reportes globales.</td></tr>
+            <tr><td><strong>Directora / Codirectora</strong></td><td>Visualización de estadísticas institucionales, reportes y avance docente.</td></tr>
+            <tr><td><strong>Docente</strong></td><td>Registro de calificaciones y asistencia de sus asignaturas asignadas.</td></tr>
+            <tr><td><strong>Docente Orientador</strong></td><td>Acceso ampliado a información de estudiantes para acompañamiento pedagógico.</td></tr>
+        </tbody>
+    </table>
+
+    <h2>5. PROCESO DE REGISTRO Y CÁLCULO DE NOTAS</h2>
+    
+    <h3>5.1 Configuración inicial (Administrador)</h3>
+    <ol>
+        <li>Se define el <strong>año escolar</strong> y los datos de la institución.</li>
+        <li>Se crean los <strong>grados y secciones</strong> (ej.: 2° "A", 3° "B").</li>
+        <li>Se registran los <strong>estudiantes</strong> en cada grado.</li>
+        <li>Se crean las <strong>asignaturas</strong> por grado.</li>
+        <li>Se registran los <strong>docentes</strong> y se les asignan sus materias.</li>
+    </ol>
+
+    <h3>5.2 Configuración por materia y trimestre (Docente)</h3>
+    <p>Para cada asignatura y trimestre, el docente define:</p>
+    <ul>
+        <li>Número de <strong>Actividades Cotidianas (AC)</strong>.</li>
+        <li>Número de <strong>Actividades Integradoras (AI)</strong>.</li>
+        <li>Si aplica <strong>Examen Trimestral</strong>.</li>
+        <li><strong>Porcentajes de ponderación</strong> (deben sumar 100%).</li>
+    </ul>
+    
+    <p><strong>Configuración por defecto institucional:</strong></p>
+    <table>
+        <thead>
+            <tr>
+                <th>Componente</th>
+                <th>Peso</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>Actividades Cotidianas (AC)</td><td>35%</td></tr>
+            <tr><td>Actividades Integradoras (AI)</td><td>35%</td></tr>
+            <tr><td>Examen Trimestral</td><td>30%</td></tr>
+        </tbody>
+    </table>
+
+    <h3>5.3 Registro de calificaciones</h3>
+    <p>El docente ingresa las notas en una escala de <strong>0 a 10</strong> para cada estudiante:</p>
+    <div class="code-block">
+Nota Final = (AC × 0.35) + (AI × 0.35) + (Examen × 0.30)
+    </div>
+    <p>El sistema calcula automáticamente:</p>
+    <ul>
+        <li><strong>Promedio de Actividades Cotidianas (calificacionAC)</strong></li>
+        <li><strong>Promedio de Actividades Integradoras (calificacionAI)</strong></li>
+        <li><strong>Promedio Final ponderado</strong></li>
+    </ul>
+
+    <h3>5.4 Escala de desempeño y estados</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Rango</th>
+                <th>Estado</th>
+                <th>Color</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>0.00 – 4.49</td><td><strong>Reprobado</strong></td><td>Rojo</td></tr>
+            <tr><td>4.50 – 6.49</td><td><strong>Condicionado</strong></td><td>Naranja</td></tr>
+            <tr><td>6.50 – 10.00</td><td><strong>Aprobado</strong></td><td>Verde</td></tr>
+        </tbody>
+    </table>
+    <p>Los umbrales son <strong>configurables</strong> por la administración del sistema, permitiendo adaptarlos a las normativas institucionales vigentes.</p>
+
+    <h3>5.5 Recuperación académica</h3>
+    <p>El sistema permite registrar una nota de <strong>recuperación</strong> por estudiante y materia. Esta nota se integra al promedio final según la fórmula institucional, reflejándose en la boleta y en los reportes estadísticos.</p>
+
+    <h3>5.6 Cálculo del promedio anual</h3>
+    <p>El promedio anual de cada grado se obtiene como el <strong>promedio aritmético de los tres trimestres</strong>:</p>
+    <div class="code-block">
+Promedio Anual = (T1 + T2 + T3) / 3
+    </div>
+    <p>Este cálculo se realiza automáticamente por el sistema, asegurando coherencia entre las vistas trimestrales y la vista anual.</p>
+
+    <h2>6. CONTROLES DE VERIFICACIÓN</h2>
+    <p>El sistema implementa múltiples capas de validación para garantizar la integridad y confiabilidad de los datos:</p>
+
+    <h3>6.1 Validaciones de entrada</h3>
+    <ul>
+        <li>Las notas deben estar dentro del rango <strong>0–10</strong>.</li>
+        <li>Los porcentajes de ponderación deben sumar exactamente <strong>100%</strong>.</li>
+        <li>No se permiten calificaciones duplicadas para el mismo estudiante, materia y trimestre.</li>
+    </ul>
+
+    <h3>6.2 Validaciones de consistencia</h3>
+    <ul>
+        <li>El sistema verifica que el estudiante pertenezca al grado de la materia antes de guardar.</li>
+        <li>Los docentes solo pueden modificar calificaciones de sus asignaturas asignadas.</li>
+        <li>El cambio de trimestre con datos sin guardar solicita confirmación al usuario.</li>
+    </ul>
+
+    <h3>6.3 Trazabilidad y auditoría</h3>
+    <ul>
+        <li>Cada modificación de calificación queda registrada en el <strong>historial de calificaciones</strong> (fecha, usuario, valor anterior, valor nuevo).</li>
+        <li>Las acciones administrativas se registran en el <strong>log de auditoría</strong> (acciones, usuarios, entidades afectadas).</li>
+        <li>Las sesiones de acceso se registran con fecha, hora y dirección IP.</li>
+    </ul>
+
+    <h3>6.4 Respaldo y recuperación</h3>
+    <ul>
+        <li>La base de datos en la nube realiza <strong>respaldos automáticos</strong>.</li>
+        <li>El sistema permite <strong>importar calificaciones</strong> desde archivos CSV, facilitando la migración desde sistemas anteriores.</li>
+        <li>El <strong>auto-guardado</strong> detecta cambios pendientes y previene la pérdida de datos ante cierres accidentales.</li>
+    </ul>
+
+    <h3>6.5 Pruebas automatizadas</h3>
+    <p>El sistema cuenta con <strong>276 pruebas unitarias</strong> que validan continuamente:</p>
+    <ul>
+        <li>Cálculos de promedios y ponderaciones.</li>
+        <li>Clasificación de estados (Reprobado, Condicionado, Aprobado).</li>
+        <li>Asignación y verificación de roles.</li>
+        <li>Validaciones de seguridad y permisos.</li>
+    </ul>
+
+    <h2>7. VENTAJAS PARA LA GESTIÓN ACADÉMICA</h2>
+    
+    <h3>7.1 Para el docente</h3>
+    <ul>
+        <li><strong>Ahorro de tiempo:</strong> los cálculos se realizan automáticamente; el docente solo ingresa las notas.</li>
+        <li><strong>Visión clara del grupo:</strong> el Cuadro de Honor y las Alertas identifican rápidamente a estudiantes destacados y en riesgo.</li>
+        <li><strong>Seguimiento continuo:</strong> el avance por trimestre permite detectar problemas a tiempo.</li>
+        <li><strong>Flexibilidad:</strong> la configuración de actividades y ponderaciones se adapta a cada materia.</li>
+    </ul>
+
+    <h3>7.2 Para la dirección</h3>
+    <ul>
+        <li><strong>Monitoreo institucional:</strong> el Dashboard muestra promedios por ciclo (Inicial, Primaria, Secundaria) y por trimestre en tiempo real.</li>
+        <li><strong>Toma de decisiones basada en datos:</strong> la Escala de Desempeño identifica grados y asignaturas que requieren intervención pedagógica.</li>
+        <li><strong>Control de avance docente:</strong> el módulo de Avance permite verificar el cumplimiento del registro de calificaciones.</li>
+        <li><strong>Reportes automáticos:</strong> generación de boletas y reportes institucionales sin trabajo manual.</li>
+    </ul>
+
+    <h3>7.3 Para la institución</h3>
+    <ul>
+        <li><strong>Centralización:</strong> toda la información académica en un solo lugar, accesible desde cualquier dispositivo.</li>
+        <li><strong>Seguridad:</strong> autenticación con roles, sesiones cifradas y respaldo en la nube.</li>
+        <li><strong>Sostenibilidad:</strong> reducción del uso de papel mediante boletas y reportes digitales.</li>
+        <li><strong>Continuidad:</strong> el sistema permanece disponible 24/7, incluso en modalidad virtual.</li>
+    </ul>
+
+    <h3>7.4 Para los estudiantes y familias</h3>
+    <ul>
+        <li><strong>Transparencia:</strong> las calificaciones están disponibles de forma inmediata tras su registro.</li>
+        <li><strong>Retroalimentación oportuna:</strong> los estados (Aprobado, Condicionado, Reprobado) se comunican claramente.</li>
+        <li><strong>Boletas digitales:</strong> acceso a reportes formales en formato PDF.</li>
+    </ul>
+
+    <h2>8. POSIBLES MEJORAS</h2>
+    <p>Aunque el sistema cumple con los requisitos actuales, se identifican las siguientes oportunidades de mejora para futuras versiones:</p>
+
+    <h3>8.1 Mejoras técnicas</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Mejora</th>
+                <th>Impacto</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Aplicación móvil nativa</strong> (iOS/Android)</td><td>Acceso offline para docentes en zonas con conectividad limitada.</td></tr>
+            <tr><td><strong>Notificaciones push</strong></td><td>Alertas automáticas a padres sobre calificaciones, asistencia y citaciones.</td></tr>
+            <tr><td><strong>Modo offline con sincronización</strong></td><td>Registro de notas sin conexión, con sincronización automática al reconectar.</td></tr>
+            <tr><td><strong>Firma digital de boletas</strong></td><td>Validez legal de documentos académicos digitales.</td></tr>
+        </tbody>
+    </table>
+
+    <h3>8.2 Mejoras pedagógicas</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Mejora</th>
+                <th>Impacto</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Análisis predictivo de rendimiento</strong></td><td>Identificación temprana de estudiantes en riesgo de deserción o reprobación.</td></tr>
+            <tr><td><strong>Rúbricas de evaluación integradas</strong></td><td>Evaluación por competencias con criterios detallados.</td></tr>
+            <tr><td><strong>Portafolio digital del estudiante</strong></td><td>Registro longitudinal del desempeño a lo largo de los años.</td></tr>
+            <tr><td><strong>Módulo de comunicación docente-padre</strong></td><td>Mensajería interna para seguimiento personalizado.</td></tr>
+        </tbody>
+    </table>
+
+    <h3>8.3 Mejoras institucionales</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Mejora</th>
+                <th>Impacto</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>Integración con plataformas LMS</strong> (Moodle, Google Classroom)</td><td>Interoperabilidad con herramientas educativas existentes.</td></tr>
+            <tr><td><strong>Panel para padres de familia</strong></td><td>Consulta de calificaciones, asistencia y boletas en tiempo real.</td></tr>
+            <tr><td><strong>Reportes para el Ministerio de Educación</strong></td><td>Exportación en formatos oficiales requeridos.</td></tr>
+            <tr><td><strong>Analítica avanzada</strong></td><td>Dashboards comparativos entre años, grados y asignaturas.</td></tr>
+        </tbody>
+    </table>
+
+    <h2>9. CONCLUSIONES</h2>
+    <p>El Sistema de Gestión de Calificaciones Escolares representa un avance significativo en la modernización de los procesos académicos de la institución. Sus principales fortalezas son:</p>
+    <ol>
+        <li><strong>Confiabilidad:</strong> los cálculos automáticos eliminan errores humanos y garantizan consistencia en los promedios.</li>
+        <li><strong>Accesibilidad:</strong> la plataforma web permite el acceso desde cualquier dispositivo, en cualquier momento.</li>
+        <li><strong>Seguridad:</strong> los roles, permisos y trazabilidad protegen la integridad de la información.</li>
+        <li><strong>Pedagogía:</strong> las herramientas de análisis (Dashboard, Escala de Desempeño, Alertas) apoyan la toma de decisiones docentes y directivas.</li>
+        <li><strong>Sostenibilidad:</strong> la digitalización reduce costos operativos y el impacto ambiental.</li>
+    </ol>
+    <p>El sistema está diseñado para crecer junto con la institución, incorporando las mejoras identificadas en futuras iteraciones. Se recomienda su adopción progresiva, acompañada de capacitación docente continua, para maximizar sus beneficios pedagógicos y operativos.</p>
+
+    <div class="anexo-title">ANEXO A: Glosario técnico</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Término</th>
+                <th>Definición</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><strong>AC</strong></td><td>Actividades Cotidianas: evaluaciones formativas regulares.</td></tr>
+            <tr><td><strong>AI</strong></td><td>Actividades Integradoras: evaluaciones sumativas de mayor complejidad.</td></tr>
+            <tr><td><strong>Dashboard</strong></td><td>Panel de control con indicadores clave de rendimiento.</td></tr>
+            <tr><td><strong>Escala de Desempeño</strong></td><td>Clasificación de estudiantes en Reprobado, Condicionado y Aprobado.</td></tr>
+            <tr><td><strong>Promedio Ponderado</strong></td><td>Cálculo que asigna diferentes pesos a cada componente de evaluación.</td></tr>
+            <tr><td><strong>Trimestre</strong></td><td>Período académico de aproximadamente 3 meses; el año escolar comprende 3 trimestres.</td></tr>
+            <tr><td><strong>Umbral</strong></td><td>Valor mínimo para alcanzar un estado (ej.: 6.5 para Aprobado).</td></tr>
+        </tbody>
+    </table>
+
+    <div class="anexo-title">ANEXO B: Referencias técnicas</div>
+    <ul>
+        <li>Documentación del sistema: <code>/docs/</code> en el repositorio del proyecto.</li>
+        <li>Reporte de pruebas QA: <code>QA_REPORT_DASHBOARD.md</code>.</li>
+        <li>Código fuente: repositorio institucional privado.</li>
+    </ul>
+
+    <div class="footer">
+        Documento elaborado para presentación ante el Panel de Docentes. Junio 2026.
+    </div>
+</body>
+</html>
