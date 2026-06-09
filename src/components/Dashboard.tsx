@@ -313,13 +313,13 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
   const promInstitucionalT2 = calcularPromedioInstitucional(2);
   const promInstitucionalT3 = calcularPromedioInstitucional(3);
 
-  // Promedio anual: promedio de T1, T2, T3 si existen
+  // Promedio anual institucional: promedio simple de T1, T2, T3 (equivalente al promedio global anual)
   const promsTrimestresValidos = [promInstitucionalT1, promInstitucionalT2, promInstitucionalT3].filter((p): p is number => p !== null);
   const promAnual = promsTrimestresValidos.length > 0
     ? Math.round((promsTrimestresValidos.reduce((a, b) => a + b, 0) / promsTrimestresValidos.length) * 100) / 100
     : null;
 
-  // Promedio por ciclo para la tarjeta institucional (mantener compatibilidad)
+  // Promedio anual por ciclo (fuente única de verdad para la columna "Anual" de la tabla)
   const promPorCiclo = CICLOS.map(ciclo => {
     const gradosDelCiclo = grados.filter(g => ciclo.grados.includes(g.numero));
     const promsGrado = gradosDelCiclo
@@ -332,11 +332,6 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
 
     return { nombre: ciclo.nombre, prom, color: ciclo.ringColor };
   });
-
-  const promsCicloValidos = promPorCiclo.map(c => c.prom).filter((p): p is number => p !== null);
-  const promInstitucional = promsCicloValidos.length > 0
-    ? Math.round((promsCicloValidos.reduce((a, b) => a + b, 0) / promsCicloValidos.length) * 100) / 100
-    : null;
 
   const todasAsignaturasList = asignaturasAsignadas || [];
 
@@ -461,8 +456,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                           const t1 = promPorCicloT1[idx];
                           const t2 = promPorCicloT2[idx];
                           const t3 = promPorCicloT3[idx];
-                          const vals = [t1?.prom, t2?.prom, t3?.prom].filter((p): p is number => p !== null);
-                          const anual = vals.length > 0 ? Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 100) / 100 : null;
+                          const anual = promPorCiclo[idx]?.prom ?? null;
                           return (
                             <tr key={ciclo.nombre} className="border-b border-border last:border-b-0">
                               <td className="p-2 font-medium text-foreground/80">{ciclo.nombre}</td>
