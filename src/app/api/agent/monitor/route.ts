@@ -147,3 +147,58 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Error al obtener alertas" }, { status: 500 });
   }
 }
+
+export async function DELETE(req: Request) {
+  try {
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get("session");
+
+    if (!sessionCookie) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    const session = verifySession(sessionCookie.value);
+    if (!session) {
+      return NextResponse.json({ error: "Sesión inválida" }, { status: 401 });
+    }
+
+    const soloDirectiva = ["admin", "admin-directora", "admin-codirectora"].includes(session.rol);
+    if (!soloDirectiva) {
+      return NextResponse.json({ error: "Solo directivos pueden borrar alertas del agente" }, { status: 403 });
+    }
+
+    const body = await req.json().catch(() => ({}));
+    const borrarTodo = body.todo === true;
+    const borrarLeidas = body.leidas === true;
+    const borrarAlertas = body.alertas !== false;
+    const borrarLogs = body.logs === true;
+
+    let alertasBorradas = 0;
+    let logsBorrados = 0;
+
+    if (borrarAlertas) {
+      const where: any = {};
+      if (!borrarTodo) {
+        where.leido = true;
+        if (!borrarLeidas) where.resuelto = true;
+      }
+      const resultado = await db.agentAlert.deleteMany({ where });
+      alertasBorradas = resultado.count;
+    }
+
+    if (borrarLogs) {
+      const resultado = await db.agentLog.deleteMany({});
+      logsBorrados = resultado.count;
+    }
+
+    return NextResponse.json({
+      exito: true,
+      alertasBorradas,
+      logsBorrados,
+      mensaje: `Eliminadas ${alertasBorradas} alertas y ${logsBorrados} logs del agente monitor.`,
+    });
+  } catch (error) {
+    console.error("[agent/monitor DELETE] Error:", error);
+    return NextResponse.json({ error: "Error al borrar datos del agente" }, { status: 500 });
+  }
+}

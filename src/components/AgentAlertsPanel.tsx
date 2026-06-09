@@ -35,11 +35,12 @@ export function AgentAlertsPanel({ darkMode, onNavigate }: AgentAlertsPanelProps
   const [alertas, setAlertas] = useState<AlertaEstudiante[]>([]);
   const [loading, setLoading] = useState(true);
   const [ejecutando, setEjecutando] = useState(false);
+  const [borrando, setBorrando] = useState(false);
   const [mensaje, setMensaje] = useState<string | null>(null);
 
   const cargarAlertas = async () => {
     try {
-      const res = await fetch("/api/agent/monitor?leidas=no&limit=20", { credentials: "include" });
+      const res = await fetch("/api/agent/monitor?leidas=no&limit=50", { credentials: "include" });
       if (res.ok) {
         const data = await res.json();
         setAlertas(data.alertas || []);
@@ -76,6 +77,34 @@ export function AgentAlertsPanel({ darkMode, onNavigate }: AgentAlertsPanelProps
       setMensaje("❌ Error de conexión");
     } finally {
       setEjecutando(false);
+      setTimeout(() => setMensaje(null), 5000);
+    }
+  };
+
+  const borrarTodo = async () => {
+    if (!confirm("¿Estás seguro de borrar TODAS las alertas y logs del agente? Esta acción no se puede deshacer.")) {
+      return;
+    }
+    setBorrando(true);
+    setMensaje(null);
+    try {
+      const res = await fetch("/api/agent/monitor", {
+        method: "DELETE",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ todo: true, alertas: true, logs: true }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setMensaje(`🗑️ Eliminadas ${data.alertasBorradas} alertas y ${data.logsBorrados} logs.`);
+        setAlertas([]);
+      } else {
+        setMensaje("❌ Error al borrar los datos");
+      }
+    } catch (error) {
+      setMensaje("❌ Error de conexión");
+    } finally {
+      setBorrando(false);
       setTimeout(() => setMensaje(null), 5000);
     }
   };
@@ -128,6 +157,17 @@ export function AgentAlertsPanel({ darkMode, onNavigate }: AgentAlertsPanelProps
         >
           {ejecutando ? "Analizando..." : "Ejecutar Análisis"}
         </Button>
+        {alertas.length > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={borrarTodo}
+            disabled={borrando}
+            className="h-7 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950"
+          >
+            {borrando ? "Borrando..." : "Borrar Todo"}
+          </Button>
+        )}
       </CardHeader>
       <CardContent className="p-3 space-y-2">
         {mensaje && (
