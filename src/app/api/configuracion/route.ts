@@ -215,3 +215,61 @@ export async function PUT(request: NextRequest) {
     );
   }
 }
+
+export async function POST(request: NextRequest) {
+  try {
+    const adminResult = await requireAdmin();
+    if (adminResult.error) return adminResult.error;
+
+    let body;
+    try {
+      body = await request.json();
+    } catch (parseErr: any) {
+      return NextResponse.json({ error: 'Body inválido', details: parseErr?.message }, { status: 400 });
+    }
+
+    let config;
+    try {
+      config = await sql`SELECT * FROM "ConfiguracionSistema" LIMIT 1`;
+    } catch (selectErr: any) {
+      return NextResponse.json({ error: 'Error al leer configuración', details: selectErr?.message }, { status: 500 });
+    }
+
+    const parseDate = (val: any): Date | null => {
+      if (val === null || val === undefined || val === '') return null;
+      const d = new Date(val);
+      return isNaN(d.getTime()) ? null : d;
+    };
+
+    const fechaInicioT1 = parseDate(body.fechaInicioT1);
+    const fechaFinT1 = parseDate(body.fechaFinT1);
+    const fechaInicioT2 = parseDate(body.fechaInicioT2);
+    const fechaFinT2 = parseDate(body.fechaFinT2);
+    const fechaInicioT3 = parseDate(body.fechaInicioT3);
+    const fechaFinT3 = parseDate(body.fechaFinT3);
+
+    const row = config[0];
+    if (!row.id) {
+      return NextResponse.json({ error: 'Fila de configuración sin ID válido' }, { status: 500 });
+    }
+
+    await sql`UPDATE "ConfiguracionSistema" SET
+      "fechaInicioT1" = ${fechaInicioT1},
+      "fechaFinT1" = ${fechaFinT1},
+      "fechaInicioT2" = ${fechaInicioT2},
+      "fechaFinT2" = ${fechaFinT2},
+      "fechaInicioT3" = ${fechaInicioT3},
+      "fechaFinT3" = ${fechaFinT3},
+      "updatedAt" = NOW()
+    WHERE id = ${row.id}`;
+
+    config = await sql`SELECT * FROM "ConfiguracionSistema" LIMIT 1`;
+    return NextResponse.json(config[0]);
+  } catch (error: any) {
+    console.error('[configuracion/POST] Unexpected error:', error);
+    return NextResponse.json(
+      { error: 'Error inesperado al actualizar fechas de trimestres', details: error?.message || String(error) },
+      { status: 500 }
+    );
+  }
+}
