@@ -526,3 +526,73 @@
     padding-right: env(safe-area-inset-right, 0px);
   }
 }
+
+/* ── Mobile boleta card improvements ── */
+@media (max-width: 640px) {
+  .boleta-student-card {
+    border-radius: 0.75rem;
+    overflow: hidden;
+  }
+  .boleta-student-card .student-name {
+    font-size: 0.9375rem;
+    line-height: 1.35;
+    word-break: break-word;
+  }
+  .boleta-action-btn {
+    min-height: 44px;
+    border-radius: 0.75rem;
+    font-size: 0.8125rem;
+  }
+  .boleta-table-mobile {
+    font-size: 0.6875rem;
+  }
+  .boleta-table-mobile th,
+  .boleta-table-mobile td {
+    padding: 0.375rem 0.25rem;
+  }
+  .boleta-prom-badge {
+    font-size: 0.6875rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.5rem;
+  }
+  .boleta-batch-btn {
+    min-height: 44px;
+    font-size: 0.8125rem;
+    border-radius: 0.75rem;
+  }
+  .boleta-select-trigger {
+    min-height: 44px;
+    font-size: 0.875rem;
+  }
+  .boleta-attendance-input {
+    min-height: 40px;
+    font-size: 0.8125rem;
+    border-radius: 0.5rem;
+  }
+  .boleta-obs-textarea {
+    min-height: 64px;
+    font-size: 0.8125rem;
+    border-radius: 0.5rem;
+  }
+}
+
+/* ── Better mobile scroll behavior ── */
+@media (max-width: 768px) {
+  html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  body {
+    overscroll-behavior-y: contain;
+  }
+}
+
+/* ── iOS-specific fixes ── */
+@supports (-webkit-touch-callout: none) {
+  input, select, textarea, button {
+    font-size: max(16px, var(--text-base, 1rem));
+  }
+  .boleta-select-trigger select {
+    font-size: 16px;
+  }
+}

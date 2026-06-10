@@ -36,8 +36,8 @@ export function MobileTabBar({ items, activeTab, onTabChange, darkMode, isAdmin 
   const visibleItems = isAdmin ? items : items.filter(i => i.value !== "admin" && i.value !== "avance");
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 safe-area-bottom bg-card/95 backdrop-blur-xl border-t border-border" aria-label="Navegación principal">
-      <div className="flex items-center justify-around px-1 pt-1 pb-1">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 safe-area-bottom bg-card/98 backdrop-blur-2xl border-t border-border" aria-label="Navegación principal">
+      <div className="flex items-center justify-around px-1 pt-1.5 pb-1.5">
         {visibleItems.slice(0, 5).map((item) => {
           const Icon = tabIcons[item.value] || LayoutDashboard;
           const isActive = activeTab === item.value;
@@ -45,10 +45,10 @@ export function MobileTabBar({ items, activeTab, onTabChange, darkMode, isAdmin 
             <button
               key={item.value}
               onClick={() => onTabChange(item.value)}
-              className={`relative flex flex-col items-center justify-center py-1 px-2 min-w-[56px] min-h-[48px] rounded-xl transition-colors ${
+              className={`relative flex flex-col items-center justify-center py-1.5 px-1 min-w-[52px] min-h-[52px] rounded-xl transition-all duration-200 ${
                 isActive
                   ? "text-primary"
-                  : "text-muted-foreground/60 hover:text-muted-foreground active:text-muted-foreground/80"
+                  : "text-muted-foreground/50 active:text-muted-foreground/80"
               }`}
               aria-label={item.label}
               aria-current={isActive ? "page" : undefined}
@@ -56,14 +56,14 @@ export function MobileTabBar({ items, activeTab, onTabChange, darkMode, isAdmin 
               {isActive && (
                 <motion.div
                   layoutId="mobile-tab-indicator"
-                  className="absolute inset-0 rounded-xl bg-primary/10"
+                  className="absolute inset-0.5 rounded-xl bg-primary/12"
                   transition={{ type: "spring", stiffness: 500, damping: 35, mass: 1 }}
                 />
               )}
               <span className="relative z-10">
-                <Icon className={`h-5 w-5 mb-0.5 ${isActive ? "drop-shadow-sm" : ""}`} />
+                <Icon className={`h-5 w-5 mb-0.5 transition-transform ${isActive ? "scale-110 drop-shadow-sm" : ""}`} />
               </span>
-              <span className={`relative z-10 text-[10px] font-semibold leading-tight ${isActive ? "opacity-100" : "opacity-70"}`}>
+              <span className={`relative z-10 text-[10px] font-semibold leading-tight transition-opacity ${isActive ? "opacity-100" : "opacity-60"}`}>
                 {item.label}
               </span>
             </button>
@@ -99,10 +99,10 @@ function MobileMoreMenu({
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className={`relative flex flex-col items-center justify-center py-1 px-2 min-w-[56px] min-h-[48px] rounded-xl transition-colors ${
+        className={`relative flex flex-col items-center justify-center py-1.5 px-1 min-w-[52px] min-h-[52px] rounded-xl transition-all duration-200 ${
           items.some(i => i.value === activeTab)
             ? "text-primary"
-            : "text-muted-foreground/60 hover:text-muted-foreground"
+            : "text-muted-foreground/50 active:text-muted-foreground/80"
         }`}
         aria-label="Más opciones"
       >
@@ -111,7 +111,7 @@ function MobileMoreMenu({
           <circle cx="12" cy="12" r="1" />
           <circle cx="12" cy="19" r="1" />
         </svg>
-        <span className={`text-[10px] font-semibold leading-tight ${items.some(i => i.value === activeTab) ? "opacity-100" : "opacity-70"}`}>
+        <span className={`text-[10px] font-semibold leading-tight transition-opacity ${items.some(i => i.value === activeTab) ? "opacity-100" : "opacity-60"}`}>
           Más
         </span>
       </button>

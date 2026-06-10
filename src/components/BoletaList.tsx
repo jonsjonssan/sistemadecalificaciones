@@ -1319,144 +1319,233 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
   };
 
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-3">
       {(loadingAsistencia || loadingAnual) && (
         <div className="space-y-2 mb-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <Card key={i} className={`shadow-sm ${darkMode ? 'bg-slate-950/40 backdrop-blur-md border-white/5' : ''}`}>
-              <div className="p-2.5 flex items-center justify-between">
+              <div className="p-3 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Skeleton className={`h-3 w-5 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
-                  <Skeleton className={`h-3 w-36 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
-                  <Skeleton className={`h-4 w-16 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
+                  <Skeleton className={`h-4 w-6 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
+                  <Skeleton className={`h-4 w-40 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
+                  <Skeleton className={`h-5 w-20 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
                 </div>
                 <div className="flex items-center gap-1">
-                  <Skeleton className={`h-6 w-14 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
-                  <Skeleton className={`h-6 w-14 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
-                  <Skeleton className={`h-4 w-4 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
+                  <Skeleton className={`h-8 w-8 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
+                  <Skeleton className={`h-8 w-8 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
+                  <Skeleton className={`h-8 w-8 ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`} />
                 </div>
               </div>
             </Card>
           ))}
         </div>
       )}
-      <div className={`flex flex-wrap items-center gap-2 p-2 rounded-lg border ${darkMode ? 'bg-muted border-white/20' : 'bg-emerald-50/60 border-emerald-200'}`}>
-        <span className={`text-xs font-semibold uppercase tracking-wider mr-1 ${darkMode ? 'text-slate-200' : 'text-emerald-700'}`}>
-          Imprimir en Lote
-        </span>
-        <Button
-          size="sm"
-          className={`h-8 text-xs font-bold px-3 ${darkMode ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white'}`}
-          onClick={imprimirTodas}
-          disabled={loadingAsistencia || !estudiantes.length}
-        >
-          <Printer className="h-3.5 w-3.5 mr-1.5" />Todas las Boletas
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          className={`h-8 text-xs font-bold px-3 ${darkMode ? 'border-emerald-600 text-emerald-400 hover:bg-emerald-900/30' : 'border-emerald-300 text-emerald-700 hover:bg-emerald-50'}`}
-          onClick={imprimirTodasAnual}
-          disabled={loadingAnual || !estudiantes.length}
-        >
-          <FileText className="h-3.5 w-3.5 mr-1.5" />Todas Anual
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          className={`h-8 text-xs font-bold px-3 ${darkMode ? 'border-amber-600 text-amber-400 hover:bg-amber-900/30' : 'border-amber-300 text-amber-700 hover:bg-amber-50'}`}
-          onClick={imprimirTodasAnualConRecuperacion}
-          disabled={loadingAnual || !estudiantes.length}
-        >
-          <FileText className="h-3.5 w-3.5 mr-1.5" />Anual + Recup.
-        </Button>
+      <div className={`flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-3 rounded-xl border ${darkMode ? 'bg-muted/50 border-white/10' : 'bg-emerald-50/80 border-emerald-200'}`}>
+        <div className="flex items-center gap-2 mb-1 sm:mb-0">
+          <Printer className={`h-4 w-4 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
+          <span className={`text-sm font-bold uppercase tracking-wider ${darkMode ? 'text-slate-100' : 'text-emerald-800'}`}>
+            Imprimir en Lote
+          </span>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <Button
+            size="sm"
+            className={`h-11 text-sm font-semibold px-4 flex-1 sm:flex-none ${darkMode ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white'}`}
+            onClick={imprimirTodas}
+            disabled={loadingAsistencia || !estudiantes.length}
+          >
+            <Printer className="h-4 w-4 mr-2" />Todas las Boletas
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className={`h-11 text-sm font-semibold px-4 flex-1 sm:flex-none ${darkMode ? 'border-emerald-600 text-emerald-400 hover:bg-emerald-900/30' : 'border-emerald-300 text-emerald-700 hover:bg-emerald-50'}`}
+            onClick={imprimirTodasAnual}
+            disabled={loadingAnual || !estudiantes.length}
+          >
+            <FileText className="h-4 w-4 mr-2" />Todas Anual
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className={`h-11 text-sm font-semibold px-4 flex-1 sm:flex-none ${darkMode ? 'border-amber-600 text-amber-400 hover:bg-amber-900/30' : 'border-amber-300 text-amber-700 hover:bg-amber-50'}`}
+            onClick={imprimirTodasAnualConRecuperacion}
+            disabled={loadingAnual || !estudiantes.length}
+          >
+            <FileText className="h-4 w-4 mr-2" />Anual + Recup.
+          </Button>
+        </div>
       </div>
-      {(estudiantes || []).map(est => {
+      {(estudiantes || []).map((est, idx) => {
         const califs = getCalifs(est.id), prom = calcProm(califs), open = expandedBoleta === est.id;
+        const promColor = prom !== null && prom >= ua
+          ? (darkMode ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 'bg-emerald-100 text-emerald-700 border-emerald-200')
+          : prom !== null && prom >= uc
+          ? (darkMode ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-amber-700 border-amber-200')
+          : (darkMode ? 'bg-red-500/20 text-red-300 border-red-500/30' : 'bg-red-100 text-red-700 border-red-200');
         return (
-          <Card key={est.id} className={`shadow-sm ${darkMode ? 'bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl' : ''}`}>
-            <div className={`p-2.5 flex items-center justify-between cursor-pointer hover-gradient`} onClick={() => setExpandedBoleta(open ? null : est.id)}>
-              <div className="flex items-center gap-2"><span className={`text-xs w-5 ${darkMode ? 'text-slate-300' : 'text-slate-400'}`}>{est.numero}</span><span className={`text-xs sm:text-sm font-medium ${darkMode ? 'text-white' : ''}`}>{est.nombre}</span><Badge variant={prom !== null && prom >= ua ? "default" : prom !== null && prom >= uc ? "secondary" : "destructive"} className={`text-[10px] h-5 ${prom !== null && prom >= ua ? (darkMode ? 'bg-emerald-600 text-black' : 'bg-emerald-600 text-white') : prom !== null && prom >= uc ? (darkMode ? 'bg-amber-600 text-black' : 'bg-amber-600 text-white') : ''}`}>Prom: {prom !== null ? prom.toFixed(2) : "N/A"}</Badge></div>
-              <div className="flex items-center gap-1">
-                <Button size="sm" variant="ghost" title="Anual con Recuperación" className={`h-6 px-2 text-xs ${darkMode ? 'text-amber-400' : 'text-amber-600'}`} onClick={e => { e.stopPropagation(); imprimirAnualConRecuperacion(est.id); }}>
-                  <FileText className="h-3.5 w-3.5 mr-1" />Anual + Recup.
-                </Button>
-                <Button size="sm" variant="ghost" title="Consolidado Anual" className={`h-6 px-2 text-xs ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} onClick={e => { e.stopPropagation(); imprimirAnual(est.id); }}>
-                  <FileText className="h-3.5 w-3.5 mr-1" />Anual
-                </Button>
-                <Button size="sm" variant="ghost" title="Imprimir Trimestre" className={`h-6 px-2 text-xs ${darkMode ? 'text-slate-300' : ''}`} onClick={e => { e.stopPropagation(); imprimir(est.id); }}>
-                  <Printer className="h-3 w-3 mr-1" />Boleta
-                </Button>
-                <Button size="sm" variant="ghost" title="Descargar Word" className={`h-6 px-2 text-xs ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} onClick={e => { e.stopPropagation(); descargarWord(est.id); }}>
-                  <Download className="h-3 w-3 mr-1" />Word
-                </Button>
-                {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              </div>
-            </div>
-            {open && <div className={`border-t p-2 ${darkMode ? 'bg-slate-950/20 border-white/10' : 'bg-slate-50'}`}><Table className="text-xs"><TableHeader><TableRow className={`h-7 ${darkMode ? 'bg-slate-700/25' : 'bg-slate-100'}`}><TableHead>Asignatura</TableHead><TableHead className="text-center">Prom. A.C.</TableHead><TableHead className="text-center">Prom. A.I.</TableHead><TableHead className="text-center">Examen</TableHead>{mostrarRecuperacion && <TableHead className="text-center">Recup.</TableHead>}<TableHead className="text-center font-bold">Promedio</TableHead></TableRow></TableHeader><TableBody>{materias.map(m => { const c = califs.find(x => x.materiaId === m.id); const estadoMat = c?.promedioFinal !== null && c?.promedioFinal !== undefined ? (c.promedioFinal < uc ? 'REPROBADO' : c.promedioFinal < ua ? 'CONDICIONADO' : 'APROBADO') : 'PENDIENTE'; return <TableRow key={m.id} className={`h-7 ${darkMode ? 'border-slate-700' : ''}`}><TableCell className={`font-medium ${darkMode ? 'text-white' : ''}`}>{m.nombre}</TableCell><TableCell className="text-center">{c?.calificacionAC != null ? (c.calificacionAC * pctAC).toFixed(2) : "-"}</TableCell><TableCell className="text-center">{c?.calificacionAI != null ? (c.calificacionAI * pctAI).toFixed(2) : "-"}</TableCell><TableCell className="text-center">{c?.examenTrimestral != null ? (c.examenTrimestral * pctEx).toFixed(2) : "-"}</TableCell>{mostrarRecuperacion && <TableCell className="text-center">{c?.recuperacion !== null && c?.recuperacion !== undefined ? c.recuperacion.toFixed(2) : "-"}</TableCell>}<TableCell className="text-center"><Badge variant={c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= ua ? "default" : c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= uc ? "secondary" : "destructive"} className={`text-[10px] ${c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= ua ? 'bg-emerald-600' : c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= uc ? 'bg-amber-600' : ''}`}>{c?.promedioFinal !== null && c?.promedioFinal !== undefined ? c.promedioFinal.toFixed(2) : "-"}</Badge></TableCell></TableRow>;         })}</TableBody></Table>
-              {mostrarAsistencia && asistenciaManualHabilitado && (
-                <div className="mt-2 border-t pt-2">
-                  <div className="text-xs font-semibold mb-1.5 text-emerald-600 dark:text-emerald-400">REGISTRO DE ASISTENCIA MANUAL</div>
-                  <div className="grid grid-cols-5 gap-1.5">
-                    <div>
-                      <label className={`text-[10px] block ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>Asistencias</label>
-                      <input type="text" inputMode="numeric" value={asistenciaManualData[est.id]?.asistencias || ''} onChange={(e) => onAsistenciaManualChange?.(est.id, 'asistencias', e.target.value)} className="w-full h-7 text-xs text-center border rounded dark:bg-slate-700 dark:border-slate-700" />
-                    </div>
-                    <div>
-                      <label className={`text-[10px] block ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>Inasistencias</label>
-                      <input type="text" inputMode="numeric" value={asistenciaManualData[est.id]?.inasistencias || ''} onChange={(e) => onAsistenciaManualChange?.(est.id, 'inasistencias', e.target.value)} className="w-full h-7 text-xs text-center border rounded dark:bg-slate-700 dark:border-slate-700" />
-                    </div>
-                    <div>
-                      <label className={`text-[10px] block ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>Tardanzas</label>
-                      <input type="text" inputMode="numeric" value={asistenciaManualData[est.id]?.tardanzas || ''} onChange={(e) => onAsistenciaManualChange?.(est.id, 'tardanzas', e.target.value)} className="w-full h-7 text-xs text-center border rounded dark:bg-slate-700 dark:border-slate-700" />
-                    </div>
-                    <div>
-                      <label className={`text-[10px] block ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>Justificadas</label>
-                      <input type="text" inputMode="numeric" value={asistenciaManualData[est.id]?.justificadas || ''} onChange={(e) => onAsistenciaManualChange?.(est.id, 'justificadas', e.target.value)} className="w-full h-7 text-xs text-center border rounded dark:bg-slate-700 dark:border-slate-700" />
-                    </div>
-                    <div>
-                      <label className={`text-[10px] block ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>Total Días</label>
-                      <input type="text" inputMode="numeric" value={asistenciaManualData[est.id]?.totalDias || ''} onChange={(e) => onAsistenciaManualChange?.(est.id, 'totalDias', e.target.value)} className="w-full h-7 text-xs text-center border rounded dark:bg-slate-700 dark:border-slate-700" />
-                    </div>
+          <Card key={est.id} className={`shadow-sm overflow-hidden transition-all duration-200 ${darkMode ? 'bg-slate-900/60 border-white/10 hover:border-white/20' : 'bg-white border-slate-200 hover:border-slate-300'} ${open ? (darkMode ? 'ring-1 ring-emerald-500/30' : 'ring-1 ring-emerald-300') : ''}`}>
+            <div className={`p-3 sm:p-4 cursor-pointer select-none ${open ? (darkMode ? 'bg-slate-800/50' : 'bg-emerald-50/50') : ''}`} onClick={() => setExpandedBoleta(open ? null : est.id)}>
+              <div className="flex items-start gap-3">
+                <div className={`flex items-center justify-center h-8 w-8 rounded-lg text-sm font-bold shrink-0 ${darkMode ? 'bg-slate-700/50 text-slate-300' : 'bg-slate-100 text-slate-500'}`}>
+                  {est.numero}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm sm:text-base font-semibold leading-snug ${darkMode ? 'text-white' : 'text-slate-800'}`}>
+                    {est.nombre}
+                  </p>
+                  <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold border ${promColor}`}>
+                      Prom: {prom !== null ? prom.toFixed(2) : "N/A"}
+                    </span>
+                    <span className={`text-[10px] font-medium ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
+                      N° {est.numero}
+                    </span>
                   </div>
                 </div>
-              )}
-              {(() => {
-                const attData = resumenAsistencia.find((r: any) => r.id === est.id);
-                if (!attData || (attData.asistencias === 0 && attData.ausencias === 0 && attData.tardanzas === 0 && attData.justificadas === 0)) return null;
-                return (
-                  <div className="mt-2 border-t pt-2">
-                    <div className="text-[10px] font-semibold mb-1 text-blue-600 dark:text-blue-400">ASISTENCIA REGISTRADA EN EL SISTEMA</div>
-                    <div className="grid grid-cols-5 gap-1 text-xs mb-2">
-                      <div className="bg-blue-50 dark:bg-blue-900/20 rounded p-1 text-center">
-                        <div className={`text-[9px] ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>Asistencias</div>
-                        <div className="font-bold text-blue-700 dark:text-blue-300 text-sm">{attData.asistencias ?? 0}</div>
-                      </div>
-                      <div className="bg-red-50 dark:bg-red-900/20 rounded p-1 text-center">
-                        <div className={`text-[9px] ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>Inasistencias</div>
-                        <div className="font-bold text-red-700 dark:text-red-300 text-sm">{attData.ausencias ?? 0}</div>
-                      </div>
-                      <div className="bg-amber-50 dark:bg-amber-900/20 rounded p-1 text-center">
-                        <div className={`text-[9px] ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>Tardanzas</div>
-                        <div className="font-bold text-amber-700 dark:text-amber-300 text-sm">{attData.tardanzas ?? 0}</div>
-                      </div>
-                      <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded p-1 text-center">
-                        <div className={`text-[9px] ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>Justificadas</div>
-                        <div className="font-bold text-emerald-700 dark:text-emerald-300 text-sm">{attData.justificadas ?? 0}</div>
-                      </div>
-                      <div className="bg-slate-50 dark:bg-slate-950/40 backdrop-blur-md rounded p-1 text-center">
-                        <div className={`text-[9px] ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>Total</div>
-                        <div className="font-bold text-slate-700 dark:text-slate-300 text-sm">{attData.total ?? 0}</div>
+                <div className={`shrink-0 p-1.5 rounded-lg transition-colors ${open ? (darkMode ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-100 text-emerald-600') : (darkMode ? 'text-slate-500' : 'text-slate-400')}`}>
+                  {open ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                </div>
+              </div>
+            </div>
+            {open && (
+              <div className={`border-t ${darkMode ? 'border-white/10' : 'border-slate-100'}`}>
+                <div className={`p-3 sm:p-4 space-y-3 ${darkMode ? 'bg-slate-950/30' : 'bg-slate-50/50'}`}>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); imprimir(est.id); }}
+                      className={`flex items-center justify-center gap-2 h-11 rounded-xl text-xs sm:text-sm font-semibold transition-all touch-target ${darkMode ? 'bg-slate-800 text-slate-200 hover:bg-slate-700 active:bg-slate-600 border border-white/10' : 'bg-white text-slate-700 hover:bg-slate-50 active:bg-slate-100 border border-slate-200 shadow-sm'}`}
+                    >
+                      <Printer className="h-4 w-4" />
+                      <span>Boleta T{getTrimestreRomano(trimestre)}</span>
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); imprimirAnual(est.id); }}
+                      className={`flex items-center justify-center gap-2 h-11 rounded-xl text-xs sm:text-sm font-semibold transition-all touch-target ${darkMode ? 'bg-emerald-900/30 text-emerald-300 hover:bg-emerald-900/50 active:bg-emerald-800/50 border border-emerald-500/20' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 active:bg-emerald-200 border border-emerald-200 shadow-sm'}`}
+                    >
+                      <FileText className="h-4 w-4" />
+                      <span>Anual</span>
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); imprimirAnualConRecuperacion(est.id); }}
+                      className={`flex items-center justify-center gap-2 h-11 rounded-xl text-xs sm:text-sm font-semibold transition-all touch-target ${darkMode ? 'bg-amber-900/30 text-amber-300 hover:bg-amber-900/50 active:bg-amber-800/50 border border-amber-500/20' : 'bg-amber-50 text-amber-700 hover:bg-amber-100 active:bg-amber-200 border border-amber-200 shadow-sm'}`}
+                    >
+                      <FileText className="h-4 w-4" />
+                      <span>Anual + Recup.</span>
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); descargarWord(est.id); }}
+                      className={`flex items-center justify-center gap-2 h-11 rounded-xl text-xs sm:text-sm font-semibold transition-all touch-target ${darkMode ? 'bg-blue-900/30 text-blue-300 hover:bg-blue-900/50 active:bg-blue-800/50 border border-blue-500/20' : 'bg-blue-50 text-blue-700 hover:bg-blue-100 active:bg-blue-200 border border-blue-200 shadow-sm'}`}
+                    >
+                      <Download className="h-4 w-4" />
+                      <span>Word</span>
+                    </button>
+                  </div>
+                  <Table className="text-xs">
+                    <TableHeader>
+                      <TableRow className={`h-8 ${darkMode ? 'bg-slate-800/50' : 'bg-slate-100'}`}>
+                        <TableHead className="font-semibold">Asignatura</TableHead>
+                        <TableHead className="text-center font-semibold">A.C.</TableHead>
+                        <TableHead className="text-center font-semibold">A.I.</TableHead>
+                        <TableHead className="text-center font-semibold">Examen</TableHead>
+                        {mostrarRecuperacion && <TableHead className="text-center font-semibold">Recup.</TableHead>}
+                        <TableHead className="text-center font-bold">Prom.</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {materias.map(m => {
+                        const c = califs.find(x => x.materiaId === m.id);
+                        return (
+                          <TableRow key={m.id} className={`h-8 ${darkMode ? 'border-slate-700/50' : ''}`}>
+                            <TableCell className={`font-medium text-xs ${darkMode ? 'text-white' : ''}`}>{m.nombre}</TableCell>
+                            <TableCell className="text-center text-xs">{c?.calificacionAC != null ? (c.calificacionAC * pctAC).toFixed(2) : "-"}</TableCell>
+                            <TableCell className="text-center text-xs">{c?.calificacionAI != null ? (c.calificacionAI * pctAI).toFixed(2) : "-"}</TableCell>
+                            <TableCell className="text-center text-xs">{c?.examenTrimestral != null ? (c.examenTrimestral * pctEx).toFixed(2) : "-"}</TableCell>
+                            {mostrarRecuperacion && <TableCell className="text-center text-xs">{c?.recuperacion !== null && c?.recuperacion !== undefined ? c.recuperacion.toFixed(2) : "-"}</TableCell>}
+                            <TableCell className="text-center">
+                              <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                                c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= ua
+                                  ? (darkMode ? 'bg-emerald-500/20 text-emerald-300' : 'bg-emerald-100 text-emerald-700')
+                                  : c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= uc
+                                  ? (darkMode ? 'bg-amber-500/20 text-amber-300' : 'bg-amber-100 text-amber-700')
+                                  : (darkMode ? 'bg-red-500/20 text-red-300' : 'bg-red-100 text-red-700')
+                              }`}>
+                                {c?.promedioFinal !== null && c?.promedioFinal !== undefined ? c.promedioFinal.toFixed(2) : "-"}
+                              </span>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                  {mostrarAsistencia && asistenciaManualHabilitado && (
+                    <div className="border-t pt-3">
+                      <div className="text-xs font-bold mb-2 text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">Registro de Asistencia Manual</div>
+                      <div className="grid grid-cols-5 gap-2">
+                        {[
+                          { label: 'Asistencias', field: 'asistencias' },
+                          { label: 'Inasistencias', field: 'inasistencias' },
+                          { label: 'Tardanzas', field: 'tardanzas' },
+                          { label: 'Justificadas', field: 'justificadas' },
+                          { label: 'Total Días', field: 'totalDias' },
+                        ].map(({ label, field }) => (
+                          <div key={field}>
+                            <label className={`text-[10px] font-medium block mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{label}</label>
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              value={asistenciaManualData[est.id]?.[field as keyof typeof asistenciaManualData[string]] || ''}
+                              onChange={(e) => onAsistenciaManualChange?.(est.id, field, e.target.value)}
+                              className="w-full h-10 text-sm text-center border rounded-lg dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                            />
+                          </div>
+                        ))}
                       </div>
                     </div>
+                  )}
+                  {(() => {
+                    const attData = resumenAsistencia.find((r: any) => r.id === est.id);
+                    if (!attData || (attData.asistencias === 0 && attData.ausencias === 0 && attData.tardanzas === 0 && attData.justificadas === 0)) return null;
+                    return (
+                      <div className="border-t pt-3">
+                        <div className="text-[10px] font-bold mb-2 text-blue-600 dark:text-blue-400 uppercase tracking-wide">Asistencia del Sistema</div>
+                        <div className="grid grid-cols-5 gap-2">
+                          {[
+                            { label: 'Asistencias', value: attData.asistencias ?? 0, color: 'blue' },
+                            { label: 'Inasistencias', value: attData.ausencias ?? 0, color: 'red' },
+                            { label: 'Tardanzas', value: attData.tardanzas ?? 0, color: 'amber' },
+                            { label: 'Justificadas', value: attData.justificadas ?? 0, color: 'emerald' },
+                            { label: 'Total', value: attData.total ?? 0, color: 'slate' },
+                          ].map(({ label, value, color }) => (
+                            <div key={label} className={`rounded-lg p-2 text-center ${
+                              darkMode
+                                ? color === 'blue' ? 'bg-blue-900/20' : color === 'red' ? 'bg-red-900/20' : color === 'amber' ? 'bg-amber-900/20' : color === 'emerald' ? 'bg-emerald-900/20' : 'bg-slate-800'
+                                : color === 'blue' ? 'bg-blue-50' : color === 'red' ? 'bg-red-50' : color === 'amber' ? 'bg-amber-50' : color === 'emerald' ? 'bg-emerald-50' : 'bg-slate-50'
+                            }`}>
+                              <div className={`text-[9px] font-medium ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{label}</div>
+                              <div className={`font-bold text-base ${
+                                darkMode
+                                  ? color === 'blue' ? 'text-blue-300' : color === 'red' ? 'text-red-300' : color === 'amber' ? 'text-amber-300' : color === 'emerald' ? 'text-emerald-300' : 'text-slate-300'
+                                  : color === 'blue' ? 'text-blue-700' : color === 'red' ? 'text-red-700' : color === 'amber' ? 'text-amber-700' : color === 'emerald' ? 'text-emerald-700' : 'text-slate-700'
+                              }`}>{value}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                  <div className="border-t pt-3">
+                    <label className={`text-[10px] font-bold block mb-1.5 uppercase tracking-wide ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>Observaciones</label>
+                    <textarea
+                      value={asistenciaManualData[est.id]?.observaciones || ''}
+                      onChange={(e) => onAsistenciaManualChange?.(est.id, 'observaciones', e.target.value)}
+                      className="w-full h-20 text-sm border rounded-lg dark:bg-slate-800 dark:border-slate-700 dark:text-white p-2.5 resize-none"
+                      placeholder="Escriba observaciones para la boleta..."
+                    />
                   </div>
-                );
-              })()}
-              <div className="mt-2 border-t pt-2">
-                <label className={`text-[10px] block font-medium ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>Observaciones</label>
-                <textarea value={asistenciaManualData[est.id]?.observaciones || ''} onChange={(e) => onAsistenciaManualChange?.(est.id, 'observaciones', e.target.value)} className="w-full h-14 text-xs border rounded dark:bg-slate-700 dark:border-slate-700 p-1 resize-none" placeholder="Escriba observaciones para la boleta..." />
+                </div>
               </div>
-              </div>}
+            )}
           </Card>
         );
       })}

@@ -310,14 +310,14 @@ export default function Home() {
                       <div className="flex-1">
                         <Label className={`text-xs font-semibold uppercase tracking-wider mb-1.5 block ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>Grado</Label>
                         <Select value={d.gradoSeleccionado} onValueChange={(val) => { d.setGradoSeleccionado(val); d.setAsignaturaSeleccionada(""); }}>
-                          <SelectTrigger className={`h-10 sm:h-11 text-sm ${darkMode ? 'bg-card border-white/30 text-white' : 'bg-white border-slate-300'}`}><SelectValue placeholder="Seleccionar grado" /></SelectTrigger>
+                          <SelectTrigger className={`h-11 text-sm ${darkMode ? 'bg-card border-white/30 text-white' : 'bg-white border-slate-300'}`}><SelectValue placeholder="Seleccionar grado" /></SelectTrigger>
                           <SelectContent>{d.gradosFiltrados.map((g: any) => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}"</SelectItem>)}</SelectContent>
                         </Select>
                       </div>
                       <div className="w-full sm:w-36">
                         <Label className={`text-xs font-semibold uppercase tracking-wider mb-1.5 block ${darkMode ? 'text-slate-200' : 'text-slate-500'}`}>Trimestre</Label>
                         <Select value={d.trimestreSeleccionado || ""} onValueChange={d.handleTrimestreChange}>
-                          <SelectTrigger className={`h-10 sm:h-11 text-sm ${darkMode ? 'bg-card border-white/30 text-white' : 'bg-white border-slate-300'}`}><SelectValue placeholder="Trimestre" /></SelectTrigger>
+                          <SelectTrigger className={`h-11 text-sm ${darkMode ? 'bg-card border-white/30 text-white' : 'bg-white border-slate-300'}`}><SelectValue placeholder="Trimestre" /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="1">I</SelectItem>
                             <SelectItem value="2">II</SelectItem>
@@ -368,43 +368,48 @@ export default function Home() {
 
                       <div className={`p-4 rounded-xl border ${darkMode ? 'bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl' : 'bg-white border-slate-200/70 shadow-sm'}`}>
                         <Label className={`text-xs font-semibold uppercase tracking-wider mb-3 block ${darkMode ? 'text-white' : 'text-slate-500'}`}>Opciones de impresión</Label>
-                        <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
-                          <div className="flex items-center gap-4">
-                            <RadioGroup value={d.paperSize} onValueChange={(val) => d.setPaperSize(val as "letter" | "a4")} className="flex items-center gap-3">
-                              <div className="flex items-center gap-1.5">
-                                <RadioGroupItem value="letter" id="pp-letter" className="h-3.5 w-3.5" />
-                                <Label htmlFor="pp-letter" className={`text-xs cursor-pointer ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>Carta</Label>
-                              </div>
-                              <div className="flex items-center gap-1.5">
-                                <RadioGroupItem value="a4" id="pp-a4" className="h-3.5 w-3.5" />
-                                <Label htmlFor="pp-a4" className={`text-xs cursor-pointer ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>A4</Label>
-                              </div>
-                            </RadioGroup>
+                        <div className="flex flex-col gap-4">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                            <div className="flex items-center gap-3">
+                              <span className={`text-xs font-medium whitespace-nowrap ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Tamaño:</span>
+                              <RadioGroup value={d.paperSize} onValueChange={(val) => d.setPaperSize(val as "letter" | "a4")} className="flex items-center gap-1">
+                                <div className="flex items-center gap-1.5">
+                                  <RadioGroupItem value="letter" id="pp-letter" className="h-4 w-4" />
+                                  <Label htmlFor="pp-letter" className={`text-sm cursor-pointer ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>Carta</Label>
+                                </div>
+                                <div className="flex items-center gap-1.5">
+                                  <RadioGroupItem value="a4" id="pp-a4" className="h-4 w-4" />
+                                  <Label htmlFor="pp-a4" className={`text-sm cursor-pointer ${darkMode ? 'text-slate-200' : 'text-slate-700'}`}>A4</Label>
+                                </div>
+                              </RadioGroup>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <span className={`text-xs font-medium whitespace-nowrap ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Asistencia:</span>
-                            <Select value={d.tipoAsistencia} onValueChange={(val) => {
-                              const v = val as "auto" | "manual_espacio" | "manual_digital";
-                              d.setTipoAsistencia(v);
-                              d.setIncluirAsistenciaBoleta(v === "auto");
-                              d.setIncluirAsistenciaManual(v === "manual_espacio");
-                              d.setAsistenciaManualHabilitado(v === "manual_digital");
-                            }}>
-                              <SelectTrigger className={`w-40 h-8 text-xs ${darkMode ? 'bg-card border-white/30 text-white' : 'bg-white border-slate-300'}`}><SelectValue /></SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="auto" className="text-xs">Automática</SelectItem>
-                                <SelectItem value="manual_espacio" className="text-xs">Espacio Manual</SelectItem>
-                                <SelectItem value="manual_digital" className="text-xs">Manual por Alumno</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <div className="flex items-center gap-1.5 ml-1">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                            <div className="flex items-center gap-2 w-full sm:w-auto">
+                              <span className={`text-xs font-medium whitespace-nowrap ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>Asistencia:</span>
+                              <Select value={d.tipoAsistencia} onValueChange={(val) => {
+                                const v = val as "auto" | "manual_espacio" | "manual_digital";
+                                d.setTipoAsistencia(v);
+                                d.setIncluirAsistenciaBoleta(v === "auto");
+                                d.setIncluirAsistenciaManual(v === "manual_espacio");
+                                d.setAsistenciaManualHabilitado(v === "manual_digital");
+                              }}>
+                                <SelectTrigger className={`w-full sm:w-44 h-11 text-sm ${darkMode ? 'bg-card border-white/30 text-white' : 'bg-white border-slate-300'}`}><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="auto">Automática</SelectItem>
+                                  <SelectItem value="manual_espacio">Espacio Manual</SelectItem>
+                                  <SelectItem value="manual_digital">Manual por Alumno</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="flex items-center gap-2 ml-0 sm:ml-2">
                               <Switch
                                 checked={d.mostrarAsistencia}
                                 onCheckedChange={d.setMostrarAsistencia}
                                 id="mostrar-asistencia"
-                                className="h-4 w-7"
+                                className="h-5 w-9"
                               />
-                              <Label htmlFor="mostrar-asistencia" className={`text-[10px] cursor-pointer select-none ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                              <Label htmlFor="mostrar-asistencia" className={`text-sm cursor-pointer select-none ${darkMode ? 'text-slate-300' : 'text-slate-600'}`}>
                                 {d.mostrarAsistencia ? 'Mostrar' : 'Ocultar'}
                               </Label>
                             </div>
