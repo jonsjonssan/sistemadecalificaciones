@@ -43,6 +43,7 @@ import CuadroTrimestres from "@/components/CuadroTrimestres";
 import ResumenAsignaturas from "@/components/ResumenAsignaturas";
 import EnlacesInstitucionales from "@/components/EnlacesInstitucionales";
 import { SystemThresholdsCard } from "@/components/SystemThresholdsCard";
+import { TrimestreDatesConfig } from "@/components/TrimestreDatesConfig";
 import ReporteAsistenciaMultiGrado from "@/components/ReporteAsistenciaMultiGrado";
 import { DescargaCompletaButton } from "@/components/DescargaCompletaButton";
 import { DescargaBoletasPorCiclo } from "@/components/DescargaBoletasPorCiclo";
@@ -724,6 +725,15 @@ export default function Home() {
                   </Button>
                 </CardFooter>
               </Card>
+
+              <TrimestreDatesConfig
+                darkMode={darkMode}
+                fechas={d.fechasTrimestres}
+                onFechasChange={d.setFechasTrimestres}
+                onSave={d.handleGuardarFechasTrimestres}
+                onReset={d.handleResetFechasTrimestres}
+                loading={d.fechasTrimestresLoading}
+              />
 
               <SystemThresholdsCard
                 darkMode={darkMode}

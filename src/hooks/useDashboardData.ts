@@ -135,6 +135,16 @@ export function useDashboardData() {
     usarIntervaloAprobado: true,
   });
   const [umbralesLoading, setUmbralesLoading] = useState(false);
+
+  const [fechasTrimestres, setFechasTrimestres] = useState({
+    fechaInicioT1: null as string | null,
+    fechaFinT1: null as string | null,
+    fechaInicioT2: null as string | null,
+    fechaFinT2: null as string | null,
+    fechaInicioT3: null as string | null,
+    fechaFinT3: null as string | null,
+  });
+  const [fechasTrimestresLoading, setFechasTrimestresLoading] = useState(false);
   const [resetPasswordDialogOpen, setResetPasswordDialogOpen] = useState(false);
   const [resetPasswordUser, setResetPasswordUser] = useState<{ id: string; nombre: string } | null>(null);
   const [resetPasswordForm, setResetPasswordForm] = useState({ password: "docente123" });
@@ -491,6 +501,14 @@ export function useDashboardData() {
           notaMaxima: data.notaMaxima ?? prev.notaMaxima,
           maxHistorialCelda: data.maxHistorialCelda ?? prev.maxHistorialCelda,
         }));
+        setFechasTrimestres({
+          fechaInicioT1: data.fechaInicioT1 ?? null,
+          fechaFinT1: data.fechaFinT1 ?? null,
+          fechaInicioT2: data.fechaInicioT2 ?? null,
+          fechaFinT2: data.fechaFinT2 ?? null,
+          fechaInicioT3: data.fechaInicioT3 ?? null,
+          fechaFinT3: data.fechaFinT3 ?? null,
+        });
       }
     } catch { }
   }, []);
@@ -1174,6 +1192,28 @@ export function useDashboardData() {
     finally { setUmbralesLoading(false); }
   };
 
+  const handleGuardarFechasTrimestres = async () => {
+    setFechasTrimestresLoading(true);
+    try {
+      const res = await fetch("/api/configuracion", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(fechasTrimestres) });
+      const data = await res.json();
+      if (res.ok) { toast({ title: "Fechas de trimestres guardadas" }); setConfiguracion(data); }
+      else { toast({ title: data.error || "Error", variant: "destructive" }); }
+    } catch { toast({ title: "Error de red", variant: "destructive" }); }
+    finally { setFechasTrimestresLoading(false); }
+  };
+
+  const handleResetFechasTrimestres = () => {
+    setFechasTrimestres({
+      fechaInicioT1: null,
+      fechaFinT1: null,
+      fechaInicioT2: null,
+      fechaFinT2: null,
+      fechaInicioT3: null,
+      fechaFinT3: null,
+    });
+  };
+
   const handleCambiarAño = async () => {
     setAñoLoading(true);
     try {
@@ -1366,6 +1406,7 @@ export function useDashboardData() {
     handleBorrarCalifAlumno, handleBorrarCalifGrado,
     handleGuardarUmbrales, handleCambiarAño, handleResetSistema, handleRepararAsignaciones,
     handleDeleteAuditLogs,
+    fechasTrimestres, setFechasTrimestres, fechasTrimestresLoading, handleGuardarFechasTrimestres, handleResetFechasTrimestres,
     imprimirListadoEstudiantesPDF,
     handleNavigate,
     reCargarDatos,
