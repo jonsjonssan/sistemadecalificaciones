@@ -147,7 +147,7 @@ export function GradeChart({
           ) : (
             <ResponsiveContainer width="100%" height={height}>
               {showArea ? (
-                <AreaChart data={data}>
+                <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 20 }}>
                   <defs>
                     <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor={color} stopOpacity={0.3} />
@@ -160,6 +160,7 @@ export function GradeChart({
                     tick={{ fill: textColor, fontSize: 11 }}
                     tickLine={false}
                     axisLine={{ stroke: gridColor }}
+                    interval={0}
                   />
                   <YAxis
                     domain={[0, 10]}
@@ -193,13 +194,14 @@ export function GradeChart({
                   />
                 </AreaChart>
               ) : (
-                <LineChart data={data}>
+                <LineChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
                   <XAxis
                     dataKey="name"
                     tick={{ fill: textColor, fontSize: 11 }}
                     tickLine={false}
                     axisLine={{ stroke: gridColor }}
+                    interval={0}
                   />
                   <YAxis
                     domain={[0, 10]}
