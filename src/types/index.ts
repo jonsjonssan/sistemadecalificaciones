@@ -111,4 +111,10 @@ export interface ConfiguracionSistema {
   usarIntervaloReprobado?: boolean;
   usarIntervaloCondicionado?: boolean;
   usarIntervaloAprobado?: boolean;
+  fechaInicioT1?: string | null;
+  fechaFinT1?: string | null;
+  fechaInicioT2?: string | null;
+  fechaFinT2?: string | null;
+  fechaInicioT3?: string | null;
+  fechaFinT3?: string | null;
 }

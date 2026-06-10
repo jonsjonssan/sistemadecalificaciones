@@ -36,12 +36,34 @@ export async function GET(req: Request) {
 
     if (trimestre) {
       const t = parseInt(trimestre);
+      const configResult = await sql`SELECT "fechaInicioT1", "fechaFinT1", "fechaInicioT2", "fechaFinT2", "fechaInicioT3", "fechaFinT3" FROM "ConfiguracionSistema" LIMIT 1`;
+      const config = configResult[0];
+
       let startMonth: number, endMonth: number;
-      if (t === 1) { startMonth = 1; endMonth = 4; }
-      else if (t === 2) { startMonth = 5; endMonth = 8; }
-      else { startMonth = 9; endMonth = 12; }
-      startDate = new Date(año, startMonth - 1, 1).toISOString();
-      endDate = new Date(año, endMonth, 0, 23, 59, 59).toISOString();
+      let customStart: Date | null = null;
+      let customEnd: Date | null = null;
+
+      if (t === 1) {
+        startMonth = 1; endMonth = 4;
+        if (config?.fechaInicioT1) customStart = new Date(config.fechaInicioT1);
+        if (config?.fechaFinT1) customEnd = new Date(config.fechaFinT1);
+      } else if (t === 2) {
+        startMonth = 5; endMonth = 8;
+        if (config?.fechaInicioT2) customStart = new Date(config.fechaInicioT2);
+        if (config?.fechaFinT2) customEnd = new Date(config.fechaFinT2);
+      } else {
+        startMonth = 9; endMonth = 12;
+        if (config?.fechaInicioT3) customStart = new Date(config.fechaInicioT3);
+        if (config?.fechaFinT3) customEnd = new Date(config.fechaFinT3);
+      }
+
+      if (customStart && customEnd && !isNaN(customStart.getTime()) && !isNaN(customEnd.getTime())) {
+        startDate = customStart.toISOString();
+        endDate = new Date(customEnd.getFullYear(), customEnd.getMonth(), customEnd.getDate(), 23, 59, 59).toISOString();
+      } else {
+        startDate = new Date(año, startMonth - 1, 1).toISOString();
+        endDate = new Date(año, endMonth, 0, 23, 59, 59).toISOString();
+      }
     } else if (anual) {
       startDate = new Date(año, 0, 1).toISOString();
       endDate = new Date(año, 11, 31, 23, 59, 59).toISOString();

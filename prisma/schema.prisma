@@ -158,6 +158,15 @@ model ConfiguracionSistema {
   usarIntervaloReprobado   Boolean? @default(true)
   usarIntervaloCondicionado Boolean? @default(true)
   usarIntervaloAprobado    Boolean? @default(true)
+
+  // Fechas de trimestres (configurables por el admin)
+  fechaInicioT1     DateTime?
+  fechaFinT1        DateTime?
+  fechaInicioT2     DateTime?
+  fechaFinT2        DateTime?
+  fechaInicioT3     DateTime?
+  fechaFinT3        DateTime?
+
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }

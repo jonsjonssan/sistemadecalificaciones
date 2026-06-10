@@ -79,6 +79,12 @@ export async function PUT(request: NextRequest) {
       usarIntervaloReprobado,
       usarIntervaloCondicionado,
       usarIntervaloAprobado,
+      fechaInicioT1,
+      fechaFinT1,
+      fechaInicioT2,
+      fechaFinT2,
+      fechaInicioT3,
+      fechaFinT3,
     } = body;
 
     let config;
@@ -133,6 +139,19 @@ export async function PUT(request: NextRequest) {
     const valUsarCondicionado = typeof usarIntervaloCondicionado === 'boolean' ? usarIntervaloCondicionado : (config[0]?.usarIntervaloCondicionado ?? true);
     const valUsarAprobado = typeof usarIntervaloAprobado === 'boolean' ? usarIntervaloAprobado : (config[0]?.usarIntervaloAprobado ?? true);
 
+    const parseDate = (val: any, fallback: string | null): Date | null => {
+      if (val === null || val === undefined || val === '') return null;
+      const d = new Date(val);
+      return isNaN(d.getTime()) ? null : d;
+    };
+
+    const valFechaInicioT1 = parseDate(fechaInicioT1, null) ?? (config[0]?.fechaInicioT1 ? new Date(config[0].fechaInicioT1) : null);
+    const valFechaFinT1 = parseDate(fechaFinT1, null) ?? (config[0]?.fechaFinT1 ? new Date(config[0].fechaFinT1) : null);
+    const valFechaInicioT2 = parseDate(fechaInicioT2, null) ?? (config[0]?.fechaInicioT2 ? new Date(config[0].fechaInicioT2) : null);
+    const valFechaFinT2 = parseDate(fechaFinT2, null) ?? (config[0]?.fechaFinT2 ? new Date(config[0].fechaFinT2) : null);
+    const valFechaInicioT3 = parseDate(fechaInicioT3, null) ?? (config[0]?.fechaInicioT3 ? new Date(config[0].fechaInicioT3) : null);
+    const valFechaFinT3 = parseDate(fechaFinT3, null) ?? (config[0]?.fechaFinT3 ? new Date(config[0].fechaFinT3) : null);
+
     try {
       if (!config || config.length === 0) {
         const id = randomUUID();
@@ -141,13 +160,15 @@ export async function PUT(request: NextRequest) {
           "umbralRecuperacion", "umbralCondicionado", "umbralAprobado",
           "notaMinima", "notaMaxima",
           "maxHistorialCelda",
-          "usarIntervaloReprobado", "usarIntervaloCondicionado", "usarIntervaloAprobado"
+          "usarIntervaloReprobado", "usarIntervaloCondicionado", "usarIntervaloAprobado",
+          "fechaInicioT1", "fechaFinT1", "fechaInicioT2", "fechaFinT2", "fechaInicioT3", "fechaFinT3"
         ) VALUES (
           ${id}, ${valAño}, ${valEscuela}, ${valDirectora},
           ${valUmbralRec}, ${valUmbralCond}, ${valUmbralApr},
           ${valNotaMinima}, ${valNotaMaxima},
           ${valMaxHist},
-          ${valUsarReprobado}, ${valUsarCondicionado}, ${valUsarAprobado}
+          ${valUsarReprobado}, ${valUsarCondicionado}, ${valUsarAprobado},
+          ${valFechaInicioT1}, ${valFechaFinT1}, ${valFechaInicioT2}, ${valFechaFinT2}, ${valFechaInicioT3}, ${valFechaFinT3}
         )`;
       } else {
         const row = config[0];
@@ -167,6 +188,12 @@ export async function PUT(request: NextRequest) {
           "usarIntervaloReprobado" = ${valUsarReprobado},
           "usarIntervaloCondicionado" = ${valUsarCondicionado},
           "usarIntervaloAprobado" = ${valUsarAprobado},
+          "fechaInicioT1" = ${valFechaInicioT1},
+          "fechaFinT1" = ${valFechaFinT1},
+          "fechaInicioT2" = ${valFechaInicioT2},
+          "fechaFinT2" = ${valFechaFinT2},
+          "fechaInicioT3" = ${valFechaInicioT3},
+          "fechaFinT3" = ${valFechaFinT3},
           "updatedAt" = NOW()
         WHERE id = ${row.id}`;
       }
