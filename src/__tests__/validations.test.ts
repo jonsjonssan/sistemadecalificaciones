@@ -22,7 +22,7 @@ describe("usuarioCreateSchema", () => {
   it("acepta usuario válido", () => {
     const result = usuarioCreateSchema.safeParse({
       email: "docente@test.com",
-      password: "123456",
+      password: "Abcdefgh1!",
       nombre: "María Pérez",
       rol: "docente",
     });
@@ -32,7 +32,7 @@ describe("usuarioCreateSchema", () => {
   it("rechaza rol inválido", () => {
     const result = usuarioCreateSchema.safeParse({
       email: "test@test.com",
-      password: "123456",
+      password: "Abcdefgh1!",
       nombre: "Test",
       rol: "superadmin",
     });
@@ -42,7 +42,7 @@ describe("usuarioCreateSchema", () => {
   it("rechaza nombre con caracteres especiales", () => {
     const result = usuarioCreateSchema.safeParse({
       email: "test@test.com",
-      password: "123456",
+      password: "Abcdefgh1!",
       nombre: "<script>alert('xss')</script>",
       rol: "docente",
     });
