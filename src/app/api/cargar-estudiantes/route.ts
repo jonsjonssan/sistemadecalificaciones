@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/neon";
 import { cookies } from "next/headers";
 import { verifySession } from "@/lib/session";
+import { isAdmin } from "@/utils/roleHelpers";
 
 const estudiantesPorGrado: Record<number, string[]> = {
   2: [
@@ -102,7 +103,7 @@ export async function POST(request: NextRequest) {
     }
 
     const sessionData = verifySession(session.value);
-    if (sessionData.rol !== "admin") {
+    if (!isAdmin(sessionData.rol)) {
       return NextResponse.json({ error: "Solo administradores pueden ejecutar esta acción" }, { status: 403 });
     }
 

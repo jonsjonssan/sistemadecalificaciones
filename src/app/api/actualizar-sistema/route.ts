@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { cookies } from "next/headers";
 import { verifySession } from "@/lib/session";
+import { isAdmin } from "@/utils/roleHelpers";
 
 // API para agregar Inglés y corregir datos
 export async function POST(request: NextRequest) {
@@ -14,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     const sessionData = verifySession(session.value);
-    if (sessionData.rol !== "admin") {
+    if (!isAdmin(sessionData.rol)) {
       return NextResponse.json({ error: "Solo administradores pueden ejecutar esta acción" }, { status: 403 });
     }
 

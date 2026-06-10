@@ -107,12 +107,12 @@ export async function POST(request: NextRequest) {
 
     const cookieStore = await cookies();
 
-    const userData = {
+    const userData: any = {
       id: usuario[0].id,
       email: usuario[0].email,
       nombre: usuario[0].nombre,
       rol: usuario[0].rol,
-      gradosAsignados: [], // Ya no se usa - todos los docentes usan materias asignadas
+      gradosAsignados: [],
       asignaturasAsignadas: materiasAsignadas.map((m: any) => ({
         id: m.id,
         nombre: m.nombre,
@@ -122,15 +122,13 @@ export async function POST(request: NextRequest) {
       }))
     };
 
-    console.log("[auth/login] User data to save in session:", JSON.stringify(userData));
-
     const isSecure = request.headers.get("x-forwarded-proto") === "https" || process.env.NODE_ENV === "production";
     cookieStore.set("session", signSession(userData), {
       httpOnly: true,
       secure: isSecure,
-      sameSite: "lax",
+      sameSite: "strict",
       path: "/",
-      maxAge: 60 * 60 * 8, // 8 horas - sesión más corta
+      maxAge: 60 * 60 * 8,
     });
 
     // Registrar login en audit log y sesiones
@@ -150,7 +148,18 @@ export async function POST(request: NextRequest) {
       await sql`
         INSERT INTO "LoginSession" ("id", "usuarioId", "ip", "userAgent", "loginAt")
         VALUES (gen_random_uuid()::text, ${usuario[0].id}, ${ip}, ${userAgent}, NOW())
+        RETURNING id
       `;
+      
+      const sessionResult = await sql`
+        SELECT id FROM "LoginSession" 
+        WHERE "usuarioId" = ${usuario[0].id} AND "isActive" = true
+        ORDER BY "loginAt" DESC LIMIT 1
+      `;
+      
+      const sessionId = sessionResult[0]?.id;
+
+      userData.sessionId = sessionId;
     } catch (auditError) {
       console.error("[auth/login] Error creating audit log:", auditError);
     }

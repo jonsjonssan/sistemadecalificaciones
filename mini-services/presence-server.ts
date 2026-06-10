@@ -1,12 +1,45 @@
 import { createServer } from 'http'
 import { Server } from 'socket.io'
+import { createHmac, timingSafeEqual } from 'crypto'
+
+const SESSION_SECRET = process.env.SESSION_SECRET || process.env.NEXTAUTH_SECRET
+
+function verifySession(cookieValue: string): any {
+  if (!SESSION_SECRET) {
+    console.error('[Presencia] SESSION_SECRET no configurado')
+    return null
+  }
+  
+  const dotIndex = cookieValue.indexOf('.')
+  if (dotIndex === -1) return null
+
+  const payload = cookieValue.substring(0, dotIndex)
+  const providedSignature = cookieValue.substring(dotIndex + 1)
+
+  const expectedSignature = createHmac('sha256', SESSION_SECRET).update(payload).digest('hex')
+
+  if (
+    providedSignature.length !== expectedSignature.length ||
+    !timingSafeEqual(Buffer.from(providedSignature), Buffer.from(expectedSignature))
+  ) {
+    return null
+  }
+
+  try {
+    const decoded = Buffer.from(payload, 'base64url').toString('utf8')
+    return JSON.parse(decoded)
+  } catch {
+    return null
+  }
+}
 
 const httpServer = createServer()
 const io = new Server(httpServer, {
   path: '/',
   cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
+    origin: process.env.NEXTAUTH_URL?.replace(/:\d+$/, '') || 'http://localhost:3000',
+    methods: ['GET', 'POST'],
+    credentials: true
   },
   pingTimeout: 60000,
   pingInterval: 25000,
@@ -41,7 +74,18 @@ function getUniqueUsers(): OnlineUser[] {
 io.on('connection', (socket) => {
   console.log(`[Presencia] Socket conectado: ${socket.id}`)
 
-  socket.on('join', (data: { userId: string; nombre: string; email: string; rol: string }) => {
+  socket.on('join', (data: { userId: string; nombre: string; email: string; rol: string; sessionToken?: string }) => {
+    // Verificar sesion si se proporciona el token
+    if (data.sessionToken) {
+      const sessionData = verifySession(data.sessionToken)
+      if (!sessionData || sessionData.id !== data.userId) {
+        console.warn(`[Presencia] Sesión inválida para usuario ${data.userId}`)
+        socket.emit('auth-error', { message: 'Sesión inválida' })
+        socket.disconnect()
+        return
+      }
+    }
+
     const wasAlreadyOnline = userSessions.has(data.userId) && (userSessions.get(data.userId)?.size ?? 0) > 0
 
     const user: OnlineUser = {
