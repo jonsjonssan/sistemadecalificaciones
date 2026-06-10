@@ -3,6 +3,8 @@ import { sql } from "@/lib/neon";
 import { verifySession } from "@/lib/session";
 import { isAdmin } from "@/utils/roleHelpers";
 import bcrypt from "bcryptjs";
+import { generateSecurePassword } from "@/lib/security";
+import { cookies } from "next/headers";
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,7 +24,8 @@ export async function POST(request: NextRequest) {
     const accion = searchParams.get("accion");
 
     if (accion === "restaurar") {
-      const hashedPassword = await bcrypt.hash("admin123", 10);
+      const tempPassword = generateSecurePassword(16);
+      const hashedPassword = await bcrypt.hash(tempPassword, 10);
       
       await sql`
         UPDATE "Usuario" SET password = ${hashedPassword}, rol = 'docente', activo = true
@@ -35,8 +38,9 @@ export async function POST(request: NextRequest) {
       `;
 
       return NextResponse.json({ 
-        message: "Sistema restaurado. Solo jonathan.araujo.mendoza@clases.edu.sv es admin.",
-        email: "jonathan.araujo.mendoza@clases.edu.sv"
+        message: "Sistema restaurado. Las contraseñas han sido restablecidas.",
+        adminEmail: "jonathan.araujo.mendoza@clases.edu.sv",
+        tempPassword: process.env.NODE_ENV === "development" ? tempPassword : undefined
       });
     }
 
@@ -46,5 +50,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Error del servidor" }, { status: 500 });
   }
 }
-
-import { cookies } from "next/headers";

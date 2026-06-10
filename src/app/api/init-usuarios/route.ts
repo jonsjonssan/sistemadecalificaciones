@@ -3,6 +3,8 @@ import { db } from "@/lib/db";
 import { cookies } from "next/headers";
 import { verifySession } from "@/lib/session";
 import bcrypt from "bcryptjs";
+import { generateSecurePassword } from "@/lib/security";
+import { isAdmin } from "@/utils/roleHelpers";
 
 // API para crear usuarios docentes con sus asignaciones
 export async function POST(request: NextRequest) {
@@ -16,7 +18,7 @@ export async function POST(request: NextRequest) {
 
     // Verificar que sea admin
     const sessionData = verifySession(session.value);
-    if (sessionData.rol !== "admin") {
+    if (!isAdmin(sessionData.rol)) {
       return NextResponse.json({ error: "Solo administradores pueden ejecutar esta acción" }, { status: 403 });
     }
 
@@ -40,7 +42,6 @@ export async function POST(request: NextRequest) {
     const crearUsuario = async (
       nombre: string,
       email: string,
-      password: string,
       gradosTutor: number[] = [],
       materiasAsignadas: { grado: number; materia: string }[] = []
     ) => {
@@ -50,11 +51,14 @@ export async function POST(request: NextRequest) {
         return { nombre, email, status: "ya existe" };
       }
 
+      // Generar password segura aleatoria
+      const tempPassword = generateSecurePassword(16);
+
       // Crear usuario
       const usuario = await db.usuario.create({
         data: {
           email,
-          password: await bcrypt.hash(password, 10),
+          password: await bcrypt.hash(tempPassword, 10),
           nombre,
           rol: "docente",
         },
@@ -97,7 +101,6 @@ export async function POST(request: NextRequest) {
     resultados.push(await crearUsuario(
       "Jonathan Adonay Araujo Mendoza",
       "jonatha.araujo.mendoza@clases.edu.sv",
-      "jonathan2024",
       [],
       [
         { grado: 4, materia: "Artes" },
@@ -110,7 +113,6 @@ export async function POST(request: NextRequest) {
     resultados.push(await crearUsuario(
       "Claudia Jasmin Arce Castillo",
       "claudia.jasmin.arce@clases.edu.sv",
-      "claudia2024",
       [],
       [
         { grado: 4, materia: "Artes" },
@@ -123,7 +125,6 @@ export async function POST(request: NextRequest) {
     resultados.push(await crearUsuario(
       "Mónica Lissette Tobar Gómez",
       "monica.lissette.tobar@clases.edu.sv",
-      "monica2024",
       [],
       [
         { grado: 4, materia: "Artes" },
@@ -133,11 +134,9 @@ export async function POST(request: NextRequest) {
     ));
 
     // 4. Diana Nicole Rojas Urias - Artes 2°, 3°
-    // Nota: Inglés no está en el sistema actual, solo se asigna Artes
     resultados.push(await crearUsuario(
       "Diana Nicole Rojas Urias",
       "05980194-0@clases.edu.sv",
-      "diana2024",
       [],
       [
         { grado: 2, materia: "Artes" },
@@ -153,7 +152,6 @@ export async function POST(request: NextRequest) {
     resultados.push(await crearUsuario(
       "Helen Alicia Cabezas de Golcher",
       "03533849-6@clases.edu.sv",
-      "helen2024",
       [],
       materiasFe
     ));
@@ -162,8 +160,7 @@ export async function POST(request: NextRequest) {
     resultados.push(await crearUsuario(
       "Deysi Elizabeth Umanzor Cruz",
       "deysi.elizabeth.umanzor@clases.edu.sv",
-      "deysi2024",
-      [2], // Tutora de 2° grado
+      [2],
       []
     ));
 
@@ -171,8 +168,7 @@ export async function POST(request: NextRequest) {
     resultados.push(await crearUsuario(
       "Emilia Etel Peraza",
       "emilia.peraza.publicos698@clases.edu.sv",
-      "emilia2024",
-      [5], // Tutora de 5° grado
+      [5],
       []
     ));
 
@@ -180,8 +176,7 @@ export async function POST(request: NextRequest) {
     resultados.push(await crearUsuario(
       "Silverio Mónico Mulato",
       "silverio.silverio.monico@clases.edu.sv",
-      "silverio2024",
-      [4], // Tutor de 4° grado
+      [4],
       []
     ));
 
@@ -189,8 +184,7 @@ export async function POST(request: NextRequest) {
     resultados.push(await crearUsuario(
       "Yency Yesenia Mejía Nerio",
       "04876579-1@clases.edu.sv",
-      "yency2024",
-      [3], // Tutora de 3° grado
+      [3],
       []
     ));
 
@@ -198,7 +192,6 @@ export async function POST(request: NextRequest) {
     resultados.push(await crearUsuario(
       "Ana del Carmen Romero González",
       "ana.carmen.romero@clases.edu.sv",
-      "ana2024",
       [],
       [
         { grado: 6, materia: "Ciudadanía y Valores" },
@@ -212,7 +205,6 @@ export async function POST(request: NextRequest) {
     resultados.push(await crearUsuario(
       "Jaqueline Lissette Landaverde de Gómez",
       "jaqueline.lissette.landaverde@clases.edu.sv",
-      "jaqueline2024",
       [],
       [
         { grado: 6, materia: "Ciencia y Tecnología" },
@@ -233,7 +225,6 @@ export async function POST(request: NextRequest) {
     resultados.push(await crearUsuario(
       "Mónica Gissel Montesino Najarro",
       "monica.montesino.najarro@clases.edu.sv",
-      "gissel2024",
       [],
       materiasDesarrollo
     ));
@@ -242,7 +233,6 @@ export async function POST(request: NextRequest) {
     resultados.push(await crearUsuario(
       "Yessenia del Carmen Villafuerte Mejía",
       "yessenia.carmen.villafuerte@clases.edu.sv",
-      "yessenia2024",
       [],
       [
         { grado: 6, materia: "Números y Formas" },
