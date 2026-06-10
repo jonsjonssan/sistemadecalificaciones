@@ -87,16 +87,14 @@ export async function POST(request: NextRequest) {
       })),
     };
 
-    console.log("[auth/google] User data to save in session:", JSON.stringify(userData));
-
     // Crear sesión en cookie
     const cookieStore = await cookies();
     cookieStore.set("session", signSession(userData), {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: "strict",
       path: "/",
-      maxAge: 60 * 60 * 8, // 8 horas
+      maxAge: 60 * 60 * 8,
     });
 
     // Registrar en audit log y sesiones

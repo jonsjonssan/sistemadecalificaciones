@@ -4,8 +4,12 @@ export const emailSchema = z.string().email("Email inválido").min(5).max(255);
 
 export const passwordSchema = z
   .string()
-  .min(6, "La contraseña debe tener al menos 6 caracteres")
-  .max(100);
+  .min(8, "La contraseña debe tener al menos 8 caracteres")
+  .max(100)
+  .regex(/[A-Z]/, "La contraseña debe contener al menos una letra mayuscula")
+  .regex(/[a-z]/, "La contraseña debe contener al menos una letra minuscula")
+  .regex(/[0-9]/, "La contraseña debe contener al menos un numero")
+  .regex(/[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/, "La contraseña debe contener al menos un simbolo especial");
 
 export const nombreSchema = z
   .string()

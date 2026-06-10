@@ -74,14 +74,16 @@ interface AuditLogData {
 
 export async function registrarAuditoria(data: AuditLogData): Promise<void> {
   try {
+    const sanitizedDetalles = data.detalles ? sanitizeLogData(data.detalles) : undefined;
+    
     logger.info(`AUDIT: ${data.accion} on ${data.entidad}`, {
       entidadId: data.entidadId,
       usuarioId: data.usuarioId,
       usuarioEmail: data.usuarioEmail,
-      detalles: data.detalles,
+      detalles: sanitizedDetalles,
     });
   } catch (error) {
-    logger.error("Error al registrar auditoría", { error, data });
+    logger.error("Error al registrar auditoría", { error });
   }
 }
 
