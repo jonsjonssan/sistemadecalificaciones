@@ -5,6 +5,7 @@ import { useTheme } from "next-themes";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 import { type LucideIcon, Users, BookOpen, School, GraduationCap, Book, Target, TrendingUp, ChevronDown, ChevronRight, Trophy, AlertTriangle, ClipboardList, CalendarDays } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend, Cell } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -174,6 +175,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
   const [loading, setLoading] = useState(true);
   const [selectedMaterias, setSelectedMaterias] = useState<Set<string>>(new Set());
   const [selectedTrimestre, setSelectedTrimestre] = useState<'anual' | 1 | 2 | 3>('anual');
+  const [selectedTrimestreCategoria, setSelectedTrimestreCategoria] = useState<'anual' | 1 | 2 | 3>('anual');
   const [selectedMateriaId, setSelectedMateriaId] = useState<string>('all');
   const [miAvance, setMiAvance] = useState<{
     porcentajeGlobal: number;
@@ -347,16 +349,39 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
   const statsConAC = stats.filter(s => s.promedios?.cotidiana != null);
   const statsConAI = stats.filter(s => s.promedios?.integradora != null);
   const statsConEx = stats.filter(s => s.promedios?.examen != null);
-  const evolutionChartData: Array<{ name: string; value: number; target: number }> = [];
-  if (statsConAC.length > 0) {
-    evolutionChartData.push({ name: "Cotidianas", value: Math.round(statsConAC.reduce((a, s) => a + (s.promedios?.cotidiana ?? 0), 0) / statsConAC.length * 100) / 100, target: 6.0 });
+  
+  // Calcular datos por trimestre para el gráfico de categorías
+  function calcularDatosCategoria(trimestreKey?: 1 | 2 | 3): Array<{ name: string; value: number; target: number }> {
+    const data: Array<{ name: string; value: number; target: number }> = [];
+    
+    const getPromedio = (s: GradeStats, tipo: 'cotidiana' | 'integradora' | 'examen') => {
+      if (trimestreKey && s.trimestres?.[trimestreKey]) {
+        return s.trimestres[trimestreKey].promedios?.[tipo];
+      }
+      return s.promedios?.[tipo];
+    };
+
+    const statsConACT = stats.filter(s => getPromedio(s, 'cotidiana') != null);
+    const statsConAIT = stats.filter(s => getPromedio(s, 'integradora') != null);
+    const statsConExT = stats.filter(s => getPromedio(s, 'examen') != null);
+
+    if (statsConACT.length > 0) {
+      const prom = Math.round(statsConACT.reduce((a, s) => a + (getPromedio(s, 'cotidiana') ?? 0), 0) / statsConACT.length * 100) / 100;
+      data.push({ name: "Cotidianas", value: prom, target: 6.0 });
+    }
+    if (statsConAIT.length > 0) {
+      const prom = Math.round(statsConAIT.reduce((a, s) => a + (getPromedio(s, 'integradora') ?? 0), 0) / statsConAIT.length * 100) / 100;
+      data.push({ name: "Integradoras", value: prom, target: 7.0 });
+    }
+    if (statsConExT.length > 0) {
+      const prom = Math.round(statsConExT.reduce((a, s) => a + (getPromedio(s, 'examen') ?? 0), 0) / statsConExT.length * 100) / 100;
+      data.push({ name: "Exámenes", value: prom, target: 7.0 });
+    }
+    
+    return data;
   }
-  if (statsConAI.length > 0) {
-    evolutionChartData.push({ name: "Integradoras", value: Math.round(statsConAI.reduce((a, s) => a + (s.promedios?.integradora ?? 0), 0) / statsConAI.length * 100) / 100, target: 7.0 });
-  }
-  if (statsConEx.length > 0) {
-    evolutionChartData.push({ name: "Exámenes", value: Math.round(statsConEx.reduce((a, s) => a + (s.promedios?.examen ?? 0), 0) / statsConEx.length * 100) / 100, target: 7.0 });
-  }
+
+  const evolutionChartData = calcularDatosCategoria(selectedTrimestreCategoria === 'anual' ? undefined : selectedTrimestreCategoria);
 
   return (
     <div className="pb-6 space-y-5">
@@ -518,7 +543,46 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
           {/* Promedio por Categoría */}
           {esDirectiva && evolutionChartData.length > 0 && (
             <div className="animate-fade-slide-up" style={{ animationDelay: '0.15s' }}>
-              <GradeChart data={evolutionChartData} title="Promedio por Categoría" description="Promedio institucional por tipo de actividad" icon={TrendingUp} showArea showTarget darkMode={darkMode} height={240} action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.promedioPorCategoria} />} />
+              <Card className="shadow-sm overflow-hidden bg-card border-border module-card">
+                <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-border gap-3 bg-muted/20">
+                  <div className="flex items-center gap-2">
+                    <div className={cn("h-8 w-8 rounded-full flex items-center justify-center", darkMode ? "bg-accent/20" : "bg-emerald-50")}>
+                      <TrendingUp className="h-4 w-4 text-emerald-500" />
+                    </div>
+                    <div>
+                      <CardTitle className={cn("text-sm sm:text-base", darkMode ? "text-slate-300" : "text-green-800")}>
+                        Promedio por Categoría
+                      </CardTitle>
+                      <CardDescription className="text-xs text-muted-foreground">
+                        Promedio institucional por tipo de actividad
+                        {selectedTrimestreCategoria !== 'anual' && (
+                          <span className="ml-1 text-accent font-medium">• {selectedTrimestreCategoria}° Trimestre</span>
+                        )}
+                        {selectedTrimestreCategoria === 'anual' && (
+                          <span className="ml-1 text-accent font-medium">• Anual</span>
+                        )}
+                      </CardDescription>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <MathInfoButton darkMode={darkMode} explanation={mathExplanations.promedioPorCategoria} />
+                    <Select value={String(selectedTrimestreCategoria)} onValueChange={(v) => setSelectedTrimestreCategoria(v === 'anual' ? 'anual' : parseInt(v) as 1 | 2 | 3)}>
+                      <SelectTrigger className="w-full sm:w-[140px] h-8 text-xs bg-background border-border text-foreground">
+                        <SelectValue placeholder="Trimestre" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="anual" className="text-xs">Anual</SelectItem>
+                        <SelectItem value="1" className="text-xs">I Trimestre</SelectItem>
+                        <SelectItem value="2" className="text-xs">II Trimestre</SelectItem>
+                        <SelectItem value="3" className="text-xs">III Trimestre</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-3 sm:p-4">
+                  <GradeChart data={evolutionChartData} title="" description="" showArea showTarget darkMode={darkMode} height={240} />
+                </CardContent>
+              </Card>
             </div>
           )}
 
