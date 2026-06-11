@@ -62,6 +62,66 @@ export default function Home() {
   } = d;
 
   const [informeDialogOpen, setInformeDialogOpen] = useState(false);
+  const [materiasDialogOpen, setMateriasDialogOpen] = useState(false);
+  const [nuevaMateriaNombre, setNuevaMateriaNombre] = useState("");
+  const [nuevaMateriaGradoId, setNuevaMateriaGradoId] = useState("");
+  const [materiasLoading, setMateriasLoading] = useState(false);
+  const [editMateriaId, setEditMateriaId] = useState<string | null>(null);
+  const [editMateriaNombre, setEditMateriaNombre] = useState("");
+
+  const handleAddMateria = async () => {
+    if (!nuevaMateriaNombre.trim() || !nuevaMateriaGradoId) return;
+    setMateriasLoading(true);
+    try {
+      const res = await fetch("/api/materias", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre: nuevaMateriaNombre.trim(), gradoId: nuevaMateriaGradoId }),
+      });
+      if (res.ok) {
+        setNuevaMateriaNombre("");
+        setNuevaMateriaGradoId("");
+        d.loadTodasAsignaturas();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    setMateriasLoading(false);
+  };
+
+  const handleDeleteMateria = async (id: string) => {
+    if (!confirm("¿Eliminar esta asignatura?")) return;
+    setMateriasLoading(true);
+    try {
+      const res = await fetch(`/api/materias?id=${id}`, { method: "DELETE" });
+      if (res.ok) {
+        d.loadTodasAsignaturas();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    setMateriasLoading(false);
+  };
+
+  const handleUpdateMateria = async () => {
+    if (!editMateriaNombre.trim() || !editMateriaId) return;
+    setMateriasLoading(true);
+    try {
+      const res = await fetch("/api/materias", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: editMateriaId, nombre: editMateriaNombre.trim() }),
+      });
+      if (res.ok) {
+        setEditMateriaId(null);
+        setEditMateriaNombre("");
+        d.loadTodasAsignaturas();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    setMateriasLoading(false);
+  };
 
   if (loading || dataLoading) {
     return (
@@ -249,7 +309,7 @@ export default function Home() {
                   <div className="flex gap-2">
                     <Dialog open={d.listaDialogOpen} onOpenChange={d.setListaDialogOpen}>
                       <DialogTrigger asChild><Button size="sm" variant="outline" className={`h-10 text-xs sm:text-sm ${darkMode ? 'border-white/30 text-white hover-gradient-strong' : ''}`}><ListPlus className="h-5 w-5 mr-1" />Lista</Button></DialogTrigger>
-                      <DialogContent className="max-w-md bg-card border-border">
+<DialogContent className="max-w-md w-[95vw] bg-card border-border">
                         <DialogHeader><DialogTitle>Agregar Lista de Estudiantes</DialogTitle><DialogDescription>Ingresa los nombres de los estudiantes, uno por línea.</DialogDescription></DialogHeader>
                         <div className="space-y-2"><Label>Un nombre por línea</Label><textarea className={`w-full h-48 p-2 text-sm border rounded-md ${darkMode ? 'bg-card border-white/30 text-white' : ''}`} value={d.listaEstudiantes} onChange={e => d.setListaEstudiantes(e.target.value)} placeholder="Apellido, Nombre&#10;Apellido, Nombre, correo@email.com&#10;…" aria-label="Lista de estudiantes, uno por línea" /></div>
                         <DialogFooter><Button variant="outline" size="sm" onClick={() => { d.setListaDialogOpen(false); d.setListaEstudiantes(""); }}>Cancelar</Button><Button size="sm" onClick={d.handleAddMultipleEstudiantes} className="bg-primary">Agregar {d.listaEstudiantes.split('\n').filter((n: string) => n.trim()).length}</Button></DialogFooter>
@@ -685,6 +745,84 @@ export default function Home() {
               </Card>
 
               <Card className="shadow-md bg-card border-border module-card">
+                <CardHeader className="py-3 px-4 flex-row items-center justify-between space-y-0 border-border">
+                  <div><CardTitle className="text-sm sm:text-base">Gestión de Asignaturas</CardTitle><CardDescription className="text-xs text-muted-foreground">Añade o elimina asignaturas del sistema</CardDescription></div>
+                  <Dialog open={materiasDialogOpen} onOpenChange={setMateriasDialogOpen}>
+                    <DialogTrigger asChild><Button size="sm" className={`h-7 text-xs ${darkMode ? 'bg-primary hover:bg-primary' : 'bg-primary'}`}><ListPlus className="h-3.5 w-3.5 mr-1" />Gestionar</Button></DialogTrigger>
+                    <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto bg-card border-border">
+                      <DialogHeader><DialogTitle>Gestión de Asignaturas</DialogTitle><DialogDescription>Añade nuevas asignaturas o elimina existentes del sistema.</DialogDescription></DialogHeader>
+                      <div className="space-y-4">
+                        <div className={`p-3 rounded-lg border ${darkMode ? 'bg-slate-900/50 border-white/10' : 'bg-slate-50 border-slate-200'}`}>
+                          <p className={`text-xs font-semibold mb-2 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Añadir Nueva Asignatura</p>
+                          <div className="space-y-2">
+                            <div><Label className="text-xs">Nombre de la Asignatura</Label><Input value={nuevaMateriaNombre} onChange={e => setNuevaMateriaNombre(e.target.value)} placeholder="Ej: Matemáticas Avanzadas" className={`h-8 ${darkMode ? 'bg-card border-white/30 text-white' : ''}`} /></div>
+                            <div><Label className="text-xs">Grado</Label>
+                              <Select value={nuevaMateriaGradoId} onValueChange={setNuevaMateriaGradoId}>
+                                <SelectTrigger className={`h-8 ${darkMode ? 'bg-card border-white/30 text-white' : ''}`}><SelectValue placeholder="Seleccionar grado" /></SelectTrigger>
+                                <SelectContent>
+                                  {d.grados.map((g: any) => (<SelectItem key={g.id} value={g.id}>{g.numero}° "{g.seccion}"</SelectItem>))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <Button size="sm" onClick={handleAddMateria} disabled={materiasLoading || !nuevaMateriaNombre.trim() || !nuevaMateriaGradoId} className="bg-primary w-full">{materiasLoading ? "Guardando…" : "Añadir Asignatura"}</Button>
+                          </div>
+                        </div>
+                        <div>
+                          <p className={`text-xs font-semibold mb-2 ${darkMode ? 'text-slate-300' : 'text-slate-700'}`}>Asignaturas Existentes</p>
+                          <div className={`border rounded max-h-64 overflow-y-auto ${darkMode ? 'border-slate-700' : ''}`}>
+                            {d.grados.map((grado: any) => {
+                              const materiasDelGrado = d.todasAsignaturas.filter((m: any) => m.gradoId === grado.id);
+                              if (materiasDelGrado.length === 0) return null;
+                              return (
+                                <div key={grado.id} className={`border-b last:border-b-0 ${darkMode ? 'border-slate-700' : ''}`}>
+                                  <div className={`px-2 py-1 text-xs font-medium ${darkMode ? 'bg-slate-800' : 'bg-slate-100'}`}>{grado.numero}° "{grado.seccion}"</div>
+                                  <div className="p-2 space-y-1">
+                                    {materiasDelGrado.map((m: any) => (
+                                      <div key={m.id} className={`flex items-center justify-between gap-2 p-1.5 rounded text-xs ${darkMode ? 'hover:bg-slate-800' : 'hover:bg-slate-100'}`}>
+                                        {editMateriaId === m.id ? (
+                                          <div className="flex items-center gap-1 flex-1">
+                                            <Input value={editMateriaNombre} onChange={e => setEditMateriaNombre(e.target.value)} className={`h-7 text-xs flex-1 ${darkMode ? 'bg-card border-white/30 text-white' : ''}`} autoFocus />
+                                            <Button size="sm" variant="ghost" className="h-7 px-2 text-emerald-500" onClick={handleUpdateMateria} disabled={materiasLoading}><Save className="h-3.5 w-3.5" /></Button>
+                                            <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => { setEditMateriaId(null); setEditMateriaNombre(""); }}><Trash2 className="h-3.5 w-3.5" /></Button>
+                                          </div>
+                                        ) : (
+                                          <>
+                                            <span className={`flex-1 ${darkMode ? 'text-slate-200' : ''}`}>{m.nombre}</span>
+                                            <div className="flex items-center gap-0.5">
+                                              <Button size="sm" variant="ghost" className={`h-6 w-6 p-0 ${darkMode ? 'text-amber-400' : 'text-amber-500'}`} onClick={() => { setEditMateriaId(m.id); setEditMateriaNombre(m.nombre); }}><Settings className="h-3.5 w-3.5" /></Button>
+                                              <Button size="sm" variant="ghost" className={`h-6 w-6 p-0 ${darkMode ? 'text-red-400' : 'text-red-500'}`} onClick={() => handleDeleteMateria(m.id)} disabled={materiasLoading}><Trash2 className="h-3.5 w-3.5" /></Button>
+                                            </div>
+                                          </>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                      <DialogFooter><Button variant="outline" size="sm" onClick={() => setMateriasDialogOpen(false)}>Cerrar</Button></DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
+                    {d.grados.map((g: any) => {
+                      const count = d.todasAsignaturas.filter((m: any) => m.gradoId === g.id).length;
+                      return (
+                        <div key={g.id} className={`p-3 rounded-lg border ${darkMode ? 'bg-card border-white/30' : 'bg-slate-50'}`}>
+                          <p className={`font-medium text-xs sm:text-sm ${darkMode ? 'text-white' : ''}`}>{g.numero}° "{g.seccion}"</p>
+                          <p className={`text-[10px] ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>{count} asignatura{count !== 1 ? 's' : ''}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-md bg-card border-border module-card">
                 <CardHeader className="py-3 px-4 border-border"><CardTitle className="text-sm sm:text-base">Grados Registrados</CardTitle></CardHeader>
                 <CardContent className="pt-0">
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
@@ -874,8 +1012,8 @@ export default function Home() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className={`p-4 rounded-lg space-y-3 ${darkMode ? 'bg-slate-950/40 backdrop-blur-md' : 'bg-slate-50'}`}>
-              <div><p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Nombre</p><p className={`font-medium text-lg ${darkMode ? 'text-white' : ''}`}>{usuario.nombre}</p></div>
-              <div><p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Email</p><p className={`font-medium ${darkMode ? 'text-white' : ''}`}>{usuario.email}</p></div>
+              <div><p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Nombre</p><p className={`font-medium text-lg break-all ${darkMode ? 'text-white' : ''}`}>{usuario.nombre}</p></div>
+              <div><p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Email</p><p className={`font-medium break-all ${darkMode ? 'text-white' : ''}`}>{usuario.email}</p></div>
               <div><p className={`text-xs ${darkMode ? 'text-slate-500' : 'text-slate-500'}`}>Rol</p><p className={`font-medium capitalize ${darkMode ? 'text-white' : ''}`}>{usuario.rol}</p></div>
             </div>
             {usuario.gradosAsignados && usuario.gradosAsignados.length > 0 && (

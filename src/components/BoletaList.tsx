@@ -1293,16 +1293,19 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
                   {mostrarAsistencia && asistenciaManualHabilitado && (
                     <div className="border-t pt-3">
                       <div className="text-xs font-bold mb-2 text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">Registro de Asistencia Manual</div>
-                      <div className="grid grid-cols-5 gap-2">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
                         {[
-                          { label: 'Asistencias', field: 'asistencias' },
-                          { label: 'Inasistencias', field: 'inasistencias' },
-                          { label: 'Tardanzas', field: 'tardanzas' },
-                          { label: 'Justificadas', field: 'justificadas' },
-                          { label: 'Total Días', field: 'totalDias' },
-                        ].map(({ label, field }) => (
+                          { label: 'Asistencias', shortLabel: 'Asist.', field: 'asistencias' },
+                          { label: 'Inasistencias', shortLabel: 'Inasist.', field: 'inasistencias' },
+                          { label: 'Tardanzas', shortLabel: 'Tard.', field: 'tardanzas' },
+                          { label: 'Justificadas', shortLabel: 'Justif.', field: 'justificadas' },
+                          { label: 'Total Días', shortLabel: 'Total', field: 'totalDias' },
+                        ].map(({ label, shortLabel, field }) => (
                           <div key={field}>
-                            <label className={`text-[10px] font-medium block mb-1 ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{label}</label>
+                            <label className={`text-[10px] font-medium block mb-1 truncate ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                              <span className="sm:hidden">{shortLabel}</span>
+                              <span className="hidden sm:inline">{label}</span>
+                            </label>
                             <input
                               type="text"
                               inputMode="numeric"
@@ -1321,20 +1324,23 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
                     return (
                       <div className="border-t pt-3">
                         <div className="text-[10px] font-bold mb-2 text-blue-600 dark:text-blue-400 uppercase tracking-wide">Asistencia del Sistema</div>
-                        <div className="grid grid-cols-5 gap-2">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
                           {[
-                            { label: 'Asistencias', value: attData.asistencias ?? 0, color: 'blue' },
-                            { label: 'Inasistencias', value: attData.ausencias ?? 0, color: 'red' },
-                            { label: 'Tardanzas', value: attData.tardanzas ?? 0, color: 'amber' },
-                            { label: 'Justificadas', value: attData.justificadas ?? 0, color: 'emerald' },
-                            { label: 'Total', value: attData.total ?? 0, color: 'slate' },
-                          ].map(({ label, value, color }) => (
+                            { label: 'Asistencias', shortLabel: 'Asist.', value: attData.asistencias ?? 0, color: 'blue' },
+                            { label: 'Inasistencias', shortLabel: 'Inasist.', value: attData.ausencias ?? 0, color: 'red' },
+                            { label: 'Tardanzas', shortLabel: 'Tard.', value: attData.tardanzas ?? 0, color: 'amber' },
+                            { label: 'Justificadas', shortLabel: 'Justif.', value: attData.justificadas ?? 0, color: 'emerald' },
+                            { label: 'Total', shortLabel: 'Total', value: attData.total ?? 0, color: 'slate' },
+                          ].map(({ label, shortLabel, value, color }) => (
                             <div key={label} className={`rounded-lg p-2 text-center ${
                               darkMode
                                 ? color === 'blue' ? 'bg-blue-900/20' : color === 'red' ? 'bg-red-900/20' : color === 'amber' ? 'bg-amber-900/20' : color === 'emerald' ? 'bg-emerald-900/20' : 'bg-slate-800'
                                 : color === 'blue' ? 'bg-blue-50' : color === 'red' ? 'bg-red-50' : color === 'amber' ? 'bg-amber-50' : color === 'emerald' ? 'bg-emerald-50' : 'bg-slate-50'
                             }`}>
-                              <div className={`text-[9px] font-medium ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>{label}</div>
+                              <div className={`text-[9px] sm:text-[10px] font-medium truncate ${darkMode ? 'text-slate-400' : 'text-slate-500'}`}>
+                                <span className="sm:hidden">{shortLabel}</span>
+                                <span className="hidden sm:inline">{label}</span>
+                              </div>
                               <div className={`font-bold text-base ${
                                 darkMode
                                   ? color === 'blue' ? 'text-blue-300' : color === 'red' ? 'text-red-300' : color === 'amber' ? 'text-amber-300' : color === 'emerald' ? 'text-emerald-300' : 'text-slate-300'
