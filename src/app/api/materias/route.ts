@@ -5,8 +5,6 @@ import { cookies } from "next/headers";
 import { verifySession } from "@/lib/session";
 import { isAdmin } from "@/utils/roleHelpers";
 
-export const revalidate = 300;
-
 async function getUsuarioSession() {
   const cookieStore = await cookies();
   const session = cookieStore.get("session");
