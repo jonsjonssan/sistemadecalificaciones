@@ -51,9 +51,11 @@ import InformeTecnicoDialog from "@/components/InformeTecnicoDialog";
 import AvanceDocentes from "@/components/AvanceDocentes";
 import { MobileTabBar } from "@/components/MobileTabBar";
 import { useDashboardData } from "@/hooks/useDashboardData";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Home() {
   const d = useDashboardData();
+  const { toast } = useToast();
 
   const {
     loading, dataLoading, usuario, initialized, loginError, loginLoading, dataReady,
@@ -80,16 +82,22 @@ export default function Home() {
         cache: "no-store",
         body: JSON.stringify({ nombre: nuevaMateriaNombre.trim(), gradoId: nuevaMateriaGradoId }),
       });
+      console.log("[handleAddMateria] res.status:", res.status, res.statusText);
       if (res.ok) {
+        const created = await res.json();
+        console.log("[handleAddMateria] created:", created);
         setNuevaMateriaNombre("");
         setNuevaMateriaGradoId("");
         await d.loadTodasAsignaturas();
+        toast({ title: "Asignatura añadida", description: `"${created.nombre}" fue añadida al grado.` });
       } else {
-        const err = await res.json().catch(() => ({}));
-        console.error("Error al añadir asignatura:", err);
+        const err = await res.json().catch(() => ({ error: "Error desconocido" }));
+        console.error("[handleAddMateria] error:", err);
+        toast({ title: "Error al añadir asignatura", description: err.error || err.message || `HTTP ${res.status}`, variant: "destructive" });
       }
-    } catch (e) {
-      console.error(e);
+    } catch (e: any) {
+      console.error("[handleAddMateria] exception:", e);
+      toast({ title: "Error de red", description: e?.message || "No se pudo conectar con el servidor.", variant: "destructive" });
     }
     setMateriasLoading(false);
   };
@@ -99,11 +107,18 @@ export default function Home() {
     setMateriasLoading(true);
     try {
       const res = await fetch(`/api/materias?id=${id}`, { method: "DELETE", credentials: "include", cache: "no-store" });
+      console.log("[handleDeleteMateria] res.status:", res.status);
       if (res.ok) {
         await d.loadTodasAsignaturas();
+        toast({ title: "Asignatura eliminada" });
+      } else {
+        const err = await res.json().catch(() => ({ error: "Error desconocido" }));
+        console.error("[handleDeleteMateria] error:", err);
+        toast({ title: "Error al eliminar", description: err.error || `HTTP ${res.status}`, variant: "destructive" });
       }
-    } catch (e) {
-      console.error(e);
+    } catch (e: any) {
+      console.error("[handleDeleteMateria] exception:", e);
+      toast({ title: "Error de red", description: e?.message || "No se pudo conectar.", variant: "destructive" });
     }
     setMateriasLoading(false);
   };
@@ -119,13 +134,20 @@ export default function Home() {
         cache: "no-store",
         body: JSON.stringify({ id: editMateriaId, nombre: editMateriaNombre.trim() }),
       });
+      console.log("[handleUpdateMateria] res.status:", res.status);
       if (res.ok) {
         setEditMateriaId(null);
         setEditMateriaNombre("");
         await d.loadTodasAsignaturas();
+        toast({ title: "Asignatura actualizada" });
+      } else {
+        const err = await res.json().catch(() => ({ error: "Error desconocido" }));
+        console.error("[handleUpdateMateria] error:", err);
+        toast({ title: "Error al actualizar", description: err.error || `HTTP ${res.status}`, variant: "destructive" });
       }
-    } catch (e) {
-      console.error(e);
+    } catch (e: any) {
+      console.error("[handleUpdateMateria] exception:", e);
+      toast({ title: "Error de red", description: e?.message || "No se pudo conectar.", variant: "destructive" });
     }
     setMateriasLoading(false);
   };
