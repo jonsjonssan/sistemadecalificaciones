@@ -76,12 +76,17 @@ export default function Home() {
       const res = await fetch("/api/materias", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        cache: "no-store",
         body: JSON.stringify({ nombre: nuevaMateriaNombre.trim(), gradoId: nuevaMateriaGradoId }),
       });
       if (res.ok) {
         setNuevaMateriaNombre("");
         setNuevaMateriaGradoId("");
-        d.loadTodasAsignaturas();
+        await d.loadTodasAsignaturas();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        console.error("Error al añadir asignatura:", err);
       }
     } catch (e) {
       console.error(e);
@@ -93,9 +98,9 @@ export default function Home() {
     if (!confirm("¿Eliminar esta asignatura?")) return;
     setMateriasLoading(true);
     try {
-      const res = await fetch(`/api/materias?id=${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/materias?id=${id}`, { method: "DELETE", credentials: "include", cache: "no-store" });
       if (res.ok) {
-        d.loadTodasAsignaturas();
+        await d.loadTodasAsignaturas();
       }
     } catch (e) {
       console.error(e);
@@ -110,12 +115,14 @@ export default function Home() {
       const res = await fetch("/api/materias", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        cache: "no-store",
         body: JSON.stringify({ id: editMateriaId, nombre: editMateriaNombre.trim() }),
       });
       if (res.ok) {
         setEditMateriaId(null);
         setEditMateriaNombre("");
-        d.loadTodasAsignaturas();
+        await d.loadTodasAsignaturas();
       }
     } catch (e) {
       console.error(e);
