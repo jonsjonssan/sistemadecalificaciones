@@ -127,13 +127,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Nombre y grado son requeridos" }, { status: 400 });
     }
 
-    const result = await sql`
-      INSERT INTO "Materia" (nombre, "gradoId", "createdAt", "updatedAt")
-      VALUES (${nombre}, ${gradoId}, NOW(), NOW())
-      RETURNING *
-    `;
+    const result = await db.materia.create({
+      data: {
+        nombre,
+        gradoId,
+      },
+    });
 
-    return NextResponse.json(result[0]);
+    return NextResponse.json(result);
   } catch (error) {
     console.error("Error al crear materia:", error);
     return NextResponse.json({ error: "Error al crear materia" }, { status: 500 });
@@ -158,10 +159,10 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "ID y nombre son requeridos" }, { status: 400 });
     }
 
-    await sql`
-      UPDATE "Materia" SET nombre = ${nombre}, "updatedAt" = NOW()
-      WHERE id = ${id}
-    `;
+    await db.materia.update({
+      where: { id },
+      data: { nombre },
+    });
 
     return NextResponse.json({ message: "Materia actualizada" });
   } catch (error) {
@@ -188,7 +189,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "ID requerido" }, { status: 400 });
     }
 
-    await sql`DELETE FROM "Materia" WHERE id = ${id}`;
+    await db.materia.delete({ where: { id } });
 
     return NextResponse.json({ message: "Materia eliminada" });
   } catch (error) {
