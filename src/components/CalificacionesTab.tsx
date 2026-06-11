@@ -138,13 +138,13 @@ export default function CalificacionesTab({ d, darkMode, usuario }: Props) {
             {/* Progress */}
             <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md ${darkMode ? 'bg-slate-800' : 'bg-slate-50'}`}>
               <BarChart3 className="h-3 w-3 text-muted-foreground/50" />
-              <span className="flex items-center gap-1"><CheckCircle className="h-2.5 w-2.5 text-emerald-500" /><span className="font-semibold text-emerald-600 dark:text-emerald-400">{d.estadosCompletitud.completo}</span></span>
+              <span className="flex items-center gap-1"><CheckCircle className="h-2.5 w-2.5 text-primary" /><span className="font-semibold text-primary dark:text-primary">{d.estadosCompletitud.completo}</span></span>
               <span className="flex items-center gap-1"><Clock className="h-2.5 w-2.5 text-amber-400" /><span className="font-semibold text-amber-600 dark:text-amber-400">{d.estadosCompletitud.parcial}</span></span>
               <span className="flex items-center gap-1"><XCircle className="h-2.5 w-2.5 text-slate-300 dark:text-slate-600" /><span className="font-semibold text-slate-500 dark:text-slate-400">{d.estadosCompletitud.vacio}</span></span>
               <div className="ml-1 flex items-center gap-1.5 min-w-[80px]">
                 <div className={`flex-1 h-1.5 rounded-full overflow-hidden flex ${darkMode ? 'bg-slate-700' : 'bg-slate-200'}`}>
                   {d.estadosCompletitud.total > 0 && <>
-                    <div className="h-full bg-emerald-500 transition-all duration-500" style={{ width: `${(d.estadosCompletitud.completo / d.estadosCompletitud.total) * 100}%` }} />
+                    <div className="h-full bg-primary transition-all duration-500" style={{ width: `${(d.estadosCompletitud.completo / d.estadosCompletitud.total) * 100}%` }} />
                     <div className="h-full bg-amber-400 transition-all duration-500" style={{ width: `${(d.estadosCompletitud.parcial / d.estadosCompletitud.total) * 100}%` }} />
                     <div className="h-full bg-slate-300 dark:bg-slate-600 transition-all duration-500" style={{ width: `${(d.estadosCompletitud.vacio / d.estadosCompletitud.total) * 100}%` }} />
                   </>}
@@ -176,7 +176,7 @@ export default function CalificacionesTab({ d, darkMode, usuario }: Props) {
                 </span>
               )}
               {d.autoSaveStatus === "saved" && (
-                <span className="text-xs flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                <span className="text-xs flex items-center gap-1 text-primary dark:text-primary">
                   <CheckCircle className="h-3 w-3" />
                   Guardado
                 </span>
@@ -274,7 +274,7 @@ export default function CalificacionesTab({ d, darkMode, usuario }: Props) {
                           </th>
                           <th className={`w-14 p-2 text-center text-[11px] font-semibold border-l border-b cursor-pointer select-none ${darkMode ? 'border-slate-700 bg-slate-800' : 'bg-slate-800 border-slate-700'} ${d.mostrarRecuperacion ? 'bg-emerald-800/30' : ''}`} onClick={() => { const next = !d.mostrarRecuperacion; d.setMostrarRecuperacion(next); if (typeof window !== "undefined") localStorage.setItem("ss_mostrarRecuperacion", JSON.stringify(next)); }}>
                             <span className="opacity-70">Rec.</span>
-                            <span className={`ml-0.5 text-[8px] transition-all ${d.mostrarRecuperacion ? 'opacity-100 text-emerald-400' : 'opacity-30'}`}>●</span>
+                            <span className={`ml-0.5 text-[8px] transition-all ${d.mostrarRecuperacion ? 'opacity-100 text-primary' : 'opacity-30'}`}>●</span>
                           </th>
                           <th className={`w-18 p-2 text-center text-[11px] font-semibold border-l border-b cursor-pointer ${darkMode ? 'border-slate-700 bg-emerald-900/40 text-emerald-300' : 'bg-emerald-700 border-emerald-600 text-white'}`} onClick={() => d.handleSort('promFinal')}>
                             <div className="flex items-center justify-center gap-1">
@@ -346,8 +346,8 @@ export default function CalificacionesTab({ d, darkMode, usuario }: Props) {
                   <span className={`text-base font-bold tabular-nums ${darkMode ? 'text-blue-300' : 'text-blue-800'}`}>{d.promedioAsignatura !== null ? d.promedioAsignatura.toFixed(2) : "—"}</span>
                 </div>
                 <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg ${darkMode ? 'bg-emerald-900/20 border border-emerald-800/40' : 'bg-emerald-50 border border-emerald-200'}`}>
-                  <GraduationCap className={`h-3.5 w-3.5 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
-                  <span className={`text-[11px] font-medium ${darkMode ? 'text-emerald-400' : 'text-emerald-700'}`}>Prom. Grado</span>
+                  <GraduationCap className={`h-3.5 w-3.5 ${darkMode ? 'text-primary' : 'text-primary'}`} />
+                  <span className={`text-[11px] font-medium ${darkMode ? 'text-primary' : 'text-emerald-700'}`}>Prom. Grado</span>
                   <span className={`text-base font-bold tabular-nums ${darkMode ? 'text-emerald-300' : 'text-emerald-800'}`}>{d.promedioGrado !== null ? d.promedioGrado.toFixed(2) : "—"}</span>
                 </div>
                 <div className="ml-auto text-[10px] text-muted-foreground/50">

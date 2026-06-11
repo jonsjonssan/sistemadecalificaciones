@@ -134,7 +134,7 @@ export default function ReporteAsistenciaMultiGrado({ grados, darkMode: darkMode
   .header { text-align: center; margin-bottom: 15px; border-bottom: 2px solid #1e293b; padding-bottom: 10px; }
   .header h1 { font-size: 13pt; margin: 0 0 3px 0; color: #1e293b; }
   .header h2 { font-size: 10pt; margin: 0 0 5px 0; font-weight: normal; color: #475569; }
-  .grado-title { font-size: 11pt; font-weight: bold; color: #1b6b3a; margin-top: 15px; margin-bottom: 5px; border-bottom: 1px solid #cbd5e1; padding-bottom: 3px; }
+  .grado-title { font-size: 11pt; font-weight: bold; color: #1d624a; margin-top: 15px; margin-bottom: 5px; border-bottom: 1px solid #cbd5e1; padding-bottom: 3px; }
   table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 7.5pt; }
   th { background: #1e293b; color: white; padding: 4px 6px; text-align: center; font-size: 7pt; }
   td { padding: 3px 6px; border: 1px solid #cbd5e1; text-align: center; }
@@ -162,17 +162,17 @@ export default function ReporteAsistenciaMultiGrado({ grados, darkMode: darkMode
       html += `<div class="grado-title">${grado.gradoNumero}° "${escapeHtml(grado.gradoSeccion)}" (${grado.totalEstudiantes} estudiantes)</div>`;
       html += `<table><thead><tr><th>N°</th><th>Estudiante</th><th>Asist.</th><th>Tard.</th><th>Aus.</th><th>Just.</th><th>Total</th></tr></thead><tbody>`;
       grado.resumen.forEach((r: ResumenEstudiante) => {
-        html += `<tr><td>${r.numero}</td><td>${escapeHtml(r.nombre)}</td><td style="color:#059669;font-weight:bold;">${r.asistencias}</td><td style="color:#d97706;font-weight:bold;">${r.tardanzas}</td><td style="color:#dc2626;font-weight:bold;">${r.ausencias}</td><td style="color:#3b82f6;font-weight:bold;">${r.justificadas}</td><td style="font-weight:bold;">${r.total}</td></tr>`;
+        html += `<tr><td>${r.numero}</td><td>${escapeHtml(r.nombre)}</td><td style="color:#1d624a;font-weight:bold;">${r.asistencias}</td><td style="color:#846c3e;font-weight:bold;">${r.tardanzas}</td><td style="color:#704040;font-weight:bold;">${r.ausencias}</td><td style="color:#5a6a62;font-weight:bold;">${r.justificadas}</td><td style="font-weight:bold;">${r.total}</td></tr>`;
       });
       html += `</tbody></table>`;
     }
 
     html += `<div class="consolidado"><h3>📊 CONSOLIDADO GENERAL</h3><div class="consolidado-grid">
       <div class="consolidado-item"><div class="num">${data.consolidado.totalEstudiantes}</div><div class="label">Estudiantes</div></div>
-      <div class="consolidado-item"><div class="num" style="color:#059669;">${data.consolidado.totalAsistencias}</div><div class="label">Asistencias</div></div>
-      <div class="consolidado-item"><div class="num" style="color:#dc2626;">${data.consolidado.totalAusencias}</div><div class="label">Ausencias</div></div>
-      <div class="consolidado-item"><div class="num" style="color:#d97706;">${data.consolidado.totalTardanzas}</div><div class="label">Tardanzas</div></div>
-      <div class="consolidado-item"><div class="num" style="color:#3b82f6;">${data.consolidado.totalJustificadas}</div><div class="label">Justificadas</div></div>
+      <div class="consolidado-item"><div class="num" style="color:#1d624a;">${data.consolidado.totalAsistencias}</div><div class="label">Asistencias</div></div>
+      <div class="consolidado-item"><div class="num" style="color:#704040;">${data.consolidado.totalAusencias}</div><div class="label">Ausencias</div></div>
+      <div class="consolidado-item"><div class="num" style="color:#846c3e;">${data.consolidado.totalTardanzas}</div><div class="label">Tardanzas</div></div>
+      <div class="consolidado-item"><div class="num" style="color:#5a6a62;">${data.consolidado.totalJustificadas}</div><div class="label">Justificadas</div></div>
     </div></div>`;
 
     html += `<div class="firmas"><div class="firma"><div class="linea">Firma del Docente Orientador</div></div><div class="firma"><div class="linea">Firma del Director</div></div></div>`;
@@ -319,11 +319,11 @@ export default function ReporteAsistenciaMultiGrado({ grados, darkMode: darkMode
                     Consolidado de asistencias, ausencias, tardanzas y justificadas
                   </p>
                 </div>
-                <div className={`hidden sm:flex items-center gap-3 text-[10px] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
-                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-[#10b981]" /> Asistencias</span>
-                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-[#ef4444]" /> Ausencias</span>
-                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-[#f59e0b]" /> Tardanzas</span>
-                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-[#3b82f6]" /> Justificadas</span>
+                <div className={`hidden sm:flex items-center gap-3 text-[10px] text-muted-foreground`}>
+                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-primary" /> Asistencias</span>
+                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-status-error" /> Ausencias</span>
+                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-status-warning" /> Tardanzas</span>
+                  <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-muted-foreground/40" /> Justificadas</span>
                 </div>
               </div>
               <ResponsiveContainer width="100%" height={Math.max(250, Math.min(400, (data?.grados.length || 1) * 70))}>
@@ -337,21 +337,21 @@ export default function ReporteAsistenciaMultiGrado({ grados, darkMode: darkMode
                   }))}
                   margin={{ top: 8, right: 16, left: 0, bottom: 8 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#374151" : "#e5e7eb"} vertical={false} />
-                  <XAxis dataKey="nombre" tick={{ fontSize: 12, fill: darkMode ? "#94a3b8" : "#64748b" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: darkMode ? "#94a3b8" : "#64748b" }} axisLine={false} tickLine={false} allowDecimals={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "oklch(0.24 0.015 155)" : "oklch(0.91 0.008 155)"} vertical={false} />
+                  <XAxis dataKey="nombre" tick={{ fontSize: 12, fill: darkMode ? "oklch(0.58 0.015 155)" : "oklch(0.48 0.015 155)" }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: darkMode ? "oklch(0.58 0.015 155)" : "oklch(0.48 0.015 155)" }} axisLine={false} tickLine={false} allowDecimals={false} />
                   <Tooltip
                     contentStyle={{
                       borderRadius: "8px", border: "none", boxShadow: "0 4px 12px -2px rgb(0 0 0 / 0.15)",
-                      fontSize: "12px", backgroundColor: darkMode ? "#1e293b" : "#fff", color: darkMode ? "#e8e8e8" : "#111",
+                      fontSize: "12px", backgroundColor: darkMode ? "oklch(0.18 0.015 155)" : "oklch(0.995 0.002 155)", color: darkMode ? "oklch(0.90 0.008 155)" : "oklch(0.18 0.025 155)",
                     }}
-                    cursor={{ fill: darkMode ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)" }}
+                    cursor={{ fill: darkMode ? "oklch(0.20 0.015 155 / 0.3)" : "oklch(0.94 0.01 155 / 0.5)" }}
                   />
                   <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} />
-                  <Bar dataKey="Asistencias" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={32} />
-                  <Bar dataKey="Ausencias" fill="#ef4444" radius={[4, 4, 0, 0]} maxBarSize={32} />
-                  <Bar dataKey="Tardanzas" fill="#f59e0b" radius={[4, 4, 0, 0]} maxBarSize={32} />
-                  <Bar dataKey="Justificadas" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={32} />
+                  <Bar dataKey="Asistencias" fill="oklch(0.38 0.09 155)" radius={[4, 4, 0, 0]} maxBarSize={32} />
+                  <Bar dataKey="Ausencias" fill="oklch(0.44 0.05 28)" radius={[4, 4, 0, 0]} maxBarSize={32} />
+                  <Bar dataKey="Tardanzas" fill="oklch(0.52 0.04 85)" radius={[4, 4, 0, 0]} maxBarSize={32} />
+                  <Bar dataKey="Justificadas" fill="oklch(0.65 0.03 155)" radius={[4, 4, 0, 0]} maxBarSize={32} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>

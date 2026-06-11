@@ -762,15 +762,15 @@ useEffect(() => {
 const statusIcon =
     saveError ? (
       <span title="Error al guardar. Se reintentará automáticamente.">
-        <AlertCircle className="h-3 w-3 sm:h-4 sm:w-4 text-red-500 mx-auto" />
+        <AlertCircle className="h-3 w-3 sm:h-4 sm:w-4 text-status-error mx-auto" />
       </span>
     ) : saving && dirty ? (
       <span title="Guardando...">
-        <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 text-amber-500 animate-spin mx-auto" />
+        <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 text-status-warning animate-spin mx-auto" />
       </span>
     ) : !dirty && hasData ? (
       <span title="Guardado">
-        <Check className="h-3 w-3 sm:h-4 sm:w-4 text-emerald-500 mx-auto" />
+        <Check className="h-3 w-3 sm:h-4 sm:w-4 text-primary mx-auto" />
       </span>
     ) : (
       <span className={`text-xs ${darkMode ? "text-slate-600" : "text-slate-300"}`}>-</span>
@@ -801,7 +801,7 @@ const statusIcon =
         <td className={`p-2 font-medium sticky-col shadow-right left-10 z-10 whitespace-nowrap border-r ${stickyBg} ${cellBorder}`}>
           <span className={`inline-block w-2 h-2 rounded-full mr-1.5 flex-shrink-0 align-middle ${
             estadoCompletitud === 'completo'
-              ? 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]'
+              ? 'bg-primary shadow-[0_0_6px_rgba(29,98,74,0.5)]'
               : estadoCompletitud === 'parcial'
                 ? 'bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.5)]'
                 : 'bg-slate-300 dark:bg-slate-600'
@@ -909,7 +909,7 @@ const statusIcon =
             <button
               onClick={() => onBorrar(estudiante.id)}
               title="Borrar calificaciones de este alumno"
-              className="text-red-500 hover:text-red-700 p-2 rounded-md"
+              className="text-status-error hover:text-red-700 p-2 rounded-md"
             >
               <Trash2 className="h-4 w-4" />
             </button>
@@ -927,7 +927,7 @@ const statusIcon =
       <td data-label="Estudiante" className={`p-2 font-medium sticky-col shadow-right left-10 z-10 whitespace-nowrap border-r ${stickyBg} ${cellBorder}`}>
         <span className={`inline-block w-2 h-2 rounded-full mr-1.5 flex-shrink-0 align-middle ${
           estadoCompletitud === 'completo'
-            ? 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]'
+            ? 'bg-primary shadow-[0_0_6px_rgba(29,98,74,0.5)]'
             : estadoCompletitud === 'parcial'
               ? 'bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.5)]'
               : 'bg-slate-300 dark:bg-slate-600'

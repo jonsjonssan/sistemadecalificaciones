@@ -201,7 +201,7 @@ export function HistorialCalificacionPopup({
               darkMode ? "bg-emerald-900/40" : "bg-emerald-50"
             }`}
           >
-            <RotateCcw className="h-3.5 w-3.5 text-emerald-500" />
+            <RotateCcw className="h-3.5 w-3.5 text-primary" />
           </div>
           <div className="flex flex-col">
             <span className="text-sm font-semibold leading-tight">
@@ -256,7 +256,7 @@ export function HistorialCalificacionPopup({
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-10 gap-2 px-6">
             <Trash2 className="h-6 w-6 text-red-400" />
-            <p className="text-sm text-red-500 text-center">{error}</p>
+            <p className="text-sm text-status-error text-center">{error}</p>
           </div>
         ) : total === 0 ? (
           <div className="flex flex-col items-center justify-center py-10 gap-2 px-6">
@@ -323,7 +323,7 @@ export function HistorialCalificacionPopup({
                   onClick={() => setIndex(i)}
                   className={`h-2 rounded-full transition-all ${
                     i === index
-                      ? "w-5 bg-emerald-500"
+                      ? "w-5 bg-primary"
                       : darkMode
                       ? "w-2 bg-slate-600 hover-gradient"
                       : "w-2 bg-slate-300 hover-gradient"

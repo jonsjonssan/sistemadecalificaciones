@@ -244,10 +244,10 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
       const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
       headersHTML += `<th style="width: ${daysInMonth > 20 ? '28px' : '32px'}; text-align: center; padding: 4px 2px; background: ${isWeekend ? '#f1f5f9' : '#1e293b'}; color: ${isWeekend ? '#94a3b8' : 'white'}; font-size: 7pt; border: 1px solid #475569;">${day}<br>${dayNames[dayOfWeek]}</th>`;
     }
-    headersHTML += '<th style="width: 28px; text-align: center; padding: 4px 2px; background: #059669; color: white; font-size: 7pt; border: 1px solid #475569;">P</th>';
-    headersHTML += '<th style="width: 28px; text-align: center; padding: 4px 2px; background: #dc2626; color: white; font-size: 7pt; border: 1px solid #475569;">A</th>';
-    headersHTML += '<th style="width: 28px; text-align: center; padding: 4px 2px; background: #3b82f6; color: white; font-size: 7pt; border: 1px solid #475569;">J</th>';
-    headersHTML += '<th style="width: 28px; text-align: center; padding: 4px 2px; background: #d97706; color: white; font-size: 7pt; border: 1px solid #475569;">T</th>';
+    headersHTML += '<th style="width: 28px; text-align: center; padding: 4px 2px; background: #1d624a; color: white; font-size: 7pt; border: 1px solid #475569;">P</th>';
+    headersHTML += '<th style="width: 28px; text-align: center; padding: 4px 2px; background: #704040; color: white; font-size: 7pt; border: 1px solid #475569;">A</th>';
+    headersHTML += '<th style="width: 28px; text-align: center; padding: 4px 2px; background: #5a6a62; color: white; font-size: 7pt; border: 1px solid #475569;">J</th>';
+    headersHTML += '<th style="width: 28px; text-align: center; padding: 4px 2px; background: #846c3e; color: white; font-size: 7pt; border: 1px solid #475569;">T</th>';
 
     // Generar filas de estudiantes
     let rowsHTML = '';
@@ -267,26 +267,26 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
         if (isWeekend) {
           cellsHTML += '<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #f1f5f9; font-size: 7pt; color: #94a3b8;">-</td>';
         } else if (estado === 'presente') {
-          cellsHTML += '<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #dcfce7; color: #059669; font-weight: bold; font-size: 7pt;">PRE</td>';
+          cellsHTML += '<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #eef0ec; color: #1d624a; font-weight: bold; font-size: 7pt;">PRE</td>';
           totalP++;
         } else if (estado === 'ausente') {
-          cellsHTML += '<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #fee2e2; color: #dc2626; font-weight: bold; font-size: 7pt;">AUS</td>';
+          cellsHTML += '<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #f0ecec; color: #704040; font-weight: bold; font-size: 7pt;">AUS</td>';
           totalA++;
         } else if (estado === 'justificada') {
-          cellsHTML += '<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #dbeafe; color: #3b82f6; font-weight: bold; font-size: 7pt;">JUS</td>';
+          cellsHTML += '<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #eef0f0; color: #5a6a62; font-weight: bold; font-size: 7pt;">JUS</td>';
           totalJ++;
         } else if (estado === 'tarde') {
-          cellsHTML += '<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #fef3c7; color: #d97706; font-weight: bold; font-size: 7pt;">TAR</td>';
+          cellsHTML += '<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #f0ede8; color: #846c3e; font-weight: bold; font-size: 7pt;">TAR</td>';
           totalT++;
         } else {
           cellsHTML += '<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; font-size: 7pt; color: #94a3b8;">-</td>';
         }
       }
 
-      cellsHTML += `<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #dcfce7; color: #059669; font-weight: bold; font-size: 8pt;">${totalP}</td>`;
-      cellsHTML += `<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #fee2e2; color: #dc2626; font-weight: bold; font-size: 8pt;">${totalA}</td>`;
-      cellsHTML += `<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #dbeafe; color: #3b82f6; font-weight: bold; font-size: 8pt;">${totalJ}</td>`;
-      cellsHTML += `<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #fef3c7; color: #d97706; font-weight: bold; font-size: 8pt;">${totalT}</td>`;
+      cellsHTML += `<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #eef0ec; color: #1d624a; font-weight: bold; font-size: 8pt;">${totalP}</td>`;
+      cellsHTML += `<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #f0ecec; color: #704040; font-weight: bold; font-size: 8pt;">${totalA}</td>`;
+      cellsHTML += `<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #eef0f0; color: #5a6a62; font-weight: bold; font-size: 8pt;">${totalJ}</td>`;
+      cellsHTML += `<td style="text-align: center; padding: 3px 2px; border: 1px solid #cbd5e1; background: #f0ede8; color: #846c3e; font-weight: bold; font-size: 8pt;">${totalT}</td>`;
 
       rowsHTML += `<tr>${cellsHTML}</tr>`;
     });
@@ -403,9 +403,9 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
           const estado = asistenciaEst[dateKey];
           let cellContent = '';
           let cellColor = '';
-          if (estado === 'presente') { cellContent = 'P'; cellColor = '#059669'; }
-          else if (estado === 'ausente') { cellContent = 'A'; cellColor = '#dc2626'; }
-          else if (estado === 'justificada' || estado === 'tarde') { cellContent = 'Pe'; cellColor = '#d97706'; }
+          if (estado === 'presente') { cellContent = 'P'; cellColor = '#1d624a'; }
+          else if (estado === 'ausente') { cellContent = 'A'; cellColor = '#704040'; }
+          else if (estado === 'justificada' || estado === 'tarde') { cellContent = 'Pe'; cellColor = '#846c3e'; }
           calendarRows += `<td style="text-align:center;color:${cellColor};font-weight:bold;">${cellContent}</td>`;
         }
       }
@@ -1000,7 +1000,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                             <div className="flex items-center gap-2">
                               {est.nombre}
                               {savingByStudent[est.id] && (
-                                <RefreshCw className="h-3 w-3 text-emerald-500 animate-spin" />
+                                <RefreshCw className="h-3 w-3 text-primary animate-spin" />
                               )}
                               {!savingByStudent[est.id] && savedByStudent[est.id] && (
                                 <span className="text-green-500 text-xs">✓</span>
@@ -1021,7 +1021,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                                 </SelectItem>
                                 <SelectItem value="ausente" className="text-xs font-medium">
                                   <span className="flex items-center gap-2">
-                                    <span className={`w-2 h-2 rounded-full ${darkMode ? 'bg-red-500' : 'bg-red-600'}`} />
+                                    <span className={`w-2 h-2 rounded-full ${darkMode ? 'bg-status-error' : 'bg-red-600'}`} />
                                     Ausente
                                   </span>
                                 </SelectItem>
@@ -1033,7 +1033,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                                 </SelectItem>
                                 <SelectItem value="tarde" className="text-xs font-medium">
                                   <span className="flex items-center gap-2">
-                                    <span className={`w-2 h-2 rounded-full ${darkMode ? 'bg-amber-500' : 'bg-amber-600'}`} />
+                                    <span className={`w-2 h-2 rounded-full ${darkMode ? 'bg-status-warning' : 'bg-amber-600'}`} />
                                     Tardanza
                                   </span>
                                 </SelectItem>

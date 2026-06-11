@@ -113,9 +113,9 @@ export function DescargaBoletasPorCiclo({ grados, darkMode, configuracion, paper
 
   const getEstadoColor = (estado: string) => {
     switch (estado) {
-      case 'REPROBADO': return '#dc2626';
-      case 'CONDICIONADO': return '#d97706';
-      case 'APROBADO': return '#059669';
+      case 'REPROBADO': return '#704040';
+      case 'CONDICIONADO': return '#846c3e';
+      case 'APROBADO': return '#1d624a';
       default: return '#666';
     }
   };
@@ -329,11 +329,11 @@ export function DescargaBoletasPorCiclo({ grados, darkMode, configuracion, paper
     th { background: #e5e7eb; font-weight: bold; font-size: 9pt; }
     td { font-size: 10pt; }
     
-    .resumen { display: flex; justify-content: space-between; margin: 20px 0; padding: 10px; background: #f0fdf4; border: 2px solid #059669; border-radius: 4px; }
+    .resumen { display: flex; justify-content: space-between; margin: 20px 0; padding: 10px; background: #f4f6f2; border: 2px solid #1d624a; border-radius: 4px; }
     .resumen-item { text-align: center; }
-    .resumen-item .valor { font-size: 16pt; font-weight: bold; color: #059669; }
-    .resumen-item.reprobado .valor { color: #dc2626; }
-    .resumen-item.condicionado .valor { color: #d97706; }
+    .resumen-item .valor { font-size: 16pt; font-weight: bold; color: #1d624a; }
+    .resumen-item.reprobado .valor { color: #704040; }
+    .resumen-item.condicionado .valor { color: #846c3e; }
     .resumen-item .etiqueta { font-size: 9pt; color: #666; }
     
     .seccion-asistencia { margin: 15px 0; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; }
@@ -341,9 +341,9 @@ export function DescargaBoletasPorCiclo({ grados, darkMode, configuracion, paper
     .asistencia-grid { display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px; text-align: center; }
     .asistencia-item .n { font-size: 12pt; font-weight: bold; }
     .asistencia-item .l { font-size: 8pt; color: #666; text-transform: uppercase; }
-    .asistencia-asist { color: #059669; }
-    .asistencia-aus { color: #dc2626; }
-    .asistencia-tard { color: #d97706; }
+    .asistencia-asist { color: #1d624a; }
+    .asistencia-aus { color: #704040; }
+    .asistencia-tard { color: #846c3e; }
     
     .firmas { display: flex; justify-content: space-between; margin-top: 40px; padding-top: 20px; }
     .firma { text-align: center; width: 45%; }
@@ -432,7 +432,7 @@ export function DescargaBoletasPorCiclo({ grados, darkMode, configuracion, paper
               disabled={exportando}
               className="gap-2 cursor-pointer"
             >
-              <FileText className="h-4 w-4 text-emerald-500" />
+              <FileText className="h-4 w-4 text-primary" />
               <span>{ciclo.nombre} ({ciclo.grados[0]}° a {ciclo.grados[ciclo.grados.length - 1]}°)</span>
             </DropdownMenuItem>
           ))}

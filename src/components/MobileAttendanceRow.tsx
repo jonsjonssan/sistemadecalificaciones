@@ -57,15 +57,15 @@ export default function MobileAttendanceRow({ estudiante, estado, onEstadoChange
   const getEstadoConfig = () => {
     switch (estado) {
       case "presente":
-        return { icon: Check, color: "text-green-600", bg: darkMode ? "bg-green-900/30 border-green-800" : "bg-green-50 border-green-200", label: "Presente" };
+        return { icon: Check, color: "text-status-success", bg: darkMode ? "bg-status-success-muted border-primary/20" : "bg-status-success-muted border-status-success/20", label: "Presente" };
       case "ausente":
-        return { icon: X, color: "text-red-600", bg: darkMode ? "bg-red-900/30 border-red-800" : "bg-red-50 border-red-200", label: "Ausente" };
+        return { icon: X, color: "text-status-error", bg: darkMode ? "bg-status-error-muted border-status-error/20" : "bg-status-error-muted border-status-error/20", label: "Ausente" };
       case "tarde":
-        return { icon: Clock, color: "text-amber-600", bg: darkMode ? "bg-amber-900/30 border-amber-800" : "bg-amber-50 border-amber-200", label: "Tarde" };
+        return { icon: Clock, color: "text-status-warning", bg: darkMode ? "bg-status-warning-muted border-status-warning/20" : "bg-status-warning-muted border-status-warning/20", label: "Tarde" };
       case "justificada":
-        return { icon: FileQuestion, color: "text-blue-600", bg: darkMode ? "bg-blue-900/30 border-blue-800" : "bg-blue-50 border-blue-200", label: "Justificada" };
+        return { icon: FileQuestion, color: "text-muted-foreground", bg: darkMode ? "bg-muted border-border" : "bg-muted border-border", label: "Justificada" };
       default:
-        return { icon: Check, color: "text-slate-600", bg: darkMode ? "bg-card border-white/30" : "bg-slate-50 border-slate-200", label: "Sin marcar" };
+        return { icon: Check, color: "text-muted-foreground", bg: darkMode ? "bg-card border-border" : "bg-muted border-border", label: "Sin marcar" };
     }
   };
 
@@ -93,28 +93,28 @@ export default function MobileAttendanceRow({ estudiante, estado, onEstadoChange
         <div className="flex items-center gap-1">
           <button
             onClick={() => onEstadoChange(estudiante.id, "presente")}
-            className={`p-2 rounded-md transition-colors ${estado === "presente" ? "bg-green-600 text-white" : darkMode ? "bg-slate-700 text-slate-400" : "bg-slate-100 text-slate-500"}`}
+            className={`p-2 rounded-md transition-colors ${estado === "presente" ? "bg-primary text-primary-foreground" : darkMode ? "bg-muted text-muted-foreground" : "bg-muted/60 text-muted-foreground"}`}
             aria-label="Presente"
           >
             <Check className="h-4 w-4" />
           </button>
           <button
             onClick={() => onEstadoChange(estudiante.id, "ausente")}
-            className={`p-2 rounded-md transition-colors ${estado === "ausente" ? "bg-red-600 text-white" : darkMode ? "bg-slate-700 text-slate-400" : "bg-slate-100 text-slate-500"}`}
+            className={`p-2 rounded-md transition-colors ${estado === "ausente" ? "bg-status-error text-white" : darkMode ? "bg-muted text-muted-foreground" : "bg-muted/60 text-muted-foreground"}`}
             aria-label="Ausente"
           >
             <X className="h-4 w-4" />
           </button>
           <button
             onClick={() => onEstadoChange(estudiante.id, "tarde")}
-            className={`p-2 rounded-md transition-colors ${estado === "tarde" ? "bg-amber-600 text-white" : darkMode ? "bg-slate-700 text-slate-400" : "bg-slate-100 text-slate-500"}`}
+            className={`p-2 rounded-md transition-colors ${estado === "tarde" ? "bg-status-warning text-white" : darkMode ? "bg-muted text-muted-foreground" : "bg-muted/60 text-muted-foreground"}`}
             aria-label="Tarde"
           >
             <Clock className="h-4 w-4" />
           </button>
           <button
             onClick={() => onEstadoChange(estudiante.id, "justificada")}
-            className={`p-2 rounded-md transition-colors ${estado === "justificada" ? "bg-blue-600 text-white" : darkMode ? "bg-slate-700 text-slate-400" : "bg-slate-100 text-slate-500"}`}
+            className={`p-2 rounded-md transition-colors ${estado === "justificada" ? "bg-muted-foreground text-background" : darkMode ? "bg-muted text-muted-foreground" : "bg-muted/60 text-muted-foreground"}`}
             aria-label="Justificada"
           >
             <FileQuestion className="h-4 w-4" />

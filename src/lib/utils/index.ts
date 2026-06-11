@@ -58,24 +58,24 @@ export function estaAprobado(promedio: number | null): boolean {
 
 export function getColorPromedio(promedio: number | null): string {
   if (promedio === null) return "text-muted-foreground";
-  if (Math.round(promedio) >= 9) return "text-green-600";
-  if (Math.round(promedio) >= 7) return "text-blue-600";
-  if (Math.round(promedio) >= 5) return "text-yellow-600";
-  return "text-red-600";
+  if (Math.round(promedio) >= 9) return "text-primary";
+  if (Math.round(promedio) >= 7) return "text-foreground/80";
+  if (Math.round(promedio) >= 5) return "text-muted-foreground";
+  return "text-destructive";
 }
 
 export function getColorAsistencia(estado: string): string {
   switch (estado) {
     case "presente":
-      return "bg-green-100 text-green-800";
+      return "bg-status-success-muted text-status-success";
     case "ausente":
-      return "bg-red-100 text-red-800";
+      return "bg-status-error-muted text-status-error";
     case "justificada":
-      return "bg-blue-100 text-blue-800";
+      return "bg-muted text-muted-foreground";
     case "tarde":
-      return "bg-yellow-100 text-yellow-800";
+      return "bg-status-warning-muted text-status-warning";
     default:
-      return "bg-gray-100 text-gray-800";
+      return "bg-muted text-muted-foreground";
   }
 }
 

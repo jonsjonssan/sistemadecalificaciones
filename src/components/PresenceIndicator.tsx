@@ -38,8 +38,8 @@ function getRoleLabel(rol: string): string {
 
 function getRoleColor(userId: string): string {
   const colors = [
-    "bg-emerald-500", "bg-indigo-500", "bg-rose-500", "bg-amber-500",
-    "bg-emerald-500", "bg-violet-500", "bg-pink-500", "bg-orange-500",
+    "bg-primary", "bg-muted-foreground/60", "bg-foreground/30", "bg-status-warning",
+    "bg-primary", "bg-foreground/20", "bg-foreground/25", "bg-foreground/35",
     "bg-cyan-500", "bg-purple-500",
   ];
   let hash = 0;
@@ -107,7 +107,7 @@ export default function PresenceIndicator({
                 className="rounded-full h-9 px-3 gap-1.5 bg-background/95 backdrop-blur shadow-lg border-muted-foreground/20 text-xs"
               >
                 {isConnected ? (
-                  <Wifi className="h-3 w-3 text-emerald-500" />
+                  <Wifi className="h-3 w-3 text-primary" />
                 ) : (
                   <WifiOff className="h-3 w-3 text-muted-foreground" />
                 )}
@@ -172,7 +172,7 @@ export default function PresenceIndicator({
             >
               <div className="bg-background/95 backdrop-blur border border-muted-foreground/20 rounded-xl shadow-lg p-3 min-w-[240px] space-y-2">
                 <div className="flex items-center gap-2">
-                  <Wifi className="h-3 w-3 text-emerald-500" />
+                  <Wifi className="h-3 w-3 text-primary" />
                   <span className="text-xs font-medium">
                     {onlineUsers.length} conectado{onlineUsers.length !== 1 ? "s" : ""}
                   </span>

@@ -30,7 +30,14 @@ interface EvolucionData {
   asistencia: number;
 }
 
-const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
+const COLORS = [
+  "oklch(0.35 0.07 155)",
+  "oklch(0.45 0.09 155)",
+  "oklch(0.55 0.07 155)",
+  "oklch(0.65 0.05 155)",
+  "oklch(0.75 0.03 155)",
+  "oklch(0.85 0.015 155)",
+];
 
 interface ChartsProps {
   calificaciones?: CalificacionData[];
@@ -54,10 +61,10 @@ export function GraficoLineasCalificaciones({ calificaciones }: { calificaciones
           }}
         />
         <Legend />
-        <Line type="monotone" dataKey="trimestre1" name="Trim. 1" stroke="#3b82f6" strokeWidth={2} />
-        <Line type="monotone" dataKey="trimestre2" name="Trim. 2" stroke="#10b981" strokeWidth={2} />
-        <Line type="monotone" dataKey="trimestre3" name="Trim. 3" stroke="#f59e0b" strokeWidth={2} />
-        <Line type="monotone" dataKey="promedio" name="Promedio" stroke="#8b5cf6" strokeWidth={3} />
+        <Line type="monotone" dataKey="trimestre1" name="Trim. 1" stroke="oklch(0.35 0.07 155)" strokeWidth={2} />
+        <Line type="monotone" dataKey="trimestre2" name="Trim. 2" stroke="oklch(0.45 0.09 155)" strokeWidth={2} />
+        <Line type="monotone" dataKey="trimestre3" name="Trim. 3" stroke="oklch(0.55 0.07 155)" strokeWidth={2} />
+        <Line type="monotone" dataKey="promedio" name="Promedio" stroke="oklch(0.28 0.05 155)" strokeWidth={3} />
       </LineChart>
     </ResponsiveContainer>
   );
@@ -78,7 +85,7 @@ export function GraficoBarrasPromedios({ promediosMaterias }: { promediosMateria
           }}
         />
         <Legend />
-        <Bar dataKey="promedio" name="Promedio" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+        <Bar dataKey="promedio" name="Promedio" fill="oklch(0.45 0.09 155)" radius={[4, 4, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   );
@@ -144,8 +151,8 @@ export function GraficoEvolucion({ evolucion }: { evolucion: EvolucionData[] }) 
           }}
         />
         <Legend />
-        <Line yAxisId="left" type="monotone" dataKey="promedioGeneral" name="Promedio General" stroke="#3b82f6" strokeWidth={2} />
-        <Line yAxisId="right" type="monotone" dataKey="asistencia" name="Asistencia %" stroke="#10b981" strokeWidth={2} />
+        <Line yAxisId="left" type="monotone" dataKey="promedioGeneral" name="Promedio General" stroke="oklch(0.35 0.07 155)" strokeWidth={2} />
+        <Line yAxisId="right" type="monotone" dataKey="asistencia" name="Asistencia %" stroke="oklch(0.55 0.07 155)" strokeWidth={2} />
       </LineChart>
     </ResponsiveContainer>
   );
@@ -166,10 +173,10 @@ export function GraficoBarrasAgrupadas({ asistencia }: { asistencia: AsistenciaD
           }}
         />
         <Legend />
-        <Bar dataKey="presentes" name="Presentes" fill="#10b981" stackId="a" />
-        <Bar dataKey="ausentes" name="Ausentes" fill="#ef4444" stackId="a" />
-        <Bar dataKey="justificadas" name="Justificadas" fill="#f59e0b" stackId="a" />
-        <Bar dataKey="tardanzas" name="Tardanzas" fill="#8b5cf6" stackId="a" />
+        <Bar dataKey="presentes" name="Presentes" fill="oklch(0.38 0.09 155)" stackId="a" />
+        <Bar dataKey="ausentes" name="Ausentes" fill="oklch(0.65 0.05 155)" stackId="a" />
+        <Bar dataKey="justificadas" name="Justificadas" fill="oklch(0.50 0.07 155)" stackId="a" />
+        <Bar dataKey="tardanzas" name="Tardanzas" fill="oklch(0.75 0.03 155)" stackId="a" />
       </BarChart>
     </ResponsiveContainer>
   );

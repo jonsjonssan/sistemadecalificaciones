@@ -25,10 +25,10 @@ interface AgentAlertsPanelProps {
 }
 
 const TIPO_CONFIG: Record<string, { label: string; color: string; icon: any }> = {
-  riesgo_alto: { label: "Riesgo Alto", color: "bg-red-100 text-red-800 border-red-300 dark:bg-red-900/50 dark:text-red-400 dark:border-red-700", icon: XCircle },
-  riesgo_medio: { label: "Riesgo Medio", color: "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/50 dark:text-amber-400 dark:border-amber-700", icon: AlertTriangle },
-  bajo_rendimiento: { label: "Bajo Rendimiento", color: "bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-900/50 dark:text-orange-400 dark:border-orange-700", icon: TrendingDown },
-  asistencia_critica: { label: "Asistencia Crítica", color: "bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-900/50 dark:text-purple-400 dark:border-purple-700", icon: Clock },
+  riesgo_alto: { label: "Riesgo Alto", color: "bg-status-error-muted text-status-error border-status-error/20", icon: XCircle },
+  riesgo_medio: { label: "Riesgo Medio", color: "bg-status-warning-muted text-status-warning border-status-warning/20", icon: AlertTriangle },
+  bajo_rendimiento: { label: "Bajo Rendimiento", color: "bg-muted text-muted-foreground border-border", icon: TrendingDown },
+  asistencia_critica: { label: "Asistencia Crítica", color: "bg-status-warning-muted text-status-warning border-status-warning/20", icon: Clock },
 };
 
 export function AgentAlertsPanel({ darkMode, onNavigate }: AgentAlertsPanelProps) {
@@ -163,7 +163,7 @@ export function AgentAlertsPanel({ darkMode, onNavigate }: AgentAlertsPanelProps
             size="sm"
             onClick={borrarTodo}
             disabled={borrando}
-            className="h-7 text-xs text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950"
+              className="h-7 text-xs text-destructive hover:text-destructive hover:bg-status-error-muted"
           >
             {borrando ? "Borrando..." : "Borrar Todo"}
           </Button>
@@ -178,7 +178,7 @@ export function AgentAlertsPanel({ darkMode, onNavigate }: AgentAlertsPanelProps
 
         {alertas.length === 0 ? (
           <div className="text-center py-6 text-xs text-muted-foreground">
-            <CheckCircle className="h-8 w-8 mx-auto mb-2 text-emerald-500" />
+            <CheckCircle className="h-8 w-8 mx-auto mb-2 text-primary" />
             <p>No hay alertas pendientes</p>
             <p className="text-[10px] mt-1">El último análisis no detectó estudiantes en riesgo</p>
           </div>
@@ -215,10 +215,10 @@ export function AgentAlertsPanel({ darkMode, onNavigate }: AgentAlertsPanelProps
                             <div
                               className={`h-full rounded-full ${
                                 alerta.puntajeRiesgo >= 0.6
-                                  ? "bg-red-500"
+                                  ? "bg-status-error"
                                   : alerta.puntajeRiesgo >= 0.4
-                                  ? "bg-amber-500"
-                                  : "bg-orange-400"
+                                  ? "bg-status-warning"
+                                  : "bg-muted-foreground/40"
                               }`}
                               style={{ width: `${alerta.puntajeRiesgo * 100}%` }}
                             />

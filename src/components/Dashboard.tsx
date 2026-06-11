@@ -280,9 +280,9 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
   })).filter(g => g.estudiantes > 0);
 
   const categoryChartData = effectiveStats && effectiveStats.promedios ? [
-    { name: "Cotidianas", valor: effectiveStats.promedios.cotidiana, color: darkMode ? "oklch(0.56 0.15 155)" : "oklch(0.44 0.13 155)" },
-    { name: "Integradoras", valor: effectiveStats.promedios.integradora, color: darkMode ? "oklch(0.65 0.12 85)" : "oklch(0.60 0.10 85)" },
-    { name: "Exámenes", valor: effectiveStats.promedios.examen, color: darkMode ? "oklch(0.28 0.055 160)" : "oklch(0.28 0.055 160)" }
+    { name: "Cotidianas", valor: effectiveStats.promedios.cotidiana, color: darkMode ? "oklch(0.52 0.07 155)" : "oklch(0.38 0.09 155)" },
+    { name: "Integradoras", valor: effectiveStats.promedios.integradora, color: darkMode ? "oklch(0.62 0.05 155)" : "oklch(0.55 0.07 155)" },
+    { name: "Exámenes", valor: effectiveStats.promedios.examen, color: darkMode ? "oklch(0.42 0.06 155)" : "oklch(0.28 0.05 155)" }
   ] : [];
 
   // ====== NUEVO: Indicadores por trimestre ======
@@ -453,10 +453,10 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                         <div key={c.nombre} className="flex items-center justify-between rounded-sm border border-border p-2.5 bg-muted/20">
                           <span className="font-display text-xs text-muted-foreground/70">{c.nombre}</span>
                           <div className="flex items-center gap-2">
-                            <span className={`text-lg font-semibold font-mono tabular-nums ${c.prom != null && Math.round(c.prom) >= 5 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                            <span className={`text-lg font-semibold font-mono tabular-nums ${c.prom != null && Math.round(c.prom) >= 5 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-status-error/70'}`}>
                               {c.prom != null ? c.prom.toFixed(1) : "—"}
                             </span>
-                            <span className={`text-[10px] font-medium ${c.prom != null && Math.round(c.prom) >= 5 ? 'text-emerald-500' : c.prom != null ? 'text-red-400' : ''}`}>
+                            <span className={`text-[10px] font-medium ${c.prom != null && Math.round(c.prom) >= 5 ? 'text-primary' : c.prom != null ? 'text-status-error/70' : ''}`}>
                               {c.prom != null && Math.round(c.prom) >= 5 ? '✓' : c.prom != null ? '⚠' : ''}
                             </span>
                           </div>
@@ -489,7 +489,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                               {[t1, t2, t3].map((t, i) => (
                                 <td key={i} className="text-center p-2">
                                   {t?.prom != null ? (
-                                    <span className={`font-mono font-semibold ${Math.round(t.prom) >= 5 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                                    <span className={`font-mono font-semibold ${Math.round(t.prom) >= 5 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-status-error/70'}`}>
                                       {t.prom.toFixed(1)}
                                     </span>
                                   ) : (
@@ -499,7 +499,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                               ))}
                               <td className="text-center p-2">
                                 {anual != null ? (
-                                  <span className={`font-mono font-bold ${Math.round(anual) >= 5 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                                  <span className={`font-mono font-bold ${Math.round(anual) >= 5 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-status-error/70'}`}>
                                     {anual.toFixed(1)}
                                   </span>
                                 ) : (
@@ -514,7 +514,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                           {[promInstitucionalT1, promInstitucionalT2, promInstitucionalT3].map((p, i) => (
                             <td key={i} className="text-center p-2">
                               {p != null ? (
-                                <span className={`font-mono font-bold ${Math.round(p) >= 5 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                                <span className={`font-mono font-bold ${Math.round(p) >= 5 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-status-error/70'}`}>
                                   {p.toFixed(1)}
                                 </span>
                               ) : (
@@ -524,7 +524,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                           ))}
                           <td className="text-center p-2">
                             {promAnual != null ? (
-                              <span className={`font-mono font-bold text-base ${Math.round(promAnual) >= 5 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                              <span className={`font-mono font-bold text-base ${Math.round(promAnual) >= 5 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-status-error/70'}`}>
                                 {promAnual.toFixed(1)}
                               </span>
                             ) : (
@@ -547,7 +547,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                 <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-border gap-3 bg-muted/20">
                   <div className="flex items-center gap-2">
                     <div className={cn("h-8 w-8 rounded-full flex items-center justify-center", darkMode ? "bg-accent/20" : "bg-emerald-50")}>
-                      <TrendingUp className="h-4 w-4 text-emerald-500" />
+                      <TrendingUp className="h-4 w-4 text-primary" />
                     </div>
                     <div>
                       <CardTitle className={cn("text-sm sm:text-base", darkMode ? "text-slate-300" : "text-green-800")}>
@@ -673,7 +673,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className={`p-3 rounded-md border ${darkMode ? 'bg-emerald-900/20 border-emerald-800/60' : 'bg-emerald-50/50 border-emerald-100'}`}>
                       <h4 className={`text-xs font-bold uppercase tracking-wider mb-2.5 flex items-center gap-1.5 ${darkMode ? 'text-emerald-400' : 'text-emerald-700'}`}>
-                        <Trophy className="h-3.5 w-3.5 text-amber-500" /> Cuadro de Honor
+                        <Trophy className="h-3.5 w-3.5 text-status-warning" /> Cuadro de Honor
                         {selectedMateriaId !== 'all' && effectiveStats.materias && (
                           <span className="text-[10px] font-normal normal-case ml-1">
                             — {effectiveStats.materias.find(m => m.id === selectedMateriaId)?.nombre || ''}
@@ -689,7 +689,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                         {effectiveStats.topEstudiantes && effectiveStats.topEstudiantes.length > 0 ? effectiveStats.topEstudiantes.slice(0, 10).map((est, i) => (
                           <div key={est.id} className="flex items-center justify-between text-xs gap-2">
                             <span className="flex items-center gap-1.5 truncate">
-                              <span className={`font-mono text-[10px] w-4 text-right shrink-0 ${i === 0 ? 'text-amber-500' : 'text-muted-foreground/50'}`}>{i + 1}.</span>
+                              <span className={`font-mono text-[10px] w-4 text-right shrink-0 ${i === 0 ? 'text-status-warning' : 'text-muted-foreground/50'}`}>{i + 1}.</span>
                               <span className="truncate text-foreground/80">{est.nombre}</span>
                             </span>
                             <div className="flex items-center gap-1 shrink-0">
@@ -708,8 +708,8 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                       </div>
                     </div>
                     <div className={`p-3 rounded-md border ${darkMode ? 'bg-red-900/20 border-red-800/60' : 'bg-red-50/50 border-red-100'}`}>
-                      <h4 className={`text-xs font-bold uppercase tracking-wider mb-2.5 flex items-center gap-1.5 ${darkMode ? 'text-red-400' : 'text-red-700'}`}>
-                        <AlertTriangle className="h-3.5 w-3.5 text-red-500" /> Alertas
+                      <h4 className={`text-xs font-bold uppercase tracking-wider mb-2.5 flex items-center gap-1.5 ${darkMode ? 'text-status-error/70' : 'text-red-700'}`}>
+                        <AlertTriangle className="h-3.5 w-3.5 text-status-error" /> Alertas
                         {selectedMateriaId !== 'all' && effectiveStats.materias && (
                           <span className="text-[10px] font-normal normal-case ml-1">
                             — {effectiveStats.materias.find(m => m.id === selectedMateriaId)?.nombre || ''}
@@ -727,12 +727,12 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                             <span className="truncate text-foreground/80">{est.nombre}</span>
                             <div className="flex items-center gap-1 shrink-0">
                               {est.estado === "CONDICIONADO" && (
-                                <Badge variant="secondary" className="text-[9px] py-0 h-4 px-1 bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/50 dark:text-amber-400 dark:border-amber-700">C</Badge>
+                                <Badge variant="secondary" className="text-[9px] py-0 h-4 px-1 bg-status-warning-muted text-status-warning border-status-warning/20">C</Badge>
                               )}
                               {est.estado === "REPROBADO" && (
                                 <Badge variant="destructive" className="text-[9px] py-0 h-4 px-1">R</Badge>
                               )}
-                              <Badge variant={est.estado === "REPROBADO" ? "destructive" : "secondary"} className={`shrink-0 font-bold py-0 h-5 text-xs font-mono ${est.estado === "CONDICIONADO" ? 'bg-amber-500 text-white' : 'bg-red-500 text-white'}`}>
+                              <Badge variant={est.estado === "REPROBADO" ? "destructive" : "secondary"} className={`shrink-0 font-bold py-0 h-5 text-xs font-mono ${est.estado === "CONDICIONADO" ? 'bg-status-warning text-white' : 'bg-status-error text-white'}`}>
                                 {est.promedio.toFixed(1)}
                               </Badge>
                             </div>
@@ -806,29 +806,29 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                 <div className="text-center">
                   <span className={`text-2xl font-bold font-mono tabular-nums ${
                     miAvance.porcentajeGlobal >= 100
-                      ? 'text-emerald-600 dark:text-emerald-400'
+                      ? 'text-status-success'
                       : miAvance.porcentajeGlobal >= 50
-                      ? 'text-amber-600 dark:text-amber-400'
-                      : 'text-red-600 dark:text-red-400'
+                      ? 'text-status-warning'
+                      : 'text-status-error'
                   }`}>
                     {miAvance.porcentajeGlobal}%
                   </span>
                   <p className="text-[10px] text-muted-foreground mt-0.5">Completado</p>
-                  <div className="w-full h-2 rounded-full overflow-hidden bg-slate-200 dark:bg-slate-700 mt-1.5">
+                  <div className="w-full h-2 rounded-full overflow-hidden bg-muted mt-1.5">
                     <div className={`h-full rounded-full transition-all duration-500 ${
                       miAvance.porcentajeGlobal >= 100
-                        ? 'bg-emerald-500'
+                        ? 'bg-primary'
                         : miAvance.porcentajeGlobal >= 50
-                        ? 'bg-amber-400'
-                        : 'bg-red-500'
+                        ? 'bg-status-warning'
+                        : 'bg-status-error'
                     }`} style={{ width: `${miAvance.porcentajeGlobal}%` }} />
                   </div>
                 </div>
                 <div className="flex justify-center gap-3 text-[10px]">
-                  <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                  <span className="flex items-center gap-1 text-status-success">
                     <CheckCircle2 className="h-3 w-3" /> {miAvance.globalCompleto}
                   </span>
-                  <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400">
+                  <span className="flex items-center gap-1 text-status-warning">
                     <AlertCircle className="h-3 w-3" /> {miAvance.globalParcial}
                   </span>
                   <span className="flex items-center gap-1 text-slate-400">
@@ -846,7 +846,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                             ? 'text-emerald-600 dark:text-emerald-400'
                             : m.porcentaje >= 50
                             ? 'text-amber-600 dark:text-amber-400'
-                            : 'text-red-600 dark:text-red-400'
+                            : 'text-red-600 dark:text-status-error/70'
                         }`}>
                           {m.porcentaje}%
                         </span>
@@ -889,12 +889,12 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
           {esDocente && (
             <div className="grid grid-cols-2 gap-2">
               <div className={`p-2.5 rounded-sm border text-center ${darkMode ? 'bg-emerald-900/10 border-emerald-800/30' : 'bg-emerald-50/50 border-emerald-100'}`}>
-                <Users className="h-4 w-4 mx-auto mb-1 text-emerald-500" />
+                <Users className="h-4 w-4 mx-auto mb-1 text-primary" />
                 <p className="text-lg font-bold font-mono tabular-nums text-foreground">{totalEstudiantesVisibles}</p>
                 <p className="text-[10px] text-muted-foreground/80">Estudiantes</p>
               </div>
               <div className={`p-2.5 rounded-sm border text-center ${darkMode ? 'bg-emerald-900/10 border-emerald-800/30' : 'bg-emerald-50/50 border-emerald-100'}`}>
-                <BookOpen className="h-4 w-4 mx-auto mb-1 text-emerald-500" />
+                <BookOpen className="h-4 w-4 mx-auto mb-1 text-primary" />
                 <p className="text-lg font-bold font-mono tabular-nums text-foreground">{totalAsignaturasVisibles}</p>
                 <p className="text-[10px] text-muted-foreground/80">Asignaturas</p>
               </div>

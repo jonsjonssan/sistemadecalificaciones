@@ -123,7 +123,7 @@ export default function LoginView({
                 <motion.p
                   initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={`text-sm text-center font-medium ${loginError.includes("no está registrada") ? "text-amber-600" : "text-red-500"}`}
+                  className={`text-sm text-center font-medium ${loginError.includes("no está registrada") ? "text-status-warning" : "text-status-error"}`}
                 >
                   {loginError}
                 </motion.p>

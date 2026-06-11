@@ -167,8 +167,8 @@ export function SystemThresholdsCard({
           {/* Barra coloreada proporcional */}
           <div className="flex h-1.5 rounded-full overflow-hidden">
             <div style={{ width: `${redWidth}%` }} className={umbrales.usarIntervaloReprobado ? "bg-[#f43f5e]" : "bg-slate-300 dark:bg-slate-700"} />
-            <div style={{ width: `${yellowWidth}%` }} className={umbrales.usarIntervaloCondicionado ? "bg-[#f59e0b]" : "bg-slate-300 dark:bg-slate-700"} />
-            <div style={{ width: `${greenWidth}%` }} className={umbrales.usarIntervaloAprobado ? "bg-[#10b981]" : "bg-slate-300 dark:bg-slate-700"} />
+            <div style={{ width: `${yellowWidth}%` }} className={umbrales.usarIntervaloCondicionado ? "bg-[#846c3e]" : "bg-slate-300 dark:bg-slate-700"} />
+            <div style={{ width: `${greenWidth}%` }} className={umbrales.usarIntervaloAprobado ? "bg-[#1d624a]" : "bg-slate-300 dark:bg-slate-700"} />
           </div>
 
           {/* Intervalos en formato Marco Normativo */}
@@ -182,14 +182,14 @@ export function SystemThresholdsCard({
             </div>
             <div className="flex-1 text-center">
               {umbrales.usarIntervaloCondicionado ? (
-                <span className="text-[#f59e0b]">{uc.toFixed(2)} – {Math.max(uc, ua - 0.01).toFixed(2)}</span>
+                <span className="text-[#846c3e]">{uc.toFixed(2)} – {Math.max(uc, ua - 0.01).toFixed(2)}</span>
               ) : (
                 <span className={textMuted}>—</span>
               )}
             </div>
             <div className="flex-1 text-right">
               {umbrales.usarIntervaloAprobado ? (
-                <span className="text-[#10b981]">{ua.toFixed(2)} – {max.toFixed(2)}</span>
+                <span className="text-[#1d624a]">{ua.toFixed(2)} – {max.toFixed(2)}</span>
               ) : (
                 <span className={textMuted}>—</span>
               )}
@@ -253,7 +253,7 @@ export function SystemThresholdsCard({
           <div className={`rounded-xl border p-3 ${darkMode ? "bg-muted border-white/20" : "bg-slate-50 border-slate-200"} ${!umbrales.usarIntervaloCondicionado ? "opacity-50" : ""}`}>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-[#f59e0b]" />
+                <div className="w-3 h-3 rounded-full bg-[#846c3e]" />
                 <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-200" : "text-slate-700"}`}>Condicionado</span>
               </div>
               <label className="flex items-center gap-1 cursor-pointer text-[10px]">
@@ -303,7 +303,7 @@ export function SystemThresholdsCard({
           <div className={`rounded-xl border p-3 ${darkMode ? "bg-muted border-white/20" : "bg-slate-50 border-slate-200"} ${!umbrales.usarIntervaloAprobado ? "opacity-50" : ""}`}>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-[#10b981]" />
+                <div className="w-3 h-3 rounded-full bg-[#1d624a]" />
                 <span className={`text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-slate-200" : "text-slate-700"}`}>Aprobado</span>
               </div>
               <label className="flex items-center gap-1 cursor-pointer text-[10px]">

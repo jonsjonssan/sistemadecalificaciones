@@ -123,7 +123,7 @@ export function ContextualHelp({ section, darkMode }: ContextualHelpProps) {
             <ul className="space-y-1.5">
               {help.tips.map((tip, i) => (
                 <li key={i} className="text-xs flex items-start gap-1.5">
-                  <span className="text-emerald-500 dark:text-emerald-400 mt-0.5">•</span>
+                  <span className="text-primary dark:text-primary mt-0.5">•</span>
                   <span>{tip}</span>
                 </li>
               ))}

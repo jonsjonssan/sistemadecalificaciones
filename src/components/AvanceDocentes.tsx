@@ -257,10 +257,10 @@ export default function AvanceDocentes() {
                           <div
                             className={`h-full rounded-full transition-all duration-500 ${
                               docente.porcentajeGlobal >= 100
-                                ? "bg-emerald-500"
+                                ? "bg-primary"
                                 : docente.porcentajeGlobal >= 50
                                 ? "bg-amber-400"
-                                : "bg-red-500"
+                                : "bg-status-error"
                             }`}
                             style={{ width: `${docente.porcentajeGlobal}%` }}
                           />
@@ -369,7 +369,7 @@ export default function AvanceDocentes() {
                                         <div
                                           className={`h-full rounded-full ${
                                             t.porcentaje >= 100
-                                              ? "bg-emerald-500"
+                                              ? "bg-primary"
                                               : t.porcentaje > 0
                                               ? "bg-amber-400"
                                               : "bg-slate-300 dark:bg-slate-600"

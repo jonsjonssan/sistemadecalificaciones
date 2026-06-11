@@ -33,7 +33,7 @@ export function SectionHeader({
             darkMode ? "bg-emerald-900/30" : "bg-emerald-50"
           )}
         >
-          <Icon className="h-5 w-5 text-emerald-500" />
+          <Icon className="h-5 w-5 text-primary" />
         </div>
         <div>
           <h2

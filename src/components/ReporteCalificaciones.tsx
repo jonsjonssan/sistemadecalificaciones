@@ -40,21 +40,21 @@ function getRangoColor(rango: RangoNota, darkMode: boolean) {
   switch (rango) {
     case "reprobado":
       return darkMode
-        ? "bg-red-900/60 text-red-200 ring-1 ring-red-600"
-        : "bg-red-100 text-red-800 ring-1 ring-red-300";
+        ? "bg-status-error-muted text-status-error ring-1 ring-status-error/20"
+        : "bg-status-error-muted text-status-error ring-1 ring-status-error/20";
     case "condicionado":
       return darkMode
-        ? "bg-amber-900/60 text-amber-200 ring-1 ring-amber-600"
-        : "bg-amber-100 text-amber-800 ring-1 ring-amber-300";
+        ? "bg-status-warning-muted text-status-warning ring-1 ring-status-warning/20"
+        : "bg-status-warning-muted text-status-warning ring-1 ring-status-warning/20";
     case "aprobado":
       return darkMode
-        ? "bg-emerald-900/60 text-emerald-200 ring-1 ring-emerald-600"
-        : "bg-emerald-100 text-emerald-800 ring-1 ring-emerald-300";
+        ? "bg-status-success-muted text-status-success ring-1 ring-status-success/20"
+        : "bg-status-success-muted text-status-success ring-1 ring-status-success/20";
     case "sin_datos":
     default:
       return darkMode
-        ? "bg-slate-800 text-slate-500"
-        : "bg-slate-100 text-slate-400";
+        ? "bg-muted text-muted-foreground"
+        : "bg-muted text-muted-foreground";
   }
 }
 
@@ -234,19 +234,19 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
       body: rows,
       startY: 18,
       styles: { fontSize: 7, cellPadding: 1.5 },
-      headStyles: { fillColor: [15, 118, 110], textColor: 255, fontStyle: "bold" },
+      headStyles: { fillColor: [29, 98, 74], textColor: 255, fontStyle: "bold" },
       columnStyles: { 0: { cellWidth: 8 }, 1: { cellWidth: 38 } },
       didParseCell: (data: any) => {
         if (data.column.index >= 2 && data.row.section === "body") {
           const val = String(data.cell.raw).trim();
           if (val === "Reprobado") {
-            data.cell.styles.textColor = [220, 38, 38];
+            data.cell.styles.textColor = [112, 62, 62];
             data.cell.styles.fontStyle = "bold";
           } else if (val === "Condicionado") {
-            data.cell.styles.textColor = [217, 119, 6];
+            data.cell.styles.textColor = [132, 108, 62];
             data.cell.styles.fontStyle = "bold";
           } else if (val === "Aprobado") {
-            data.cell.styles.textColor = [5, 150, 105];
+            data.cell.styles.textColor = [29, 98, 74];
             data.cell.styles.fontStyle = "bold";
           } else {
             data.cell.styles.textColor = [150, 150, 150];
@@ -485,7 +485,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
         </Card>
       ) : error ? (
         <Card className={`shadow-md border ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5 shadow-2xl" : "bg-white border-slate-200"}`}>
-          <CardContent className="p-4 text-center text-red-500">{error}</CardContent>
+          <CardContent className="p-4 text-center text-status-error">{error}</CardContent>
         </Card>
       ) : (
         <>
@@ -495,7 +495,7 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
           }`}>
             <span className="font-medium text-slate-500 dark:text-slate-200 text-xs uppercase tracking-wider">Resumen</span>
             <div className="flex items-center gap-1.5">
-              <span className="inline-block w-2 h-2 rounded-full bg-emerald-500" />
+              <span className="inline-block w-2 h-2 rounded-full bg-primary" />
               <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">{conteo.aprobado}</span>
               <span className="text-xs">aprobado{conteo.aprobado !== 1 ? "s" : ""}</span>
             </div>
@@ -507,8 +507,8 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
             </div>
             <div className={`h-4 w-px ${darkMode ? "bg-slate-600" : "bg-slate-300"}`} />
             <div className="flex items-center gap-1.5">
-              <span className="inline-block w-2 h-2 rounded-full bg-red-500" />
-              <span className="text-xs font-semibold text-red-500 dark:text-red-400">{conteo.reprobado}</span>
+              <span className="inline-block w-2 h-2 rounded-full bg-status-error" />
+              <span className="text-xs font-semibold text-status-error dark:text-status-error/70">{conteo.reprobado}</span>
               <span className="text-xs">reprobado{conteo.reprobado !== 1 ? "s" : ""}</span>
             </div>
             <div className={`h-4 w-px ${darkMode ? "bg-slate-600" : "bg-slate-300"}`} />
@@ -591,44 +591,44 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
 
           {/* Gráfico Estadístico */}
           {materiasFiltradas.length > 0 && (
-            <Card className={`shadow-sm border overflow-hidden ${darkMode ? "bg-slate-950/40 backdrop-blur-md border-white/5" : "bg-white border-slate-200"}`}>
-              <div className={`h-1 w-full ${darkMode ? "bg-[#0d3b66]" : "bg-[#007BFF]"}`} />
+            <Card className={`shadow-sm border overflow-hidden ${darkMode ? "bg-card border-border" : "bg-card border-border"}`}>
+              <div className={`h-1 w-full bg-primary`} />
               <CardContent className="p-3 sm:p-4">
                 <div className="flex items-start justify-between mb-4">
                   <div>
-                    <h3 className={`text-sm font-semibold ${darkMode ? "text-white" : "text-slate-800"}`}>
+                    <h3 className={`text-sm font-semibold text-foreground`}>
                       Distribución por Asignatura
                     </h3>
-                    <p className={`text-xs mt-0.5 ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
+                    <p className={`text-xs mt-0.5 text-muted-foreground`}>
                       Aprobados, condicionados y reprobados por asignatura
                     </p>
                   </div>
-                  <div className={`hidden sm:flex items-center gap-3 text-[10px] ${darkMode ? "text-slate-400" : "text-slate-500"}`}>
-                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-[#10b981]" /> Aprobados</span>
-                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-[#f59e0b]" /> Cond.</span>
-                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-[#ef4444]" /> Reprobados</span>
+                  <div className={`hidden sm:flex items-center gap-3 text-[10px] text-muted-foreground`}>
+                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-primary" /> Aprobados</span>
+                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-status-warning" /> Cond.</span>
+                    <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-status-error" /> Reprobados</span>
                   </div>
                 </div>
                 <ResponsiveContainer width="100%" height={Math.max(250, Math.min(400, chartData.length * 60))}>
                   <BarChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 8 }} layout="horizontal">
-                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#374151" : "#e5e7eb"} vertical={false} />
-                    <XAxis dataKey="nombre" tick={{ fontSize: 10, fill: darkMode ? "#94a3b8" : "#64748b" }} axisLine={false} tickLine={false} interval={0} angle={-30} textAnchor="end" height={50} />
-                    <YAxis tick={{ fontSize: 11, fill: darkMode ? "#94a3b8" : "#64748b" }} axisLine={false} tickLine={false} allowDecimals={false} />
+                    <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "oklch(0.24 0.015 155)" : "oklch(0.91 0.008 155)"} vertical={false} />
+                    <XAxis dataKey="nombre" tick={{ fontSize: 10, fill: darkMode ? "oklch(0.58 0.015 155)" : "oklch(0.48 0.015 155)" }} axisLine={false} tickLine={false} interval={0} angle={-30} textAnchor="end" height={50} />
+                    <YAxis tick={{ fontSize: 11, fill: darkMode ? "oklch(0.58 0.015 155)" : "oklch(0.48 0.015 155)" }} axisLine={false} tickLine={false} allowDecimals={false} />
                     <Tooltip
                       contentStyle={{
                         borderRadius: "8px",
                         border: "none",
                         boxShadow: "0 4px 12px -2px rgb(0 0 0 / 0.15)",
                         fontSize: "12px",
-                        backgroundColor: darkMode ? "#1e293b" : "#fff",
-                        color: darkMode ? "#e8e8e8" : "#111",
+                        backgroundColor: darkMode ? "oklch(0.18 0.015 155)" : "oklch(0.995 0.002 155)",
+                        color: darkMode ? "oklch(0.90 0.008 155)" : "oklch(0.18 0.025 155)",
                       }}
-                      cursor={{ fill: darkMode ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)" }}
+                      cursor={{ fill: darkMode ? "oklch(0.20 0.015 155 / 0.3)" : "oklch(0.94 0.01 155 / 0.5)" }}
                     />
                     <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} />
-                    <Bar dataKey="Aprobados" stackId="a" fill="#10b981" radius={[0, 0, 0, 0]} maxBarSize={40} />
-                    <Bar dataKey="Condicionados" stackId="a" fill="#f59e0b" radius={[0, 0, 0, 0]} maxBarSize={40} />
-                    <Bar dataKey="Reprobados" stackId="a" fill="#ef4444" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                    <Bar dataKey="Aprobados" stackId="a" fill="oklch(0.38 0.09 155)" radius={[0, 0, 0, 0]} maxBarSize={40} />
+                    <Bar dataKey="Condicionados" stackId="a" fill="oklch(0.52 0.04 85)" radius={[0, 0, 0, 0]} maxBarSize={40} />
+                    <Bar dataKey="Reprobados" stackId="a" fill="oklch(0.44 0.05 28)" radius={[4, 4, 0, 0]} maxBarSize={40} />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>

@@ -8,15 +8,15 @@ colors:
   neutral-surface: "#eff2ed"
   neutral-text: "#15241e"
   neutral-muted: "#5a6a62"
-  destructive: "#b33a3a"
-  success: "#256f45"
-  warning: "#b8912a"
-  info: "#1d5b94"
-  chart-1: "#b85a2a"
-  chart-2: "#256f45"
-  chart-3: "#1d5b94"
-  chart-4: "#c4a030"
-  chart-5: "#b84a6a"
+  destructive: "#704040"
+  success: "#1d624a"
+  warning: "#846c3e"
+  info: "#5a6a62"
+  chart-1: "oklch(0.35 0.07 155)"
+  chart-2: "oklch(0.45 0.09 155)"
+  chart-3: "oklch(0.55 0.07 155)"
+  chart-4: "oklch(0.65 0.05 155)"
+  chart-5: "oklch(0.75 0.03 155)"
 typography:
   display:
     fontFamily: "Outfit, system-ui, sans-serif"
@@ -76,62 +76,111 @@ components:
 
 ## 1. Overview
 
-**Creative North Star: "Esmeralda Imperial"**
+**Creative North Star: "Esmeralda Sobria"**
 
-Un sistema de calificaciones escolar que evoca el prestigio de la excelencia académica mediante una paleta refinada de color esmeralda y oro, complementada con un fondo cálido de alabastro. Diseñado para ofrecer una legibilidad impecable, un contraste nítido bajo cualquier condición de iluminación y una apariencia moderna libre de grises aburridos.
+Un sistema de calificaciones escolar que comunica seriedad institucional y claridad académica mediante una paleta monocromática verde-esmeralda con variaciones de luminosidad. El color no decora: significa. Cada tono tiene un propósito semántico inequívoco.
 
 **Key Characteristics:**
-- **Alto contraste refinado**: Textos en verde-carbono profundo sobre fondos cálidos de alabastro en modo claro, y menta luminosa sobre obsidiana en modo oscuro.
-- **Tipografía Dual**: Tipografía Outfit para títulos y acentos (estética amigable y moderna), y Plus Jakarta Sans para el texto de contenido (legibilidad excepcional en pantalla).
-- **Detalles dorados y degradados sutiles**: Para elementos activos, alertas o accesos importantes, aportando un toque premium de calidad.
-- **Micro-interacciones**: Transiciones fluidas en hover de botones y celdas de tabla.
+- **Paleta monocromática**: Todo el sistema vive en el hue 155 (verde-esmeralda). Los colores de estado (aprobado, condicionado, reprobado) son variaciones desaturadas que comunican sin competir visualmente.
+- **Neutrales con tinte verde**: No existen grises puros. Todos los neutros carry un chroma sutil (0.004-0.015) hacia el hue 155.
+- **Sin colores eléctricos**: El modo oscuro reduce la luminosidad del primario a oklch(0.62 0.09) para evitar el efecto "neón". La misma lógica cromática rige ambos modos.
+- **Gráficas monocromáticas**: Los gráficos usan exclusivamente variaciones de luminosidad del verde. No hay paleta arcoíris.
 
 ## 2. Colors
 
-La paleta se centra en tonos esmeralda/jade, con acentos en oro champagne y neutros cálidos.
+### Estrategia: Restrained
+
+Un solo hue (155) como color estructural dominante. Los colores semánticos son desaturados (chroma ≤0.07) para no competir con el verde primario.
 
 ### Primary
-- **Esmeralda Imperial** (`oklch(0.38 0.09 155)` / `#1d624a`): Botones principales, pestañas activas, aprobado institucional.
-- **Esmeralda Hover** (`oklch(0.32 0.08 155)` / `#17503c`): Estados hover.
-- **Menta Eléctrico** (`oklch(0.72 0.12 155)` / `#68dbab`): Primario en modo oscuro para alta legibilidad.
+- **Esmeralda Institucional** (`oklch(0.38 0.09 155)` / `#1d624a`): Botones principales, pestañas activas, estado aprobado, datos positivos.
+- **Esmeralda Hover** (`oklch(0.32 0.08 155)` / `#17503c`): Estados hover de elementos primarios.
+- **Verde Oscuro Dark Mode** (`oklch(0.62 0.09 155)`): Primario en modo oscuro. No eléctrico, legible.
 
 ### Neutral
-- **Fondo Página** (`oklch(0.985 0.004 155)` / `#fcfdfa`): Fondo claro sumamente suave para reducir el cansancio visual.
-- **Superficie Elevada** (`oklch(0.94 0.012 155)` / `#eff2ed`): Fondos alternos, inputs.
-- **Card** (`oklch(1 0 0)` / `#ffffff`): Superficies de tarjeta puras.
-- **Texto** (`oklch(0.18 0.025 155)` / `#15241e`): Contraste óptimo y suave.
-- **Borde** (`oklch(0.92 0.008 155)` / `#e1e6e0`): Bordes sutiles.
+- **Fondo Página** (`oklch(0.985 0.004 155)`): Fondo claro con tinte verde sutil.
+- **Superficie Elevada** (`oklch(0.94 0.012 155)`): Fondos alternos, inputs, secondary.
+- **Card** (`oklch(0.995 0.002 155)`): Superficies de tarjeta, casi blanco con pizca de verde.
+- **Texto** (`oklch(0.18 0.025 155)`): Verde-carbono profundo para contraste óptimo.
+- **Borde** (`oklch(0.91 0.008 155)`): Bordes sutiles con tinte verde.
+- **Muted Foreground** (`oklch(0.48 0.015 155)`): Texto secundario, labels.
 
-### Semantic
-- **Destructivo / Error** (`oklch(0.50 0.18 28)` / `#b33a3a`): Estados reprobados o destructivos.
-- **Éxito** (`oklch(0.55 0.15 155)`): Guardados exitosos.
-- **Advertencia** (`oklch(0.72 0.13 85)`): Condicionados o alertas intermedias.
-- **Info** (`oklch(0.52 0.14 220)`): Detalles e información contextual.
+### Semantic (desaturados)
+- **Status Success** (`oklch(0.40 0.07 155)`): Aprobado, presente, completado. Muted bg: `oklch(0.96 0.015 155)`.
+- **Status Warning** (`oklch(0.52 0.04 85)`): Condicionado, tarde, alerta media. Muted bg: `oklch(0.96 0.008 85)`.
+- **Status Error** (`oklch(0.44 0.05 28)`): Reprobado, ausente, error. Muted bg: `oklch(0.96 0.006 28)`.
+- **Destructive** (`oklch(0.46 0.07 28)`): Acciones destructivas, toasts de error.
 
-## 3. Typography
+### Chart Palette (monocromática)
+- **Chart 1** (`oklch(0.35 0.07 155)`): Verde más oscuro.
+- **Chart 2** (`oklch(0.45 0.09 155)`): Verde medio-oscuro (≈primary).
+- **Chart 3** (`oklch(0.55 0.07 155)`): Verde medio.
+- **Chart 4** (`oklch(0.65 0.05 155)`): Verde medio-claro.
+- **Chart 5** (`oklch(0.75 0.03 155)`): Verde más claro.
 
-**Display Font:** Outfit (500–800), con fallback `system-ui, sans-serif`
-**Body Font:** Plus Jakarta Sans (400–700), con fallback `system-ui, sans-serif`
-**Mono Font:** JetBrains Mono (400–600), para números y calificaciones
+### Dark Mode
+| Token | oklch | Nota |
+|---|---|---|
+| background | `oklch(0.14 0.012 155)` | Obsidiana con tinte verde |
+| foreground | `oklch(0.90 0.008 155)` | Verde menta suave, no eléctrico |
+| primary | `oklch(0.62 0.09 155)` | Verde visible sin brillar |
+| status-success | `oklch(0.62 0.08 155)` | Verde claro moderado |
+| status-warning | `oklch(0.65 0.04 85)` | Warm desaturado |
+| status-error | `oklch(0.55 0.06 28)` | Warm-dark desaturado |
+| chart-1 | `oklch(0.62 0.09 155)` | Invertido: más claro primero |
+
+## 3. Reglas de Uso
+
+### Gráficas
+- Usar exclusivamente la chart palette (5 tonos de verde por luminosidad).
+- Para distribución aprobado/condicionado/reprobado: primary / `oklch(0.52 0.04 85)` / `oklch(0.44 0.05 28)`.
+- No usar colores fuera del hue 155 ±10 para datos.
+
+### Estados de Notas
+- Aprobado: `text-status-success` sobre `bg-status-success-muted`.
+- Condicionado: `text-status-warning` sobre `bg-status-warning-muted`.
+- Reprobado: `text-status-error` sobre `bg-status-error-muted`.
+- Nunca usar rojo saturado ni amarillo brillante.
+
+### Interacciones
+- Hover: box-shadow inset con opacidad 0.06-0.10, no cambios de background dramáticos.
+- Focus: ring con `oklch(0.38 0.09 155 / 0.3)`.
+- Active: leve incremento de opacidad del shadow.
+
+### Exportación PDF/HTML
+- Header: `#1d624a` (primary).
+- Aprobado: `#1d624a`. Condicionado: `#846c3e`. Reprobado: `#704040`.
+- Fondos de celda: neutros con tinte verde sutil, nunca colores saturados.
+
+## 4. Typography
+
+**Display Font:** Outfit (500-800), con fallback `system-ui, sans-serif`
+**Body Font:** Plus Jakarta Sans (400-700), con fallback `system-ui, sans-serif`
+**Mono Font:** JetBrains Mono (400-600), para números y calificaciones
 
 ### Hierarchy
-- **Headline** (Outfit 700, 1.25rem, 1.2): Encabezados de sección y títulos de página.
+- **Headline** (Outfit 700, 1.25rem, 1.2): Encabezados de sección.
 - **Title** (Outfit 600, 1rem, 1.3): Subtítulos, encabezados de tarjeta.
 - **Body** (Plus Jakarta Sans 400, 0.875rem, 1.6): Lectura de listas y celdas.
-- **Label** (Plus Jakarta Sans 500, 0.75rem, 1.4, +0.02em): Etiquetas de formulario, botones.
+- **Label** (Plus Jakarta Sans 500, 0.75rem, 1.4, +0.02em): Etiquetas.
 - **Mono** (JetBrains Mono 500, 0.8125rem): Ingreso de notas y números.
 
-## 4. Elevation & Radius
+## 5. Elevation & Radius
 
-Se utilizan bordes redondeados medianamente amplios (`0.625rem`) y sombras sumamente suaves para separar paneles sin sobrecargar la pantalla.
+- Radius base: `0.625rem` (10px).
+- Sombras: verdes-tintadas, nunca grises puros. Cuatro niveles de elevación.
 
-## 5. Do's and Don'ts
+## 6. Do's and Don'ts
 
 ### Do:
-- Usar el verde esmeralda institucional para el contenido principal y botones primarios.
-- Utilizar el degradado del header con opacidad moderada para la firma institucional.
-- Emplear JetBrains Mono exclusivamente para números de calificaciones.
+- Usar el verde esmeralda institucional como color estructural dominante.
+- Comunicar estados con variaciones desaturadas dentro de la misma familia.
+- Mantener la misma lógica cromática en ambos modos (claro/oscuro).
+- Usar JetBrains Mono exclusivamente para números de calificaciones.
 
 ### Don't:
-- Evitar grises puros. Todas las superficies y bordes deben contener una pizca de saturación esmeralda/jade (`hue 155`).
-- No usar fuentes de tipo script o serifas pesadas; Outfit y Plus Jakarta Sans resuelven la personalidad del sistema.
+- No usar colores saturados fuera del hue 155 para datos o estados.
+- No usar grises puros. Todos los neutros llevan tinte verde (chroma 0.004-0.015).
+- No usar "verde eléctrico" en dark mode. El primario oscuro es oklch(0.62 0.09), no 0.72 0.12.
+- No usar rojo brillante, amarillo brillante, ni azul para indicadores de estado.
+- No mezclar más de 2 niveles de luminosidad del verde en un mismo componente.

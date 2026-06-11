@@ -38,9 +38,9 @@ interface EscalaDesempenoProps {
 }
 
 const COLORS = {
-  reprobado: "#ef4444",
-  condicionado: "#f59e0b",
-  aprobado: "#10b981",
+  reprobado: "oklch(0.65 0.05 155)",
+  condicionado: "oklch(0.50 0.07 155)",
+  aprobado: "oklch(0.38 0.09 155)",
 };
 
 export function EscalaDesempeno({ gradoId, esAdmin = false }: EscalaDesempenoProps) {
@@ -165,28 +165,28 @@ export function EscalaDesempeno({ gradoId, esAdmin = false }: EscalaDesempenoPro
               <div className="h-[180px] sm:h-[200px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={darkMode ? "#1a3a2a" : "#E2E8F0"} />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={darkMode ? "oklch(0.24 0.015 155)" : "oklch(0.91 0.008 155)"} />
                     <XAxis
                       dataKey="name"
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 10, fill: darkMode ? "#94a3b8" : "#64748b" }}
+                      tick={{ fontSize: 10, fill: darkMode ? "oklch(0.58 0.015 155)" : "oklch(0.48 0.015 155)" }}
                     />
                     <YAxis
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fontSize: 10, fill: darkMode ? "#94a3b8" : "#64748b" }}
+                      tick={{ fontSize: 10, fill: darkMode ? "oklch(0.58 0.015 155)" : "oklch(0.48 0.015 155)" }}
                       allowDecimals={false}
                     />
                     <Tooltip
-                      cursor={{ fill: darkMode ? "#1a3a2a" : "#f1f5f9" }}
+                      cursor={{ fill: darkMode ? "oklch(0.20 0.015 155)" : "oklch(0.955 0.006 155)" }}
                       contentStyle={{
                         borderRadius: "8px",
                         border: "none",
                         boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                         fontSize: "11px",
-                        backgroundColor: darkMode ? "#0a1a10" : "#fff",
-                        color: darkMode ? "#e8e8e8" : "#111",
+                        backgroundColor: darkMode ? "oklch(0.18 0.015 155)" : "oklch(0.995 0.002 155)",
+                        color: darkMode ? "oklch(0.90 0.008 155)" : "oklch(0.18 0.025 155)",
                       }}
                     />
                     <Legend
@@ -211,12 +211,12 @@ export function EscalaDesempeno({ gradoId, esAdmin = false }: EscalaDesempenoPro
                 <div className="h-[200px] sm:h-[240px] w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={materiasData} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={darkMode ? "#1a3a2a" : "#E2E8F0"} />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={darkMode ? "oklch(0.24 0.015 155)" : "oklch(0.91 0.008 155)"} />
                       <XAxis
                         dataKey="name"
                         axisLine={false}
                         tickLine={false}
-                        tick={{ fontSize: 9, fill: darkMode ? "#94a3b8" : "#64748b" }}
+                        tick={{ fontSize: 9, fill: darkMode ? "oklch(0.58 0.015 155)" : "oklch(0.48 0.015 155)" }}
                         interval={0}
                         angle={-20}
                         textAnchor="end"
@@ -225,18 +225,18 @@ export function EscalaDesempeno({ gradoId, esAdmin = false }: EscalaDesempenoPro
                       <YAxis
                         axisLine={false}
                         tickLine={false}
-                        tick={{ fontSize: 10, fill: darkMode ? "#94a3b8" : "#64748b" }}
+                        tick={{ fontSize: 10, fill: darkMode ? "oklch(0.58 0.015 155)" : "oklch(0.48 0.015 155)" }}
                         allowDecimals={false}
                       />
                       <Tooltip
-                        cursor={{ fill: darkMode ? "#1a3a2a" : "#f1f5f9" }}
+                        cursor={{ fill: darkMode ? "oklch(0.20 0.015 155)" : "oklch(0.955 0.006 155)" }}
                         contentStyle={{
                           borderRadius: "8px",
                           border: "none",
                           boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                           fontSize: "11px",
-                          backgroundColor: darkMode ? "#0a1a10" : "#fff",
-                          color: darkMode ? "#e8e8e8" : "#111",
+                          backgroundColor: darkMode ? "oklch(0.18 0.015 155)" : "oklch(0.995 0.002 155)",
+                          color: darkMode ? "oklch(0.90 0.008 155)" : "oklch(0.18 0.025 155)",
                         }}
                       />
                       <Legend
@@ -258,9 +258,9 @@ export function EscalaDesempeno({ gradoId, esAdmin = false }: EscalaDesempenoPro
                 <thead>
                   <tr className="bg-muted/30 border-b border-border">
                     <th className="text-left p-2 font-semibold text-muted-foreground/80">Grado / Asignatura</th>
-                    <th className="text-center p-2 font-semibold text-red-500">Reprobado</th>
-                    <th className="text-center p-2 font-semibold text-amber-500">Condicionado</th>
-                    <th className="text-center p-2 font-semibold text-emerald-500">Aprobado</th>
+                    <th className="text-center p-2 font-semibold text-status-error">Reprobado</th>
+                    <th className="text-center p-2 font-semibold text-status-warning">Condicionado</th>
+                    <th className="text-center p-2 font-semibold text-status-success">Aprobado</th>
                     <th className="text-center p-2 font-semibold text-muted-foreground/80">Total</th>
                   </tr>
                 </thead>
@@ -269,18 +269,18 @@ export function EscalaDesempeno({ gradoId, esAdmin = false }: EscalaDesempenoPro
                     <>
                       <tr key={g.gradoId} className="border-b border-border bg-muted/10 font-semibold">
                         <td className="p-2 text-foreground/90">{g.gradoNombre}</td>
-                        <td className="text-center p-2 text-red-500">{g.escala.reprobado}</td>
-                        <td className="text-center p-2 text-amber-500">{g.escala.condicionado}</td>
-                        <td className="text-center p-2 text-emerald-500">{g.escala.aprobado}</td>
+                        <td className="text-center p-2 text-status-error">{g.escala.reprobado}</td>
+                        <td className="text-center p-2 text-status-warning">{g.escala.condicionado}</td>
+                        <td className="text-center p-2 text-status-success">{g.escala.aprobado}</td>
                         <td className="text-center p-2 text-muted-foreground/70">{g.escala.total}</td>
                       </tr>
                       {gradosVisibles.length === 1 &&
                         g.materias.map((m) => (
                           <tr key={m.materiaId} className="border-b border-border last:border-b-0">
                             <td className="p-2 pl-6 text-muted-foreground/80">{m.materiaNombre}</td>
-                            <td className="text-center p-2 text-red-400">{m.reprobado}</td>
-                            <td className="text-center p-2 text-amber-400">{m.condicionado}</td>
-                            <td className="text-center p-2 text-emerald-400">{m.aprobado}</td>
+                            <td className="text-center p-2 text-status-error/70">{m.reprobado}</td>
+                            <td className="text-center p-2 text-status-warning/70">{m.condicionado}</td>
+                            <td className="text-center p-2 text-status-success/70">{m.aprobado}</td>
                             <td className="text-center p-2 text-muted-foreground/50">{m.total}</td>
                           </tr>
                         ))}
@@ -293,15 +293,15 @@ export function EscalaDesempeno({ gradoId, esAdmin = false }: EscalaDesempenoPro
             {/* Legend / Info */}
             <div className="flex flex-wrap items-center gap-3 text-[10px] text-muted-foreground/70">
               <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-red-500 inline-block" />
+                <span className="w-2 h-2 rounded-full inline-block" style={{ background: COLORS.reprobado }} />
                 Reprobado (0–4.49)
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />
+                <span className="w-2 h-2 rounded-full inline-block" style={{ background: COLORS.condicionado }} />
                 Condicionado (4.50–6.49)
               </span>
               <span className="flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
+                <span className="w-2 h-2 rounded-full inline-block" style={{ background: COLORS.aprobado }} />
                 Aprobado (≥6.50)
               </span>
             </div>

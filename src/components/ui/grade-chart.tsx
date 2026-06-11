@@ -51,7 +51,7 @@ function CustomTooltip({ active, payload, darkMode, showTarget }: { active?: boo
         </p>
         <div className="space-y-0.5">
           <p className="text-xs flex items-center gap-1">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 inline-block" />
+            <span className="h-2 w-2 rounded-full bg-primary inline-block" />
             <span className={darkMode ? "text-slate-400" : "text-slate-600"}>Promedio:</span>
             <span className={cn("font-bold", darkMode ? "text-white" : "text-slate-800")}>
               {data.value.toFixed(2)}
@@ -80,8 +80,8 @@ export function GradeChart({
   icon: Icon,
   showArea = true,
   showTarget = true,
-  color = "oklch(0.56 0.15 155)",
-  targetColor = "oklch(0.65 0.12 85)",
+  color = "oklch(0.45 0.09 155)",
+  targetColor = "oklch(0.55 0.04 155)",
   darkMode: propDarkMode,
   height = 300,
   action,
@@ -93,11 +93,11 @@ export function GradeChart({
   const previousValue = data.length > 1 ? data[data.length - 2]?.value ?? 0 : 0;
   const trend = latestValue - previousValue;
 
-  const gridColor = darkMode ? "rgba(148, 163, 184, 0.1)" : "rgba(148, 163, 184, 0.2)";
-  const textColor = darkMode ? "#94a3b8" : "#64748b";
+  const gridColor = darkMode ? "oklch(0.24 0.015 155 / 0.5)" : "oklch(0.91 0.008 155 / 0.8)";
+  const textColor = darkMode ? "oklch(0.58 0.015 155)" : "oklch(0.48 0.015 155)";
 
   const TrendIcon = trend > 0 ? TrendingUp : trend < 0 ? TrendingDown : Minus;
-  const trendColor = trend > 0 ? "text-emerald-600 dark:text-emerald-400" : trend < 0 ? "text-red-500" : darkMode ? "text-slate-400" : "text-slate-500";
+  const trendColor = trend > 0 ? "text-status-success" : trend < 0 ? "text-status-error" : "text-muted-foreground";
 
   return (
     <motion.div
@@ -115,12 +115,12 @@ export function GradeChart({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               {Icon && (
-                <div className={cn("h-8 w-8 rounded-full flex items-center justify-center", darkMode ? "bg-accent/20" : "bg-emerald-50")}>
-                  <Icon className="h-4 w-4 text-emerald-500" />
+                <div className={cn("h-8 w-8 rounded-full flex items-center justify-center", darkMode ? "bg-primary/15" : "bg-primary/8")}>
+                  <Icon className="h-4 w-4 text-primary" />
                 </div>
               )}
               <div>
-                <CardTitle className={cn("text-sm sm:text-base", darkMode ? "text-slate-300" : "text-green-800")}>
+                <CardTitle className={cn("text-sm sm:text-base", darkMode ? "text-foreground/90" : "text-foreground")}>
                   {title}
                 </CardTitle>
                 {description && (

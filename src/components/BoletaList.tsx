@@ -94,9 +94,9 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
 
   const getEstadoColor = (estado: string) => {
     switch (estado) {
-      case 'REPROBADO': return '#dc2626';
-      case 'CONDICIONADO': return '#d97706';
-      case 'APROBADO': return '#059669';
+      case 'REPROBADO': return '#704040';
+      case 'CONDICIONADO': return '#846c3e';
+      case 'APROBADO': return '#1d624a';
       default: return '#666';
     }
   };
@@ -204,7 +204,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
 
     const bloqueAsistenciaManual = mostrarAsistencia && incluirAsistenciaManual ? `
     <div class="seccion-asistencia" style="margin-top:15px;page-break-inside:avoid;">
-      <div class="seccion-asistencia-header" style="background:#1b6b3a;color:#fff;padding:6px 10px;font-weight:bold;font-size:9pt;display:flex;justify-content:space-between;">
+      <div class="seccion-asistencia-header" style="background:#1d624a;color:#fff;padding:6px 10px;font-weight:bold;font-size:9pt;display:flex;justify-content:space-between;">
         <span>REGISTRO DE ASISTENCIA</span>
         <span style="font-weight:normal;font-size:8pt;">para llenar manualmente</span>
       </div>
@@ -261,11 +261,11 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     th { background: #e5e7eb; font-weight: bold; font-size: 9pt; }
     td { font-size: 10pt; }
     
-    .resumen { display: flex; justify-content: space-between; margin: 20px 0; padding: 10px; background: #f0fdf4; border: 2px solid #059669; border-radius: 4px; }
+    .resumen { display: flex; justify-content: space-between; margin: 20px 0; padding: 10px; background: #f4f6f2; border: 2px solid #1d624a; border-radius: 4px; }
     .resumen-item { text-align: center; }
-    .resumen-item .valor { font-size: 16pt; font-weight: bold; color: #059669; }
-    .resumen-item.reprobado .valor { color: #dc2626; }
-    .resumen-item.condicionado .valor { color: #d97706; }
+    .resumen-item .valor { font-size: 16pt; font-weight: bold; color: #1d624a; }
+    .resumen-item.reprobado .valor { color: #704040; }
+    .resumen-item.condicionado .valor { color: #846c3e; }
     .resumen-item .etiqueta { font-size: 9pt; color: #666; }
     
     .seccion-asistencia { margin: 15px 0; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; }
@@ -273,9 +273,9 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     .asistencia-grid { display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px; text-align: center; }
     .asistencia-item .n { font-size: 12pt; font-weight: bold; }
     .asistencia-item .l { font-size: 8pt; color: #666; text-transform: uppercase; }
-    .asistencia-asist { color: #059669; }
-    .asistencia-aus { color: #dc2626; }
-    .asistencia-tard { color: #d97706; }
+    .asistencia-asist { color: #1d624a; }
+    .asistencia-aus { color: #704040; }
+    .asistencia-tard { color: #846c3e; }
     
     .firmas { display: flex; justify-content: space-between; margin-top: 40px; padding-top: 20px; }
     .firma { text-align: center; width: 45%; }
@@ -508,7 +508,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
 
         ${mostrarAsistencia && incluirAsistenciaManual ? `
         <div class="seccion-asistencia" style="margin-top:15px;page-break-inside:avoid;">
-          <div class="seccion-asistencia-header" style="background:#1b6b3a;color:#fff;padding:6px 10px;font-weight:bold;font-size:9pt;display:flex;justify-content:space-between;">
+          <div class="seccion-asistencia-header" style="background:#1d624a;color:#fff;padding:6px 10px;font-weight:bold;font-size:9pt;display:flex;justify-content:space-between;">
             <span>REGISTRO DE ASISTENCIA</span>
             <span style="font-weight:normal;font-size:8pt;">para llenar manualmente</span>
           </div>
@@ -608,11 +608,11 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     th { background: #e5e7eb; font-weight: bold; font-size: 9pt; }
     td { font-size: 10pt; }
     
-    .resumen { display: flex; justify-content: space-between; margin: 20px 0; padding: 10px; background: #f0fdf4; border: 2px solid #059669; border-radius: 4px; }
+    .resumen { display: flex; justify-content: space-between; margin: 20px 0; padding: 10px; background: #f4f6f2; border: 2px solid #1d624a; border-radius: 4px; }
     .resumen-item { text-align: center; }
-    .resumen-item .valor { font-size: 16pt; font-weight: bold; color: #059669; }
-    .resumen-item.reprobado .valor { color: #dc2626; }
-    .resumen-item.condicionado .valor { color: #d97706; }
+    .resumen-item .valor { font-size: 16pt; font-weight: bold; color: #1d624a; }
+    .resumen-item.reprobado .valor { color: #704040; }
+    .resumen-item.condicionado .valor { color: #846c3e; }
     .resumen-item .etiqueta { font-size: 9pt; color: #666; }
     
     .seccion-asistencia { margin: 15px 0; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; }
@@ -620,9 +620,9 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     .asistencia-grid { display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px; text-align: center; }
     .asistencia-item .n { font-size: 12pt; font-weight: bold; }
     .asistencia-item .l { font-size: 8pt; color: #666; text-transform: uppercase; }
-    .asistencia-asist { color: #059669; }
-    .asistencia-aus { color: #dc2626; }
-    .asistencia-tard { color: #d97706; }
+    .asistencia-asist { color: #1d624a; }
+    .asistencia-aus { color: #704040; }
+    .asistencia-tard { color: #846c3e; }
     
     .firmas { display: flex; justify-content: space-between; margin-top: 40px; padding-top: 20px; }
     .firma { text-align: center; width: 45%; }
@@ -705,9 +705,9 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     <div class="seccion-asistencia">
       <div class="seccion-asistencia-header">RESUMEN DE ASISTENCIA ANUAL (TOTAL ACUMULADO)</div>
       <div class="asistencia-grid">
-        <div class="asistencia-item"><div class="n" style="color:#059669">${asistAnual.asistencias}</div><div class="l">Asistencias</div></div>
-        <div class="asistencia-item"><div class="n" style="color:#dc2626">${asistAnual.ausencias}</div><div class="l">Inasistencias</div></div>
-        <div class="asistencia-item"><div class="n" style="color:#d97706">${asistAnual.tardanzas}</div><div class="l">Tardanzas</div></div>
+        <div class="asistencia-item"><div class="n" style="color:#1d624a">${asistAnual.asistencias}</div><div class="l">Asistencias</div></div>
+        <div class="asistencia-item"><div class="n" style="color:#704040">${asistAnual.ausencias}</div><div class="l">Inasistencias</div></div>
+        <div class="asistencia-item"><div class="n" style="color:#846c3e">${asistAnual.tardanzas}</div><div class="l">Tardanzas</div></div>
         <div class="asistencia-item"><div class="n">${asistAnual.justificadas || 0}</div><div class="l">Justificadas</div></div>
         <div class="asistencia-item"><div class="n">${asistAnual.total}</div><div class="l">Total Días</div></div>
       </div>
@@ -789,7 +789,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
         <div class="etiqueta">PROMEDIO FINAL ANUAL</div>
       </div>
       <div class="resumen-item">
-        <div class="valor" style="color:${pFinal ? getEstadoColor(pFinal < uc ? 'REPROBADO' : pFinal < ua ? 'CONDICIONADO' : 'APROBADO') : '#dc2626'}">${pFinal ? (pFinal < uc ? 'REPROBADO' : pFinal < ua ? 'CONDICIONADO' : 'APROBADO') : 'REPROBADO'}</div>
+        <div class="valor" style="color:${pFinal ? getEstadoColor(pFinal < uc ? 'REPROBADO' : pFinal < ua ? 'CONDICIONADO' : 'APROBADO') : '#704040'}">${pFinal ? (pFinal < uc ? 'REPROBADO' : pFinal < ua ? 'CONDICIONADO' : 'APROBADO') : 'REPROBADO'}</div>
         <div class="etiqueta">ESTADO FINAL</div>
       </div>
     </div>
@@ -852,9 +852,9 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
         <div class="seccion-asistencia">
           <div class="seccion-asistencia-header">RESUMEN DE ASISTENCIA ANUAL (TOTAL ACUMULADO)</div>
           <div class="asistencia-grid">
-            <div class="asistencia-item"><div class="n" style="color:#059669">${asistAnual.asistencias}</div><div class="l">Asistencias</div></div>
-            <div class="asistencia-item"><div class="n" style="color:#dc2626">${asistAnual.ausencias}</div><div class="l">Inasistencias</div></div>
-            <div class="asistencia-item"><div class="n" style="color:#d97706">${asistAnual.tardanzas}</div><div class="l">Tardanzas</div></div>
+            <div class="asistencia-item"><div class="n" style="color:#1d624a">${asistAnual.asistencias}</div><div class="l">Asistencias</div></div>
+            <div class="asistencia-item"><div class="n" style="color:#704040">${asistAnual.ausencias}</div><div class="l">Inasistencias</div></div>
+            <div class="asistencia-item"><div class="n" style="color:#846c3e">${asistAnual.tardanzas}</div><div class="l">Tardanzas</div></div>
             <div class="asistencia-item"><div class="n">${asistAnual.justificadas || 0}</div><div class="l">Justificadas</div></div>
             <div class="asistencia-item"><div class="n">${asistAnual.total}</div><div class="l">Total Días</div></div>
           </div>
@@ -879,7 +879,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
         ${bloqueAsistenciaTodasAnual}
         <div class="resumen-anual">
           <div class="resumen-item"><div class="valor" style="color:#1e293b">${pFinal !== null ? pFinal.toFixed(2) : 'N/A'}</div><div class="etiqueta">PROMEDIO FINAL ANUAL</div></div>
-          <div class="resumen-item"><div class="valor" style="color:${pFinal ? getEstadoColor(pFinal < uc ? 'REPROBADO' : pFinal < ua ? 'CONDICIONADO' : 'APROBADO') : '#dc2626'}">${pFinal ? (pFinal < uc ? 'REPROBADO' : pFinal < ua ? 'CONDICIONADO' : 'APROBADO') : 'REPROBADO'}</div><div class="etiqueta">ESTADO FINAL</div></div>
+          <div class="resumen-item"><div class="valor" style="color:${pFinal ? getEstadoColor(pFinal < uc ? 'REPROBADO' : pFinal < ua ? 'CONDICIONADO' : 'APROBADO') : '#704040'}">${pFinal ? (pFinal < uc ? 'REPROBADO' : pFinal < ua ? 'CONDICIONADO' : 'APROBADO') : 'REPROBADO'}</div><div class="etiqueta">ESTADO FINAL</div></div>
         </div>
         <div class="observaciones" style="margin:15px 0;padding:10px;border:1px solid #333;border-radius:4px;min-height:80px;">
           <div style="font-weight:bold;font-size:10pt;margin-bottom:4px;">Observaciones:</div>
@@ -977,9 +977,9 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     <div class="seccion-asistencia">
       <div class="seccion-asistencia-header">RESUMEN DE ASISTENCIA ANUAL (TOTAL ACUMULADO)</div>
       <div class="asistencia-grid">
-        <div class="asistencia-item"><div class="n" style="color:#059669">${asistAnual.asistencias}</div><div class="l">Asistencias</div></div>
-        <div class="asistencia-item"><div class="n" style="color:#dc2626">${asistAnual.ausencias}</div><div class="l">Inasistencias</div></div>
-        <div class="asistencia-item"><div class="n" style="color:#d97706">${asistAnual.tardanzas}</div><div class="l">Tardanzas</div></div>
+        <div class="asistencia-item"><div class="n" style="color:#1d624a">${asistAnual.asistencias}</div><div class="l">Asistencias</div></div>
+        <div class="asistencia-item"><div class="n" style="color:#704040">${asistAnual.ausencias}</div><div class="l">Inasistencias</div></div>
+        <div class="asistencia-item"><div class="n" style="color:#846c3e">${asistAnual.tardanzas}</div><div class="l">Tardanzas</div></div>
         <div class="asistencia-item"><div class="n">${asistAnual.justificadas || 0}</div><div class="l">Justificadas</div></div>
         <div class="asistencia-item"><div class="n">${asistAnual.total}</div><div class="l">Total Días</div></div>
       </div>
@@ -1063,7 +1063,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
         <div class="etiqueta">PROMEDIO FINAL ANUAL</div>
       </div>
       <div class="resumen-item">
-        <div class="valor" style="color:${pFinal ? getEstadoColor(pFinal < uc ? 'REPROBADO' : pFinal < ua ? 'CONDICIONADO' : 'APROBADO') : '#dc2626'}">${pFinal ? (pFinal < uc ? 'REPROBADO' : pFinal < ua ? 'CONDICIONADO' : 'APROBADO') : 'REPROBADO'}</div>
+        <div class="valor" style="color:${pFinal ? getEstadoColor(pFinal < uc ? 'REPROBADO' : pFinal < ua ? 'CONDICIONADO' : 'APROBADO') : '#704040'}">${pFinal ? (pFinal < uc ? 'REPROBADO' : pFinal < ua ? 'CONDICIONADO' : 'APROBADO') : 'REPROBADO'}</div>
         <div class="etiqueta">ESTADO FINAL</div>
       </div>
     </div>
@@ -1129,9 +1129,9 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
         <div class="seccion-asistencia">
           <div class="seccion-asistencia-header">RESUMEN DE ASISTENCIA ANUAL (TOTAL ACUMULADO)</div>
           <div class="asistencia-grid">
-            <div class="asistencia-item"><div class="n" style="color:#059669">${asistAnual.asistencias}</div><div class="l">Asistencias</div></div>
-            <div class="asistencia-item"><div class="n" style="color:#dc2626">${asistAnual.ausencias}</div><div class="l">Inasistencias</div></div>
-            <div class="asistencia-item"><div class="n" style="color:#d97706">${asistAnual.tardanzas}</div><div class="l">Tardanzas</div></div>
+            <div class="asistencia-item"><div class="n" style="color:#1d624a">${asistAnual.asistencias}</div><div class="l">Asistencias</div></div>
+            <div class="asistencia-item"><div class="n" style="color:#704040">${asistAnual.ausencias}</div><div class="l">Inasistencias</div></div>
+            <div class="asistencia-item"><div class="n" style="color:#846c3e">${asistAnual.tardanzas}</div><div class="l">Tardanzas</div></div>
             <div class="asistencia-item"><div class="n">${asistAnual.justificadas || 0}</div><div class="l">Justificadas</div></div>
             <div class="asistencia-item"><div class="n">${asistAnual.total}</div><div class="l">Total Días</div></div>
           </div>
@@ -1156,7 +1156,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
         ${bloqueAsistenciaTodasAnual}
         <div class="resumen-anual">
           <div class="resumen-item"><div class="valor" style="color:#1e293b">${pFinal !== null ? pFinal.toFixed(2) : 'N/A'}</div><div class="etiqueta">PROMEDIO FINAL ANUAL</div></div>
-          <div class="resumen-item"><div class="valor" style="color:${pFinal ? getEstadoColor(pFinal < uc ? 'REPROBADO' : pFinal < ua ? 'CONDICIONADO' : 'APROBADO') : '#dc2626'}">${pFinal ? (pFinal < uc ? 'REPROBADO' : pFinal < ua ? 'CONDICIONADO' : 'APROBADO') : 'REPROBADO'}</div><div class="etiqueta">ESTADO FINAL</div></div>
+          <div class="resumen-item"><div class="valor" style="color:${pFinal ? getEstadoColor(pFinal < uc ? 'REPROBADO' : pFinal < ua ? 'CONDICIONADO' : 'APROBADO') : '#704040'}">${pFinal ? (pFinal < uc ? 'REPROBADO' : pFinal < ua ? 'CONDICIONADO' : 'APROBADO') : 'REPROBADO'}</div><div class="etiqueta">ESTADO FINAL</div></div>
         </div>
         <div class="observaciones" style="margin:15px 0;padding:10px;border:1px solid #333;border-radius:4px;min-height:80px;">
           <div style="font-weight:bold;font-size:10pt;margin-bottom:4px;">Observaciones:</div>
@@ -1277,8 +1277,8 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
   </table>
   ${mostrarAsistencia && (incluirAsistencia || asistenciaManualHabilitado) ? `<p><b>Asistencia:</b> Asistencias: ${asist.asistencias} | Inasistencias: ${asist.ausencias} | Tardanzas: ${asist.tardanzas} | Justificadas: ${asist.justificadas || 0} | Total: ${asist.total}</p>` : ''}
   ${mostrarAsistencia && incluirAsistenciaManual ? `
-  <div style="margin:15px 0;padding:10px;border:2px solid #1b6b3a;border-radius:4px;">
-    <div style="font-weight:bold;font-size:11pt;margin-bottom:8px;color:#1b6b3a;">REGISTRO DE ASISTENCIA <span style="font-weight:normal;font-size:8pt;color:#555;">(para llenar manualmente)</span></div>
+  <div style="margin:15px 0;padding:10px;border:2px solid #1d624a;border-radius:4px;">
+    <div style="font-weight:bold;font-size:11pt;margin-bottom:8px;color:#1d624a;">REGISTRO DE ASISTENCIA <span style="font-weight:normal;font-size:8pt;color:#555;">(para llenar manualmente)</span></div>
     <table style="width:100%;border-collapse:collapse;">
       <tr>
         <td style="border:1px solid #333;padding:8px 4px;text-align:center;width:20%;background:#f0fdfa;"><b style="font-size:9pt;text-transform:uppercase;">Asistencias</b><br><span style="font-size:16pt;line-height:2;">&nbsp;</span></td>
@@ -1350,7 +1350,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <Button
             size="sm"
-            className={`h-11 text-sm font-semibold px-4 flex-1 sm:flex-none ${darkMode ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-emerald-600 hover:bg-emerald-700 text-white'}`}
+            className={`h-11 text-sm font-semibold px-4 flex-1 sm:flex-none ${darkMode ? 'bg-primary hover:bg-primary/90 text-white' : 'bg-primary hover:bg-primary/90 text-white'}`}
             onClick={imprimirTodas}
             disabled={loadingAsistencia || !estudiantes.length}
           >
@@ -1379,10 +1379,10 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
       {(estudiantes || []).map((est, idx) => {
         const califs = getCalifs(est.id), prom = calcProm(califs), open = expandedBoleta === est.id;
         const promColor = prom !== null && prom >= ua
-          ? (darkMode ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 'bg-emerald-100 text-emerald-700 border-emerald-200')
+          ? 'bg-status-success-muted text-status-success border-status-success/20'
           : prom !== null && prom >= uc
-          ? (darkMode ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-amber-700 border-amber-200')
-          : (darkMode ? 'bg-red-500/20 text-red-300 border-red-500/30' : 'bg-red-100 text-red-700 border-red-200');
+          ? 'bg-status-warning-muted text-status-warning border-status-warning/20'
+          : 'bg-status-error-muted text-status-error border-status-error/20';
         return (
           <Card key={est.id} className={`shadow-sm overflow-hidden transition-all duration-200 ${darkMode ? 'bg-slate-900/60 border-white/10 hover:border-white/20' : 'bg-white border-slate-200 hover:border-slate-300'} ${open ? (darkMode ? 'ring-1 ring-emerald-500/30' : 'ring-1 ring-emerald-300') : ''}`}>
             <div className={`p-3 sm:p-4 cursor-pointer select-none ${open ? (darkMode ? 'bg-slate-800/50' : 'bg-emerald-50/50') : ''}`} onClick={() => setExpandedBoleta(open ? null : est.id)}>
@@ -1403,7 +1403,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
                     </span>
                   </div>
                 </div>
-                <div className={`shrink-0 p-1.5 rounded-lg transition-colors ${open ? (darkMode ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-100 text-emerald-600') : (darkMode ? 'text-slate-500' : 'text-slate-400')}`}>
+                <div className={`shrink-0 p-1.5 rounded-lg transition-colors ${open ? (darkMode ? 'bg-primary/15 text-primary' : 'bg-primary/10 text-primary') : (darkMode ? 'text-slate-500' : 'text-slate-400')}`}>
                   {open ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
                 </div>
               </div>
@@ -1465,10 +1465,10 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
                             <TableCell className="text-center">
                               <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold ${
                                 c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= ua
-                                  ? (darkMode ? 'bg-emerald-500/20 text-emerald-300' : 'bg-emerald-100 text-emerald-700')
+                                  ? 'bg-status-success-muted text-status-success'
                                   : c?.promedioFinal !== null && c?.promedioFinal !== undefined && c.promedioFinal >= uc
-                                  ? (darkMode ? 'bg-amber-500/20 text-amber-300' : 'bg-amber-100 text-amber-700')
-                                  : (darkMode ? 'bg-red-500/20 text-red-300' : 'bg-red-100 text-red-700')
+                                  ? 'bg-status-warning-muted text-status-warning'
+                                  : 'bg-status-error-muted text-status-error'
                               }`}>
                                 {c?.promedioFinal !== null && c?.promedioFinal !== undefined ? c.promedioFinal.toFixed(2) : "-"}
                               </span>

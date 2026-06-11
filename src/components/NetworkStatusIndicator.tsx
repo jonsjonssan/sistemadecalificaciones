@@ -114,7 +114,7 @@ export function NetworkStatusIndicator() {
           className={`fixed bottom-2 right-2 z-40 flex items-center gap-1 rounded-full px-2 py-1 text-xs opacity-60 hover:opacity-100 transition-opacity ${
             isOnline
               ? "bg-green-500 text-white"
-              : "bg-red-500 text-white"
+              : "bg-status-error text-white"
           }`}
           title={isOnline ? "Online" : "Offline"}
         >

@@ -29,7 +29,7 @@ export function PageLoader({ message = "Cargando...", darkMode }: PageLoaderProp
           transition={{ delay: 0.2, type: "spring" }}
           className="absolute inset-0 flex items-center justify-center"
         >
-          <div className="h-6 w-6 rounded-full bg-emerald-500/20" />
+          <div className="h-6 w-6 rounded-full bg-primary/20" />
         </motion.div>
       </motion.div>
 

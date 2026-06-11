@@ -189,7 +189,7 @@ export function DescargaCompletaButton({ darkMode }: { darkMode: boolean }) {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={exportarPDF} disabled={exportando !== null} className="gap-2 cursor-pointer">
-                    <FileText className="h-4 w-4 text-red-500" />
+                    <FileText className="h-4 w-4 text-status-error" />
                     <span>PDF</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={exportarWord} disabled={exportando !== null} className="gap-2 cursor-pointer">
@@ -349,7 +349,7 @@ async function generarPDF(data: ApiResponse) {
       // Stacked bar
       let barX = 14;
       if (aprobados > 0) {
-        doc.setFillColor(16, 185, 129);
+        doc.setFillColor(29, 98, 74);
         doc.roundedRect(barX, currentY, (aprobados / (totalChart || 1)) * chartW, barH, 1, 1, "F");
         doc.setFontSize(6);
         doc.setTextColor(255);
@@ -357,7 +357,7 @@ async function generarPDF(data: ApiResponse) {
         barX += (aprobados / (totalChart || 1)) * chartW;
       }
       if (condicionados > 0) {
-        doc.setFillColor(245, 158, 11);
+        doc.setFillColor(132, 108, 62);
         doc.roundedRect(barX, currentY, (condicionados / (totalChart || 1)) * chartW, barH, 1, 1, "F");
         doc.setFontSize(6);
         doc.setTextColor(255);
@@ -365,7 +365,7 @@ async function generarPDF(data: ApiResponse) {
         barX += (condicionados / (totalChart || 1)) * chartW;
       }
       if (reprobados > 0) {
-        doc.setFillColor(239, 68, 68);
+        doc.setFillColor(112, 64, 64);
         doc.roundedRect(barX, currentY, (reprobados / (totalChart || 1)) * chartW, barH, 1, 1, "F");
         doc.setFontSize(6);
         doc.setTextColor(255);
@@ -380,13 +380,13 @@ async function generarPDF(data: ApiResponse) {
       const legY = currentY + barH + 3;
       let lx = 14;
       if (aprobados > 0) {
-        doc.setFillColor(16, 185, 129); doc.rect(lx, legY, 3, 3, "F");
+        doc.setFillColor(29, 98, 74); doc.rect(lx, legY, 3, 3, "F");
         doc.setFontSize(6); doc.setTextColor(100);
         doc.text(`Aprobados: ${aprobados}`, lx + 4.5, legY + 2.5);
         lx += 32;
       }
       if (condicionados > 0) {
-        doc.setFillColor(245, 158, 11); doc.rect(lx, legY, 3, 3, "F");
+        doc.setFillColor(132, 108, 62); doc.rect(lx, legY, 3, 3, "F");
         doc.setFontSize(6); doc.setTextColor(100);
         doc.text(`Condicionados: ${condicionados}`, lx + 4.5, legY + 2.5);
         lx += 36;
@@ -454,7 +454,7 @@ async function generarPDF(data: ApiResponse) {
     const barY = chartY;
     let bx = 14;
     if (aprobados > 0) {
-      doc.setFillColor(16, 185, 129);
+      doc.setFillColor(29, 98, 74);
       doc.roundedRect(bx, barY, (aprobados / (total || 1)) * chartW, chartH, 1, 1, "F");
       doc.setFontSize(6);
       doc.setTextColor(255);
@@ -462,7 +462,7 @@ async function generarPDF(data: ApiResponse) {
       bx += (aprobados / (total || 1)) * chartW;
     }
     if (condicionados > 0) {
-      doc.setFillColor(245, 158, 11);
+      doc.setFillColor(132, 108, 62);
       doc.roundedRect(bx, barY, (condicionados / (total || 1)) * chartW, chartH, 1, 1, "F");
       doc.setFontSize(6);
       doc.setTextColor(255);
@@ -470,7 +470,7 @@ async function generarPDF(data: ApiResponse) {
       bx += (condicionados / (total || 1)) * chartW;
     }
     if (reprobados > 0) {
-      doc.setFillColor(239, 68, 68);
+      doc.setFillColor(112, 64, 64);
       doc.roundedRect(bx, barY, (reprobados / (total || 1)) * chartW, chartH, 1, 1, "F");
       doc.setFontSize(6);
       doc.setTextColor(255);
@@ -624,13 +624,13 @@ async function generarWord(data: ApiResponse) {
   <style>
     @page { margin: 1.5cm; }
     body { font-family: 'Calibri', 'Arial', sans-serif; font-size: 10pt; color: #1a1a1a; }
-    h1 { font-size: 16pt; text-align: center; color: #1b6b3a; margin-bottom: 2px; }
+    h1 { font-size: 16pt; text-align: center; color: #1d624a; margin-bottom: 2px; }
     h2 { font-size: 12pt; text-align: center; color: #333; margin-top: 0; font-weight: normal; }
     .subtitle { text-align: center; font-size: 9pt; color: #666; margin-bottom: 15px; }
-    .grado-title { font-size: 13pt; font-weight: bold; color: #1b6b3a; margin-top: 20px; margin-bottom: 5px; border-bottom: 2px solid #1b6b3a; padding-bottom: 3px; }
+    .grado-title { font-size: 13pt; font-weight: bold; color: #1d624a; margin-top: 20px; margin-bottom: 5px; border-bottom: 2px solid #1d624a; padding-bottom: 3px; }
     .materia-title { font-size: 11pt; font-weight: bold; margin-top: 12px; margin-bottom: 4px; color: #444; }
     table { width: 100%; border-collapse: collapse; margin-bottom: 10px; font-size: 8pt; }
-    th { background-color: #1b6b3a; color: white; padding: 4px 3px; text-align: center; font-weight: bold; }
+    th { background-color: #1d624a; color: white; padding: 4px 3px; text-align: center; font-weight: bold; }
     td { padding: 3px; border: 1px solid #ccc; text-align: center; }
     td:first-child { text-align: center; font-weight: bold; width: 25px; }
     td:nth-child(2) { text-align: left; }
@@ -638,7 +638,7 @@ async function generarWord(data: ApiResponse) {
     .footer { text-align: center; font-size: 8pt; color: #999; margin-top: 20px; border-top: 1px solid #ccc; padding-top: 5px; }
     .chart-section { margin-top: 25px; }
     .chart-grado { margin-bottom: 18px; }
-    .chart-title { font-size: 13pt; font-weight: bold; color: #1b6b3a; margin-bottom: 10px; border-bottom: 2px solid #1b6b3a; padding-bottom: 3px; }
+    .chart-title { font-size: 13pt; font-weight: bold; color: #1d624a; margin-bottom: 10px; border-bottom: 2px solid #1d624a; padding-bottom: 3px; }
     .chart-grado-label { font-size: 10pt; font-weight: bold; color: #444; margin-bottom: 4px; }
     .chart-bar-container { width: 100%; height: 18px; border-radius: 4px; overflow: hidden; display: flex; border: 1px solid #bbb; }
     .chart-segment { height: 100%; display: inline-block; font-size: 7pt; color: #fff; text-align: center; line-height: 18px; font-weight: bold; }
@@ -729,14 +729,14 @@ async function generarWord(data: ApiResponse) {
     html += `<div class="chart-grado">`;
     html += `<div class="chart-grado-label">${getGradoLabel(grado.numero, grado.seccion)}</div>`;
     html += `<div class="chart-bar-container">`;
-    if (aprobados > 0) html += `<div class="chart-segment" style="width:${pctA}%;background:#10b981;">${aprobados}</div>`;
-    if (condicionados > 0) html += `<div class="chart-segment" style="width:${pctC}%;background:#f59e0b;">${condicionados}</div>`;
-    if (reprobados > 0) html += `<div class="chart-segment" style="width:${pctR}%;background:#ef4444;">${reprobados}</div>`;
+    if (aprobados > 0) html += `<div class="chart-segment" style="width:${pctA}%;background:#1d624a;">${aprobados}</div>`;
+    if (condicionados > 0) html += `<div class="chart-segment" style="width:${pctC}%;background:#846c3e;">${condicionados}</div>`;
+    if (reprobados > 0) html += `<div class="chart-segment" style="width:${pctR}%;background:#704040;">${reprobados}</div>`;
     html += `</div>`;
     html += `<div class="chart-legend">`;
-    if (aprobados > 0) html += `<span class="chart-legend-item"><span class="legend-square" style="background:#10b981;"></span>Aprobados: ${aprobados}</span>`;
-    if (condicionados > 0) html += `<span class="chart-legend-item"><span class="legend-square" style="background:#f59e0b;"></span>Condicionados: ${condicionados}</span>`;
-    if (reprobados > 0) html += `<span class="chart-legend-item"><span class="legend-square" style="background:#ef4444;"></span>Reprobados: ${reprobados}</span>`;
+    if (aprobados > 0) html += `<span class="chart-legend-item"><span class="legend-square" style="background:#1d624a;"></span>Aprobados: ${aprobados}</span>`;
+    if (condicionados > 0) html += `<span class="chart-legend-item"><span class="legend-square" style="background:#846c3e;"></span>Condicionados: ${condicionados}</span>`;
+    if (reprobados > 0) html += `<span class="chart-legend-item"><span class="legend-square" style="background:#704040;"></span>Reprobados: ${reprobados}</span>`;
     html += `</div>`;
     html += `<div class="chart-pct">${pctA}% Aprobados | ${pctC}% Condicionados | ${pctR}% Reprobados</div>`;
     html += `</div>`;

@@ -58,7 +58,7 @@ export function MathInfoButton({ darkMode, explanation, size = "sm" }: MathInfoB
                 darkMode ? "bg-emerald-900/40" : "bg-emerald-50"
               }`}
             >
-              <Calculator className="h-5 w-5 text-emerald-500" />
+              <Calculator className="h-5 w-5 text-primary" />
             </div>
             <div>
               <SheetTitle className="text-sm font-bold">{explanation.title}</SheetTitle>
