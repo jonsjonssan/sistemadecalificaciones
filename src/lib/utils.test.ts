@@ -76,25 +76,25 @@ describe('estaAprobado', () => {
 });
 
 describe('getColorPromedio', () => {
-  it('retorna color verde para promedio >= 9', () => {
-    expect(getColorPromedio(9)).toBe('text-green-600');
-    expect(getColorPromedio(10)).toBe('text-green-600');
+  it('retorna color primary para promedio >= 9', () => {
+    expect(getColorPromedio(9)).toBe('text-primary');
+    expect(getColorPromedio(10)).toBe('text-primary');
   });
 
-  it('retorna color azul para promedio redondeado >= 7 y < 9', () => {
-    expect(getColorPromedio(7)).toBe('text-blue-600');
-    expect(getColorPromedio(8.4)).toBe('text-blue-600');
+  it('retorna color foreground/80 para promedio redondeado >= 7 y < 9', () => {
+    expect(getColorPromedio(7)).toBe('text-foreground/80');
+    expect(getColorPromedio(8.4)).toBe('text-foreground/80');
   });
 
-  it('retorna color amarillo para promedio redondeado >= 5 y < 7', () => {
-    expect(getColorPromedio(5)).toBe('text-yellow-600');
-    expect(getColorPromedio(4.5)).toBe('text-yellow-600');
-    expect(getColorPromedio(6.4)).toBe('text-yellow-600');
+  it('retorna color muted-foreground para promedio redondeado >= 5 y < 7', () => {
+    expect(getColorPromedio(5)).toBe('text-muted-foreground');
+    expect(getColorPromedio(4.5)).toBe('text-muted-foreground');
+    expect(getColorPromedio(6.4)).toBe('text-muted-foreground');
   });
 
-  it('retorna color rojo para promedio redondeado < 5', () => {
-    expect(getColorPromedio(4.4)).toBe('text-red-600');
-    expect(getColorPromedio(0)).toBe('text-red-600');
+  it('retorna color destructive para promedio redondeado < 5', () => {
+    expect(getColorPromedio(4.4)).toBe('text-destructive');
+    expect(getColorPromedio(0)).toBe('text-destructive');
   });
 
   it('retorna color muted para null', () => {
@@ -103,24 +103,24 @@ describe('getColorPromedio', () => {
 });
 
 describe('getColorAsistencia', () => {
-  it('retorna color verde para presente', () => {
-    expect(getColorAsistencia('presente')).toBe('bg-green-100 text-green-800');
+  it('retorna color success para presente', () => {
+    expect(getColorAsistencia('presente')).toBe('bg-status-success-muted text-status-success');
   });
 
-  it('retorna color rojo para ausente', () => {
-    expect(getColorAsistencia('ausente')).toBe('bg-red-100 text-red-800');
+  it('retorna color error para ausente', () => {
+    expect(getColorAsistencia('ausente')).toBe('bg-status-error-muted text-status-error');
   });
 
-  it('retorna color azul para justificada', () => {
-    expect(getColorAsistencia('justificada')).toBe('bg-blue-100 text-blue-800');
+  it('retorna color muted para justificada', () => {
+    expect(getColorAsistencia('justificada')).toBe('bg-muted text-muted-foreground');
   });
 
-  it('retorna color amarillo para tarde', () => {
-    expect(getColorAsistencia('tarde')).toBe('bg-yellow-100 text-yellow-800');
+  it('retorna color warning para tarde', () => {
+    expect(getColorAsistencia('tarde')).toBe('bg-status-warning-muted text-status-warning');
   });
 
-  it('retorna color gris para estado desconocido', () => {
-    expect(getColorAsistencia('desconocido')).toBe('bg-gray-100 text-gray-800');
+  it('retorna color muted para estado desconocido', () => {
+    expect(getColorAsistencia('desconocido')).toBe('bg-muted text-muted-foreground');
   });
 });
 
