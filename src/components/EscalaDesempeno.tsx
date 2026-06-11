@@ -38,8 +38,8 @@ interface EscalaDesempenoProps {
 }
 
 const COLORS = {
-  reprobado: "oklch(0.65 0.05 155)",
-  condicionado: "oklch(0.50 0.07 155)",
+  reprobado: "oklch(0.44 0.05 28)",
+  condicionado: "oklch(0.52 0.04 85)",
   aprobado: "oklch(0.38 0.09 155)",
 };
 

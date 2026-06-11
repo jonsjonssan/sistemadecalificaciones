@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { escapeHtml } from "@/lib/utils/index";
+import { getBoletaCSS, getBoletaHeaderHTML, getBoletaHeaderHTMLShort } from "@/lib/boleta-template";
 import type { Estudiante, Asignatura, Grado, Calificacion } from "@/types";
 export default function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, expandedBoleta, setExpandedBoleta, darkMode, configuracion, paperSize, incluirAsistencia = true, mostrarRecuperacion = true, porcentajes, incluirAsistenciaManual = false, asistenciaManualHabilitado = false, mostrarAsistencia = true, asistenciaManualData = {}, onAsistenciaManualChange }: { estudiantes: Estudiante[]; calificaciones: Calificacion[]; materias: Asignatura[]; grado?: Grado; trimestre: number; expandedBoleta: string | null; setExpandedBoleta: (id: string | null) => void; darkMode: boolean; configuracion?: { nombreDirectora?: string; umbralCondicionado?: number; umbralAprobado?: number }; paperSize?: "letter" | "a4"; incluirAsistencia?: boolean; mostrarRecuperacion?: boolean; porcentajes?: { ac: number; ai: number; ex: number }; incluirAsistenciaManual?: boolean; asistenciaManualHabilitado?: boolean; mostrarAsistencia?: boolean; asistenciaManualData?: { [key: string]: { asistencias: string; inasistencias: string; tardanzas: string; justificadas: string; totalDias: string; observaciones: string } }; onAsistenciaManualChange?: (estudianteId: string, field: string, value: string) => void; }) {
   const [resumenAsistencia, setResumenAsistencia] = useState<any[]>([]);
@@ -24,8 +25,8 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
   const pctEx = (porcentajes?.ex ?? 30) / 100;
 
   const paperStyles = paperSize === "a4"
-    ? { pageAt: `@page { size: a4; margin: 10mm; }`, fontSize: "10pt" }
-    : { pageAt: `@page { size: letter; margin: 15mm; }`, fontSize: "11pt" };
+    ? { pageAt: getBoletaCSS("a4", "9pt"), fontSize: "9pt" }
+    : { pageAt: getBoletaCSS("letter", "10pt"), fontSize: "10pt" };
 
   useEffect(() => {
     const fetchAsistencia = async () => {
@@ -238,58 +239,6 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
   <title>Boleta de Calificaciones - ${escapeHtml(est.nombre)}</title>
   <style>
     ${paperStyles.pageAt}
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Times New Roman', serif; font-size: ${paperStyles.fontSize}; line-height: 1.4; color: #333; }
-    .boleta { max-width: 190mm; margin: 0 auto; padding: 5mm; }
-    
-    .header { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 15px; }
-    .logo { width: 100px; height: 100px; object-fit: contain; }
-    .header-text { text-align: center; flex: 1; }
-    .header-text h1 { font-size: 13pt; font-weight: bold; margin-bottom: 3px; text-transform: uppercase; }
-    .header-text h2 { font-size: 10pt; font-weight: normal; margin-bottom: 2px; }
-    .header-text .codigo { font-size: 8pt; color: #555; }
-    
-    .titulo-boleta { text-align: center; background: #f3f4f6; padding: 8px; margin: 15px 0; border: 1px solid #333; }
-    .titulo-boleta h3 { font-size: 12pt; text-transform: uppercase; letter-spacing: 1px; }
-    
-    .info-estudiante { display: flex; justify-content: space-between; margin-bottom: 15px; padding: 10px; background: #fafafa; border: 1px solid #ddd; border-radius: 4px; }
-    .info-estudiante p { margin: 3px 0; }
-    .info-estudiante .label { font-weight: bold; }
-    
-    table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-    th, td { border: 1px solid #333; padding: 5px 8px; text-align: center; }
-    th { background: #e5e7eb; font-weight: bold; font-size: 9pt; }
-    td { font-size: 10pt; }
-    
-    .resumen { display: flex; justify-content: space-between; margin: 20px 0; padding: 10px; background: #f4f6f2; border: 2px solid #1d624a; border-radius: 4px; }
-    .resumen-item { text-align: center; }
-    .resumen-item .valor { font-size: 16pt; font-weight: bold; color: #1d624a; }
-    .resumen-item.reprobado .valor { color: #704040; }
-    .resumen-item.condicionado .valor { color: #846c3e; }
-    .resumen-item .etiqueta { font-size: 9pt; color: #666; }
-    
-    .seccion-asistencia { margin: 15px 0; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; }
-    .seccion-asistencia-header { background: #f8fafc; padding: 6px 10px; border-bottom: 1px solid #ddd; font-weight: bold; font-size: 9pt; display: flex; justify-content: space-between; }
-    .asistencia-grid { display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px; text-align: center; }
-    .asistencia-item .n { font-size: 12pt; font-weight: bold; }
-    .asistencia-item .l { font-size: 8pt; color: #666; text-transform: uppercase; }
-    .asistencia-asist { color: #1d624a; }
-    .asistencia-aus { color: #704040; }
-    .asistencia-tard { color: #846c3e; }
-    
-    .firmas { display: flex; justify-content: space-between; margin-top: 40px; padding-top: 20px; }
-    .firma { text-align: center; width: 45%; }
-    .firma .linea { border-top: 1px solid #333; margin-top: 50px; padding-top: 5px; }
-    .firma .nombre { font-weight: bold; font-size: 10pt; }
-    .firma .cargo { font-size: 8pt; color: #555; }
-    
-    .pie { margin-top: 30px; text-align: center; font-size: 8pt; color: #666; border-top: 1px solid #ccc; padding-top: 10px; }
-    .pie p { margin: 2px 0; }
-    
-    @media print {
-      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .no-print { display: none; }
-    }
   </style>
 </head>
 <body>
@@ -297,7 +246,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     <div class="header">
       <img src="${window.location.origin}/0.png" alt="Logo" class="logo" onerror="this.style.display='none'">
       <div class="header-text">
-        <h1>Centro Escolar Católico San José de la Montaña</h1>
+        <h1>Centro Escolar Católico<br>SAN JOSÉ DE LA MONTAÑA</h1>
         <h2>Centro Educativo Católico</h2>
         <p class="codigo">Código: 88125 | Departamento: 06-San Salvador | Municipio: 0614 San Salvador</p>
       </div>
@@ -464,7 +413,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
         <div class="header">
           <img src="${window.location.origin}/0.png" alt="Logo" class="logo" onerror="this.style.display='none'">
           <div class="header-text">
-            <h1>Centro Escolar Católico San José de la Montaña</h1>
+            <h1>Centro Escolar Católico<br>SAN JOSÉ DE LA MONTAÑA</h1>
             <h2>Centro Educativo Católico</h2>
             <p class="codigo">Código: 88125 | Departamento: 06-San Salvador | Municipio: 0614 San Salvador</p>
           </div>
@@ -585,58 +534,6 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
   <title>Boletas de Calificaciones - ${grado?.numero}° ${escapeHtml(grado?.seccion || '')}</title>
   <style>
     ${paperStyles.pageAt}
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Times New Roman', serif; font-size: ${paperStyles.fontSize}; line-height: 1.4; color: #333; }
-    .boleta { max-width: 190mm; margin: 0 auto; padding: 5mm; }
-    
-    .header { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 15px; }
-    .logo { width: 100px; height: 100px; object-fit: contain; }
-    .header-text { text-align: center; flex: 1; }
-    .header-text h1 { font-size: 13pt; font-weight: bold; margin-bottom: 3px; text-transform: uppercase; }
-    .header-text h2 { font-size: 10pt; font-weight: normal; margin-bottom: 2px; }
-    .header-text .codigo { font-size: 8pt; color: #555; }
-    
-    .titulo-boleta { text-align: center; background: #f3f4f6; padding: 8px; margin: 15px 0; border: 1px solid #333; }
-    .titulo-boleta h3 { font-size: 12pt; text-transform: uppercase; letter-spacing: 1px; }
-    
-    .info-estudiante { display: flex; justify-content: space-between; margin-bottom: 15px; padding: 10px; background: #fafafa; border: 1px solid #ddd; border-radius: 4px; }
-    .info-estudiante p { margin: 3px 0; }
-    .info-estudiante .label { font-weight: bold; }
-    
-    table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-    th, td { border: 1px solid #333; padding: 5px 8px; text-align: center; }
-    th { background: #e5e7eb; font-weight: bold; font-size: 9pt; }
-    td { font-size: 10pt; }
-    
-    .resumen { display: flex; justify-content: space-between; margin: 20px 0; padding: 10px; background: #f4f6f2; border: 2px solid #1d624a; border-radius: 4px; }
-    .resumen-item { text-align: center; }
-    .resumen-item .valor { font-size: 16pt; font-weight: bold; color: #1d624a; }
-    .resumen-item.reprobado .valor { color: #704040; }
-    .resumen-item.condicionado .valor { color: #846c3e; }
-    .resumen-item .etiqueta { font-size: 9pt; color: #666; }
-    
-    .seccion-asistencia { margin: 15px 0; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; }
-    .seccion-asistencia-header { background: #f8fafc; padding: 6px 10px; border-bottom: 1px solid #ddd; font-weight: bold; font-size: 9pt; display: flex; justify-content: space-between; }
-    .asistencia-grid { display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px; text-align: center; }
-    .asistencia-item .n { font-size: 12pt; font-weight: bold; }
-    .asistencia-item .l { font-size: 8pt; color: #666; text-transform: uppercase; }
-    .asistencia-asist { color: #1d624a; }
-    .asistencia-aus { color: #704040; }
-    .asistencia-tard { color: #846c3e; }
-    
-    .firmas { display: flex; justify-content: space-between; margin-top: 40px; padding-top: 20px; }
-    .firma { text-align: center; width: 45%; }
-    .firma .linea { border-top: 1px solid #333; margin-top: 50px; padding-top: 5px; }
-    .firma .nombre { font-weight: bold; font-size: 10pt; }
-    .firma .cargo { font-size: 8pt; color: #555; }
-    
-    .pie { margin-top: 30px; text-align: center; font-size: 8pt; color: #666; border-top: 1px solid #ccc; padding-top: 10px; }
-    .pie p { margin: 2px 0; }
-    
-    @media print {
-      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .no-print { display: none; }
-    }
   </style>
 </head>
 <body>
@@ -719,28 +616,6 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
   <title>Boleta Anual Consolidada - ${escapeHtml(est.nombre)}</title>
   <style>
     ${paperStyles.pageAt}
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Times New Roman', serif; font-size: ${paperStyles.fontSize}; line-height: 1.4; color: #333; }
-    .boleta { max-width: 190mm; margin: 0 auto; padding: 5mm; }
-    .header { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 15px; }
-    .logo { width: 100px; height: 100px; object-fit: contain; }
-    .header-text { text-align: center; flex: 1; }
-    .header-text h1 { font-size: 13pt; font-weight: bold; margin-bottom: 3px; text-transform: uppercase; }
-    .titulo-boleta { text-align: center; background: #1e293b; color: white; padding: 8px; margin: 15px 0; border: 1px solid #333; }
-    .info-estudiante { display: flex; justify-content: space-between; margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; }
-    .info-estudiante .label { font-weight: bold; }
-    table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-    th, td { border: 1px solid #333; padding: 6px; text-align: center; }
-    th { background: #e5e7eb; font-weight: bold; font-size: 9pt; }
-    .resumen-anual { display: flex; justify-content: space-between; margin: 20px 0; padding: 15px; background: #f8fafc; border: 2px solid #1e293b; }
-    .resumen-item .valor { font-size: 18pt; font-weight: bold; }
-    .seccion-asistencia { margin: 15px 0; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; }
-    .seccion-asistencia-header { background: #f8fafc; padding: 6px 10px; border-bottom: 1px solid #ddd; font-weight: bold; font-size: 9pt; }
-    .asistencia-grid { display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px; text-align: center; }
-    .asistencia-item .n { font-size: 12pt; font-weight: bold; }
-    .asistencia-item .l { font-size: 8pt; color: #666; }
-    .firmas { display: flex; justify-content: space-between; margin-top: 50px; }
-    .firma { text-align: center; width: 45%; border-top: 1px solid #333; padding-top: 5px; }
   </style>
 </head>
 <body>
@@ -748,7 +623,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     <div class="header">
       <img src="${window.location.origin}/0.png" alt="Logo" class="logo">
       <div class="header-text">
-        <h1>Centro Escolar Católico San José de la Montaña</h1>
+        <h1>Centro Escolar Católico<br>SAN JOSÉ DE LA MONTAÑA</h1>
         <p>Código: 88125 | San Salvador</p>
       </div>
       <img src="${window.location.origin}/0.png" alt="Logo" class="logo">
@@ -895,28 +770,6 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     const html = "<!DOCTYPE html><html><head><title>Boletas Consolidadas - " + (grado?.numero || "") + "\u00B0 " + escapeHtml(grado?.seccion || "") + "</title>" +
     "<style>" +
     "  " + paperStyles.pageAt +
-    "  * { margin: 0; padding: 0; box-sizing: border-box; }" +
-    "  body { font-family: 'Times New Roman', serif; font-size: " + paperStyles.fontSize + "; line-height: 1.4; color: #333; }" +
-    "  .boleta { max-width: 190mm; margin: 0 auto; padding: 5mm; }" +
-    "  .header { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 15px; }" +
-    "  .logo { width: 100px; height: 100px; object-fit: contain; }" +
-    "  .header-text { text-align: center; flex: 1; }" +
-    "  .header-text h1 { font-size: 13pt; font-weight: bold; margin-bottom: 3px; text-transform: uppercase; }" +
-    "  .titulo-boleta { text-align: center; background: #1e293b; color: white; padding: 8px; margin: 15px 0; border: 1px solid #333; }" +
-    "  .info-estudiante { display: flex; justify-content: space-between; margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; }" +
-    "  .info-estudiante .label { font-weight: bold; }" +
-    "  table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }" +
-    "  th, td { border: 1px solid #333; padding: 6px; text-align: center; }" +
-    "  th { background: #e5e7eb; font-weight: bold; font-size: 9pt; }" +
-    "  .resumen-anual { display: flex; justify-content: space-between; margin: 20px 0; padding: 15px; background: #f8fafc; border: 2px solid #1e293b; }" +
-    "  .resumen-item .valor { font-size: 18pt; font-weight: bold; }" +
-    "  .seccion-asistencia { margin: 15px 0; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; }" +
-    "  .seccion-asistencia-header { background: #f8fafc; padding: 6px 10px; border-bottom: 1px solid #ddd; font-weight: bold; font-size: 9pt; }" +
-    "  .asistencia-grid { display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px; text-align: center; }" +
-    "  .asistencia-item .n { font-size: 12pt; font-weight: bold; }" +
-    "  .asistencia-item .l { font-size: 8pt; color: #666; }" +
-    "  .firmas { display: flex; justify-content: space-between; margin-top: 50px; }" +
-    "  .firma { text-align: center; width: 45%; border-top: 1px solid #333; padding-top: 5px; }" +
     "  @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }" +
     "  </style></head><body>" + allBoletasHtml + "</body></html>";
 
@@ -991,28 +844,6 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
   <title>Boleta Anual con Recuperación - ${escapeHtml(est.nombre)}</title>
   <style>
     ${paperStyles.pageAt}
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Times New Roman', serif; font-size: ${paperStyles.fontSize}; line-height: 1.4; color: #333; }
-    .boleta { max-width: 190mm; margin: 0 auto; padding: 5mm; }
-    .header { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 15px; }
-    .logo { width: 100px; height: 100px; object-fit: contain; }
-    .header-text { text-align: center; flex: 1; }
-    .header-text h1 { font-size: 13pt; font-weight: bold; margin-bottom: 3px; text-transform: uppercase; }
-    .titulo-boleta { text-align: center; background: #1e293b; color: white; padding: 8px; margin: 15px 0; border: 1px solid #333; }
-    .info-estudiante { display: flex; justify-content: space-between; margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; }
-    .info-estudiante .label { font-weight: bold; }
-    table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-    th, td { border: 1px solid #333; padding: 5px; text-align: center; }
-    th { background: #e5e7eb; font-weight: bold; font-size: 9pt; }
-    .resumen-anual { display: flex; justify-content: space-between; margin: 20px 0; padding: 15px; background: #f8fafc; border: 2px solid #1e293b; }
-    .resumen-item .valor { font-size: 18pt; font-weight: bold; }
-    .seccion-asistencia { margin: 15px 0; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; }
-    .seccion-asistencia-header { background: #f8fafc; padding: 6px 10px; border-bottom: 1px solid #ddd; font-weight: bold; font-size: 9pt; }
-    .asistencia-grid { display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px; text-align: center; }
-    .asistencia-item .n { font-size: 12pt; font-weight: bold; }
-    .asistencia-item .l { font-size: 8pt; color: #666; }
-    .firmas { display: flex; justify-content: space-between; margin-top: 50px; }
-    .firma { text-align: center; width: 45%; border-top: 1px solid #333; padding-top: 5px; }
   </style>
 </head>
 <body>
@@ -1020,7 +851,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     <div class="header">
       <img src="${window.location.origin}/0.png" alt="Logo" class="logo">
       <div class="header-text">
-        <h1>Centro Escolar Católico San José de la Montaña</h1>
+        <h1>Centro Escolar Católico<br>SAN JOSÉ DE LA MONTAÑA</h1>
         <p>Código: 88125 | San Salvador</p>
       </div>
       <img src="${window.location.origin}/0.png" alt="Logo" class="logo">
@@ -1172,28 +1003,6 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     const html = "<!DOCTYPE html><html><head><title>Boletas Anuales con Recuperación - " + (grado?.numero || "") + "° " + escapeHtml(grado?.seccion || "") + "</title>" +
     "<style>" +
     "  " + paperStyles.pageAt +
-    "  * { margin: 0; padding: 0; box-sizing: border-box; }" +
-    "  body { font-family: 'Times New Roman', serif; font-size: " + paperStyles.fontSize + "; line-height: 1.4; color: #333; }" +
-    "  .boleta { max-width: 190mm; margin: 0 auto; padding: 5mm; }" +
-    "  .header { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 15px; }" +
-    "  .logo { width: 100px; height: 100px; object-fit: contain; }" +
-    "  .header-text { text-align: center; flex: 1; }" +
-    "  .header-text h1 { font-size: 13pt; font-weight: bold; margin-bottom: 3px; text-transform: uppercase; }" +
-    "  .titulo-boleta { text-align: center; background: #1e293b; color: white; padding: 8px; margin: 15px 0; border: 1px solid #333; }" +
-    "  .info-estudiante { display: flex; justify-content: space-between; margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; }" +
-    "  .info-estudiante .label { font-weight: bold; }" +
-    "  table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }" +
-    "  th, td { border: 1px solid #333; padding: 5px; text-align: center; }" +
-    "  th { background: #e5e7eb; font-weight: bold; font-size: 9pt; }" +
-    "  .resumen-anual { display: flex; justify-content: space-between; margin: 20px 0; padding: 15px; background: #f8fafc; border: 2px solid #1e293b; }" +
-    "  .resumen-item .valor { font-size: 18pt; font-weight: bold; }" +
-    "  .seccion-asistencia { margin: 15px 0; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; }" +
-    "  .seccion-asistencia-header { background: #f8fafc; padding: 6px 10px; border-bottom: 1px solid #ddd; font-weight: bold; font-size: 9pt; }" +
-    "  .asistencia-grid { display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px; text-align: center; }" +
-    "  .asistencia-item .n { font-size: 12pt; font-weight: bold; }" +
-    "  .asistencia-item .l { font-size: 8pt; color: #666; }" +
-    "  .firmas { display: flex; justify-content: space-between; margin-top: 50px; }" +
-    "  .firma { text-align: center; width: 45%; border-top: 1px solid #333; padding-top: 5px; }" +
     "  @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }" +
     "  </style></head><body>" + allBoletasHtml + "</body></html>";
 
@@ -1235,33 +1044,36 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
 <head><meta charset="UTF-8"><title>Boleta - ${escapeHtml(est.nombre)}</title>
 <!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->
 <style>
-  @page { size: letter; margin: 2cm; }
-  body { font-family: 'Times New Roman', serif; font-size: 11pt; line-height: 1.15; color: #000; }
-  .header { text-align: center; margin-bottom: 15px; border-bottom: 2px solid #000; padding-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 15px; }
-  .header-logo { width: 80px; height: 80px; }
+  @page { size: letter; margin: 1.5cm; }
+  body { font-family: 'Times New Roman', serif; font-size: 10pt; line-height: 1.15; color: #000; }
+  .header { text-align: center; margin-bottom: 8px; border-bottom: 2px solid #000; padding-bottom: 8px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .header-logo { width: 60px; height: 60px; }
   .header-text { text-align: center; flex: 1; }
-  .header h1 { font-size: 13pt; font-weight: bold; text-transform: uppercase; margin: 0; }
-  .header h2 { font-size: 10pt; font-weight: normal; margin: 2px 0; }
-  .titulo-boleta { text-align: center; background: #f3f4f6; padding: 6px; margin: 15px 0; border: 1px solid #000; }
-  .titulo-boleta h3 { font-size: 12pt; text-transform: uppercase; margin: 0; }
-  .info-estudiante { margin-bottom: 15px; }
+  .header h1 { font-size: 11pt; font-weight: bold; text-transform: uppercase; margin: 0; line-height: 1.3; }
+  .header h2 { font-size: 9pt; font-weight: normal; margin: 1px 0; }
+  .titulo-boleta { text-align: center; background: #f3f4f6; padding: 5px; margin: 8px 0; border: 1px solid #000; }
+  .titulo-boleta h3 { font-size: 11pt; text-transform: uppercase; margin: 0; }
+  .info-estudiante { margin-bottom: 8px; }
   .info-estudiante p { margin: 2px 0; }
-  table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-  th, td { border: 1px solid #000; padding: 4px 6px; text-align: center; }
-  th { background: #e5e7eb; font-weight: bold; font-size: 9pt; }
-  td { font-size: 10pt; }
-  .resumen { margin: 20px 0; padding: 8px; border: 2px solid #000; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+  th, td { border: 1px solid #000; padding: 3px 5px; text-align: center; }
+  th { background: #e5e7eb; font-weight: bold; font-size: 8pt; }
+  td { font-size: 9pt; }
+  .resumen { margin: 10px 0; padding: 6px; border: 2px solid #1d624a; }
   .resumen-item { display: inline-block; width: 30%; text-align: center; }
-  .observaciones { margin: 15px 0; padding: 10px; border: 1px solid #000; min-height: 80px; }
-  .firmas { margin-top: 50px; }
-  .firma { display: inline-block; width: 45%; text-align: center; border-top: 1px solid #000; padding-top: 5px; }
-  .pie { margin-top: 30px; text-align: center; font-size: 8pt; border-top: 1px solid #ccc; padding-top: 10px; }
+  .resumen-item .valor { font-size: 13pt; font-weight: bold; color: #1d624a; }
+  .resumen-item.condicionado .valor { color: #b8912a; }
+  .resumen-item.reprobado .valor { color: #704040; }
+  .observaciones { margin: 8px 0; padding: 6px; border: 1px solid #000; min-height: 45px; }
+  .firmas { margin-top: 20px; }
+  .firma { display: inline-block; width: 45%; text-align: center; border-top: 1px solid #000; padding-top: 3px; }
+  .pie { margin-top: 12px; text-align: center; font-size: 7pt; border-top: 1px solid #ccc; padding-top: 6px; }
 </style></head>
 <body>
   <div class="header">
     <img src="${window.location.origin}/0.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
     <div class="header-text">
-      <h1>Centro Escolar Católico San José de la Montaña</h1>
+      <h1>Centro Escolar Católico<br>SAN JOSÉ DE LA MONTAÑA</h1>
       <h2>Código: 88125 | San Salvador</h2>
     </div>
     <img src="${window.location.origin}/0.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">

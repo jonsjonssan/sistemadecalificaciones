@@ -14,6 +14,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CICLOS } from "@/lib/ciclos";
 import { escapeHtml } from "@/lib/utils/index";
+import { getBoletaCSS } from "@/lib/boleta-template";
 
 interface Grado {
   id: string;
@@ -69,8 +70,8 @@ export function DescargaBoletasPorCiclo({ grados, darkMode, configuracion, paper
   const pctEx = 0.30;
 
   const paperStyles = paperSize === "a4"
-    ? { pageAt: `@page { size: a4; margin: 10mm; }`, fontSize: "10pt" }
-    : { pageAt: `@page { size: letter; margin: 15mm; }`, fontSize: "11pt" };
+    ? { pageAt: getBoletaCSS("a4", "9pt"), fontSize: "9pt" }
+    : { pageAt: getBoletaCSS("letter", "10pt"), fontSize: "10pt" };
 
   const fetchGradoData = async (gradoId: string): Promise<GradoData | null> => {
     try {
@@ -214,7 +215,7 @@ export function DescargaBoletasPorCiclo({ grados, darkMode, configuracion, paper
             <div class="header">
               <img src="${window.location.origin}/0.png" alt="Logo" class="logo" onerror="this.style.display='none'">
               <div class="header-text">
-                <h1>Centro Escolar Católico San José de la Montaña</h1>
+                <h1>Centro Escolar Católico<br>SAN JOSÉ DE LA MONTAÑA</h1>
                 <h2>Centro Educativo Católico</h2>
                 <p class="codigo">Código: 88125 | Departamento: 06-San Salvador | Municipio: 0614 San Salvador</p>
               </div>
@@ -306,58 +307,6 @@ export function DescargaBoletasPorCiclo({ grados, darkMode, configuracion, paper
   <title>${titulo}</title>
   <style>
     ${paperStyles.pageAt}
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Times New Roman', serif; font-size: ${paperStyles.fontSize}; line-height: 1.4; color: #333; }
-    .boleta { max-width: 190mm; margin: 0 auto; padding: 5mm; }
-    
-    .header { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; border-bottom: 2px solid #333; padding-bottom: 15px; }
-    .logo { width: 100px; height: 100px; object-fit: contain; }
-    .header-text { text-align: center; flex: 1; }
-    .header-text h1 { font-size: 13pt; font-weight: bold; margin-bottom: 3px; text-transform: uppercase; }
-    .header-text h2 { font-size: 10pt; font-weight: normal; margin-bottom: 2px; }
-    .header-text .codigo { font-size: 8pt; color: #555; }
-    
-    .titulo-boleta { text-align: center; background: #f3f4f6; padding: 8px; margin: 15px 0; border: 1px solid #333; }
-    .titulo-boleta h3 { font-size: 12pt; text-transform: uppercase; letter-spacing: 1px; }
-    
-    .info-estudiante { display: flex; justify-content: space-between; margin-bottom: 15px; padding: 10px; background: #fafafa; border: 1px solid #ddd; border-radius: 4px; }
-    .info-estudiante p { margin: 3px 0; }
-    .info-estudiante .label { font-weight: bold; }
-    
-    table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-    th, td { border: 1px solid #333; padding: 5px 8px; text-align: center; }
-    th { background: #e5e7eb; font-weight: bold; font-size: 9pt; }
-    td { font-size: 10pt; }
-    
-    .resumen { display: flex; justify-content: space-between; margin: 20px 0; padding: 10px; background: #f4f6f2; border: 2px solid #1d624a; border-radius: 4px; }
-    .resumen-item { text-align: center; }
-    .resumen-item .valor { font-size: 16pt; font-weight: bold; color: #1d624a; }
-    .resumen-item.reprobado .valor { color: #704040; }
-    .resumen-item.condicionado .valor { color: #846c3e; }
-    .resumen-item .etiqueta { font-size: 9pt; color: #666; }
-    
-    .seccion-asistencia { margin: 15px 0; border: 1px solid #ddd; border-radius: 4px; overflow: hidden; }
-    .seccion-asistencia-header { background: #f8fafc; padding: 6px 10px; border-bottom: 1px solid #ddd; font-weight: bold; font-size: 9pt; display: flex; justify-content: space-between; }
-    .asistencia-grid { display: grid; grid-template-columns: repeat(5, 1fr); padding: 10px; text-align: center; }
-    .asistencia-item .n { font-size: 12pt; font-weight: bold; }
-    .asistencia-item .l { font-size: 8pt; color: #666; text-transform: uppercase; }
-    .asistencia-asist { color: #1d624a; }
-    .asistencia-aus { color: #704040; }
-    .asistencia-tard { color: #846c3e; }
-    
-    .firmas { display: flex; justify-content: space-between; margin-top: 40px; padding-top: 20px; }
-    .firma { text-align: center; width: 45%; }
-    .firma .linea { border-top: 1px solid #333; margin-top: 50px; padding-top: 5px; }
-    .firma .nombre { font-weight: bold; font-size: 10pt; }
-    .firma .cargo { font-size: 8pt; color: #555; }
-    
-    .pie { margin-top: 30px; text-align: center; font-size: 8pt; color: #666; border-top: 1px solid #ccc; padding-top: 10px; }
-    .pie p { margin: 2px 0; }
-    
-    @media print {
-      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .no-print { display: none; }
-    }
   </style>
 </head>
 <body>

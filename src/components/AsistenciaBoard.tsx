@@ -893,7 +893,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                       <Button
                         size="sm"
                         disabled={asistenciaBloqueada}
-                        className={`flex-1 sm:flex-none h-9 text-xs font-semibold px-3 sm:px-4 shadow-md transition-all duration-200 hover:shadow-lg ${darkMode ? 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white' : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white'}`}
+                        className={`flex-1 sm:flex-none h-9 text-xs font-semibold px-3 sm:px-4 shadow-sm transition-all duration-200 hover:shadow-md ${darkMode ? 'bg-primary hover:bg-primary/90 text-primary-foreground' : 'bg-primary hover:bg-primary/90 text-primary-foreground'}`}
                         onClick={() => {
                           if (asistenciaBloqueada) return;
                           const newAsistencias: Record<string, string> = {};
