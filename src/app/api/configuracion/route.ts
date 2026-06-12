@@ -12,12 +12,17 @@ export async function GET() {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    let config = await sql`SELECT * FROM "ConfiguracionSistema" LIMIT 1`;
+    const escuelaId = (session as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: 'Escuela no identificada' }, { status: 400 });
+    }
+
+    let config = await sql`SELECT * FROM "ConfiguracionSistema" WHERE "escuelaId" = ${escuelaId} LIMIT 1`;
 
     if (config.length === 0) {
       const id = randomUUID();
-      await sql`INSERT INTO "ConfiguracionSistema" (id, "añoEscolar", escuela, "nombreDirectora", "umbralCondicionado", "umbralAprobado") VALUES (${id}, 2026, 'Centro Escolar', '_______________________________', 4.50, 6.50)`;
-      config = await sql`SELECT * FROM "ConfiguracionSistema" LIMIT 1`;
+      await sql`INSERT INTO "ConfiguracionSistema" (id, "escuelaId", "añoEscolar", "nombreDirectora", "umbralCondicionado", "umbralAprobado") VALUES (${id}, ${escuelaId}, 2026, '_______________________________', 4.50, 6.50)`;
+      config = await sql`SELECT * FROM "ConfiguracionSistema" WHERE "escuelaId" = ${escuelaId} LIMIT 1`;
     }
 
     // Auto-corregir umbrales desfasados en BD (4.49/6.49 → 4.50/6.50)
@@ -32,7 +37,7 @@ export async function GET() {
       const fixedUc = ucNeedsFix || ucIsInvalid || Number.isNaN(ucRaw) ? 4.50 : ucRaw;
       const fixedUa = uaNeedsFix || uaIsInvalid || Number.isNaN(uaRaw) ? 6.50 : uaRaw;
       await sql`UPDATE "ConfiguracionSistema" SET "umbralCondicionado" = ${fixedUc}, "umbralAprobado" = ${fixedUa}, "updatedAt" = NOW() WHERE id = ${row.id}`;
-      config = await sql`SELECT * FROM "ConfiguracionSistema" LIMIT 1`;
+      config = await sql`SELECT * FROM "ConfiguracionSistema" WHERE "escuelaId" = ${escuelaId} LIMIT 1`;
     }
 
     return NextResponse.json(config[0]);
@@ -59,6 +64,8 @@ export async function PUT(request: NextRequest) {
 
 
 
+    const escuelaId = (session as any).escuelaId;
+
     let body;
     try {
       body = await request.json();
@@ -68,7 +75,6 @@ export async function PUT(request: NextRequest) {
 
     const {
       añoEscolar,
-      escuela,
       nombreDirectora,
       umbralRecuperacion,
       umbralCondicionado,
@@ -89,7 +95,7 @@ export async function PUT(request: NextRequest) {
 
     let config;
     try {
-      config = await sql`SELECT * FROM "ConfiguracionSistema" LIMIT 1`;
+      config = await sql`SELECT * FROM "ConfiguracionSistema" WHERE "escuelaId" = ${escuelaId} LIMIT 1`;
     } catch (selectErr: any) {
       console.error('[configuracion/PUT] SELECT error:', selectErr);
       return NextResponse.json({ error: 'Error al leer configuración', details: selectErr?.message }, { status: 500 });
@@ -97,7 +103,6 @@ export async function PUT(request: NextRequest) {
 
     // Normalizar valores para SQL
     const valAño = typeof añoEscolar === 'number' ? añoEscolar : (config[0]?.añoEscolar ?? 2026);
-    const valEscuela = typeof escuela === 'string' ? escuela : (config[0]?.escuela ?? 'Centro Escolar');
     const valDirectora = typeof nombreDirectora === 'string' ? nombreDirectora : (config[0]?.nombreDirectora ?? '_______________________________');
     const valUmbralRec = typeof umbralRecuperacion === 'number' && !isNaN(umbralRecuperacion) ? umbralRecuperacion : parseFloat(config[0]?.umbralRecuperacion ?? '5.0');
 
@@ -156,14 +161,14 @@ export async function PUT(request: NextRequest) {
       if (!config || config.length === 0) {
         const id = randomUUID();
         await sql`INSERT INTO "ConfiguracionSistema" (
-          id, "añoEscolar", escuela, "nombreDirectora",
+          id, "escuelaId", "añoEscolar", "nombreDirectora",
           "umbralRecuperacion", "umbralCondicionado", "umbralAprobado",
           "notaMinima", "notaMaxima",
           "maxHistorialCelda",
           "usarIntervaloReprobado", "usarIntervaloCondicionado", "usarIntervaloAprobado",
           "fechaInicioT1", "fechaFinT1", "fechaInicioT2", "fechaFinT2", "fechaInicioT3", "fechaFinT3"
         ) VALUES (
-          ${id}, ${valAño}, ${valEscuela}, ${valDirectora},
+          ${id}, ${escuelaId}, ${valAño}, ${valDirectora},
           ${valUmbralRec}, ${valUmbralCond}, ${valUmbralApr},
           ${valNotaMinima}, ${valNotaMaxima},
           ${valMaxHist},
@@ -177,7 +182,6 @@ export async function PUT(request: NextRequest) {
         }
         await sql`UPDATE "ConfiguracionSistema" SET
           "añoEscolar" = ${valAño},
-          escuela = ${valEscuela},
           "nombreDirectora" = ${valDirectora},
           "umbralRecuperacion" = ${valUmbralRec},
           "umbralCondicionado" = ${valUmbralCond},
@@ -198,7 +202,7 @@ export async function PUT(request: NextRequest) {
         WHERE id = ${row.id}`;
       }
 
-      config = await sql`SELECT * FROM "ConfiguracionSistema" LIMIT 1`;
+      config = await sql`SELECT * FROM "ConfiguracionSistema" WHERE "escuelaId" = ${escuelaId} LIMIT 1`;
       return NextResponse.json(config[0]);
     } catch (sqlErr: any) {
       console.error('[configuracion/PUT] SQL error:', sqlErr);
@@ -221,6 +225,8 @@ export async function POST(request: NextRequest) {
     const adminResult = await requireAdmin();
     if (adminResult.error) return adminResult.error;
 
+    const escuelaId = (adminResult.session as any).escuelaId;
+
     let body;
     try {
       body = await request.json();
@@ -230,7 +236,7 @@ export async function POST(request: NextRequest) {
 
     let config;
     try {
-      config = await sql`SELECT * FROM "ConfiguracionSistema" LIMIT 1`;
+      config = await sql`SELECT * FROM "ConfiguracionSistema" WHERE "escuelaId" = ${escuelaId} LIMIT 1`;
     } catch (selectErr: any) {
       return NextResponse.json({ error: 'Error al leer configuración', details: selectErr?.message }, { status: 500 });
     }
@@ -263,7 +269,7 @@ export async function POST(request: NextRequest) {
       "updatedAt" = NOW()
     WHERE id = ${row.id}`;
 
-    config = await sql`SELECT * FROM "ConfiguracionSistema" LIMIT 1`;
+    config = await sql`SELECT * FROM "ConfiguracionSistema" WHERE "escuelaId" = ${escuelaId} LIMIT 1`;
     return NextResponse.json(config[0]);
   } catch (error: any) {
     console.error('[configuracion/POST] Unexpected error:', error);

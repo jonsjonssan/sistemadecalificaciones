@@ -380,6 +380,8 @@ export async function POST(request: NextRequest) {
       recuperacion,
     } = parsed.data;
 
+    const escuelaId = (session as any).escuelaId || '';
+
     if (!canAccessMateria(session, materiaId)) {
       return NextResponse.json({ error: "No tiene acceso a esta materia" }, { status: 403 });
     }
@@ -570,6 +572,7 @@ export async function POST(request: NextRequest) {
         calificacionAC: acFinal,
         calificacionAI: aiFinal,
         promedioFinal: promFinal,
+        escuelaId,
       };
       if (examenVal !== undefined) updateData.examenTrimestral = examenVal;
       if (recupVal !== undefined) updateData.recuperacion = recupVal;
@@ -588,6 +591,7 @@ export async function POST(request: NextRequest) {
           calificacionAC: acFinal,
           calificacionAI: aiFinal,
           promedioFinal: promFinal,
+          escuelaId,
         };
         if (examenVal !== undefined) createData.examenTrimestral = examenVal;
         if (recupVal !== undefined) createData.recuperacion = recupVal;
@@ -607,6 +611,7 @@ export async function POST(request: NextRequest) {
             tipo: n.tipo,
             numeroActividad: n.numeroActividad,
             nota: n.nota,
+            escuelaId,
           })),
         });
       }
@@ -632,6 +637,7 @@ export async function POST(request: NextRequest) {
               historialEntries.push({
                 calificacionId: result.id,
                 usuarioId: session.id,
+                escuelaId,
                 tipoCampo: key,
                 valorAnterior: oldVal,
                 valorNuevo: newVal,
@@ -656,6 +662,7 @@ export async function POST(request: NextRequest) {
               historialEntries.push({
                 calificacionId: result.id,
                 usuarioId: session.id,
+                escuelaId,
                 tipoCampo: key,
                 valorAnterior: oldVal,
                 valorNuevo: newVal,
@@ -680,6 +687,7 @@ export async function POST(request: NextRequest) {
               historialEntries.push({
                 calificacionId: result.id,
                 usuarioId: session.id,
+                escuelaId,
                 tipoCampo: key,
                 valorAnterior: oldVal,
                 valorNuevo: newVal,
@@ -744,7 +752,7 @@ export async function POST(request: NextRequest) {
             let maxHist = 10;
             try {
               const configHist = await tx.$queryRaw<{ maxHistorialCelda: number | null }[]>`
-                SELECT "maxHistorialCelda" FROM "ConfiguracionSistema" LIMIT 1
+                SELECT "maxHistorialCelda" FROM "ConfiguracionSistema" WHERE "escuelaId" = ${escuelaId} LIMIT 1
               `;
               maxHist = configHist[0]?.maxHistorialCelda ?? 10;
             } catch {
@@ -794,6 +802,7 @@ export async function POST(request: NextRequest) {
           await tx.auditLog.create({
             data: {
               usuarioId: session.id,
+              escuelaId,
               accion: "UPDATE",
               entidad: "Calificacion",
               entidadId: result.id,
@@ -838,6 +847,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
+    const escuelaId = (session as any).escuelaId || '';
     const { searchParams } = new URL(request.url);
     const estudianteId = searchParams.get("estudianteId");
     const estudianteIds = searchParams.get("estudianteIds"); // Array de IDs separado por comas
@@ -935,6 +945,7 @@ export async function DELETE(request: NextRequest) {
         await db.auditLog.create({
           data: {
             usuarioId: session.id,
+            escuelaId,
             accion: "DELETE",
             entidad: "Calificacion",
             detalles: JSON.stringify({
@@ -1027,6 +1038,7 @@ export async function DELETE(request: NextRequest) {
         await db.auditLog.create({
           data: {
             usuarioId: session.id,
+            escuelaId,
             accion: "DELETE",
             entidad: "Calificacion",
             detalles: JSON.stringify({
@@ -1123,6 +1135,7 @@ export async function DELETE(request: NextRequest) {
         await db.auditLog.create({
           data: {
             usuarioId: session.id,
+            escuelaId,
             accion: "DELETE",
             entidad: "Calificacion",
             detalles: JSON.stringify({

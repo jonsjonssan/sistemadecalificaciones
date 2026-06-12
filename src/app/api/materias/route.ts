@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
     const gradoId = searchParams.get("gradoId");
     const todas = searchParams.get("todas");
     const año = searchParams.get("año") ? parseInt(searchParams.get("año")!) : 2026;
+    const escuelaId = (session as any).escuelaId;
 
     const isAdminUser = isAdmin(session.rol);
     const materiasArr = (session.asignaturasAsignadas || []) as Array<{ id: string; gradoId: string }>;
@@ -34,12 +35,13 @@ export async function GET(request: NextRequest) {
       if (!isAdminUser && materiaIdsAsignadas.length === 0) {
         return NextResponse.json([]);
       }
+      const baseFilter = escuelaId ? `AND m."escuelaId" = '${escuelaId}'` : '';
       if (isAdminUser) {
         materias = await sql`
           SELECT m.*, g.id as grado_id, g.numero as grado_numero, g.seccion as grado_seccion
           FROM "Materia" m
           JOIN "Grado" g ON m."gradoId" = g.id
-          WHERE g.año = ${año}
+          WHERE g.año = ${año} AND m."escuelaId" = ${escuelaId || ''}
           ORDER BY g.numero, m.nombre
         `;
       } else {
@@ -47,7 +49,7 @@ export async function GET(request: NextRequest) {
           SELECT m.*, g.id as grado_id, g.numero as grado_numero, g.seccion as grado_seccion
           FROM "Materia" m
           JOIN "Grado" g ON m."gradoId" = g.id
-          WHERE g.año = ${año} AND g.id = ANY(${gradosAsignados}::text[])
+          WHERE g.año = ${año} AND g.id = ANY(${gradosAsignados}::text[]) AND m."escuelaId" = ${escuelaId || ''}
           ORDER BY g.numero, m.nombre
         `;
       }
@@ -70,7 +72,7 @@ export async function GET(request: NextRequest) {
         SELECT m.*, g.id as grado_id, g.numero as grado_numero, g.seccion as grado_seccion
         FROM "Materia" m
         JOIN "Grado" g ON m."gradoId" = g.id
-        WHERE m."gradoId" = ${gradoId} AND g.año = ${año}
+        WHERE m."gradoId" = ${gradoId} AND g.año = ${año} AND m."escuelaId" = ${escuelaId || ''}
         ORDER BY m.nombre
       `;
       return NextResponse.json(materias);
@@ -84,7 +86,7 @@ export async function GET(request: NextRequest) {
         SELECT m.*, g.id as grado_id, g.numero as grado_numero, g.seccion as grado_seccion
         FROM "Materia" m
         JOIN "Grado" g ON m."gradoId" = g.id
-        WHERE g.año = ${año}
+        WHERE g.año = ${año} AND m."escuelaId" = ${escuelaId || ''}
         ORDER BY g.numero, m.nombre
       `;
     } else {
@@ -92,7 +94,7 @@ export async function GET(request: NextRequest) {
         SELECT m.*, g.id as grado_id, g.numero as grado_numero, g.seccion as grado_seccion
         FROM "Materia" m
         JOIN "Grado" g ON m."gradoId" = g.id
-        WHERE g.año = ${año} AND g.id = ANY(${gradosAsignados}::text[])
+        WHERE g.año = ${año} AND g.id = ANY(${gradosAsignados}::text[]) AND m."escuelaId" = ${escuelaId || ''}
         ORDER BY g.numero, m.nombre
       `;
     }
@@ -122,6 +124,7 @@ export async function POST(request: NextRequest) {
 
     const data = await request.json();
     const { nombre, gradoId } = data;
+    const escuelaId = (session as any).escuelaId;
 
     if (!nombre || !gradoId) {
       return NextResponse.json({ error: "Nombre y grado son requeridos" }, { status: 400 });
@@ -131,6 +134,7 @@ export async function POST(request: NextRequest) {
       data: {
         nombre,
         gradoId,
+        escuelaId: escuelaId || '',
       },
     });
 

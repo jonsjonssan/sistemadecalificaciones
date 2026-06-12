@@ -27,9 +27,23 @@ model Escuela {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  usuarios        Usuario[]
-  grados          Grado[]
-  configuraciones ConfiguracionSistema[]
+  usuarios              Usuario[]
+  grados                Grado[]
+  estudiantes           Estudiante[]
+  materias              Materia[]
+  docentesMateria       DocenteMateria[]
+  configActividades     ConfigActividad[]
+  recuperacionesAnuales RecuperacionAnual[]
+  calificaciones        Calificacion[]
+  notasActividad        NotaActividad[]
+  asistencias           Asistencia[]
+  observaciones         ObservacionBoleta[]
+  auditLogs             AuditLog[]
+  historialCambios      HistorialCalificacion[]
+  loginSessions         LoginSession[]
+  agentAlertas          AgentAlert[]
+  agentLogs             AgentLog[]
+  configuraciones       ConfiguracionSistema[]
 
   @@index([codigo])
   @@index([activo])
