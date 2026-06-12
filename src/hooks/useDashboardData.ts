@@ -45,6 +45,8 @@ export function useDashboardData() {
   const [loading, setLoading] = useState(true);
   const [dataLoading, setDataLoading] = useState(false);
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
+  const [escuelaSeleccionada, setEscuelaSeleccionada] = useState<string>("");
+  const [escuelas, setEscuelas] = useState<any[]>([]);
   const [loginError, setLoginError] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -408,6 +410,22 @@ export function useDashboardData() {
       .catch(() => {});
   }, []);
 
+  // Cargar escuelas disponibles
+  useEffect(() => {
+    fetch("/api/escuelas", { cache: "no-store" })
+      .then(res => res.json())
+      .then(data => {
+        if (data.escuelas && data.escuelas.length > 0) {
+          setEscuelas(data.escuelas);
+          // Si solo hay una escuela, seleccionarla automáticamente
+          if (data.escuelas.length === 1) {
+            setEscuelaSeleccionada(data.escuelas[0].id);
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   // Data loading functions
   const loadGrados = useCallback(async () => {
     try {
@@ -538,7 +556,7 @@ export function useDashboardData() {
     setLoginLoading(true);
     setLoginError("");
     try {
-      const res = await fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(loginForm) });
+      const res = await fetch("/api/auth/login", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ ...loginForm, escuelaId: escuelaSeleccionada }) });
       const data = await res.json();
       if (res.ok && data.usuario) {
         setUsuario(data.usuario);
@@ -1335,6 +1353,7 @@ export function useDashboardData() {
     // Auth
     usuario, setUsuario, loading, dataLoading, loginForm, setLoginForm, loginError, loginLoading, googleLoading, googleButtonRef,
     initialized, initSystem, checkAuth, handleLogin, handleLogout,
+    escuelas, escuelaSeleccionada, setEscuelaSeleccionada,
     grados, gradosFiltrados, asignaturasFiltradas, estudiantes, asignaturas, todasAsignaturas, calificaciones,
     configActual, configsGrado, usuarios, configuracion,
     gradoSeleccionado, trimestreSeleccionado, asignaturaSeleccionada, activeTab,

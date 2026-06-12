@@ -174,6 +174,9 @@ export default function Home() {
       loginLoading={loginLoading}
       googleLoading={d.googleLoading}
       googleButtonRef={d.googleButtonRef}
+      escuelas={d.escuelas}
+      escuelaSeleccionada={d.escuelaSeleccionada}
+      setEscuelaSeleccionada={d.setEscuelaSeleccionada}
     />;
   }
 
@@ -1075,7 +1078,7 @@ export default function Home() {
         </>
       )}
 
-      <footer className="py-2 text-center text-xs hidden md:block bg-card text-muted-foreground">© 2026 Centro Escolar Católico San José de la Montaña</footer>
+      <footer className="py-2 text-center text-xs hidden md:block bg-card text-muted-foreground">© {new Date().getFullYear()} Sistema de Calificaciones - Precisión y Progreso</footer>
 
       {/* Mobile bottom nav */}
       <MobileTabBar

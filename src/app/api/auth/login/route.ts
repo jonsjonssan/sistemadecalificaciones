@@ -70,20 +70,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { email, password } = await request.json();
+    const { email, password, escuelaId } = await request.json();
 
     if (!email || !password) {
       return NextResponse.json({ error: "Email y contraseña son requeridos" }, { status: 400 });
     }
 
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Debe seleccionar una escuela" }, { status: 400 });
+    }
+
     const usuario = await sql`
-      SELECT id, email, nombre, rol, activo, password FROM "Usuario" WHERE LOWER(email) = LOWER(${email})
+      SELECT id, email, nombre, rol, activo, password, "escuelaId" FROM "Usuario" WHERE LOWER(email) = LOWER(${email}) AND "escuelaId" = ${escuelaId}
     `;
 
     if (usuario.length === 0) {
       // Timing-safe: comparar contra un hash dummy para evitar enumeración por tiempo
       await bcrypt.compare(password, "$2a$10$timing.safe.dummy.hash.for.constant.time.compare");
-      return NextResponse.json({ error: "Credenciales inválidas" }, { status: 401 });
+      return NextResponse.json({ error: "Credenciales inválidas o usuario no pertenece a esta escuela" }, { status: 401 });
     }
 
     const hashMatch = await bcrypt.compare(password, usuario[0].password);
@@ -105,6 +109,11 @@ export async function POST(request: NextRequest) {
       WHERE dm."docenteId" = ${usuario[0].id}
     `;
 
+    // Obtener datos de la escuela
+    const escuela = await sql`
+      SELECT id, nombre, codigo, logo, "colorPrimario" FROM "Escuela" WHERE id = ${escuelaId}
+    `;
+
     const cookieStore = await cookies();
 
     const userData: any = {
@@ -112,6 +121,8 @@ export async function POST(request: NextRequest) {
       email: usuario[0].email,
       nombre: usuario[0].nombre,
       rol: usuario[0].rol,
+      escuelaId: usuario[0].escuelaId,
+      escuela: escuela[0] || null,
       gradosAsignados: [],
       asignaturasAsignadas: materiasAsignadas.map((m: any) => ({
         id: m.id,
@@ -139,6 +150,7 @@ export async function POST(request: NextRequest) {
 
       await createAuditLog({
         usuarioId: usuario[0].id,
+        escuelaId: escuelaId,
         accion: "LOGIN",
         entidad: "Usuario",
         entidadId: usuario[0].id,
@@ -146,8 +158,8 @@ export async function POST(request: NextRequest) {
       });
 
       await sql`
-        INSERT INTO "LoginSession" ("id", "usuarioId", "ip", "userAgent", "loginAt")
-        VALUES (gen_random_uuid()::text, ${usuario[0].id}, ${ip}, ${userAgent}, NOW())
+        INSERT INTO "LoginSession" ("id", "usuarioId", "escuelaId", "ip", "userAgent", "loginAt")
+        VALUES (gen_random_uuid()::text, ${usuario[0].id}, ${escuelaId}, ${ip}, ${userAgent}, NOW())
         RETURNING id
       `;
       

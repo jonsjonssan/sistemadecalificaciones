@@ -4,8 +4,9 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { GraduationCap, BookOpen, Lock, Mail, School } from "lucide-react";
+import { GraduationCap, BookOpen, Lock, Mail, School, Building2 } from "lucide-react";
 import { useState } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface LoginViewProps {
   initialized: boolean;
@@ -17,13 +18,15 @@ interface LoginViewProps {
   loginLoading: boolean;
   googleLoading: boolean;
   googleButtonRef: React.RefObject<HTMLDivElement | null>;
+  escuelas: any[];
+  escuelaSeleccionada: string;
+  setEscuelaSeleccionada: (id: string) => void;
 }
-
-
 
 export default function LoginView({
   initialized, initSystem, loginForm, setLoginForm, handleLogin,
   loginError, loginLoading, googleLoading, googleButtonRef,
+  escuelas, escuelaSeleccionada, setEscuelaSeleccionada,
 }: LoginViewProps) {
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [logoError, setLogoError] = useState(false);
@@ -47,7 +50,7 @@ export default function LoginView({
           <div className="flex flex-col items-center mb-8">
             <div className="relative mb-5">
               <div className="w-20 h-20 rounded-2xl bg-primary shadow-lg shadow-primary/20 flex items-center justify-center">
-                {logoError ? <School className="h-10 w-10 text-primary-foreground" /> : <img src="/0.png" alt="Logo" className="h-12 w-12 object-contain" onError={() => setLogoError(true)} />}
+                {logoError ? <School className="h-10 w-10 text-primary-foreground" /> : <img src="/logo-sistema.png" alt="Logo" className="h-12 w-12 object-contain" onError={() => setLogoError(true)} />}
               </div>
               <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-400 border-2 border-background flex items-center justify-center">
                 <GraduationCap className="h-3 w-3 text-white" />
@@ -55,7 +58,7 @@ export default function LoginView({
             </div>
             <h1 className="font-display text-xl text-foreground font-bold tracking-tight">Sistema de Calificaciones</h1>
             <p className="text-sm text-muted-foreground/70 mt-1 text-center leading-relaxed">
-              Centro Escolar Católico<br />San José de la Montaña
+              Precisión y Progreso
             </p>
           </div>
 
@@ -82,6 +85,26 @@ export default function LoginView({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
+              {/* Selector de Escuela */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider">Seleccionar Escuela o Centro Escolar</Label>
+                <div className={`relative transition-all duration-200 ${focusedField === 'escuela' ? 'ring-2 ring-primary/20 rounded-xl' : ''}`}>
+                  <Building2 className={`absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 transition-colors z-10 ${focusedField === 'escuela' ? 'text-primary' : 'text-muted-foreground/40'}`} aria-hidden="true" />
+                  <Select value={escuelaSeleccionada} onValueChange={setEscuelaSeleccionada} required>
+                    <SelectTrigger className="h-12 pl-10 text-base rounded-xl bg-card border-border focus:border-primary w-full">
+                      <SelectValue placeholder="Selecciona una escuela..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {escuelas.map((escuela: any) => (
+                        <SelectItem key={escuela.id} value={escuela.id}>
+                          {escuela.nombre}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
               <div className="space-y-1.5">
                 <Label htmlFor="login-email" className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider">Correo electrónico</Label>
                 <div className={`relative transition-all duration-200 ${focusedField === 'email' ? 'ring-2 ring-primary/20 rounded-xl' : ''}`}>
@@ -132,7 +155,7 @@ export default function LoginView({
               <Button
                 type="submit"
                 className="w-full h-12 text-base font-semibold rounded-xl bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 disabled:opacity-60"
-                disabled={loginLoading}
+                disabled={loginLoading || !escuelaSeleccionada}
               >
                 {loginLoading ? (
                   <span className="flex items-center gap-2">

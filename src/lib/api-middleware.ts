@@ -63,6 +63,8 @@ export interface SessionUsuario {
   email: string;
   nombre: string;
   rol: string;
+  escuelaId: string;
+  escuela?: { id: string; nombre: string; codigo?: string; logo?: string; colorPrimario?: string };
   gradoId?: string;
   materias?: Array<{ id: string; nombre: string; gradoId: string; grado?: { numero: number; seccion: string } }>;
   gradosAsignados?: Array<{ id: string; numero: number; seccion: string }>;
@@ -93,7 +95,7 @@ export async function requireSession() {
 export async function requireAdmin() {
   const { session, error } = await requireSession();
   if (error) return { error };
-  if (!["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) {
+  if (!["superadmin", "admin", "admin-directora", "admin-codirectora"].includes(session.rol)) {
     return { error: NextResponse.json({ error: "Solo administradores pueden realizar esta acción" }, { status: 403 }) };
   }
   return { session };

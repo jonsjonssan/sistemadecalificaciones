@@ -10,29 +10,58 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Escuela/Centro Educativo (multi-tenencia)
+model Escuela {
+  id              String   @id @default(cuid())
+  nombre          String
+  codigo          String?  @unique
+  direccion       String?
+  distrito        String?
+  tipo            String   @default("publico") // "publico", "privado", "religioso"
+  planEstudio     String   @default("general") // "general", "catolico", "tecnico", etc.
+  escalaNotas     String   @default("0-10")    // "0-10", "0-100", "A-F"
+  periodos        String   @default("trimestres") // "trimestres", "semestres", "bimestres"
+  logo            String?  // URL o path del logo
+  colorPrimario   String   @default("#1a3a2a")
+  activo          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  usuarios        Usuario[]
+  grados          Grado[]
+  configuraciones ConfiguracionSistema[]
+
+  @@index([codigo])
+  @@index([activo])
+}
+
 // Usuario del sistema (Administrador o Docente)
 model Usuario {
   id        String   @id @default(cuid())
-  email     String   @unique
+  email     String
   password  String
   nombre    String
-  rol       String   // "admin", "admin-directora", "admin-codirectora", "docente", "docente-orientador"
+  rol       String   // "superadmin", "admin", "admin-directora", "admin-codirectora", "docente", "docente-orientador"
   activo    Boolean  @default(true)
+  escuelaId String   // FK a Escuela (multi-tenencia)
 
   // Google OAuth (null si solo usa email/password)
-  googleId  String?  @unique
+  googleId  String?
   provider  String   @default("credentials") // "credentials" | "google"
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  escuela         Escuela          @relation(fields: [escuelaId], references: [id], onDelete: Cascade)
   materiasAsignadas DocenteMateria[] // Para todos los grados (2-9)
   auditLogs         AuditLog[]
   loginSessions     LoginSession[]
   gradosOrientados  Grado[] @relation("GradoOrientador") // Grados donde es docente orientador
   historialCambios  HistorialCalificacion[]
 
+  @@unique([email, escuelaId])
   @@index([email])
+  @@index([escuelaId])
   @@index([rol, activo])
   @@index([googleId])
 }
@@ -44,9 +73,11 @@ model Grado {
   seccion   String   @default("A")
   año       Int      @default(2026)
   docenteId String?  // Docente orientador del grado
+  escuelaId String   // FK a Escuela (multi-tenencia)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  escuela       Escuela        @relation(fields: [escuelaId], references: [id], onDelete: Cascade)
   estudiantes   Estudiante[]
   materias      Materia[]
   asistencias   Asistencia[]
@@ -55,7 +86,9 @@ model Grado {
   docente       Usuario? @relation("GradoOrientador", fields: [docenteId], references: [id])
 
   @@index([numero])
+  @@index([escuelaId])
   @@index([docenteId])
+  @@unique([numero, seccion, año, escuelaId])
 }
 
 // Estudiante
@@ -65,12 +98,14 @@ model Estudiante {
   nombre    String
   email     String?
   gradoId   String
+  escuelaId String   // FK a Escuela (multi-tenencia)
   orden     Int      @default(0)
   activo    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
   grado          Grado          @relation(fields: [gradoId], references: [id], onDelete: Cascade)
+  escuela        Escuela        @relation(fields: [escuelaId], references: [id], onDelete: Cascade)
   calificaciones Calificacion[]
   asistencia    Asistencia[]
   observaciones ObservacionBoleta[]
@@ -78,6 +113,7 @@ model Estudiante {
   agentAlerts   AgentAlert[]
 
   @@index([gradoId, activo])
+  @@index([escuelaId])
   @@index([nombre])
   @@index([numero, gradoId])
 }
@@ -87,10 +123,12 @@ model Materia {
   id        String   @id @default(cuid())
   nombre    String   // Comunicación, Números y Formas, etc.
   gradoId   String
+  escuelaId String   // FK a Escuela (multi-tenencia)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
   grado              Grado              @relation(fields: [gradoId], references: [id], onDelete: Cascade)
+  escuela            Escuela            @relation(fields: [escuelaId], references: [id], onDelete: Cascade)
   calificaciones     Calificacion[]
   configActividades  ConfigActividad[]
   docentesAsignados  DocenteMateria[] // Para grados 6-9
@@ -99,6 +137,7 @@ model Materia {
   agentAlerts       AgentAlert[]
 
   @@index([gradoId])
+  @@index([escuelaId])
   @@index([nombre])
 }
 
@@ -107,20 +146,24 @@ model DocenteMateria {
   id        String   @id @default(cuid())
   docenteId String
   materiaId String
+  escuelaId String   // FK a Escuela (multi-tenencia)
   createdAt DateTime @default(now())
 
   docente Usuario @relation(fields: [docenteId], references: [id], onDelete: Cascade)
   materia Materia @relation(fields: [materiaId], references: [id], onDelete: Cascade)
+  escuela Escuela @relation(fields: [escuelaId], references: [id], onDelete: Cascade)
 
   @@unique([docenteId, materiaId])
   @@index([docenteId])
   @@index([materiaId])
+  @@index([escuelaId])
 }
 
 // Configuración de actividades por materia y trimestre
 model ConfigActividad {
   id                         String   @id @default(cuid())
   materiaId                  String
+  escuelaId                  String   // FK a Escuela (multi-tenencia)
   trimestre                  Int      @default(1) // 1, 2, 3
   
   // Cantidad de cada tipo de actividad
@@ -138,16 +181,18 @@ model ConfigActividad {
   updatedAt DateTime @updatedAt
   
   materia Materia @relation(fields: [materiaId], references: [id], onDelete: Cascade)
+  escuela Escuela @relation(fields: [escuelaId], references: [id], onDelete: Cascade)
   
   @@unique([materiaId, trimestre])
   @@index([materiaId])
+  @@index([escuelaId])
 }
 
-// Configuración del sistema (año escolar actual, etc.)
+// Configuración del sistema por escuela (multi-tenencia)
 model ConfiguracionSistema {
   id              String   @id @default(cuid())
+  escuelaId       String   // FK a Escuela (multi-tenencia)
   añoEscolar      Int      @default(2026)
-  escuela         String   @default("Centro Escolar")
   nombreDirectora String?
   umbralRecuperacion  Float?   @default(5.0)
   umbralCondicionado  Float?   @default(4.5)
@@ -169,6 +214,11 @@ model ConfiguracionSistema {
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  escuela Escuela @relation(fields: [escuelaId], references: [id], onDelete: Cascade)
+
+  @@unique([escuelaId])
+  @@index([escuelaId])
 }
 
 // Recuperación Anual por estudiante y materia
@@ -176,6 +226,7 @@ model RecuperacionAnual {
   id           String   @id @default(cuid())
   estudianteId String
   materiaId    String
+  escuelaId    String   // FK a Escuela (multi-tenencia)
   nota         Float
   año          Int      @default(2026)
   createdAt    DateTime @default(now())
@@ -183,9 +234,11 @@ model RecuperacionAnual {
 
   estudiante Estudiante @relation(fields: [estudianteId], references: [id], onDelete: Cascade)
   materia    Materia    @relation(fields: [materiaId], references: [id], onDelete: Cascade)
+  escuela    Escuela    @relation(fields: [escuelaId], references: [id], onDelete: Cascade)
 
   @@unique([estudianteId, materiaId, año])
   @@index([materiaId, año])
+  @@index([escuelaId])
 }
 
 // Calificaciones por estudiante, materia y trimestre
@@ -193,6 +246,7 @@ model Calificacion {
   id           String   @id @default(cuid())
   estudianteId String
   materiaId    String
+  escuelaId    String   // FK a Escuela (multi-tenencia)
   trimestre    Int      @default(1)
 
   // Promedios calculados
@@ -212,10 +266,12 @@ model Calificacion {
 
   estudiante Estudiante @relation(fields: [estudianteId], references: [id], onDelete: Cascade)
   materia    Materia    @relation(fields: [materiaId], references: [id], onDelete: Cascade)
+  escuela    Escuela    @relation(fields: [escuelaId], references: [id], onDelete: Cascade)
 
   @@unique([estudianteId, materiaId, trimestre])
   @@index([estudianteId])
   @@index([materiaId])
+  @@index([escuelaId])
   @@index([trimestre])
   @@index([materiaId, trimestre])
   @@index([estudianteId, materiaId, trimestre])
@@ -225,15 +281,18 @@ model Calificacion {
 model NotaActividad {
   id              String   @id @default(cuid())
   calificacionId  String
+  escuelaId       String   // FK a Escuela (multi-tenencia)
   tipo            String   // "cotidiana" | "integradora" | "examen"
   numeroActividad Int      // 1, 2, 3, 4...
   nota            Float    // Nota individual (0-10)
   createdAt       DateTime @default(now())
 
   calificacion Calificacion @relation(fields: [calificacionId], references: [id], onDelete: Cascade)
+  escuela      Escuela      @relation(fields: [escuelaId], references: [id], onDelete: Cascade)
 
   @@index([calificacionId, tipo, numeroActividad])
   @@index([calificacionId])
+  @@index([escuelaId])
   @@index([tipo])
 }
 
@@ -248,6 +307,7 @@ model Asistencia {
   // materiaId es opcional (para asistencia por materia en grados 6-9)
   gradoId      String
   materiaId    String?
+  escuelaId    String   // FK a Escuela (multi-tenencia)
 
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -255,12 +315,14 @@ model Asistencia {
   estudiante   Estudiante @relation(fields: [estudianteId], references: [id], onDelete: Cascade)
   grado        Grado      @relation(fields: [gradoId], references: [id], onDelete: Cascade)
   materia      Materia?   @relation(fields: [materiaId], references: [id], onDelete: Cascade)
+  escuela      Escuela    @relation(fields: [escuelaId], references: [id], onDelete: Cascade)
   
   // Un estudiante solo puede tener un registro de asistencia por día por grado
   @@unique([estudianteId, fecha, gradoId])
   @@index([estudianteId])
   @@index([fecha])
   @@index([estado])
+  @@index([escuelaId])
   @@index([estudianteId, fecha])
   @@index([gradoId, fecha])
 }
@@ -270,6 +332,7 @@ model ObservacionBoleta {
   id            String   @id @default(cuid())
   estudianteId  String
   gradoId       String
+  escuelaId     String   // FK a Escuela (multi-tenencia)
   trimestre     Int
   año           Int
   observaciones String   @default("")
@@ -283,16 +346,19 @@ model ObservacionBoleta {
 
   estudiante Estudiante @relation(fields: [estudianteId], references: [id], onDelete: Cascade)
   grado      Grado      @relation(fields: [gradoId], references: [id], onDelete: Cascade)
+  escuela    Escuela    @relation(fields: [escuelaId], references: [id], onDelete: Cascade)
 
   @@unique([estudianteId, gradoId, trimestre, año])
   @@index([estudianteId])
   @@index([gradoId])
+  @@index([escuelaId])
 }
 
 // Registro de Auditoría - rastrea cambios en el sistema
 model AuditLog {
   id          String   @id @default(cuid())
   usuarioId   String
+  escuelaId   String   // FK a Escuela (multi-tenencia)
   accion      String   // "UPDATE" = Digitó, "DELETE" = Borró
   entidad     String   // "Calificacion"
   entidadId   String?
@@ -302,8 +368,10 @@ model AuditLog {
   createdAt   DateTime @default(now())
 
   usuario     Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  escuela     Escuela  @relation(fields: [escuelaId], references: [id], onDelete: Cascade)
 
   @@index([usuarioId])
+  @@index([escuelaId])
   @@index([entidad])
   @@index([accion])
   @@index([createdAt])
@@ -314,6 +382,7 @@ model HistorialCalificacion {
   id              String   @id @default(cuid())
   calificacionId  String
   usuarioId       String
+  escuelaId       String   // FK a Escuela (multi-tenencia)
   tipoCampo       String   // "cotidiana_1", "integradora_1", "examenTrimestral", "recuperacion", etc.
   valorAnterior   Float?   // Valor antes del cambio (null si era vacío)
   valorNuevo      Float?   // Valor después del cambio (null si se borró)
@@ -322,9 +391,11 @@ model HistorialCalificacion {
 
   calificacion  Calificacion  @relation(fields: [calificacionId], references: [id], onDelete: Cascade)
   usuario       Usuario       @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  escuela       Escuela       @relation(fields: [escuelaId], references: [id], onDelete: Cascade)
 
   @@index([calificacionId])
   @@index([usuarioId])
+  @@index([escuelaId])
   @@index([createdAt])
   @@index([calificacionId, tipoCampo])
 }
@@ -333,6 +404,7 @@ model HistorialCalificacion {
 model LoginSession {
   id          String   @id @default(cuid())
   usuarioId   String
+  escuelaId   String   // FK a Escuela (multi-tenencia)
   ip          String?
   userAgent   String?
   loginAt     DateTime @default(now())
@@ -340,8 +412,10 @@ model LoginSession {
   isActive    Boolean  @default(true)
 
   usuario     Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  escuela     Escuela  @relation(fields: [escuelaId], references: [id], onDelete: Cascade)
 
   @@index([usuarioId])
+  @@index([escuelaId])
   @@index([loginAt])
   @@index([isActive])
 }
@@ -352,6 +426,7 @@ model AgentAlert {
   tipo            String   // "riesgo_alto" | "riesgo_medio" | "bajo_rendimiento" | "asistencia_critica"
   estudianteId    String
   gradoId         String
+  escuelaId       String   // FK a Escuela (multi-tenencia)
   materiaId       String?  // null si es alerta general del grado
   trimestre       Int      // trimestre analizado
   puntajeRiesgo   Float    // 0.0 a 1.0 (probabilidad de reprobación)
@@ -365,10 +440,12 @@ model AgentAlert {
 
   estudiante      Estudiante @relation(fields: [estudianteId], references: [id], onDelete: Cascade)
   grado           Grado      @relation(fields: [gradoId], references: [id], onDelete: Cascade)
+  escuela         Escuela    @relation(fields: [escuelaId], references: [id], onDelete: Cascade)
   materia         Materia?   @relation(fields: [materiaId], references: [id], onDelete: SetNull)
 
   @@index([estudianteId])
   @@index([gradoId])
+  @@index([escuelaId])
   @@index([tipo])
   @@index([leido])
   @@index([resuelto])
@@ -380,6 +457,7 @@ model AgentAlert {
 model AgentLog {
   id              String   @id @default(cuid())
   tipo            String   // "ejecucion_mensual" | "ejecucion_manual" | "consulta"
+  escuelaId       String   // FK a Escuela (multi-tenencia)
   iniciadoPor     String?  // usuario que inició (null si fue automático)
   gradosAnalizados Int     @default(0)
   estudiantesAnalizados Int @default(0)
@@ -391,7 +469,10 @@ model AgentLog {
   resumen         String?  // texto resumen de la ejecución
   createdAt       DateTime @default(now())
 
+  escuela         Escuela  @relation(fields: [escuelaId], references: [id], onDelete: Cascade)
+
   @@index([tipo])
+  @@index([escuelaId])
   @@index([createdAt])
   @@index([iniciadoPor])
 }

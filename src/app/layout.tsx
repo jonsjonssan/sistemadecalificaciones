@@ -36,10 +36,10 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Sistema de Calificaciones - Escuela Parroquial de San José de la Montaña",
-  description: "Sistema de gestión de calificaciones para grados 2° a 9°",
-  keywords: ["Calificaciones", "Escuela", "Educación", "Boletas"],
-  authors: [{ name: "Escuela Parroquial de San José de la Montaña" }],
+  title: "Sistema de Calificaciones - Precisión y Progreso",
+  description: "Sistema de gestión de calificaciones escolar multi-tenant",
+  keywords: ["Calificaciones", "Escuela", "Educación", "Boletas", "Gestión Educativa"],
+  authors: [{ name: "Sistema de Calificaciones" }],
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
