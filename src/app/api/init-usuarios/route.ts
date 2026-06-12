@@ -22,6 +22,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Solo administradores pueden ejecutar esta acción" }, { status: 403 });
     }
 
+    const escuelaId = (sessionData as any).escuelaId || '';
+
     // Obtener todos los grados y materias
     const grados = await db.grado.findMany({
       include: { materias: true },
@@ -46,7 +48,7 @@ export async function POST(request: NextRequest) {
       materiasAsignadas: { grado: number; materia: string }[] = []
     ) => {
       // Verificar si ya existe
-      const existente = await db.usuario.findUnique({ where: { email } });
+      const existente = await db.usuario.findFirst({ where: { email } });
       if (existente) {
         return { nombre, email, status: "ya existe" };
       }
@@ -61,6 +63,7 @@ export async function POST(request: NextRequest) {
           password: await bcrypt.hash(tempPassword, 10),
           nombre,
           rol: "docente",
+          escuelaId,
         },
       });
 
@@ -83,6 +86,7 @@ export async function POST(request: NextRequest) {
             data: {
               docenteId: usuario.id,
               materiaId: materia.id,
+              escuelaId,
             },
           });
         }

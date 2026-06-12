@@ -86,6 +86,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
+    const escuelaId = (session as any).escuelaId || '';
+
     const data = await request.json();
     const { accion, entidad, entidadId, detalles } = data;
 
@@ -100,6 +102,7 @@ export async function POST(request: NextRequest) {
         entidad,
         entidadId,
         detalles: typeof detalles === "string" ? detalles : JSON.stringify(detalles),
+        escuelaId,
       },
       include: { usuario: { select: { id: true, nombre: true } } },
     });

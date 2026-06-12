@@ -52,6 +52,8 @@ export async function POST(request: NextRequest) {
     const { session: authSession, error: authError } = await requireAdmin();
     if (authError) return authError;
 
+    const escuelaId = (authSession as any).escuelaId || '';
+
     const data = await request.json();
     const { usuarioId } = data;
 
@@ -68,6 +70,7 @@ export async function POST(request: NextRequest) {
         usuarioId,
         ip,
         userAgent,
+        escuelaId,
       },
       include: {
         usuario: {

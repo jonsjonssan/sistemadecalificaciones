@@ -16,6 +16,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Solo administradores pueden ejecutar esta acción" }, { status: 403 });
     }
 
+    const escuelaId = (sessionData as any).escuelaId || '';
+
     const materiasABorrar = await db.materia.findMany({
       where: {
         nombre: "Desarrollo Corporal y Educación Física"
@@ -43,7 +45,8 @@ export async function GET(request: NextRequest) {
         materiaNew = await db.materia.create({
           data: {
             nombre: targetNombre,
-            gradoId: materiaOld.gradoId
+            gradoId: materiaOld.gradoId,
+            escuelaId,
           }
         });
       }
@@ -70,7 +73,8 @@ export async function GET(request: NextRequest) {
           update: {},
           create: {
             docenteId: asig.docenteId,
-            materiaId: materiaNew.id
+            materiaId: materiaNew.id,
+            escuelaId,
           }
         });
       }

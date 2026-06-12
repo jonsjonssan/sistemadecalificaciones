@@ -169,6 +169,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Sesión inválida" }, { status: 401 });
     }
 
+    const escuelaId = (session as any).escuelaId || '';
+
     const body = await req.json();
     const pregunta = body.pregunta as string;
     const gradoId = body.gradoId as string | undefined;
@@ -261,6 +263,7 @@ export async function POST(req: Request) {
         tipo: "consulta",
         iniciadoPor: session.id,
         resumen: `Consulta: "${pregunta}" → ${resultado.tipo}`,
+        escuelaId,
       },
     });
 

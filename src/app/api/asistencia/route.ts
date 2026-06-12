@@ -96,6 +96,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No tiene acceso a este grado" }, { status: 403 });
     }
 
+    const escuelaId = (session as any).escuelaId || '';
     const fecha = new Date(fechaStr);
     if (isNaN(fecha.getTime())) {
       return NextResponse.json({ error: "Fecha inválida" }, { status: 400 });
@@ -125,6 +126,7 @@ export async function POST(req: Request) {
             fecha: startOfDay,
             estado,
             gradoId,
+            escuelaId,
             ...(materiaId ? { materiaId } : {}),
           },
           include: {

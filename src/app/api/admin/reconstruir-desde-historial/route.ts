@@ -7,6 +7,8 @@ export async function POST(request: NextRequest) {
     const { session, error } = await requireAdmin();
     if (error) return error;
 
+    const escuelaId = (session as any).escuelaId || '';
+
     const body = await request.json();
     const { gradoId, materiaId, trimestre, dryRun = true } = body;
 
@@ -107,6 +109,7 @@ export async function POST(request: NextRequest) {
                     tipo,
                     numeroActividad,
                     nota: valorReconstruido,
+                    escuelaId,
                   },
                 });
               }

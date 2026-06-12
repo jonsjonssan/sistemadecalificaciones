@@ -23,6 +23,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
+    const escuelaId = (session as any).escuelaId || '';
+
     const { searchParams } = new URL(request.url);
     const materiaId = searchParams.get("materiaId");
     const gradoId = searchParams.get("gradoId");
@@ -76,7 +78,8 @@ export async function GET(request: NextRequest) {
             numExamenes: 1,
             porcentajeAC: 35.0,
             porcentajeAI: 35.0,
-            porcentajeExamen: 30.0
+            porcentajeExamen: 30.0,
+            escuelaId,
           }
         });
       }
@@ -136,7 +139,8 @@ export async function GET(request: NextRequest) {
                 numExamenes: 1,
                 porcentajeAC: 35.0,
                 porcentajeAI: 35.0,
-                porcentajeExamen: 30.0
+                porcentajeExamen: 30.0,
+                escuelaId,
               }
             });
           }
@@ -174,6 +178,8 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getUsuarioSession();
     if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+
+    const escuelaId = (session as any).escuelaId || '';
 
     const data = await request.json();
 
@@ -251,7 +257,8 @@ export async function POST(request: NextRequest) {
               numExamenes: numEx,
               porcentajeAC: porcAC,
               porcentajeAI: porcAI,
-              porcentajeExamen: porcEx
+              porcentajeExamen: porcEx,
+              escuelaId,
             }
           });
           count++;
@@ -289,7 +296,8 @@ export async function POST(request: NextRequest) {
         numExamenes: numEx,
         porcentajeAC: porcAC,
         porcentajeAI: porcAI,
-        porcentajeExamen: porcEx
+        porcentajeExamen: porcEx,
+        escuelaId,
       }
     });
 

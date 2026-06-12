@@ -70,6 +70,8 @@ export async function POST(req: NextRequest) {
   const { session, error: authError } = await requireSession();
   if (authError) return authError;
 
+  const escuelaId = (session as any).escuelaId || '';
+
   try {
     const body = await req.json();
     const { estudianteId, gradoId, trimestre, año, asistencias, inasistencias, tardanzas, justificadas, totalDias, observaciones } = body;
@@ -112,6 +114,7 @@ export async function POST(req: NextRequest) {
         gradoId,
         trimestre: trimestreNum,
         año: añoNum,
+        escuelaId,
         ...data,
       },
     });

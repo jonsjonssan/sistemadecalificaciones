@@ -19,6 +19,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Sesión inválida" }, { status: 401 });
     }
 
+    const escuelaId = (session as any).escuelaId || '';
+
     const soloDirectiva = ["admin", "admin-directora", "admin-codirectora"].includes(session.rol);
     if (!soloDirectiva) {
       return NextResponse.json({ error: "Solo directivos pueden ejecutar el agente monitor" }, { status: 403 });
@@ -47,6 +49,7 @@ export async function POST(req: Request) {
           alertasMedioRiesgo: resultado.resumen.riesgoMedio,
           duracionMs: Date.now() - inicioTiempo,
           resumen: `Análisis completado: ${resultado.resumen.riesgoAlto} riesgo alto, ${resultado.resumen.riesgoMedio} riesgo medio, ${resultado.resumen.bajoRendimiento} bajo rendimiento, ${resultado.resumen.asistenciaCritica} asistencia crítica`,
+          escuelaId,
         },
       });
       ejecucionId = ejecucion.id;
@@ -63,6 +66,7 @@ export async function POST(req: Request) {
             factores: JSON.stringify(riesgo.factores),
             recomendacion: riesgo.recomendacion,
             ejecucionId: ejecucion.id,
+            escuelaId,
           },
         });
       }

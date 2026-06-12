@@ -2,12 +2,14 @@ import { db } from "./db";
 
 export async function createAuditLog({
   usuarioId,
+  escuelaId,
   accion,
   entidad,
   entidadId,
   detalles
 }: {
   usuarioId: string;
+  escuelaId?: string | null;
   accion: string;
   entidad: string;
   entidadId?: string | null;
@@ -17,6 +19,7 @@ export async function createAuditLog({
     await db.auditLog.create({
       data: {
         usuarioId,
+        escuelaId: escuelaId || '',
         accion,
         entidad,
         entidadId,

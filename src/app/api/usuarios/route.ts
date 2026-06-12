@@ -54,9 +54,11 @@ export async function GET() {
       return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 
+    const escuelaId = (session as any).escuelaId || '';
     const usuarios = await sql`
       SELECT u.id, u.email, u.nombre, u.rol, u.activo, u."createdAt"
       FROM "Usuario" u
+      WHERE u."escuelaId" = ${escuelaId}
       ORDER BY u."createdAt" DESC
     `;
 
@@ -116,18 +118,19 @@ export async function POST(request: NextRequest) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const newId = randomUUID();
+    const escuelaId = (session as any).escuelaId || '';
 
     const nuevoUsuario = await sql`
-      INSERT INTO "Usuario" (id, email, password, nombre, rol, provider, "createdAt", "updatedAt")
-      VALUES (${newId}, ${email}, ${hashedPassword}, ${nombre}, ${rol}, 'credentials', NOW(), NOW())
+      INSERT INTO "Usuario" (id, email, password, nombre, rol, "escuelaId", provider, "createdAt", "updatedAt")
+      VALUES (${newId}, ${email}, ${hashedPassword}, ${nombre}, ${rol}, ${escuelaId}, 'credentials', NOW(), NOW())
       RETURNING id, email, nombre, rol, activo
     `;
 
     if (materiasAsignadas && materiasAsignadas.length > 0) {
       for (const materiaId of materiasAsignadas) {
         await sql`
-          INSERT INTO "DocenteMateria" ("id", "docenteId", "materiaId")
-          VALUES (${randomUUID()}, ${nuevoUsuario[0].id}, ${materiaId})
+          INSERT INTO "DocenteMateria" ("id", "docenteId", "materiaId", "escuelaId")
+          VALUES (${randomUUID()}, ${nuevoUsuario[0].id}, ${materiaId}, ${escuelaId})
           ON CONFLICT DO NOTHING
         `;
       }
@@ -192,9 +195,10 @@ export async function PUT(request: NextRequest) {
       if (materiasAsignadas !== undefined) {
         await tx.docenteMateria.deleteMany({ where: { docenteId: id } });
         if (materiasAsignadas && materiasAsignadas.length > 0) {
+          const escuelaId = (session as any).escuelaId || '';
           for (const materiaId of materiasAsignadas) {
             await tx.docenteMateria.create({
-              data: { docenteId: id, materiaId },
+              data: { docenteId: id, materiaId, escuelaId },
             });
           }
         }

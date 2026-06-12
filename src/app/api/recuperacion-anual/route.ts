@@ -78,6 +78,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
+    const escuelaId = (session as any).escuelaId || '';
+
     const data = await request.json();
     const { estudianteId, materiaId, nota, año } = data;
 
@@ -118,6 +120,7 @@ export async function POST(request: NextRequest) {
         materiaId,
         nota: notaNum,
         año: añoNum,
+        escuelaId,
       },
     });
 

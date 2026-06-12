@@ -19,6 +19,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Solo administradores pueden ejecutar esta acción" }, { status: 403 });
     }
 
+    const escuelaId = (sessionData as any).escuelaId || '';
+
     const resultados = {
       inglesAgregado: 0,
       correoCorregido: false,
@@ -35,10 +37,11 @@ export async function POST(request: NextRequest) {
       });
       
       if (!existeIngles) {
-        const materia = await db.materia.create({
+         const materia = await db.materia.create({
           data: {
             nombre: "Inglés",
             gradoId: grado.id,
+            escuelaId,
           },
         });
         
@@ -54,6 +57,7 @@ export async function POST(request: NextRequest) {
               porcentajeAC: 35.0,
               porcentajeAI: 35.0,
               porcentajeExamen: 30.0,
+              escuelaId,
             },
           });
         }
@@ -75,7 +79,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Asignar Inglés (7°, 8°, 9°) a Diana Nicole Rojas Urias
-    const diana = await db.usuario.findUnique({
+    const diana = await db.usuario.findFirst({
       where: { email: "05980194-0@clases.edu.sv" }
     });
     
@@ -98,6 +102,7 @@ export async function POST(request: NextRequest) {
                 data: {
                   docenteId: diana.id,
                   materiaId: materiaIngles.id,
+                  escuelaId,
                 }
               });
             }
