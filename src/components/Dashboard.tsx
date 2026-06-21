@@ -191,7 +191,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
     }>;
   } | null>(null);
 
-  const esDirectiva = ["admin", "admin-directora", "admin-codirectora"].includes(usuario.rol);
+  const esDirectiva = ["admin", "admin-directora", "admin-codirectora", "superadmin"].includes(usuario.rol);
   const esDocente = ["docente", "docente-orientador"].includes(usuario.rol);
 
   const gradoAsignado = esDocente ? (usuario.asignaturasAsignadas?.[0]?.gradoId || null) : null;
