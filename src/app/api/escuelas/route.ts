@@ -7,7 +7,7 @@ export async function GET() {
   try {
     const sql = neon(process.env.DATABASE_URL!);
     const escuelas = await sql`
-      SELECT id, nombre, codigo, tipo, logo, colorPrimario, activo
+      SELECT id, nombre, codigo, tipo, logo, "colorPrimario", activo
       FROM "Escuela"
       WHERE activo = true
       ORDER BY nombre ASC
