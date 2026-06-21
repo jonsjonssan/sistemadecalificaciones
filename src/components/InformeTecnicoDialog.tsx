@@ -456,7 +456,7 @@ export default function InformeTecnicoDialog({
         <tr>
           <td style="width:33%;padding:8px;text-align:center;vertical-align:bottom;">
             <div style="border-top:2px solid #334155;margin-bottom:6px;padding-top:8px;">
-              <div style="font-weight:700;font-size:10pt;">${usuario.rol === 'admin' ? 'Dirección Escolar' : escapeHtml(usuario.nombre)}</div>
+              <div style="font-weight:700;font-size:10pt;">${usuario.rol === 'admin' || usuario.rol === 'superadmin' ? 'Dirección Escolar' : escapeHtml(usuario.nombre)}</div>
               <div style="font-size:9pt;color:#64748b;">${usuario.rol === 'admin-directora' ? 'Directora' : usuario.rol === 'admin-codirectora' ? 'Codirectora' : 'Dirección Escolar'}</div>
               <div style="font-size:8pt;color:#94a3b8;">Firma y Sello</div>
             </div>

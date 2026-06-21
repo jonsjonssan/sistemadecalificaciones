@@ -392,7 +392,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
             Hola, {usuario.nombre}
           </h2>
           <p className="text-sm mt-0.5 text-muted-foreground/70">
-            {usuario.rol === "admin"
+            {usuario.rol === "admin" || usuario.rol === "superadmin"
               ? "Panel de administración del sistema."
               : "Bienvenido al ciclo escolar."}
           </p>
@@ -767,7 +767,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
             <CardContent className="p-2.5 space-y-1.5">
               <QuickActionRow icon={ClipboardList} label="Pasar Notas" sub="Calificaciones" onClick={() => onNavigate?.('calificaciones')} />
               <QuickActionRow icon={CalendarDays} label="Asistencia" sub="Control diario" onClick={() => onNavigate?.('asistencia')} />
-              {usuario.rol === "admin" && (
+              {esDirectiva && (
                 <QuickActionRow icon={GraduationCap} label="Docentes" sub="Administración" onClick={() => onNavigate?.('admin')} />
               )}
             </CardContent>
@@ -867,7 +867,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
               <div className="p-2.5 text-xs bg-muted/20 border border-border rounded-sm space-y-1.5">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground/80">Rol</span>
-                  <span className="font-semibold text-foreground capitalize">{usuario.rol === "admin" ? "Administrador" : usuario.rol === "docente-orientador" ? "Docente Orientador" : "Docente"}</span>
+                  <span className="font-semibold text-foreground capitalize">{usuario.rol === "admin" || usuario.rol === "superadmin" ? "Administrador" : usuario.rol === "docente-orientador" ? "Docente Orientador" : "Docente"}</span>
                 </div>
                 {configuracion && (
                   <div className="flex justify-between">

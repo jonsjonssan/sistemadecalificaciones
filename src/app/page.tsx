@@ -318,7 +318,7 @@ export default function Home() {
                     )}
                     <TabsTrigger
                       value={v}
-                      className="relative text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 ease-out tab-glow-active data-[state=active]:text-primary-foreground data-[state=inactive]:text-foreground/70 hover:data-[state=inactive]:text-primary hover:data-[state=inactive]:bg-primary/[0.12] hover:data-[state=inactive]:shadow-md hover:data-[state=inactive]:-translate-y-[1px] dark:hover:data-[state=inactive]:bg-primary/15 dark:hover:data-[state=inactive]:text-primary press-feedback group"
+                      className="relative text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 ease-out tab-glow-active data-[state=active]:bg-transparent data-[state=active]:text-primary-foreground data-[state=inactive]:text-foreground/70 hover:data-[state=inactive]:text-primary hover:data-[state=inactive]:bg-primary/15 hover:data-[state=inactive]:shadow-md hover:data-[state=inactive]:-translate-y-[1px] dark:hover:data-[state=inactive]:bg-primary/15 dark:hover:data-[state=inactive]:text-primary press-feedback group"
                     >
                       <motion.span
                         animate={isActive ? { y: [0, -2, 0] } : { y: 0 }}
