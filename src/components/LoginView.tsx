@@ -32,11 +32,16 @@ export default function LoginView({
   const [logoError, setLogoError] = useState(false);
 
   return (
-    <div className="min-h-screen flex flex-col safe-area-bottom relative bg-background">
+    <div className="min-h-screen flex flex-col safe-area-bottom relative bg-background overflow-hidden">
       <div className="absolute inset-0 page-atmosphere" />
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-primary/10 blur-3xl animate-blob" />
+        <div className="absolute top-1/3 -right-24 h-80 w-80 rounded-full bg-primary/8 blur-3xl animate-blob" style={{ animationDelay: "-5s" }} />
+        <div className="absolute -bottom-32 left-1/4 h-72 w-72 rounded-full bg-emerald-500/8 blur-3xl animate-blob" style={{ animationDelay: "-9s" }} />
+      </div>
 
       <motion.div
-        className="flex-1 flex flex-col items-center justify-center px-6 py-8"
+        className="flex-1 flex flex-col items-center justify-center px-6 py-8 relative z-10"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
@@ -48,18 +53,45 @@ export default function LoginView({
           transition={{ duration: 0.5, delay: 0.1 }}
         >
           <div className="flex flex-col items-center mb-8">
-            <div className="relative mb-5">
-              <div className="w-20 h-20 rounded-2xl bg-primary shadow-lg shadow-primary/20 flex items-center justify-center">
+            <motion.div
+              className="relative mb-5"
+              initial={{ scale: 0.6, opacity: 0, rotate: -12 }}
+              animate={{ scale: 1, opacity: 1, rotate: 0 }}
+              transition={{ type: "spring", stiffness: 220, damping: 16, delay: 0.15 }}
+            >
+              <motion.div
+                className="w-20 h-20 rounded-2xl bg-primary shadow-lg shadow-primary/20 flex items-center justify-center animate-float-soft"
+                whileHover={{ scale: 1.06, rotate: 3 }}
+                transition={{ type: "spring", stiffness: 300, damping: 18 }}
+              >
                 {logoError ? <School className="h-10 w-10 text-primary-foreground" /> : <img src="/logo-sistema.png" alt="Logo" className="h-12 w-12 object-contain" onError={() => setLogoError(true)} />}
-              </div>
-              <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-400 border-2 border-background flex items-center justify-center">
+              </motion.div>
+              <motion.div
+                className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-400 border-2 border-background flex items-center justify-center"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 400, damping: 12, delay: 0.5 }}
+              >
                 <GraduationCap className="h-3 w-3 text-white" />
-              </div>
-            </div>
-            <h1 className="font-display text-xl text-foreground font-bold tracking-tight">Sistema de Calificaciones</h1>
-            <p className="text-sm text-muted-foreground/70 mt-1 text-center leading-relaxed">
+              </motion.div>
+              <span className="absolute inset-0 rounded-2xl ring-1 ring-primary/30 pointer-events-none animate-pulse-glow" />
+            </motion.div>
+            <motion.h1
+              className="font-display text-xl text-foreground font-bold tracking-tight"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.4 }}
+            >
+              Sistema de Calificaciones
+            </motion.h1>
+            <motion.p
+              className="text-sm text-muted-foreground/70 mt-1 text-center leading-relaxed"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4, duration: 0.4 }}
+            >
               Precisión y Progreso
-            </p>
+            </motion.p>
           </div>
 
           {!initialized ? (
@@ -72,7 +104,7 @@ export default function LoginView({
               <div className="p-6 rounded-2xl bg-card border border-border shadow-sm">
                 <BookOpen className="h-10 w-10 mx-auto mb-3 text-primary" />
                 <p className="text-sm text-muted-foreground mb-4">Inicializa el sistema para comenzar a gestionar calificaciones</p>
-                <Button onClick={initSystem} className="w-full h-12 text-base font-semibold rounded-xl bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20">
+                <Button onClick={initSystem} className="w-full h-12 text-base font-semibold rounded-xl bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 press-feedback shine-on-hover">
                   Inicializar Sistema
                 </Button>
               </div>
@@ -154,7 +186,7 @@ export default function LoginView({
 
               <Button
                 type="submit"
-                className="w-full h-12 text-base font-semibold rounded-xl bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 disabled:opacity-60"
+                className="w-full h-12 text-base font-semibold rounded-xl bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 disabled:opacity-60 press-feedback shine-on-hover"
                 disabled={loginLoading || !escuelaSeleccionada}
               >
                 {loginLoading ? (

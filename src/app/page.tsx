@@ -196,36 +196,75 @@ export default function Home() {
       />
 
       {/* Header */}
-      <header className="header-gradient text-card-foreground mobile-header">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2 flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="h-9 w-9 sm:h-10 sm:w-10 shrink-0 rounded-full flex items-center justify-center bg-muted/50 ring-1 ring-border">
+      <header className="header-gradient text-card-foreground mobile-header relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none opacity-60 dark:opacity-40">
+          <div className="absolute -top-12 -left-10 h-32 w-32 rounded-full bg-primary/10 blur-3xl animate-blob" />
+          <div className="absolute -bottom-16 right-10 h-36 w-36 rounded-full bg-primary/10 blur-3xl animate-blob" style={{ animationDelay: "-4s" }} />
+        </div>
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2 flex items-center justify-between gap-2 relative">
+          <motion.div
+            className="flex items-center gap-2 min-w-0"
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+          >
+            <div className="h-9 w-9 sm:h-10 sm:w-10 shrink-0 rounded-full flex items-center justify-center bg-muted/50 ring-1 ring-border relative animate-float-soft">
               <img src="/0.png" alt="Logo" className="h-7 w-7 sm:h-8 sm:w-8 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              <span className="absolute inset-0 rounded-full ring-1 ring-primary/30 pointer-events-none animate-pulse-glow" />
             </div>
             <div className="min-w-0">
               <h1 className="font-display text-xs sm:text-sm tracking-tight truncate">Sistema de Calificaciones</h1>
               <p className="text-[10px] sm:text-xs font-medium truncate text-muted-foreground/60">CEC San José de la Montaña</p>
             </div>
-          </div>
-          <div className="flex items-center gap-1 sm:gap-3">
+          </motion.div>
+          <motion.div
+            className="flex items-center gap-1 sm:gap-3"
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.4, ease: "easeOut", delay: 0.05 }}
+          >
             {d.configuracion && (
-              <span className="text-[10px] sm:text-xs font-mono font-medium px-2 py-0.5 border border-border text-muted-foreground bg-muted/30">
+              <motion.span
+                key={d.configuracion.añoEscolar}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                className="text-[10px] sm:text-xs font-mono font-medium px-2 py-0.5 border border-border text-muted-foreground bg-muted/30 hover-gradient"
+              >
                 {d.configuracion.añoEscolar}
-              </span>
+              </motion.span>
             )}
-            <button onClick={() => d.setTheme(d.theme === "dark" ? "light" : "dark")} className={`p-1.5 sm:p-2 transition-all text-muted-foreground hover:text-foreground hover:bg-muted/50`} title={darkMode ? "Modo claro" : "Modo oscuro"}>
-              {darkMode ? (
-                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-              ) : (
-                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
-              )}
-            </button>
-            <Button variant="ghost" size="sm" onClick={() => d.setShowWizard(true)} className="touch-target px-1.5 sm:px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 sm:h-10" title="Guía de inicio"><Lightbulb className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Ayuda</span></Button>
+            <motion.button
+              whileHover={{ scale: 1.08, rotate: darkMode ? -8 : 8 }}
+              whileTap={{ scale: 0.92 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              onClick={() => d.setTheme(d.theme === "dark" ? "light" : "dark")}
+              className="p-1.5 sm:p-2 transition-colors text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg press-feedback"
+              title={darkMode ? "Modo claro" : "Modo oscuro"}
+              aria-label={darkMode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                {darkMode ? (
+                  <motion.svg key="sun" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }} className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></motion.svg>
+                ) : (
+                  <motion.svg key="moon" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }} className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></motion.svg>
+                )}
+              </AnimatePresence>
+            </motion.button>
+            <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
+              <Button variant="ghost" size="sm" onClick={() => d.setShowWizard(true)} className="touch-target px-1.5 sm:px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 sm:h-10 press-feedback shine-on-hover" title="Guía de inicio"><Lightbulb className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Ayuda</span></Button>
+            </motion.div>
             <div className="text-right text-xs font-medium hidden sm:block"><p className="font-medium cursor-pointer hover:underline text-foreground" onClick={() => setPerfilDialogOpen(true)}>{usuario.nombre}</p><p className="capitalize text-muted-foreground/60">{usuario.rol}</p></div>
-            <Button variant="ghost" size="sm" onClick={() => setPerfilDialogOpen(true)} className="touch-target px-1.5 sm:px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 sm:h-10"><User className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Perfil</span></Button>
-            <Button variant="ghost" size="sm" onClick={() => setPasswordDialogOpen(true)} className="touch-target px-1.5 sm:px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 sm:h-10"><Key className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Clave</span></Button>
-            <Button variant="ghost" size="sm" onClick={handleLogout} aria-label="Cerrar sesión" className="touch-target px-1.5 sm:px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 sm:h-10"><LogOut className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Salir</span></Button>
-          </div>
+            <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
+              <Button variant="ghost" size="sm" onClick={() => setPerfilDialogOpen(true)} className="touch-target px-1.5 sm:px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 sm:h-10 press-feedback" title="Ver perfil"><User className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Perfil</span></Button>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
+              <Button variant="ghost" size="sm" onClick={() => setPasswordDialogOpen(true)} className="touch-target px-1.5 sm:px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 sm:h-10 press-feedback" title="Cambiar contraseña"><Key className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Clave</span></Button>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
+              <Button variant="ghost" size="sm" onClick={handleLogout} aria-label="Cerrar sesión" className="touch-target px-1.5 sm:px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 sm:h-10 press-feedback" title="Cerrar sesión"><LogOut className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Salir</span></Button>
+            </motion.div>
+          </motion.div>
         </div>
       </header>
 
@@ -253,17 +292,45 @@ export default function Home() {
           d.setActiveTab(val);
         }}>
           <TabsList className="shadow-lg h-11 overflow-x-auto rounded-xl hidden md:inline-flex w-auto shrink-0 hide-scrollbar justify-start space-x-1.5 bg-card/80 backdrop-blur-sm border border-border p-1" role="tablist" aria-label="Secciones del sistema">
-            <motion.div className="flex space-x-1.5">
-              <TabsTrigger value="dashboard" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-foreground/70 hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><LayoutDashboard className="h-4 w-4" />Inicio</TabsTrigger>
-              <TabsTrigger value="calificaciones" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-foreground/70 hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><ClipboardList className="h-4 w-4" />Calificaciones</TabsTrigger>
-              <TabsTrigger value="asistencia" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-foreground/70 hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><CalendarDays className="h-4 w-4" />Asistencia</TabsTrigger>
-              <TabsTrigger value="estudiantes" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-foreground/70 hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><Users className="h-4 w-4" />Estudiantes</TabsTrigger>
-              <TabsTrigger value="boletas" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-foreground/70 hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><FileText className="h-4 w-4" />Boletas</TabsTrigger>
-              <TabsTrigger value="enlaces" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-foreground/70 hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><Globe className="h-4 w-4" />Enlaces</TabsTrigger>
-              <TabsTrigger value="reportes" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-foreground/70 hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><BarChart3 className="h-4 w-4" />Reportes</TabsTrigger>
-              {isAdmin(usuario.rol) && <TabsTrigger value="avance" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-foreground/70 hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><GraduationCap className="h-4 w-4" />Avance</TabsTrigger>}
-              {isAdmin(usuario.rol) && <TabsTrigger value="admin" className="text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:text-foreground/70 hover:data-[state=inactive]:text-foreground hover:bg-muted/50"><Settings className="h-4 w-4" />Admin</TabsTrigger>}
-            </motion.div>
+            <div className="flex space-x-1.5 relative">
+              {[
+                { v: "dashboard", icon: LayoutDashboard, label: "Inicio" },
+                { v: "calificaciones", icon: ClipboardList, label: "Calificaciones" },
+                { v: "asistencia", icon: CalendarDays, label: "Asistencia" },
+                { v: "estudiantes", icon: Users, label: "Estudiantes" },
+                { v: "boletas", icon: FileText, label: "Boletas" },
+                { v: "enlaces", icon: Globe, label: "Enlaces" },
+                { v: "reportes", icon: BarChart3, label: "Reportes" },
+                ...(isAdmin(usuario.rol) ? [{ v: "avance", icon: GraduationCap, label: "Avance" }] : []),
+                ...(isAdmin(usuario.rol) ? [{ v: "admin", icon: Settings, label: "Admin" }] : []),
+              ].map(({ v, icon: Icon, label }) => {
+                const isActive = d.activeTab === v;
+                return (
+                  <div key={v} className="relative">
+                    {isActive && (
+                      <motion.div
+                        layoutId="desktop-tab-pill"
+                        className="absolute inset-0 rounded-lg bg-primary shadow-sm"
+                        transition={{ type: "spring", stiffness: 500, damping: 32, mass: 0.8 }}
+                      />
+                    )}
+                    <TabsTrigger
+                      value={v}
+                      className="relative text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-colors duration-200 tab-glow-active data-[state=active]:text-primary-foreground data-[state=inactive]:text-foreground/70 hover:data-[state=inactive]:text-foreground hover:bg-muted/50 press-feedback"
+                    >
+                      <motion.span
+                        animate={isActive ? { y: [0, -2, 0] } : { y: 0 }}
+                        transition={isActive ? { duration: 1.8, repeat: Infinity, ease: "easeInOut" } : { duration: 0.2 }}
+                        className="inline-flex"
+                      >
+                        <Icon className={`h-4 w-4 transition-transform ${isActive ? "scale-110" : ""}`} />
+                      </motion.span>
+                      {label}
+                    </TabsTrigger>
+                  </div>
+                );
+              })}
+            </div>
           </TabsList>
           <div className="flex items-center gap-2 ml-auto">
             <ContextualHelp section={d.activeTab} darkMode={darkMode} />
