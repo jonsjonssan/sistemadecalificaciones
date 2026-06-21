@@ -33,7 +33,7 @@ import { CalificacionRow } from "@/components/grading/CalificacionRow";
 import { HistorialCalificacionPopup } from "@/components/grading/HistorialCalificacionPopup";
 import LoginView from "@/components/LoginView";
 import { Usuario, AsignaturaConGrado, ConfigActividadPartial, Calificacion, ConfiguracionSistema } from "@/types";
-import { isAdmin, getDocentesDelGrado } from "@/utils/roleHelpers";
+import { isAdmin, getDocentesDelGrado, isSuperAdmin } from "@/utils/roleHelpers";
 import { calcularPromedio, calcularPromedioFinal, parseNotas, contarEstados } from "@/utils/gradeCalculations";
 import { escapeHtml } from "@/lib/utils/index";
 import PresenceIndicator from "@/components/PresenceIndicator";
@@ -49,6 +49,7 @@ import { DescargaCompletaButton } from "@/components/DescargaCompletaButton";
 import { DescargaBoletasPorCiclo } from "@/components/DescargaBoletasPorCiclo";
 import InformeTecnicoDialog from "@/components/InformeTecnicoDialog";
 import AvanceDocentes from "@/components/AvanceDocentes";
+import SuperadminPanel from "@/components/SuperadminPanel";
 import { MobileTabBar } from "@/components/MobileTabBar";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { useToast } from "@/hooks/use-toast";
@@ -303,6 +304,7 @@ export default function Home() {
                 { v: "reportes", icon: BarChart3, label: "Reportes" },
                 ...(isAdmin(usuario.rol) ? [{ v: "avance", icon: GraduationCap, label: "Avance" }] : []),
                 ...(isAdmin(usuario.rol) ? [{ v: "admin", icon: Settings, label: "Admin" }] : []),
+                ...(isSuperAdmin(usuario.rol) ? [{ v: "superadmin", icon: School, label: "Escuelas" }] : []),
               ].map(({ v, icon: Icon, label }) => {
                 const isActive = d.activeTab === v;
                 return (
@@ -1016,6 +1018,13 @@ export default function Home() {
                   </div>
                 </CardContent>
               </Card>
+            </TabsContent>
+          )}
+
+          {/* Superadmin - Gestion de escuelas */}
+          {isSuperAdmin(usuario.rol) && (
+            <TabsContent value="superadmin" className="mt-3">
+              <SuperadminPanel darkMode={darkMode} />
             </TabsContent>
           )}
         </Tabs>

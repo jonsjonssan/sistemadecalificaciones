@@ -5,6 +5,7 @@ import { useTheme } from "next-themes";
 import { useToast } from "@/hooks/use-toast";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { isAdmin, canDeleteUsers, getDocentesDelGrado } from "@/utils/roleHelpers";
+import { isSuperAdmin } from "@/utils/roleHelpers";
 import { calcularPromedio, calcularPromedioFinal, parseNotas, contarEstados } from "@/utils/gradeCalculations";
 import { useDashboardStore } from "@/lib/stores/dashboard-store";
 import type { Usuario, UsuarioSesion, Estudiante, Asignatura, AsignaturaConGrado, Calificacion, Grado, ConfigActividad, ConfigActividadPartial, ConfiguracionSistema } from "@/types";
@@ -102,6 +103,7 @@ export function useDashboardData() {
     { value: "reportes", icon: undefined, label: "Reportes" },
     ...(usuario?.rol && isAdmin(usuario.rol) ? [{ value: "avance", icon: undefined, label: "Avance" }] : []),
     ...(usuario?.rol && isAdmin(usuario.rol) ? [{ value: "admin", icon: undefined, label: "Admin" }] : []),
+    ...(usuario?.rol && isSuperAdmin(usuario.rol) ? [{ value: "superadmin", icon: undefined, label: "Escuelas" }] : []),
   ];
 
   const [materiasEnBoleta, setMateriasEnBoleta] = useState<string[]>([]);
