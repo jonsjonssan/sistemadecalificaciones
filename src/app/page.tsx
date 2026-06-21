@@ -240,7 +240,7 @@ export default function Home() {
               whileTap={{ scale: 0.92 }}
               transition={{ type: "spring", stiffness: 400, damping: 17 }}
               onClick={() => d.setTheme(d.theme === "dark" ? "light" : "dark")}
-              className="p-1.5 sm:p-2 transition-colors text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg press-feedback"
+              className="p-1.5 sm:p-2 transition-colors text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-lg press-feedback"
               title={darkMode ? "Modo claro" : "Modo oscuro"}
               aria-label={darkMode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
             >
@@ -253,17 +253,17 @@ export default function Home() {
               </AnimatePresence>
             </motion.button>
             <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
-              <Button variant="ghost" size="sm" onClick={() => d.setShowWizard(true)} className="touch-target px-1.5 sm:px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 sm:h-10 press-feedback shine-on-hover" title="Guía de inicio"><Lightbulb className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Ayuda</span></Button>
+              <Button variant="ghost" size="sm" onClick={() => d.setShowWizard(true)} className="touch-target px-1.5 sm:px-2 text-xs text-muted-foreground hover:text-primary hover:bg-primary/10 sm:h-10 press-feedback shine-on-hover" title="Guía de inicio"><Lightbulb className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Ayuda</span></Button>
             </motion.div>
             <div className="text-right text-xs font-medium hidden sm:block"><p className="font-medium cursor-pointer hover:underline text-foreground" onClick={() => setPerfilDialogOpen(true)}>{usuario.nombre}</p><p className="capitalize text-muted-foreground/60">{usuario.rol}</p></div>
             <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
-              <Button variant="ghost" size="sm" onClick={() => setPerfilDialogOpen(true)} className="touch-target px-1.5 sm:px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 sm:h-10 press-feedback" title="Ver perfil"><User className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Perfil</span></Button>
+              <Button variant="ghost" size="sm" onClick={() => setPerfilDialogOpen(true)} className="touch-target px-1.5 sm:px-2 text-xs text-muted-foreground hover:text-primary hover:bg-primary/10 sm:h-10 press-feedback" title="Ver perfil"><User className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Perfil</span></Button>
             </motion.div>
             <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
-              <Button variant="ghost" size="sm" onClick={() => setPasswordDialogOpen(true)} className="touch-target px-1.5 sm:px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 sm:h-10 press-feedback" title="Cambiar contraseña"><Key className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Clave</span></Button>
+              <Button variant="ghost" size="sm" onClick={() => setPasswordDialogOpen(true)} className="touch-target px-1.5 sm:px-2 text-xs text-muted-foreground hover:text-primary hover:bg-primary/10 sm:h-10 press-feedback" title="Cambiar contraseña"><Key className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Clave</span></Button>
             </motion.div>
             <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
-              <Button variant="ghost" size="sm" onClick={handleLogout} aria-label="Cerrar sesión" className="touch-target px-1.5 sm:px-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 sm:h-10 press-feedback" title="Cerrar sesión"><LogOut className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Salir</span></Button>
+              <Button variant="ghost" size="sm" onClick={handleLogout} aria-label="Cerrar sesión" className="touch-target px-1.5 sm:px-2 text-xs text-muted-foreground hover:text-primary hover:bg-primary/10 sm:h-10 press-feedback" title="Cerrar sesión"><LogOut className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" /><span className="hidden sm:inline">Salir</span></Button>
             </motion.div>
           </motion.div>
         </div>
@@ -318,7 +318,7 @@ export default function Home() {
                     )}
                     <TabsTrigger
                       value={v}
-                      className="relative text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 ease-out tab-glow-active data-[state=active]:text-primary-foreground data-[state=inactive]:text-foreground/70 hover:data-[state=inactive]:text-primary hover:data-[state=inactive]:bg-primary/[0.12] hover:data-[state=inactive]:shadow-md hover:data-[state=inactive]:-translate-y-[1px] dark:hover:data-[state=inactive]:bg-primary/20 dark:hover:data-[state=inactive]:text-primary-foreground press-feedback group"
+                      className="relative text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 ease-out tab-glow-active data-[state=active]:text-primary-foreground data-[state=inactive]:text-foreground/70 hover:data-[state=inactive]:text-primary hover:data-[state=inactive]:bg-primary/[0.12] hover:data-[state=inactive]:shadow-md hover:data-[state=inactive]:-translate-y-[1px] dark:hover:data-[state=inactive]:bg-primary/15 dark:hover:data-[state=inactive]:text-primary press-feedback group"
                     >
                       <motion.span
                         animate={isActive ? { y: [0, -2, 0] } : { y: 0 }}
