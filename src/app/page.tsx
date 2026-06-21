@@ -316,14 +316,14 @@ export default function Home() {
                     )}
                     <TabsTrigger
                       value={v}
-                      className="relative text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-colors duration-200 tab-glow-active data-[state=active]:text-primary-foreground data-[state=inactive]:text-foreground/70 hover:data-[state=inactive]:text-foreground hover:bg-muted/50 press-feedback"
+                      className="relative text-sm font-medium px-4 py-2 gap-1.5 shrink-0 rounded-lg transition-all duration-200 ease-out tab-glow-active data-[state=active]:text-primary-foreground data-[state=inactive]:text-foreground/70 hover:data-[state=inactive]:text-primary hover:data-[state=inactive]:bg-primary/[0.12] hover:data-[state=inactive]:shadow-md hover:data-[state=inactive]:-translate-y-[1px] dark:hover:data-[state=inactive]:bg-primary/20 dark:hover:data-[state=inactive]:text-primary-foreground press-feedback group"
                     >
                       <motion.span
                         animate={isActive ? { y: [0, -2, 0] } : { y: 0 }}
                         transition={isActive ? { duration: 1.8, repeat: Infinity, ease: "easeInOut" } : { duration: 0.2 }}
-                        className="inline-flex"
+                        className="inline-flex group-hover:data-[state=inactive]:scale-110 transition-transform"
                       >
-                        <Icon className={`h-4 w-4 transition-transform ${isActive ? "scale-110" : ""}`} />
+                        <Icon className={`h-4 w-4 transition-transform ${isActive ? "scale-110" : "group-hover:scale-110"}`} />
                       </motion.span>
                       {label}
                     </TabsTrigger>

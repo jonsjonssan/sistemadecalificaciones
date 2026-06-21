@@ -48,7 +48,7 @@ export function MobileTabBar({ items, activeTab, onTabChange, darkMode, isAdmin 
               className={`relative flex flex-col items-center justify-center py-1.5 px-1 min-w-[52px] min-h-[52px] rounded-xl transition-all duration-200 ${
                 isActive
                   ? "text-primary"
-                  : "text-muted-foreground/50 active:text-muted-foreground/80"
+                  : "text-muted-foreground/60 hover:text-primary hover:bg-primary/10 active:text-muted-foreground/80 active:scale-95"
               }`}
               aria-label={item.label}
               aria-current={isActive ? "page" : undefined}
@@ -102,7 +102,7 @@ function MobileMoreMenu({
         className={`relative flex flex-col items-center justify-center py-1.5 px-1 min-w-[52px] min-h-[52px] rounded-xl transition-all duration-200 ${
           items.some(i => i.value === activeTab)
             ? "text-primary"
-            : "text-muted-foreground/50 active:text-muted-foreground/80"
+            : "text-muted-foreground/60 hover:text-primary hover:bg-primary/10 active:text-muted-foreground/80 active:scale-95"
         }`}
         aria-label="Más opciones"
       >
@@ -133,10 +133,10 @@ function MobileMoreMenu({
                   <button
                     key={item.value}
                     onClick={() => { onTabChange(item.value); setOpen(false); }}
-                    className={`flex items-center gap-2.5 w-full px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                    className={`flex items-center gap-2.5 w-full px-3 py-2.5 rounded-lg text-sm transition-all duration-150 ${
                       isActive
                         ? "bg-primary/10 text-primary font-semibold"
-                        : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                        : "text-muted-foreground hover:bg-primary/10 hover:text-primary hover:pl-4"
                     }`}
                   >
                     <Icon className="h-4 w-4" />
