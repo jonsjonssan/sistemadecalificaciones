@@ -14,6 +14,7 @@ import { cookies } from "next/headers";
 import { db } from "./db";
 import { verifySession } from "./session";
 import { z } from "zod";
+import { sql } from "./neon";
 
 // ==========================================
 // Zod Validation Helpers
@@ -65,10 +66,41 @@ export interface SessionUsuario {
   rol: string;
   escuelaId: string;
   escuela?: { id: string; nombre: string; codigo?: string; logo?: string; colorPrimario?: string };
+  sessionId?: string;
   gradoId?: string;
   materias?: Array<{ id: string; nombre: string; gradoId: string; grado?: { numero: number; seccion: string } }>;
   gradosAsignados?: Array<{ id: string; numero: number; seccion: string }>;
   asignaturasAsignadas?: Array<{ id: string; nombre: string; gradoId: string }>;
+}
+
+// ==========================================
+// Session Activity Cache (60s TTL)
+// ==========================================
+
+const sessionActivityCache = new Map<string, { active: boolean; checkedAt: number }>();
+const SESSION_CACHE_TTL = 60 * 1000; // 60 seconds
+
+async function isUserActive(userId: string): Promise<boolean> {
+  const now = Date.now();
+  const cached = sessionActivityCache.get(userId);
+  if (cached && now - cached.checkedAt < SESSION_CACHE_TTL) {
+    return cached.active;
+  }
+  try {
+    const rows = await sql`
+      SELECT activo FROM "Usuario" WHERE id = ${userId} LIMIT 1
+    `;
+    const active = rows.length > 0 && rows[0].activo === true;
+    sessionActivityCache.set(userId, { active, checkedAt: now });
+    return active;
+  } catch {
+    // Si la DB no responde, permitir acceso (fail-open para no bloquear todo el sistema)
+    return true;
+  }
+}
+
+export function invalidateSessionCache(userId: string) {
+  sessionActivityCache.delete(userId);
 }
 
 export async function getSession(): Promise<SessionUsuario | null> {
@@ -78,7 +110,13 @@ export async function getSession(): Promise<SessionUsuario | null> {
   try {
     const verified = verifySession(session.value);
     if (!verified) return null;
-    return verified as SessionUsuario;
+    const sessionUser = verified as SessionUsuario;
+
+    // Verificar que el usuario siga activo en la BD
+    const active = await isUserActive(sessionUser.id);
+    if (!active) return null;
+
+    return sessionUser;
   } catch {
     return null;
   }
@@ -92,13 +130,49 @@ export async function requireSession() {
   return { session };
 }
 
+const ADMIN_ROLES_ALL = ["superadmin", "admin", "admin-directora", "admin-codirectora"];
+
 export async function requireAdmin() {
   const { session, error } = await requireSession();
   if (error) return { error };
-  if (!["superadmin", "admin", "admin-directora", "admin-codirectora"].includes(session.rol)) {
+  if (!ADMIN_ROLES_ALL.includes(session.rol)) {
     return { error: NextResponse.json({ error: "Solo administradores pueden realizar esta acción" }, { status: 403 }) };
   }
   return { session };
+}
+
+// ==========================================
+// Tenant Isolation Helpers
+// ==========================================
+
+export async function requireEscuelaSession() {
+  const { session, error } = await requireSession();
+  if (error) return { error };
+  if (!session.escuelaId) {
+    return { error: NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 }) };
+  }
+  return { session };
+}
+
+export async function requireAdminInEscuela() {
+  const { session, error } = await requireAdmin();
+  if (error) return { error };
+  if (!session.escuelaId) {
+    return { error: NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 }) };
+  }
+  return { session };
+}
+
+export function checkEscuelaOwnership(session: SessionUsuario, targetEscuelaId: string): boolean {
+  if (!session.escuelaId || !targetEscuelaId) return false;
+  return session.escuelaId === targetEscuelaId;
+}
+
+export function rejectIfNotSameEscuela(session: SessionUsuario, targetEscuelaId: string) {
+  if (!checkEscuelaOwnership(session, targetEscuelaId)) {
+    return NextResponse.json({ error: "No tiene acceso a recursos de otra escuela" }, { status: 403 });
+  }
+  return null;
 }
 
 // ==========================================
@@ -158,14 +232,17 @@ export function withErrorHandling(handler: (req: NextRequest, ...args: any[]) =>
 // Auth Wrapper
 // ==========================================
 
-export function withAuth(handler: (req: NextRequest, session: SessionUsuario) => Promise<NextResponse>, options?: { requireAdmin?: boolean }) {
+export function withAuth(handler: (req: NextRequest, session: SessionUsuario) => Promise<NextResponse>, options?: { requireAdmin?: boolean; requireEscuela?: boolean }) {
   return withErrorHandling(async (req: NextRequest, ...args: any[]) => {
     const session = await getSession();
     if (!session) {
       return NextResponse.json({ error: "No autorizado. Inicia sesión primero." }, { status: 401 });
     }
-    if (options?.requireAdmin && !["admin", "admin-directora", "admin-codirectora"].includes(session.rol)) {
+    if (options?.requireAdmin && !ADMIN_ROLES_ALL.includes(session.rol)) {
       return NextResponse.json({ error: "Acceso denegado. Se requiere rol de administrador." }, { status: 403 });
+    }
+    if (options?.requireEscuela && !session.escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
     }
     return handler(req, session);
   });

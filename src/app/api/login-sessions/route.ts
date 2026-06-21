@@ -12,9 +12,14 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 200);
     const usuarioId = searchParams.get("usuarioId");
 
+    const escuelaId = (session as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+    }
+
     const skip = (page - 1) * limit;
 
-    const where: any = {};
+    const where: any = { escuelaId };
     if (usuarioId) {
       where.usuarioId = usuarioId;
     }
@@ -52,7 +57,10 @@ export async function POST(request: NextRequest) {
     const { session: authSession, error: authError } = await requireAdmin();
     if (authError) return authError;
 
-    const escuelaId = (authSession as any).escuelaId || '';
+    const escuelaId = (authSession as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+    }
 
     const data = await request.json();
     const { usuarioId } = data;

@@ -19,6 +19,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Solo administradores pueden ejecutar esta acción" }, { status: 403 });
     }
 
+    const escuelaId = (sessionData as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+    }
+
     const { passwordAdmin, passwordDocente } = await request.json();
 
     if (!passwordAdmin || !passwordDocente) {
@@ -33,8 +38,9 @@ export async function POST(request: NextRequest) {
     const hashedAdmin = await bcrypt.hash(passwordAdmin, 10);
     const hashedDocente = await bcrypt.hash(passwordDocente, 10);
 
-    await sql`UPDATE "Usuario" SET password = ${hashedAdmin}, "updatedAt" = NOW() WHERE rol = 'admin'`;
-    await sql`UPDATE "Usuario" SET password = ${hashedDocente}, "updatedAt" = NOW() WHERE rol = 'docente'`;
+    // Filtrar por escuelaId para no afectar usuarios de otras escuelas
+    await sql`UPDATE "Usuario" SET password = ${hashedAdmin}, "updatedAt" = NOW() WHERE rol = 'admin' AND "escuelaId" = ${escuelaId}`;
+    await sql`UPDATE "Usuario" SET password = ${hashedDocente}, "updatedAt" = NOW() WHERE rol = 'docente' AND "escuelaId" = ${escuelaId}`;
 
     return NextResponse.json({ 
       message: "Contraseñas actualizadas correctamente",

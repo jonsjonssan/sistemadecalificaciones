@@ -6,6 +6,13 @@ if (!SESSION_SECRET) {
   throw new Error("SESSION_SECRET or NEXTAUTH_SECRET environment variable is required");
 }
 
+if (SESSION_SECRET.length < 32) {
+  throw new Error(
+    `SESSION_SECRET debe tener al menos 32 caracteres (actual: ${SESSION_SECRET.length}). ` +
+    `Genere uno con: node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"`
+  );
+}
+
 const SECRET = SESSION_SECRET;
 
 function getHmac(data: string): string {

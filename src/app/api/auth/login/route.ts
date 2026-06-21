@@ -114,8 +114,6 @@ export async function POST(request: NextRequest) {
       SELECT id, nombre, codigo, logo, "colorPrimario" FROM "Escuela" WHERE id = ${escuelaId}
     `;
 
-    const cookieStore = await cookies();
-
     const userData: any = {
       id: usuario[0].id,
       email: usuario[0].email,
@@ -134,15 +132,8 @@ export async function POST(request: NextRequest) {
     };
 
     const isSecure = request.headers.get("x-forwarded-proto") === "https" || process.env.NODE_ENV === "production";
-    cookieStore.set("session", signSession(userData), {
-      httpOnly: true,
-      secure: isSecure,
-      sameSite: "strict",
-      path: "/",
-      maxAge: 60 * 60 * 8,
-    });
 
-    // Registrar login en audit log y sesiones
+    // Registrar login en audit log y sesiones ANTES de firmar la cookie
     try {
       const headers = Object.fromEntries(request.headers.entries());
       const ip = headers["x-forwarded-for"] || headers["x-real-ip"] || "unknown";
@@ -157,24 +148,26 @@ export async function POST(request: NextRequest) {
         detalles: JSON.stringify({ email: usuario[0].email, nombre: usuario[0].nombre }),
       });
 
-      await sql`
+      const sessionResult = await sql`
         INSERT INTO "LoginSession" ("id", "usuarioId", "escuelaId", "ip", "userAgent", "loginAt")
         VALUES (gen_random_uuid()::text, ${usuario[0].id}, ${escuelaId}, ${ip}, ${userAgent}, NOW())
         RETURNING id
       `;
-      
-      const sessionResult = await sql`
-        SELECT id FROM "LoginSession" 
-        WHERE "usuarioId" = ${usuario[0].id} AND "isActive" = true
-        ORDER BY "loginAt" DESC LIMIT 1
-      `;
-      
-      const sessionId = sessionResult[0]?.id;
 
-      userData.sessionId = sessionId;
+      userData.sessionId = sessionResult[0]?.id;
     } catch (auditError) {
       console.error("[auth/login] Error creating audit log:", auditError);
     }
+
+    // Firmar cookie DESPUES de añadir sessionId para que logout pueda revocarla
+    const cookieStore = await cookies();
+    cookieStore.set("session", signSession(userData), {
+      httpOnly: true,
+      secure: isSecure,
+      sameSite: "strict",
+      path: "/",
+      maxAge: 60 * 60 * 8,
+    });
 
     return NextResponse.json({ usuario: userData });
   } catch (error) {

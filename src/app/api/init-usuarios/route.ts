@@ -22,7 +22,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Solo administradores pueden ejecutar esta acción" }, { status: 403 });
     }
 
-    const escuelaId = (sessionData as any).escuelaId || '';
+    const escuelaId = (sessionData as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+    }
 
     // Obtener todos los grados y materias
     const grados = await db.grado.findMany({

@@ -30,7 +30,10 @@ export async function GET(request: NextRequest) {
     }
 
     const isAdminRole = isAdmin(session.rol);
-    const escuelaId = (session as any).escuelaId || '';
+    const escuelaId = (session as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+    }
     const gradosAsignados: string[] = session.asignaturasAsignadas?.map((m: any) => m.gradoId as string) || [];
     const gradosUnicos = [...new Set(gradosAsignados)];
 

@@ -32,7 +32,12 @@ export async function GET(request: NextRequest) {
     const fechaDesde = searchParams.get("fechaDesde");
     const fechaHasta = searchParams.get("fechaHasta");
 
-    const where: any = {};
+    const escuelaId = (session as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+    }
+
+    const where: any = { escuelaId };
     if (accion) where.accion = accion;
     if (fechaDesde || fechaHasta) {
       where.createdAt = {};
@@ -86,13 +91,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const escuelaId = (session as any).escuelaId || '';
+    const escuelaId = (session as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+    }
 
     const data = await request.json();
     const { accion, entidad, entidadId, detalles } = data;
 
     if (!accion || !entidad) {
       return NextResponse.json({ error: "accion y entidad son requeridos" }, { status: 400 });
+    }
+
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
     }
 
     const log = await db.auditLog.create({
@@ -125,7 +137,12 @@ export async function DELETE(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const olderThan = searchParams.get("olderThan");
 
-    const where: any = {};
+    const escuelaId = (session as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+    }
+
+    const where: any = { escuelaId };
     if (olderThan) {
       where.createdAt = { lt: new Date(olderThan) };
     }

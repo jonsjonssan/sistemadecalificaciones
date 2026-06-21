@@ -24,6 +24,9 @@ export async function GET(request: NextRequest) {
     const todas = searchParams.get("todas");
     const año = searchParams.get("año") ? parseInt(searchParams.get("año")!) : 2026;
     const escuelaId = (session as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+    }
 
     const isAdminUser = isAdmin(session.rol);
     const materiasArr = (session.asignaturasAsignadas || []) as Array<{ id: string; gradoId: string }>;
@@ -35,13 +38,12 @@ export async function GET(request: NextRequest) {
       if (!isAdminUser && materiaIdsAsignadas.length === 0) {
         return NextResponse.json([]);
       }
-      const baseFilter = escuelaId ? `AND m."escuelaId" = '${escuelaId}'` : '';
       if (isAdminUser) {
         materias = await sql`
           SELECT m.*, g.id as grado_id, g.numero as grado_numero, g.seccion as grado_seccion
           FROM "Materia" m
           JOIN "Grado" g ON m."gradoId" = g.id
-          WHERE g.año = ${año} AND m."escuelaId" = ${escuelaId || ''}
+          WHERE g.año = ${año} AND m."escuelaId" = ${escuelaId}
           ORDER BY g.numero, m.nombre
         `;
       } else {
@@ -49,7 +51,7 @@ export async function GET(request: NextRequest) {
           SELECT m.*, g.id as grado_id, g.numero as grado_numero, g.seccion as grado_seccion
           FROM "Materia" m
           JOIN "Grado" g ON m."gradoId" = g.id
-          WHERE g.año = ${año} AND g.id = ANY(${gradosAsignados}::text[]) AND m."escuelaId" = ${escuelaId || ''}
+          WHERE g.año = ${año} AND g.id = ANY(${gradosAsignados}::text[]) AND m."escuelaId" = ${escuelaId}
           ORDER BY g.numero, m.nombre
         `;
       }
@@ -72,7 +74,7 @@ export async function GET(request: NextRequest) {
         SELECT m.*, g.id as grado_id, g.numero as grado_numero, g.seccion as grado_seccion
         FROM "Materia" m
         JOIN "Grado" g ON m."gradoId" = g.id
-        WHERE m."gradoId" = ${gradoId} AND g.año = ${año} AND m."escuelaId" = ${escuelaId || ''}
+        WHERE m."gradoId" = ${gradoId} AND g.año = ${año} AND m."escuelaId" = ${escuelaId}
         ORDER BY m.nombre
       `;
       return NextResponse.json(materias);
@@ -86,7 +88,7 @@ export async function GET(request: NextRequest) {
         SELECT m.*, g.id as grado_id, g.numero as grado_numero, g.seccion as grado_seccion
         FROM "Materia" m
         JOIN "Grado" g ON m."gradoId" = g.id
-        WHERE g.año = ${año} AND m."escuelaId" = ${escuelaId || ''}
+        WHERE g.año = ${año} AND m."escuelaId" = ${escuelaId}
         ORDER BY g.numero, m.nombre
       `;
     } else {
@@ -94,7 +96,7 @@ export async function GET(request: NextRequest) {
         SELECT m.*, g.id as grado_id, g.numero as grado_numero, g.seccion as grado_seccion
         FROM "Materia" m
         JOIN "Grado" g ON m."gradoId" = g.id
-        WHERE g.año = ${año} AND g.id = ANY(${gradosAsignados}::text[]) AND m."escuelaId" = ${escuelaId || ''}
+        WHERE g.año = ${año} AND g.id = ANY(${gradosAsignados}::text[]) AND m."escuelaId" = ${escuelaId}
         ORDER BY g.numero, m.nombre
       `;
     }
@@ -125,6 +127,9 @@ export async function POST(request: NextRequest) {
     const data = await request.json();
     const { nombre, gradoId } = data;
     const escuelaId = (session as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+    }
 
     if (!nombre || !gradoId) {
       return NextResponse.json({ error: "Nombre y grado son requeridos" }, { status: 400 });
@@ -134,7 +139,7 @@ export async function POST(request: NextRequest) {
       data: {
         nombre,
         gradoId,
-        escuelaId: escuelaId || '',
+        escuelaId,
       },
     });
 
@@ -156,11 +161,25 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 
+    const escuelaId = (session as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+    }
+
     const data = await request.json();
     const { id, nombre } = data;
 
     if (!id || !nombre) {
       return NextResponse.json({ error: "ID y nombre son requeridos" }, { status: 400 });
+    }
+
+    // Verificar ownership: la materia debe pertenecer a la escuela del admin
+    const materia = await db.materia.findUnique({ where: { id }, select: { escuelaId: true } });
+    if (!materia) {
+      return NextResponse.json({ error: "Materia no encontrada" }, { status: 404 });
+    }
+    if (materia.escuelaId !== escuelaId) {
+      return NextResponse.json({ error: "No tiene permiso sobre materias de otra escuela" }, { status: 403 });
     }
 
     await db.materia.update({
@@ -186,11 +205,25 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 
+    const escuelaId = (session as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 
     if (!id) {
       return NextResponse.json({ error: "ID requerido" }, { status: 400 });
+    }
+
+    // Verificar ownership
+    const materia = await db.materia.findUnique({ where: { id }, select: { escuelaId: true } });
+    if (!materia) {
+      return NextResponse.json({ error: "Materia no encontrada" }, { status: 404 });
+    }
+    if (materia.escuelaId !== escuelaId) {
+      return NextResponse.json({ error: "No tiene permiso sobre materias de otra escuela" }, { status: 403 });
     }
 
     await db.materia.delete({ where: { id } });

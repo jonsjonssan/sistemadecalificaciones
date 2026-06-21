@@ -31,10 +31,24 @@ export async function PATCH(
       return NextResponse.json({ error: "Solo administradores pueden editar estudiantes" }, { status: 403 });
     }
 
+    const escuelaId = (session as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+    }
+
     const { id } = await params;
 
     if (!id) {
       return NextResponse.json({ error: "ID requerido" }, { status: 400 });
+    }
+
+    // Verificar ownership: el estudiante debe pertenecer a la escuela del admin
+    const existing = await db.estudiante.findUnique({ where: { id }, select: { escuelaId: true } });
+    if (!existing) {
+      return NextResponse.json({ error: "Estudiante no encontrado" }, { status: 404 });
+    }
+    if (existing.escuelaId !== escuelaId) {
+      return NextResponse.json({ error: "No tiene permiso sobre estudiantes de otra escuela" }, { status: 403 });
     }
 
     const body = await request.json();

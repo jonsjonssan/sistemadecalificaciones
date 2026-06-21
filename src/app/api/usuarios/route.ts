@@ -6,6 +6,7 @@ import { verifySession } from "@/lib/session";
 import bcrypt from "bcryptjs";
 import { randomUUID } from "crypto";
 import { isAdmin } from "@/utils/roleHelpers";
+import { invalidateSessionCache } from "@/lib/api-middleware";
 
 export const revalidate = 300;
 
@@ -54,7 +55,10 @@ export async function GET() {
       return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 
-    const escuelaId = (session as any).escuelaId || '';
+    const escuelaId = (session as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+    }
     const usuarios = await sql`
       SELECT u.id, u.email, u.nombre, u.rol, u.activo, u."createdAt"
       FROM "Usuario" u
@@ -111,14 +115,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Todos los campos son requeridos" }, { status: 400 });
     }
 
-    const existeEmail = await sql`SELECT id FROM "Usuario" WHERE LOWER(email) = LOWER(${email})`;
+    const escuelaId = (session as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+    }
+
+    // Verificar email unico dentro de la misma escuela
+    const existeEmail = await sql`SELECT id FROM "Usuario" WHERE LOWER(email) = LOWER(${email}) AND "escuelaId" = ${escuelaId}`;
     if (existeEmail.length > 0) {
-      return NextResponse.json({ error: "El email ya está registrado" }, { status: 400 });
+      return NextResponse.json({ error: "El email ya está registrado en esta escuela" }, { status: 400 });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const newId = randomUUID();
-    const escuelaId = (session as any).escuelaId || '';
 
     const nuevoUsuario = await sql`
       INSERT INTO "Usuario" (id, email, password, nombre, rol, "escuelaId", provider, "createdAt", "updatedAt")
@@ -168,6 +177,20 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "No puedes desactivarte a ti mismo" }, { status: 400 });
     }
 
+    const escuelaId = (session as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+    }
+
+    // Verificar que el usuario objetivo pertenece a la misma escuela
+    const targetUser = await sql`SELECT id, "escuelaId" FROM "Usuario" WHERE id = ${id} LIMIT 1`;
+    if (targetUser.length === 0) {
+      return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+    }
+    if (targetUser[0].escuelaId !== escuelaId) {
+      return NextResponse.json({ error: "No tiene permiso sobre usuarios de otra escuela" }, { status: 403 });
+    }
+
     const usuarioActualizado = await db.$transaction(async (tx: any) => {
       let updatedUser: any;
 
@@ -195,7 +218,6 @@ export async function PUT(request: NextRequest) {
       if (materiasAsignadas !== undefined) {
         await tx.docenteMateria.deleteMany({ where: { docenteId: id } });
         if (materiasAsignadas && materiasAsignadas.length > 0) {
-          const escuelaId = (session as any).escuelaId || '';
           for (const materiaId of materiasAsignadas) {
             await tx.docenteMateria.create({
               data: { docenteId: id, materiaId, escuelaId },
@@ -254,10 +276,26 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "No puedes eliminarte a ti mismo" }, { status: 400 });
     }
 
+    const escuelaId = (session as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+    }
+
+    // Verificar que el usuario objetivo pertenece a la misma escuela
+    const targetUser = await sql`SELECT id, "escuelaId" FROM "Usuario" WHERE id = ${id} LIMIT 1`;
+    if (targetUser.length === 0) {
+      return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+    }
+    if (targetUser[0].escuelaId !== escuelaId) {
+      return NextResponse.json({ error: "No tiene permiso sobre usuarios de otra escuela" }, { status: 403 });
+    }
+
     await db.$transaction([
       db.docenteMateria.deleteMany({ where: { docenteId: id } }),
       db.usuario.delete({ where: { id } }),
     ]);
+
+    invalidateSessionCache(id);
 
     return NextResponse.json({ message: "Usuario eliminado" });
   } catch (error: any) {

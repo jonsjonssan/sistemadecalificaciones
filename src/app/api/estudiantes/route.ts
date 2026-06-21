@@ -113,7 +113,10 @@ export async function POST(request: NextRequest) {
 
     const data = await request.json();
     const { nombre, gradoId } = data;
-    const escuelaId = (session as any).escuelaId || '';
+    const escuelaId = (session as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+    }
 
     if (!nombre || !gradoId) {
       return NextResponse.json({ error: "Nombre y grado son requeridos" }, { status: 400 });
@@ -166,7 +169,10 @@ export async function PUT(request: NextRequest) {
     }
 
     const { estudiantes, gradoId } = await request.json();
-    const escuelaId = (session as any).escuelaId || '';
+    const escuelaId = (session as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+    }
 
     if (!estudiantes || !Array.isArray(estudiantes)) {
       return NextResponse.json({ error: "Se requiere un array de nombres" }, { status: 400 });

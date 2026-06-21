@@ -32,8 +32,8 @@ interface Umbrales {
   umbralRecuperacion: number;
 }
 
-async function getUmbrales(): Promise<Umbrales> {
-  const config = await db.configuracionSistema.findFirst();
+async function getUmbrales(escuelaId?: string): Promise<Umbrales> {
+  const config = await db.configuracionSistema.findFirst({ where: escuelaId ? { escuelaId } : undefined });
   return {
     umbralAprobado: config?.umbralAprobado ?? 6.5,
     umbralCondicionado: config?.umbralCondicionado ?? 4.5,
@@ -245,13 +245,15 @@ export async function analizarEstudiante(
 
 export async function ejecutarAnalisisCompleto(
   año: number,
-  gradoId?: string
+  gradoId?: string,
+  escuelaId?: string
 ): Promise<ResultadoAnalisis> {
-  const umbrales = await getUmbrales();
+  const umbrales = await getUmbrales(escuelaId);
 
   const estudiantes = await db.estudiante.findMany({
     where: {
       activo: true,
+      ...(escuelaId ? { escuelaId } : {}),
       ...(gradoId ? { gradoId } : {}),
     },
     include: { grado: { select: { id: true, numero: true, seccion: true } } },

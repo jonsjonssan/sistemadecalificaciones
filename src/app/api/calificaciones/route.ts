@@ -380,7 +380,10 @@ export async function POST(request: NextRequest) {
       recuperacion,
     } = parsed.data;
 
-    const escuelaId = (session as any).escuelaId || '';
+    const escuelaId = (session as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+    }
 
     if (!canAccessMateria(session, materiaId)) {
       return NextResponse.json({ error: "No tiene acceso a esta materia" }, { status: 403 });
@@ -847,7 +850,10 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const escuelaId = (session as any).escuelaId || '';
+    const escuelaId = (session as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+    }
     const { searchParams } = new URL(request.url);
     const estudianteId = searchParams.get("estudianteId");
     const estudianteIds = searchParams.get("estudianteIds"); // Array de IDs separado por comas

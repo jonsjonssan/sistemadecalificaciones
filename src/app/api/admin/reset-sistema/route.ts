@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { cookies } from "next/headers";
 import { verifySession } from "@/lib/session";
 import { isAdmin } from "@/utils/roleHelpers";
+import { invalidateSessionCache } from "@/lib/api-middleware";
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -27,35 +28,40 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Permiso denegado. Solo administradores pueden realizar esta acción." }, { status: 403 });
     }
 
-    // Wrap all operations in a single transaction for atomicity
-    await db.$transaction(async (tx) => {
-      await tx.calificacion.deleteMany({});
-      await tx.notaActividad.deleteMany({});
-      await tx.historialCalificacion.deleteMany({});
-      await tx.asistencia.deleteMany({});
-      await tx.observacionBoleta.deleteMany({});
-      await tx.estudiante.deleteMany({});
-      await tx.docenteMateria.deleteMany({});
-      await tx.recuperacionAnual.deleteMany({});
+    const escuelaId = (sessionData as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+    }
 
-      // Clear grade tutors
+    // Wrap all operations in a single transaction - filtrado por escuelaId
+    await db.$transaction(async (tx) => {
+      await tx.calificacion.deleteMany({ where: { escuelaId } });
+      await tx.notaActividad.deleteMany({ where: { calificacion: { escuelaId } } });
+      await tx.historialCalificacion.deleteMany({ where: { escuelaId } });
+      await tx.asistencia.deleteMany({ where: { escuelaId } });
+      await tx.observacionBoleta.deleteMany({ where: { escuelaId } });
+      await tx.estudiante.deleteMany({ where: { escuelaId } });
+      await tx.docenteMateria.deleteMany({ where: { escuelaId } });
+      await tx.recuperacionAnual.deleteMany({ where: { escuelaId } });
+
+      // Clear grade tutors solo de esta escuela
       await tx.grado.updateMany({
-        data: {
-          docenteId: null,
-        },
+        where: { escuelaId },
+        data: { docenteId: null },
       });
 
-      // Increment the school year
-      const config = await tx.configuracionSistema.findFirst();
+      // Increment the school year solo de esta escuela
+      const config = await tx.configuracionSistema.findFirst({ where: { escuelaId } });
       if (config) {
         await tx.configuracionSistema.update({
           where: { id: config.id },
-          data: {
-            añoEscolar: config.añoEscolar + 1,
-          },
+          data: { añoEscolar: config.añoEscolar + 1 },
         });
       }
     });
+
+    // Invalidar cache de sesiones de usuarios de esta escuela
+    invalidateSessionCache((sessionData as any).id);
 
     return NextResponse.json({
       success: true,

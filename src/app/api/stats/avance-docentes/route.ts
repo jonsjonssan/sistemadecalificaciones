@@ -205,7 +205,10 @@ export async function GET() {
     }
 
     const isAdminRole = isAdmin(session.rol);
-    const escuelaId = (session as any).escuelaId || '';
+    const escuelaId = (session as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+    }
 
     if (!isAdminRole && !["docente", "docente-orientador"].includes(session.rol)) {
       return NextResponse.json({ error: "Acceso denegado" }, { status: 403 });

@@ -7,7 +7,10 @@ export async function POST(request: NextRequest) {
     const { session, error } = await requireAdmin();
     if (error) return error;
 
-    const escuelaId = (session as any).escuelaId || '';
+    const escuelaId = (session as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+    }
 
     const body = await request.json();
     const { gradoId, materiaId, trimestre, dryRun = true } = body;

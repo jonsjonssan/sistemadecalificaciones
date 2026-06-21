@@ -70,7 +70,10 @@ export async function POST(req: NextRequest) {
   const { session, error: authError } = await requireSession();
   if (authError) return authError;
 
-  const escuelaId = (session as any).escuelaId || '';
+  const escuelaId = (session as any).escuelaId;
+  if (!escuelaId) {
+    return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+  }
 
   try {
     const body = await req.json();

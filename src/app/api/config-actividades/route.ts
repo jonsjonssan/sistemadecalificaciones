@@ -23,7 +23,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const escuelaId = (session as any).escuelaId || '';
+    const escuelaId = (session as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+    }
 
     const { searchParams } = new URL(request.url);
     const materiaId = searchParams.get("materiaId");
@@ -179,7 +182,10 @@ export async function POST(request: NextRequest) {
     const session = await getUsuarioSession();
     if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
-    const escuelaId = (session as any).escuelaId || '';
+    const escuelaId = (session as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+    }
 
     const data = await request.json();
 

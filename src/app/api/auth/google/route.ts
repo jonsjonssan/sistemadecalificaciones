@@ -99,17 +99,7 @@ export async function POST(request: NextRequest) {
       })),
     };
 
-    // Crear sesión en cookie
-    const cookieStore = await cookies();
-    cookieStore.set("session", signSession(userData), {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      path: "/",
-      maxAge: 60 * 60 * 8,
-    });
-
-    // Registrar en audit log y sesiones
+    // Registrar en audit log y sesiones ANTES de firmar la cookie
     try {
       const headers = Object.fromEntries(request.headers.entries());
       const ip = headers["x-forwarded-for"] || headers["x-real-ip"] || "unknown";
@@ -117,19 +107,34 @@ export async function POST(request: NextRequest) {
 
       await createAuditLog({
         usuarioId: userRecord.id,
+        escuelaId: escuelaId || undefined,
         accion: "LOGIN",
         entidad: "Usuario",
         entidadId: userRecord.id,
         detalles: JSON.stringify({ email: userRecord.email, nombre: userRecord.nombre, provider: "google" }),
       });
 
-      await sql`
+      const sessionResult = await sql`
         INSERT INTO "LoginSession" ("id", "usuarioId", "escuelaId", "ip", "userAgent", "loginAt")
         VALUES (gen_random_uuid()::text, ${userRecord.id}, ${escuelaId || null}, ${ip}, ${userAgent}, NOW())
+        RETURNING id
       `;
+
+      (userData as any).sessionId = sessionResult[0]?.id;
     } catch (auditError) {
       console.error("[auth/google] Error creating audit log:", auditError);
     }
+
+    // Firmar cookie DESPUES de añadir sessionId para que logout pueda revocarla
+    const cookieStore = await cookies();
+    const isSecure = request.headers.get("x-forwarded-proto") === "https" || process.env.NODE_ENV === "production";
+    cookieStore.set("session", signSession(userData), {
+      httpOnly: true,
+      secure: isSecure,
+      sameSite: "strict",
+      path: "/",
+      maxAge: 60 * 60 * 8,
+    });
 
     return NextResponse.json({
       registrado: true,

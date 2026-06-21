@@ -20,26 +20,34 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Solo administradores pueden ejecutar esta acción" }, { status: 403 });
     }
 
+    const escuelaId = (sessionData as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+    }
+
     const { searchParams } = new URL(request.url);
     const accion = searchParams.get("accion");
 
     if (accion === "restaurar") {
       const tempPassword = generateSecurePassword(16);
       const hashedPassword = await bcrypt.hash(tempPassword, 10);
-      
+
+      // Resetear contraseñas solo de usuarios de esta escuela
+      // El admin que ejecuta la acción mantiene su rol
       await sql`
-        UPDATE "Usuario" SET password = ${hashedPassword}, rol = 'docente', activo = true
-        WHERE email != 'jonathan.araujo.mendoza@clases.edu.sv'
+        UPDATE "Usuario" SET password = ${hashedPassword}, rol = 'docente', activo = true, "updatedAt" = NOW()
+        WHERE "escuelaId" = ${escuelaId} AND id != ${sessionData.id}
       `;
 
+      // El admin que ejecuta mantiene su rol de admin
       await sql`
-        UPDATE "Usuario" SET rol = 'admin', password = ${hashedPassword}
-        WHERE email = 'jonathan.araujo.mendoza@clases.edu.sv'
+        UPDATE "Usuario" SET password = ${hashedPassword}, activo = true, "updatedAt" = NOW()
+        WHERE id = ${sessionData.id}
       `;
 
-      return NextResponse.json({ 
-        message: "Sistema restaurado. Las contraseñas han sido restablecidas.",
-        adminEmail: "jonathan.araujo.mendoza@clases.edu.sv",
+      return NextResponse.json({
+        message: "Sistema restaurado. Las contraseñas han sido restablecidas para esta escuela.",
+        adminEmail: sessionData.email,
         tempPassword: process.env.NODE_ENV === "development" ? tempPassword : undefined
       });
     }

@@ -281,7 +281,10 @@ export async function GET(req: Request) {
     }
 
     const isAdminRole = isAdmin(session.rol);
-    const escuelaId = (session as any).escuelaId || '';
+    const escuelaId = (session as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+    }
 
     let gradosFiltrados;
 

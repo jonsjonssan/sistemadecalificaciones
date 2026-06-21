@@ -169,7 +169,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Sesión inválida" }, { status: 401 });
     }
 
-    const escuelaId = (session as any).escuelaId || '';
+    const escuelaId = (session as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+    }
 
     const body = await req.json();
     const pregunta = body.pregunta as string;

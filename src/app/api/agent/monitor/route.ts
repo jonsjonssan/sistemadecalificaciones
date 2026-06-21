@@ -19,7 +19,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Sesión inválida" }, { status: 401 });
     }
 
-    const escuelaId = (session as any).escuelaId || '';
+    const escuelaId = (session as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+    }
 
     const soloDirectiva = ["admin", "admin-directora", "admin-codirectora"].includes(session.rol);
     if (!soloDirectiva) {
@@ -33,7 +36,7 @@ export async function POST(req: Request) {
 
     const inicioTiempo = Date.now();
 
-    const resultado = await ejecutarAnalisisCompleto(año, gradoId);
+    const resultado = await ejecutarAnalisisCompleto(año, gradoId, escuelaId);
 
     let ejecucionId: string | null = null;
 
@@ -107,8 +110,14 @@ export async function GET(req: Request) {
     const soloNoLeidas = searchParams.get("leidas") === "no";
     const limit = parseInt(searchParams.get("limit") || "50");
 
+    const escuelaId = (session as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+    }
+
     const alertas = await db.agentAlert.findMany({
       where: {
+        escuelaId,
         ...(gradoId ? { gradoId } : {}),
         ...(soloNoLeidas ? { leido: false } : {}),
         resuelto: false,
@@ -137,7 +146,7 @@ export async function GET(req: Request) {
 
     const conteoPorTipo = await db.agentAlert.groupBy({
       by: ["tipo"],
-      where: { resuelto: false, leido: false },
+      where: { escuelaId, resuelto: false, leido: false },
       _count: { tipo: true },
     });
 
@@ -171,6 +180,11 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: "Solo directivos pueden borrar alertas del agente" }, { status: 403 });
     }
 
+    const escuelaId = (session as any).escuelaId;
+    if (!escuelaId) {
+      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
+    }
+
     const body = await req.json().catch(() => ({}));
     const borrarTodo = body.todo === true;
     const borrarLeidas = body.leidas === true;
@@ -181,7 +195,7 @@ export async function DELETE(req: Request) {
     let logsBorrados = 0;
 
     if (borrarAlertas) {
-      const where: any = {};
+      const where: any = { escuelaId };
       if (!borrarTodo) {
         where.leido = true;
         if (!borrarLeidas) where.resuelto = true;
@@ -191,7 +205,7 @@ export async function DELETE(req: Request) {
     }
 
     if (borrarLogs) {
-      const resultado = await db.agentLog.deleteMany({});
+      const resultado = await db.agentLog.deleteMany({ where: { escuelaId } });
       logsBorrados = resultado.count;
     }
 
