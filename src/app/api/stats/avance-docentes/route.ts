@@ -205,6 +205,7 @@ export async function GET() {
     }
 
     const isAdminRole = isAdmin(session.rol);
+    const escuelaId = (session as any).escuelaId || '';
 
     if (!isAdminRole && !["docente", "docente-orientador"].includes(session.rol)) {
       return NextResponse.json({ error: "Acceso denegado" }, { status: 403 });
@@ -214,7 +215,7 @@ export async function GET() {
 
     if (isAdminRole) {
       usuarios = await db.usuario.findMany({
-        where: { activo: true },
+        where: { activo: true, ...(escuelaId ? { escuelaId } : {}) },
         select: {
           id: true,
           nombre: true,

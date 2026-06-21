@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
 
     // Buscar usuario por email en la base de datos
     const usuario = await sql`
-      SELECT * FROM "Usuario" WHERE LOWER(email) = ${googleEmail}
+      SELECT id, email, nombre, rol, activo, "escuelaId", "googleId", provider FROM "Usuario" WHERE LOWER(email) = ${googleEmail}
     `;
 
     if (usuario.length === 0) {
@@ -56,8 +56,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Usuario inactivo. Contacta al administrador." }, { status: 403 });
     }
 
-    // Vincular googleId si no lo tiene (Neon devuelve snake_case)
-    if (!userRecord.google_id) {
+    // Vincular googleId si no lo tiene
+    if (!userRecord.googleId) {
       await sql`
         UPDATE "Usuario" SET "googleId" = ${googleId}, provider = 'google' WHERE id = ${userRecord.id}
       `;
@@ -72,11 +72,23 @@ export async function POST(request: NextRequest) {
       WHERE dm."docenteId" = ${userRecord.id}
     `;
 
+    // Obtener datos de la escuela del usuario
+    const escuelaId = userRecord.escuelaId;
+    let escuela: any = null;
+    if (escuelaId) {
+      const escuelaRows = await sql`
+        SELECT id, nombre, codigo, logo, "colorPrimario" FROM "Escuela" WHERE id = ${escuelaId}
+      `;
+      escuela = escuelaRows[0] || null;
+    }
+
     const userData = {
       id: userRecord.id,
       email: userRecord.email,
       nombre: userRecord.nombre,
       rol: userRecord.rol,
+      escuelaId: escuelaId || undefined,
+      escuela: escuela,
       gradosAsignados: [],
       asignaturasAsignadas: materiasAsignadas.map((m: any) => ({
         id: m.id,
@@ -112,8 +124,8 @@ export async function POST(request: NextRequest) {
       });
 
       await sql`
-        INSERT INTO "LoginSession" ("id", "usuarioId", "ip", "userAgent", "loginAt")
-        VALUES (gen_random_uuid()::text, ${userRecord.id}, ${ip}, ${userAgent}, NOW())
+        INSERT INTO "LoginSession" ("id", "usuarioId", "escuelaId", "ip", "userAgent", "loginAt")
+        VALUES (gen_random_uuid()::text, ${userRecord.id}, ${escuelaId || null}, ${ip}, ${userAgent}, NOW())
       `;
     } catch (auditError) {
       console.error("[auth/google] Error creating audit log:", auditError);

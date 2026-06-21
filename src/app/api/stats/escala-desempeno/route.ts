@@ -29,17 +29,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Trimestre inválido" }, { status: 400 });
     }
 
-    // Obtener umbrales del sistema
-    const configRows = await db.configuracionSistema.findMany({ take: 1 });
+    const isAdminRole = isAdmin(session.rol);
+    const escuelaId = (session as any).escuelaId || '';
+    const gradosAsignados: string[] = session.asignaturasAsignadas?.map((m: any) => m.gradoId as string) || [];
+    const gradosUnicos = [...new Set(gradosAsignados)];
+
+    // Obtener umbrales del sistema (filtrados por escuela)
+    const configRows = escuelaId
+      ? await db.configuracionSistema.findMany({ where: { escuelaId }, take: 1 })
+      : await db.configuracionSistema.findMany({ take: 1 });
     const cfg = configRows[0];
     const umbrales = {
       condicionado: cfg?.umbralCondicionado ?? 4.5,
       aprobado: cfg?.umbralAprobado ?? 6.5,
     };
-
-    const isAdminRole = isAdmin(session.rol);
-    const gradosAsignados: string[] = session.asignaturasAsignadas?.map((m: any) => m.gradoId as string) || [];
-    const gradosUnicos = [...new Set(gradosAsignados)];
 
     let gradosFiltrados;
     if (gradoId) {
@@ -47,7 +50,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: "No tiene acceso a este grado" }, { status: 403 });
       }
       gradosFiltrados = await db.grado.findMany({
-        where: { id: gradoId },
+        where: { id: gradoId, ...(escuelaId ? { escuelaId } : {}) },
         orderBy: [{ numero: "asc" }, { seccion: "asc" }],
         select: { id: true, numero: true, seccion: true },
       });
@@ -57,12 +60,13 @@ export async function GET(request: NextRequest) {
           return NextResponse.json([]);
         }
         gradosFiltrados = await db.grado.findMany({
-          where: { id: { in: gradosUnicos } },
+          where: { id: { in: gradosUnicos }, ...(escuelaId ? { escuelaId } : {}) },
           orderBy: [{ numero: "asc" }, { seccion: "asc" }],
           select: { id: true, numero: true, seccion: true },
         });
       } else {
         gradosFiltrados = await db.grado.findMany({
+          where: escuelaId ? { escuelaId } : undefined,
           orderBy: [{ numero: "asc" }, { seccion: "asc" }],
           select: { id: true, numero: true, seccion: true },
         });

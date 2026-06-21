@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { verifySession } from "@/lib/session";
 import { isAdmin } from "@/utils/roleHelpers";
 
-async function calcularStatsGrado(grado: any, trimestre: number) {
+async function calcularStatsGrado(grado: any, trimestre: number, escuelaId?: string) {
   const calificaciones = await sql`
     SELECT c.*, e.nombre as estudiante_nombre, e.numero as estudiante_numero, m.id as materia_id, m.nombre as materia_nombre
     FROM "Calificacion" c
@@ -66,7 +66,9 @@ async function calcularStatsGrado(grado: any, trimestre: number) {
     }
   });
 
-  const configRows = await sql`SELECT "umbralCondicionado", "umbralAprobado" FROM "ConfiguracionSistema" LIMIT 1`;
+  const configRows = escuelaId
+    ? await sql`SELECT "umbralCondicionado", "umbralAprobado" FROM "ConfiguracionSistema" WHERE "escuelaId" = ${escuelaId} LIMIT 1`
+    : await sql`SELECT "umbralCondicionado", "umbralAprobado" FROM "ConfiguracionSistema" LIMIT 1`;
   const cfg = configRows?.[0] || {};
   const umbralCondicionado = Number(cfg.umbralCondicionado) || 4.5;
   const umbralAprobado = Number(cfg.umbralAprobado) || 6.5;
@@ -279,6 +281,7 @@ export async function GET(req: Request) {
     }
 
     const isAdminRole = isAdmin(session.rol);
+    const escuelaId = (session as any).escuelaId || '';
 
     let gradosFiltrados;
 
@@ -295,7 +298,7 @@ export async function GET(req: Request) {
           (SELECT COUNT(*) FROM "Estudiante" e WHERE e."gradoId" = g.id) as estudiantes_count,
           (SELECT COUNT(*) FROM "Materia" m WHERE m."gradoId" = g.id) as materias_count
         FROM "Grado" g
-        WHERE g.id = ${gradoId}
+        WHERE g.id = ${gradoId} AND g."escuelaId" = ${escuelaId}
         ORDER BY g.numero, g.seccion
       `;
     } else {
@@ -310,7 +313,7 @@ export async function GET(req: Request) {
             (SELECT COUNT(*) FROM "Estudiante" e WHERE e."gradoId" = g.id) as estudiantes_count,
             (SELECT COUNT(*) FROM "Materia" m WHERE m."gradoId" = g.id) as materias_count
           FROM "Grado" g
-          WHERE g.id = ANY(${gradosUnicos}::text[])
+          WHERE g.id = ANY(${gradosUnicos}::text[]) AND g."escuelaId" = ${escuelaId}
           ORDER BY g.numero, g.seccion
         `;
       } else {
@@ -319,6 +322,7 @@ export async function GET(req: Request) {
             (SELECT COUNT(*) FROM "Estudiante" e WHERE e."gradoId" = g.id) as estudiantes_count,
             (SELECT COUNT(*) FROM "Materia" m WHERE m."gradoId" = g.id) as materias_count
           FROM "Grado" g
+          WHERE g."escuelaId" = ${escuelaId}
           ORDER BY g.numero, g.seccion
         `;
       }
@@ -327,9 +331,9 @@ export async function GET(req: Request) {
     const statsPorGrado = await Promise.all(gradosFiltrados.map(async (grado: any) => {
       if (allTrimestres) {
         const [statsT1, statsT2, statsT3] = await Promise.all([
-          calcularStatsGrado(grado, 1),
-          calcularStatsGrado(grado, 2),
-          calcularStatsGrado(grado, 3)
+          calcularStatsGrado(grado, 1, escuelaId),
+          calcularStatsGrado(grado, 2, escuelaId),
+          calcularStatsGrado(grado, 3, escuelaId)
         ]);
 
         const overall = combinarStats([statsT1, statsT2, statsT3]);
@@ -350,7 +354,7 @@ export async function GET(req: Request) {
           }
         };
       } else {
-        const stats = await calcularStatsGrado(grado, trimestre);
+        const stats = await calcularStatsGrado(grado, trimestre, escuelaId);
         return {
           gradoId: grado.id,
           nombre: `${grado.numero}° "${grado.seccion}"`,
