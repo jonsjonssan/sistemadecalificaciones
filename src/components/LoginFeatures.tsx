@@ -7,25 +7,25 @@ const features = [
   {
     icon: ClipboardList,
     title: "Calificaciones",
-    description: "Registro de actividades, evaluaciones y cálculo automático de promedios por trimestre.",
+    description: "Registro de actividades y cálculo automático de promedios.",
     color: "emerald",
   },
   {
     icon: CalendarDays,
     title: "Asistencia",
-    description: "Control diario de asistencia, tardanzas y justificaciones de cada estudiante.",
+    description: "Control diario de asistencia y justificaciones.",
     color: "blue",
   },
   {
     icon: FileText,
     title: "Boletas y Reportes",
-    description: "Generación de boletas individuales y reportes consolidados en PDF.",
+    description: "Generación de boletas y reportes en PDF.",
     color: "violet",
   },
   {
     icon: Users,
     title: "Estudiantes",
-    description: "Gestión de estudiantes por grado y sección, con historial académico.",
+    description: "Gestión de estudiantes e historial académico.",
     color: "amber",
   },
 ];
@@ -82,19 +82,19 @@ const itemVariants = {
 
 export default function LoginFeatures() {
   return (
-    <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-14">
+    <section className="w-full max-w-7xl mx-auto px-4 sm:px-8 py-8 sm:py-12">
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-50px" }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className="text-center mb-8 sm:mb-10"
+        className="text-center mb-6 sm:mb-8"
       >
-        <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground mb-3">
+        <h2 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-foreground mb-2">
           ¿Qué puedes hacer en el{" "}
           <span className="text-primary">Sistema de Calificaciones</span>?
         </h2>
-        <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+        <p className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto leading-relaxed">
           Herramientas pensadas para simplificar la gestión educativa.
         </p>
       </motion.div>
@@ -104,7 +104,7 @@ export default function LoginFeatures() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-50px" }}
-        className="flex flex-wrap justify-center gap-4 sm:gap-5"
+        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-5"
       >
         {features.map((feature) => {
           const Icon = feature.icon;
@@ -114,23 +114,19 @@ export default function LoginFeatures() {
               key={feature.title}
               variants={itemVariants}
               whileHover={{ y: -5, transition: { duration: 0.2 } }}
-              className={`group w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(25%-0.9375rem)] xl:min-w-[260px] xl:max-w-[300px] rounded-2xl bg-card border border-border p-5 sm:p-6 shadow-sm hover:shadow-lg ${styles.glow} ${styles.border} transition-all duration-300`}
+              className={`group rounded-2xl bg-card border border-border p-4 sm:p-5 shadow-sm hover:shadow-lg ${styles.glow} ${styles.border} transition-all duration-300 min-w-0`}
             >
-              <div className="flex items-start gap-4">
-                <div
-                  className={`w-11 h-11 shrink-0 rounded-xl ${styles.bg} flex items-center justify-center transition-transform duration-300 group-hover:scale-110`}
-                >
-                  <Icon className={`h-5 w-5 ${styles.icon}`} />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="font-display text-base sm:text-lg font-bold text-foreground mb-1">
-                    {feature.title}
-                  </h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                    {feature.description}
-                  </p>
-                </div>
+              <div
+                className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl ${styles.bg} flex items-center justify-center mb-3 transition-transform duration-300 group-hover:scale-110`}
+              >
+                <Icon className={`h-5 w-5 ${styles.icon}`} />
               </div>
+              <h3 className="font-display text-sm sm:text-base font-bold text-foreground mb-1 break-words">
+                {feature.title}
+              </h3>
+              <p className="text-[11px] sm:text-xs text-muted-foreground leading-relaxed break-words">
+                {feature.description}
+              </p>
             </motion.div>
           );
         })}
