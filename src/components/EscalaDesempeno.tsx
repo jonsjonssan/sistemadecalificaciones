@@ -38,9 +38,9 @@ interface EscalaDesempenoProps {
 }
 
 const COLORS = {
-  reprobado: "oklch(0.44 0.05 28)",
-  condicionado: "oklch(0.52 0.04 85)",
-  aprobado: "oklch(0.38 0.09 155)",
+  reprobado: "var(--color-status-error)",
+  condicionado: "var(--color-status-warning)",
+  aprobado: "var(--color-primary)",
 };
 
 export function EscalaDesempeno({ gradoId, esAdmin = false }: EscalaDesempenoProps) {

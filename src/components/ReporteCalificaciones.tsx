@@ -626,9 +626,9 @@ const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, dark
                       cursor={{ fill: darkMode ? "oklch(0.20 0.015 155 / 0.3)" : "oklch(0.94 0.01 155 / 0.5)" }}
                     />
                     <Legend wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }} />
-                    <Bar dataKey="Aprobados" stackId="a" fill="oklch(0.38 0.09 155)" radius={[0, 0, 0, 0]} maxBarSize={40} />
-                    <Bar dataKey="Condicionados" stackId="a" fill="oklch(0.52 0.04 85)" radius={[0, 0, 0, 0]} maxBarSize={40} />
-                    <Bar dataKey="Reprobados" stackId="a" fill="oklch(0.44 0.05 28)" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                    <Bar dataKey="Aprobados" stackId="a" fill="var(--color-primary)" radius={[0, 0, 0, 0]} maxBarSize={40} />
+                    <Bar dataKey="Condicionados" stackId="a" fill="var(--color-status-warning)" radius={[0, 0, 0, 0]} maxBarSize={40} />
+                    <Bar dataKey="Reprobados" stackId="a" fill="var(--color-status-error)" radius={[4, 4, 0, 0]} maxBarSize={40} />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
