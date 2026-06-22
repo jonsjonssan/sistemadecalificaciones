@@ -31,65 +31,54 @@ export async function GET() {
   }
 }
 
-async function clonarEstructuraEscuela(escuelaPlantillaId: string, nuevaEscuelaId: string, año: number): Promise<{ grados: number; materias: number; configs: number }> {
-  const gradosPlantilla = await db.grado.findMany({
+async function clonarConfiguracionEscuela(escuelaPlantillaId: string, nuevaEscuelaId: string, año: number, nombreDirectora: string): Promise<{ clonado: boolean; camposClonados: string[] }> {
+  const configPlantilla = await db.configuracionSistema.findFirst({
     where: { escuelaId: escuelaPlantillaId },
-    include: {
-      materias: {
-        include: {
-          configActividades: true,
-        },
-      },
-    },
-    orderBy: { numero: "asc" },
   });
 
-  let gradosCreados = 0;
-  let materiasCreadas = 0;
-  let configsCreados = 0;
-
-  for (const gradoPlantilla of gradosPlantilla) {
-    const nuevoGrado = await db.grado.create({
-      data: {
-        numero: gradoPlantilla.numero,
-        seccion: gradoPlantilla.seccion,
-        año,
-        escuelaId: nuevaEscuelaId,
-      },
-    });
-    gradosCreados++;
-
-    for (const materiaPlantilla of gradoPlantilla.materias) {
-      const nuevaMateria = await db.materia.create({
-        data: {
-          nombre: materiaPlantilla.nombre,
-          gradoId: nuevoGrado.id,
-          escuelaId: nuevaEscuelaId,
-        },
-      });
-      materiasCreadas++;
-
-      for (const configPlantilla of materiaPlantilla.configActividades) {
-        await db.configActividad.create({
-          data: {
-            materiaId: nuevaMateria.id,
-            trimestre: configPlantilla.trimestre,
-            numActividadesCotidianas: configPlantilla.numActividadesCotidianas,
-            numActividadesIntegradoras: configPlantilla.numActividadesIntegradoras,
-            tieneExamen: configPlantilla.tieneExamen,
-            numExamenes: configPlantilla.numExamenes,
-            porcentajeAC: configPlantilla.porcentajeAC,
-            porcentajeAI: configPlantilla.porcentajeAI,
-            porcentajeExamen: configPlantilla.porcentajeExamen,
-            escuelaId: nuevaEscuelaId,
-          },
-        });
-        configsCreados++;
-      }
-    }
+  if (!configPlantilla) {
+    return { clonado: false, camposClonados: [] };
   }
 
-  return { grados: gradosCreados, materias: materiasCreadas, configs: configsCreados };
+  const camposClonados: string[] = [];
+
+  const configId = randomUUID();
+  await db.configuracionSistema.create({
+    data: {
+      id: configId,
+      escuelaId: nuevaEscuelaId,
+      añoEscolar: año,
+      nombreDirectora: nombreDirectora || configPlantilla.nombreDirectora || null,
+      umbralRecuperacion: configPlantilla.umbralRecuperacion ?? UMBRAL_RECUPERACION_DEFAULT,
+      umbralCondicionado: configPlantilla.umbralCondicionado ?? UMBRAL_CONDICIONADO_DEFAULT,
+      umbralAprobado: configPlantilla.umbralAprobado ?? UMBRAL_APROBADO_DEFAULT,
+      notaMinima: configPlantilla.notaMinima ?? 0.0,
+      notaMaxima: configPlantilla.notaMaxima ?? 10.0,
+      maxHistorialCelda: configPlantilla.maxHistorialCelda ?? MAX_HISTORIAL_CELDA_DEFAULT,
+      usarIntervaloReprobado: configPlantilla.usarIntervaloReprobado ?? true,
+      usarIntervaloCondicionado: configPlantilla.usarIntervaloCondicionado ?? true,
+      usarIntervaloAprobado: configPlantilla.usarIntervaloAprobado ?? true,
+      fechaInicioT1: configPlantilla.fechaInicioT1,
+      fechaFinT1: configPlantilla.fechaFinT1,
+      fechaInicioT2: configPlantilla.fechaInicioT2,
+      fechaFinT2: configPlantilla.fechaFinT2,
+      fechaInicioT3: configPlantilla.fechaInicioT3,
+      fechaFinT3: configPlantilla.fechaFinT3,
+    },
+  });
+
+  if (configPlantilla.umbralRecuperacion != null) camposClonados.push("umbralRecuperacion");
+  if (configPlantilla.umbralCondicionado != null) camposClonados.push("umbralCondicionado");
+  if (configPlantilla.umbralAprobado != null) camposClonados.push("umbralAprobado");
+  if (configPlantilla.notaMinima != null) camposClonados.push("notaMinima");
+  if (configPlantilla.notaMaxima != null) camposClonados.push("notaMaxima");
+  if (configPlantilla.maxHistorialCelda != null) camposClonados.push("maxHistorialCelda");
+  if (configPlantilla.usarIntervaloReprobado != null) camposClonados.push("usarIntervaloReprobado");
+  if (configPlantilla.usarIntervaloCondicionado != null) camposClonados.push("usarIntervaloCondicionado");
+  if (configPlantilla.usarIntervaloAprobado != null) camposClonados.push("usarIntervaloAprobado");
+  if (configPlantilla.fechaInicioT1 != null) camposClonados.push("fechasTrimestres");
+
+  return { clonado: true, camposClonados };
 }
 
 async function encontrarEscuelaPlantilla(cloneFromEscuelaId?: string): Promise<string | null> {
@@ -154,32 +143,51 @@ export async function POST(req: Request) {
       VALUES (${adminId}, ${adminEmail}, ${hashedPassword}, ${adminNombre}, 'admin', ${nuevaEscuela.id}, 'credentials', NOW(), NOW())
     `;
 
-    const configId = randomUUID();
-    await sql`
-      INSERT INTO "ConfiguracionSistema" (id, "escuelaId", "añoEscolar", "nombreDirectora", "umbralRecuperacion", "umbralCondicionado", "umbralAprobado", "notaMinima", "notaMaxima", "maxHistorialCelda", "usarIntervaloReprobado", "usarIntervaloCondicionado", "usarIntervaloAprobado")
-      VALUES (${configId}, ${nuevaEscuela.id}, ${añoEscolar}, ${adminNombre}, ${UMBRAL_RECUPERACION_DEFAULT}, ${UMBRAL_CONDICIONADO_DEFAULT}, ${UMBRAL_APROBADO_DEFAULT}, 0.0, 10.0, ${MAX_HISTORIAL_CELDA_DEFAULT}, true, true, true)
-    `;
-
-    let clonacion = { grados: 0, materias: 0, configs: 0, escuelaPlantilla: null as string | null };
+    // Clonar la configuración del sistema (lógica y procesos) de la escuela plantilla
+    // Esto incluye umbrales, fechas de trimestres, flags de intervalos, etc.
+    // NO clona grados/materias porque cada escuela configura los suyos propios.
     const plantillaId = await encontrarEscuelaPlantilla(cloneFromEscuelaId);
+    let clonacion = { clonado: false, camposClonados: [] as string[], escuelaPlantilla: null as string | null };
+
     if (plantillaId && plantillaId !== nuevaEscuela.id) {
-      const resultado = await clonarEstructuraEscuela(plantillaId, nuevaEscuela.id, añoEscolar);
+      const resultado = await clonarConfiguracionEscuela(plantillaId, nuevaEscuela.id, añoEscolar, adminNombre);
       clonacion = { ...resultado, escuelaPlantilla: plantillaId };
+    }
+
+    // Si no se clonó (no hay plantilla o no tenía config), crear config con defaults
+    if (!clonacion.clonado) {
+      const configId = randomUUID();
+      await db.configuracionSistema.create({
+        data: {
+          id: configId,
+          escuelaId: nuevaEscuela.id,
+          añoEscolar: añoEscolar,
+          nombreDirectora: adminNombre,
+          umbralRecuperacion: UMBRAL_RECUPERACION_DEFAULT,
+          umbralCondicionado: UMBRAL_CONDICIONADO_DEFAULT,
+          umbralAprobado: UMBRAL_APROBADO_DEFAULT,
+          notaMinima: 0.0,
+          notaMaxima: 10.0,
+          maxHistorialCelda: MAX_HISTORIAL_CELDA_DEFAULT,
+          usarIntervaloReprobado: true,
+          usarIntervaloCondicionado: true,
+          usarIntervaloAprobado: true,
+        },
+      });
     }
 
     return NextResponse.json({
       escuela: nuevaEscuela,
       admin: { id: adminId, email: adminEmail, nombre: adminNombre, rol: 'admin' },
       clonacion: {
-        grados: clonacion.grados,
-        materias: clonacion.materias,
-        configuraciones: clonacion.configs,
+        configuracionClonada: clonacion.clonado,
+        camposClonados: clonacion.camposClonados,
         escuelaPlantillaId: clonacion.escuelaPlantilla,
         trimestrePorDefecto: CANTIDAD_TRIMESTRES,
       },
-      message: clonacion.grados > 0
-        ? `Escuela creada con admin inicial y estructura clonada (${clonacion.grados} grados, ${clonacion.materias} materias, ${clonacion.configs} configuraciones)`
-        : "Escuela creada con admin inicial y configuración por defecto"
+      message: clonacion.clonado
+        ? `Escuela creada. Configuración del sistema clonada (${clonacion.camposClonados.length} parámetros): ${clonacion.camposClonados.join(", ")}. Los grados y materias se configuran manualmente.`
+        : "Escuela creada con admin inicial y configuración por defecto. Los grados y materias se configuran manualmente."
     });
   } catch (error: any) {
     console.error("[escuelas/POST] ERROR:", error.message);
