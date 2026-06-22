@@ -7,7 +7,7 @@ const features = [
   {
     icon: ClipboardList,
     title: "Gestión de Calificaciones",
-    description: "Registra actividades, evaluaciones y exámenes. El sistema calcula promedios automáticamente por trimestre.",
+    description: "Registra actividades, evaluaciones y exámenes con cálculo automático de promedios por trimestre.",
     color: "emerald",
   },
   {
@@ -82,7 +82,7 @@ const itemVariants = {
 
 export default function LoginFeatures() {
   return (
-    <section className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+    <section className="w-full px-4 sm:px-8 lg:px-16 py-8 sm:py-14">
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -90,7 +90,7 @@ export default function LoginFeatures() {
         transition={{ duration: 0.5, ease: "easeOut" }}
         className="text-center mb-8 sm:mb-10"
       >
-        <h2 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-foreground mb-2">
+        <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-foreground mb-2">
           Funcionalidades principales
         </h2>
         <p className="text-sm sm:text-base text-muted-foreground max-w-xl mx-auto leading-relaxed">
@@ -103,7 +103,7 @@ export default function LoginFeatures() {
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, margin: "-50px" }}
-        className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5"
+        className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5"
       >
         {features.map((feature) => {
           const Icon = feature.icon;
@@ -113,12 +113,12 @@ export default function LoginFeatures() {
               key={feature.title}
               variants={itemVariants}
               whileHover={{ y: -3, transition: { duration: 0.2 } }}
-              className={`group flex items-start gap-4 sm:gap-5 rounded-2xl bg-card border ${styles.border} p-4 sm:p-6 shadow-sm hover:shadow-md hover:ring-1 ${styles.ring} transition-all duration-300`}
+              className={`group flex items-center gap-4 sm:gap-6 rounded-2xl bg-card border ${styles.border} p-4 sm:p-6 shadow-sm hover:shadow-md hover:ring-1 ${styles.ring} transition-all duration-300`}
             >
               <div
-                className={`w-12 h-12 shrink-0 rounded-xl ${styles.bg} flex items-center justify-center transition-transform duration-300 group-hover:scale-110`}
+                className={`w-14 h-14 sm:w-16 sm:h-16 shrink-0 rounded-2xl ${styles.bg} flex items-center justify-center transition-transform duration-300 group-hover:scale-110`}
               >
-                <Icon className={`h-6 w-6 ${styles.icon}`} />
+                <Icon className={`h-7 w-7 sm:h-8 sm:w-8 ${styles.icon}`} />
               </div>
               <div className="min-w-0 flex-1">
                 <h3 className="font-display text-base sm:text-lg font-bold text-foreground mb-1">
