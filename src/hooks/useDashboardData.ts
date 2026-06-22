@@ -376,19 +376,26 @@ export function useDashboardData() {
   };
 
   const initGoogleButton = () => {
-    if (!googleButtonRef.current || !(window as any).google) return;
+    if (!(window as any).google) return;
     (window as any).google.accounts.id.initialize({
       client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "588360712961-5r5mloqlefuq7nghgetgcr18evctl3sp.apps.googleusercontent.com",
       callback: handleGoogleLogin,
       auto_select: false,
     });
-    (window as any).google.accounts.id.renderButton(googleButtonRef.current, {
-      theme: "outline",
-      size: "large",
-      width: "100%",
-      text: "signin_with",
-      shape: "rectangular",
-    });
+    if (googleButtonRef.current) {
+      (window as any).google.accounts.id.renderButton(googleButtonRef.current, {
+        theme: "outline",
+        size: "large",
+        width: "100%",
+        text: "signin_with",
+        shape: "rectangular",
+      });
+    }
+  };
+
+  const promptGoogleLogin = () => {
+    if (typeof window === "undefined" || !(window as any).google) return;
+    (window as any).google.accounts.id.prompt();
   };
 
   useEffect(() => {
@@ -1354,7 +1361,7 @@ export function useDashboardData() {
   return {
     // Auth
     usuario, setUsuario, loading, dataLoading, loginForm, setLoginForm, loginError, loginLoading, googleLoading, googleButtonRef,
-    initialized, initSystem, checkAuth, handleLogin, handleLogout,
+    initialized, initSystem, checkAuth, handleLogin, handleLogout, promptGoogleLogin,
     escuelas, escuelaSeleccionada, setEscuelaSeleccionada,
     grados, gradosFiltrados, asignaturasFiltradas, estudiantes, asignaturas, todasAsignaturas, calificaciones,
     configActual, configsGrado, usuarios, configuracion,
