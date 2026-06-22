@@ -174,7 +174,6 @@ export default function Home() {
       loginError={loginError}
       loginLoading={loginLoading}
       googleLoading={d.googleLoading}
-      googleButtonRef={d.googleButtonRef}
       promptGoogleLogin={d.promptGoogleLogin}
       escuelas={d.escuelas}
       escuelaSeleccionada={d.escuelaSeleccionada}

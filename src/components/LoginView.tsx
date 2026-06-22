@@ -19,7 +19,6 @@ interface LoginViewProps {
   loginError: string;
   loginLoading: boolean;
   googleLoading: boolean;
-  googleButtonRef: React.RefObject<HTMLDivElement | null>;
   promptGoogleLogin: () => void;
   escuelas: any[];
   escuelaSeleccionada: string;
@@ -28,7 +27,7 @@ interface LoginViewProps {
 
 export default function LoginView({
   initialized, initSystem, loginForm, setLoginForm, handleLogin,
-  loginError, loginLoading, googleLoading, googleButtonRef, promptGoogleLogin,
+  loginError, loginLoading, googleLoading, promptGoogleLogin,
   escuelas, escuelaSeleccionada, setEscuelaSeleccionada,
 }: LoginViewProps) {
   const [focusedField, setFocusedField] = useState<string | null>(null);
@@ -119,17 +118,17 @@ export default function LoginView({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              {/* Mensaje de acceso institucional */}
-              <div className="text-center space-y-1 mb-2">
+              {/* Acceso institucional */}
+              <div className="text-center space-y-1">
                 <h2 className="font-display text-sm sm:text-base font-bold text-foreground tracking-wide">
                   Acceso
                 </h2>
                 <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                  Por favor, inicia sesión con tu cuenta institucional de El Salvador.
+                  Inicia sesión con tu cuenta institucional de El Salvador.
                 </p>
               </div>
 
-              {/* Botón principal de Google */}
+              {/* Botón de Google */}
               <motion.button
                 type="button"
                 onClick={promptGoogleLogin}
@@ -152,28 +151,20 @@ export default function LoginView({
               </motion.button>
 
               {/* Dominio oficial */}
-              <div className="text-center space-y-1.5">
-                <p className="text-[10px] sm:text-xs font-bold tracking-[0.2em] text-muted-foreground/80 uppercase">
-                  Dominio Oficial
-                </p>
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-muted border border-border">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-                  </span>
-                  <span className="text-xs sm:text-sm font-medium text-foreground">@clases.edu.sv</span>
-                </div>
+              <div className="flex items-center justify-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                </span>
+                <span className="text-xs sm:text-sm font-medium text-foreground">@clases.edu.sv</span>
               </div>
 
               {/* Separador */}
               <div className="relative flex items-center justify-center py-1">
                 <div className="flex-1 h-px bg-border" />
-                <span className="px-3 text-[10px] sm:text-xs text-muted-foreground/50 font-medium uppercase tracking-wider">o continúa con</span>
+                <span className="px-3 text-[10px] sm:text-xs text-muted-foreground/50 font-medium uppercase tracking-wider">o</span>
                 <div className="flex-1 h-px bg-border" />
               </div>
-
-              {/* Botón de Google renderizado por la API (fallback accesible) */}
-              <div ref={googleButtonRef} id="google-button-container" className="flex justify-center min-h-[40px]" />
 
               <motion.form
                 onSubmit={handleLogin}

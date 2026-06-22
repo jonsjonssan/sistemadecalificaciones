@@ -1,44 +1,44 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { LayoutGrid, ShieldCheck, GraduationCap, BookOpen } from "lucide-react";
+import { ClipboardList, CalendarDays, FileText, Users } from "lucide-react";
 
 const features = [
   {
-    icon: LayoutGrid,
-    title: "Crear Secciones",
+    icon: ClipboardList,
+    title: "Gestión de Calificaciones",
     description:
-      "Organiza tus aulas y estudiantes de forma eficiente, centralizando toda la información en un solo lugar.",
-    gradient: "from-blue-500/10 to-indigo-500/10",
-    iconColor: "text-blue-600 dark:text-blue-400",
-    iconBg: "bg-blue-50 dark:bg-blue-950/40",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Control de Deméritos",
-    description:
-      "Registra y gestiona la disciplina con un sistema de puntos de cortesía y reportes detallados por estudiante.",
-    gradient: "from-amber-500/10 to-orange-500/10",
-    iconColor: "text-amber-600 dark:text-amber-400",
-    iconBg: "bg-amber-50 dark:bg-amber-950/40",
-  },
-  {
-    icon: GraduationCap,
-    title: "Cuadros de Notas",
-    description:
-      "Automatiza el cálculo de promedios y genera reportes de calificaciones profesionales con un solo clic.",
+      "Registra actividades, evaluaciones y exámenes. El sistema calcula promedios automáticamente por trimestre.",
     gradient: "from-emerald-500/10 to-green-500/10",
     iconColor: "text-emerald-600 dark:text-emerald-400",
     iconBg: "bg-emerald-50 dark:bg-emerald-950/40",
   },
   {
-    icon: BookOpen,
-    title: "Seguimiento Académico",
+    icon: CalendarDays,
+    title: "Control de Asistencia",
     description:
-      "Mantén un registro claro de actividades, tareas y el progreso individual de cada alumno durante el año.",
+      "Lleva el registro diario de asistencia, tardanzas y justificaciones de cada estudiante por grado.",
+    gradient: "from-blue-500/10 to-indigo-500/10",
+    iconColor: "text-blue-600 dark:text-blue-400",
+    iconBg: "bg-blue-50 dark:bg-blue-950/40",
+  },
+  {
+    icon: FileText,
+    title: "Boletas y Reportes",
+    description:
+      "Genera boletas individuales y reportes consolidados de calificaciones en PDF listos para imprimir.",
     gradient: "from-violet-500/10 to-purple-500/10",
     iconColor: "text-violet-600 dark:text-violet-400",
     iconBg: "bg-violet-50 dark:bg-violet-950/40",
+  },
+  {
+    icon: Users,
+    title: "Seguimiento de Estudiantes",
+    description:
+      "Administra estudiantes por grado y sección, consulta su historial académico y observaciones del año.",
+    gradient: "from-amber-500/10 to-orange-500/10",
+    iconColor: "text-amber-600 dark:text-amber-400",
+    iconBg: "bg-amber-50 dark:bg-amber-950/40",
   },
 ];
 
@@ -76,8 +76,8 @@ export default function LoginFeatures() {
         className="text-center mb-8 sm:mb-10"
       >
         <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-foreground mb-3">
-          ¿Qué puedes hacer con{" "}
-          <span className="text-primary">SIGAS</span>?
+          ¿Qué puedes hacer en el{" "}
+          <span className="text-primary">Sistema de Calificaciones</span>?
         </h2>
         <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
           Herramientas pensadas para simplificar la gestión educativa y potenciar el acompañamiento estudiantil.
