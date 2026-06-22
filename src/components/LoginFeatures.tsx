@@ -77,11 +77,11 @@ export default function LoginFeatures() {
               >
                 <Icon className={`h-5 w-5 sm:h-6 sm:w-6 ${styles.icon}`} />
               </div>
-              <div className="min-w-0">
-                <h3 className="font-display text-sm sm:text-base font-bold text-[#1a2e1a] truncate">
+              <div className="min-w-0 flex-1">
+                <h3 className="font-display text-sm sm:text-base font-bold text-[#1a2e1a] leading-tight">
                   {feature.title}
                 </h3>
-                <p className="text-[10px] sm:text-xs text-[#7a8a7a] truncate">
+                <p className="text-[10px] sm:text-xs text-[#7a8a7a] leading-tight mt-0.5">
                   {feature.description}
                 </p>
               </div>
