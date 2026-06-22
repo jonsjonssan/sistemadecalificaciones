@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Análisis Técnico del Sistema de Calificaciones</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root {
+      --primary: #1a3a2a;
+      --primary-light: #2d5a45;
+      --accent: #b8912a;
+      --bg: #fafafa;
+      --card: #ffffff;
+      --text: #1f2937;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --error: #ef4444;
+      --info: #3b82f6;
+      --code-bg: #f3f4f6;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+    }
+
+    .toolbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .toolbar h1 {
+      font-size: 1rem;
+      margin: 0;
+      color: var(--primary);
+    }
+
+    .btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 0.375rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn:hover { background: var(--primary-light); }
+    .btn.secondary { background: #374151; }
+    .btn.secondary:hover { background: #4b5563; }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 5rem 2rem 3rem;
+      background: var(--card);
+      box-shadow: 0 0 40px rgba(0,0,0,0.04);
+    }
+
+    .cover {
+      text-align: center;
+      padding: 4rem 2rem;
+      border-bottom: 3px solid var(--primary);
+      margin-bottom: 2rem;
+    }
+
+    .cover h1 {
+      font-size: 2.25rem;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+    }
+
+    .cover .subtitle {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+    }
+
+    .cover .meta {
+      display: inline-flex;
+      gap: 2rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    h2 {
+      color: var(--primary);
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 0.5rem;
+      margin-top: 2.5rem;
+      font-size: 1.5rem;
+    }
+
+    h3 {
+      color: var(--primary-light);
+      margin-top: 1.8rem;
+      font-size: 1.2rem;
+    }
+
+    h4 {
+      color: var(--text);
+      margin-top: 1.4rem;
+      font-size: 1.05rem;
+    }
+
+    p { margin: 0.75rem 0; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.92rem;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.65rem 0.8rem;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f9fafb;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    tr:nth-child(even) { background: #fafafa; }
+
+    code {
+      background: var(--code-bg);
+      padding: 0.15rem 0.35rem;
+      border-radius: 0.25rem;
+      font-family: "Fira Code", Consolas, monospace;
+      font-size: 0.88em;
+    }
+
+    pre {
+      background: var(--code-bg);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      overflow-x: auto;
+      font-size: 0.88rem;
+      border-left: 4px solid var(--primary);
+    }
+
+    ul, ol { margin: 0.75rem 0; padding-left: 1.5rem; }
+
+    li { margin: 0.35rem 0; }
+
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .badge.success { background: #d1fae5; color: #065f46; }
+    .badge.warning { background: #fef3c7; color: #92400e; }
+    .badge.error { background: #fee2e2; color: #991b1b; }
+    .badge.info { background: #dbeafe; color: #1e40af; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 1rem;
+      background: #fafafa;
+    }
+
+    .card h4 { margin-top: 0; }
+
+    .formula {
+      background: #f0fdf4;
+      border-left: 4px solid var(--success);
+      padding: 1rem;
+      border-radius: 0 0.5rem 0.5rem 0;
+      margin: 1rem 0;
+      font-family: "Fira Code", Consolas, monospace;
+    }
+
+    .highlight {
+      background: #fffbeb;
+      border-left: 4px solid var(--accent);
+      padding: 1rem;
+      border-radius: 0 0.5rem 0.5rem 0;
+      margin: 1rem 0;
+    }
+
+    .toc {
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 1.25rem;
+      margin: 1.5rem 0;
+    }
+
+    .toc ul { list-style: none; padding-left: 0; }
+    .toc li { margin: 0.25rem 0; }
+    .toc a { color: var(--primary); text-decoration: none; }
+    .toc a:hover { text-decoration: underline; }
+
+    .page-break { page-break-after: always; }
+
+    @media print {
+      .toolbar { display: none; }
+      .container { padding: 1rem; box-shadow: none; }
+      body { background: white; }
+      .page-break { page-break-after: always; }
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <h1>Análisis Técnico · Sistema de Calificaciones</h1>
+    <div>
+      <button class="btn secondary" onclick="window.print()" style="margin-right:0.5rem">Imprimir / Guardar como PDF</button>
+      <button class="btn" onclick="descargarPDF()">Descargar PDF</button>
+    </div>
+  </div>
+
+  <main class="container" id="contenido">
+    <section class="cover">
+      <h1>Análisis Técnico Riguroso del Sistema de Calificaciones</h1>
+      <p class="subtitle">Arquitectura, tecnologías, matemática de cálculo, pros/contras y roadmap de mejoras</p>
+      <div class="meta">
+        <span>Proyecto: <strong>sistemadecalificaciones</strong></span>
+        <span>Versión: <strong>0.2.0</strong></span>
+        <span>Generado: <strong id="fecha"></strong></span>
+      </div>
+    </section>
+
+    <nav class="toc">
+      <h3>Tabla de Contenidos</h3>
+      <ul>
+        <li><a href="#resumen">1. Resumen Ejecutivo</a></li>
+        <li><a href="#tecnologias">2. Stack Tecnológico</a></li>
+        <li><a href="#arquitectura">3. Arquitectura y Funcionamiento</a></li>
+        <li><a href="#datos">4. Modelo de Datos</a></li>
+        <li><a href="#matematica">5. Matemática de Calificaciones</a></li>
+        <li><a href="#seguridad">6. Seguridad y Multi-tenencia</a></li>
+        <li><a href="#offline">7. Offline, Resiliencia y PWA</a></li>
+        <li><a href="#agente">8. Agente de Alertas Predictivo</a></li>
+        <li><a href="#testing">9. Testing y Calidad</a></li>
+        <li><a href="#pros">10. Fortalezas (Pros)</a></li>
+        <li><a href="#contras">11. Debilidades y Deuda Técnica</a></li>
+        <li><a href="#mejoras">12. Roadmap de Mejoras</a></li>
+        <li><a href="#conclusiones">13. Conclusiones</a></li>
+      </ul>
+    </nav>
+
+    <h2 id="resumen">1. Resumen Ejecutivo</h2>
+    <p>
+      El <strong>Sistema de Calificaciones Escolar</strong> es una aplicación web full-stack construida sobre <strong>Next.js 16</strong> con <strong>React 19</strong> y <strong>TypeScript</strong>, orientada a centros educativos que imparten grados de 2° a 9°. Su propósito es digitalizar el registro de calificaciones trimestrales, asistencia, generación de boletas, reportes estadísticos y alertas tempranas de estudiantes en riesgo académico.
+    </p>
+    <p>
+      El sistema adopta un modelo <strong>multi-escuela (multi-tenant)</strong> donde cada <code>Escuela</code> aísla sus usuarios, estudiantes, materias y calificaciones. La autenticación se implementa con sesiones firmadas mediante HMAC-SHA256 (cookie <code>session</code>), no con NextAuth a pesar de que la dependencia esté en <code>package.json</code>. La base de datos es <strong>PostgreSQL</strong> gestionada a través de <strong>Prisma ORM</strong>, con despliegue recomendado en Vercel + Neon.
+    </p>
+
+    <div class="highlight">
+      <strong>Objetivo del análisis:</strong> describir con rigor técnico cómo funciona el sistema, qué tecnologías lo componen, las fórmulas matemáticas que rigen cada cálculo, sus fortalezas, sus puntos débiles y una propuesta priorizada de mejoras que puedan aplicarse de forma secuencial o con impacto exponencial.
+    </div>
+
+    <h2 id="tecnologias">2. Stack Tecnológico</h2>
+
+    <h3>2.1. Capa Frontend</h3>
+    <table>
+      <tr><th>Tecnología</th><th>Versión / Uso</th><th>Rol en el sistema</th></tr>
+      <tr><td>Next.js</td><td>16.1.1</td><td>Framework full-stack con App Router y API Routes.</td></tr>
+      <tr><td>React</td><td>19.0.0</td><td>UI declarativa, hooks y componentes.</td></tr>
+      <tr><td>TypeScript</td><td>5.x</td><td>Tipado estático en toda la base de código.</td></tr>
+      <tr><td>Tailwind CSS</td><td>4.x</td><td>Utilidades de estilos y tema oscuro/claro.</td></tr>
+      <tr><td>shadcn/ui + Radix UI</td><td>—</td><td>Componentes accesibles: diálogos, select, tabs, tablas, etc.</td></tr>
+      <tr><td>Recharts</td><td>2.15.4</td><td>Gráficos de barras, líneas y pastel.</td></tr>
+      <tr><td>Framer Motion</td><td>12.23.2</td><td>Animaciones de transición.</td></tr>
+      <tr><td>next-themes</td><td>0.4.6</td><td>Conmutación claro/oscuro.</td></tr>
+      <tr><td>Zustand</td><td>5.0.6</td><td>Estado global ligero.</td></tr>
+      <tr><td>TanStack Query</td><td>5.82.0</td><td>Cacheo, sincronización y fetching de datos.</td></tr>
+      <tr><td>React Hook Form + Zod</td><td>7.60 / 4.0.2</td><td>Formularios y validación de esquemas.</td></tr>
+      <tr><td>jspdf + jspdf-autotable</td><td>4.2.1 / 5.0.7</td><td>Generación de boletas y reportes PDF.</td></tr>
+      <tr><td>xlsx</td><td>0.18.5</td><td>Importación/exportación de planillas Excel.</td></tr>
+    </table>
+
+    <h3>2.2. Capa Backend</h3>
+    <table>
+      <tr><th>Tecnología</th><th>Versión / Uso</th><th>Rol en el sistema</th></tr>
+      <tr><td>Next.js API Routes</td><td>App Router</td><td>Endpoints REST bajo <code>/app/api</code>.</td></tr>
+      <tr><td>Prisma ORM</td><td>6.11.1</td><td>Modelado y acceso a PostgreSQL.</td></tr>
+      <tr><td>PostgreSQL / Neon</td><td>14+</td><td>Persistencia relacional.</td></tr>
+      <tr><td>bcryptjs</td><td>3.0.3</td><td>Hash de contraseñas.</td></tr>
+      <tr><td>google-auth-library</td><td>10.6.2</td><td>Verificación de tokens OAuth de Google.</td></tr>
+      <tr><td>Winston</td><td>3.19.0</td><td>Logging estructurado.</td></tr>
+      <tr><td>Socket.io</td><td>4.8.3</td><td>Presencia en tiempo real (mini-servicio).</td></tr>
+    </table>
+
+    <h3>2.3. Testing y Calidad</h3>
+    <table>
+      <tr><th>Herramienta</th><th>Uso</th></tr>
+      <tr><td>Vitest</td><td>Pruebas unitarias y de integración.</td></tr>
+      <tr><td>Playwright</td><td>Pruebas end-to-end (login, mobile).</td></tr>
+      <tr><td>ESLint 9 + eslint-config-next</td><td>Análisis estático.</td></tr>
+      <tr><td>Husky + lint-staged</td><td>Git hooks para lint/format pre-commit.</td></tr>
+      <tr><td>TypeScript strict</td><td>Chequeo de tipos en build (<code>tsc --noEmit</code>).</td></tr>
+    </table>
+
+    <h2 id="arquitectura">3. Arquitectura y Funcionamiento</h2>
+
+    <h3>3.1. Patrón arquitectónico</h3>
+    <p>
+      El sistema sigue una arquitectura <strong>monolítica full-stack</strong> sobre Next.js. El frontend (Server Components + Client Components) y el backend (API Routes) coexisten en el mismo repositorio y despliegue. La capa de datos se abstrae con Prisma y se accede desde los endpoints REST.
+    </p>
+
+    <div class="grid-2">
+      <div class="card">
+        <h4>Cliente</h4>
+        <ul>
+          <li>Server Components para carga inicial.</li>
+          <li>Client Components para interactividad.</li>
+          <li>Zustand para estado global.</li>
+          <li>TanStack Query para cacheo de servidor.</li>
+          <li>Service Worker para PWA.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Servidor</h4>
+        <ul>
+          <li>API Routes en <code>src/app/api</code>.</li>
+          <li>Sesiones firmadas con HMAC-SHA256.</li>
+          <li>Validación con Zod en cada endpoint.</li>
+          <li>Prisma accede a PostgreSQL.</li>
+          <li>Logs de auditoría e historial de cambios.</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>3.2. Flujo de autenticación</h3>
+    <ol>
+      <li>El usuario envía <code>email</code>, <code>password</code> y <code>escuelaId</code> a <code>POST /api/auth/login</code>.</li>
+      <li>El servidor busca el usuario por email + escuelaId.</li>
+      <li>Se compara el hash con <code>bcrypt.compare</code>; si falla, se compara con un hash dummy para evitar timing attacks.</li>
+      <li>Se crea un registro en <code>LoginSession</code> y se firma una cookie <code>session</code> con HMAC-SHA256.</li>
+      <li>La cookie contiene: <code>id</code>, <code>email</code>, <code>rol</code>, <code>escuelaId</code>, <code>asignaturasAsignadas</code>, <code>gradosAsignados</code>, etc.</li>
+      <li>En cada request a <code>/api/*</code>, el middleware aplica rate-limiting por IP y headers de seguridad.</li>
+      <li>Los endpoints usan <code>verifySession</code> y helpers como <code>requireAdmin</code> para autorizar.</li>
+    </ol>
+
+    <p><span class="badge error">Nota importante</span> Aunque <code>next-auth</code> está en dependencias, <strong>no se utiliza</strong>. La autenticación es 100% custom. Esto puede generar confusión y deuda técnica.</p>
+
+    <h3>3.3. Flujo de calificaciones</h3>
+    <ol>
+      <li>El docente selecciona grado, materia y trimestre.</li>
+      <li>El frontend obtiene la configuración de actividades (<code>ConfigActividad</code>) para esa materia y trimestre.</li>
+      <li>Se renderiza una matriz editable: N actividades cotidianas, M integradoras y opcionalmente el examen.</li>
+      <li>Al guardar, <code>useGrading</code> envía un POST a <code>/api/calificaciones</code> con los arrays de notas.</li>
+      <li>El backend valida con Zod, calcula promedios, recalcula el promedio final ponderado y persiste en una transacción Prisma.</li>
+      <li>Durante la transacción se registran el historial de cambios por celda y un AuditLog resumido.</li>
+    </ol>
+
+    <h3>3.4. Componentes principales</h3>
+    <table>
+      <tr><th>Componente / Módulo</th><th>Responsabilidad</th></tr>
+      <tr><td><code>Dashboard.tsx</code></td><td>Vista general con estadísticas, gráficos y filtros por grado/trimestre/materia.</td></tr>
+      <tr><td><code>CalificacionesTab.tsx</code></td><td>Tabla editable de notas por estudiante y actividad.</td></tr>
+      <tr><td><code>AsistenciaBoard.tsx</code></td><td>Registro diario de asistencia con generación de reportes.</td></tr>
+      <tr><td><code>BoletaList.tsx</code></td><td>Generación de boletas individuales y masivas en HTML/PDF.</td></tr>
+      <tr><td><code>EscalaDesempeno.tsx</code></td><td>Gráfico de distribución Aprobado/Condicionado/Reprobado.</td></tr>
+      <tr><td><code>ReporteCalificaciones.tsx</code></td><td>Reporte por asignatura con ranking y cuadro de honor.</td></tr>
+      <tr><td><code>AgentAlertsPanel.tsx</code></td><td>Visualización y gestión de alertas del agente.</td></tr>
+      <tr><td><code>GettingStartedWizard.tsx</code></td><td>Onboarding inicial para configurar la escuela.</td></tr>
+    </table>
+
+    <h2 id="datos">4. Modelo de Datos</h2>
+
+    <h3>4.1. Entidades principales</h3>
+    <p>El esquema de Prisma define 14 modelos relacionados. A continuación se resumen los más relevantes:</p>
+
+    <table>
+      <tr><th>Modelo</th><th>Propósito</th><th>Claves</th></tr>
+      <tr><td><code>Escuela</code></td><td>Tenant principal. Aísla todos los datos de un centro educativo.</td><td><code>id</code>, <code>codigo</code> @unique</td></tr>
+      <tr><td><code>Usuario</code></td><td>Admin/directora/docente/orientador. Pertenece a una escuela.</td><td><code>@@unique([email, escuelaId])</code></td></tr>
+      <tr><td><code>Grado</code></td><td>Curso (2-9) con sección y año lectivo.</td><td><code>@@unique([numero, seccion, año, escuelaId])</code></td></tr>
+      <tr><td><code>Estudiante</code></td><td>Alumno matriculado en un grado.</td><td>Index por grado y número de lista.</td></tr>
+      <tr><td><code>Materia</code></td><td>Asignatura asociada a un grado.</td><td>Index por grado y nombre.</td></tr>
+      <tr><td><code>DocenteMateria</code></td><td>Asignación docente-materia (especialmente grados 6-9).</td><td><code>@@unique([docenteId, materiaId])</code></td></tr>
+      <tr><td><code>ConfigActividad</code></td><td>Pesos y cantidad de actividades por materia/trimestre.</td><td><code>@@unique([materiaId, trimestre])</code></td></tr>
+      <tr><td><code>Calificacion</code></td><td>Promedios trimestrales por estudiante/materia.</td><td><code>@@unique([estudianteId, materiaId, trimestre])</code></td></tr>
+      <tr><td><code>NotaActividad</code></td><td>Notas individuales normalizadas.</td><td>Index por calificación, tipo y número.</td></tr>
+      <tr><td><code>RecuperacionAnual</code></td><td>Nota de recuperación anual por estudiante/materia/año.</td><td><code>@@unique([estudianteId, materiaId, año])</code></td></tr>
+      <tr><td><code>Asistencia</code></td><td>Registro diario por estudiante, grado y opcional materia.</td><td><code>@@unique([estudianteId, fecha, gradoId])</code></td></tr>
+      <tr><td><code>ObservacionBoleta</code></td><td>Observaciones y resumen de asistencia para boletas.</td><td><code>@@unique([estudianteId, gradoId, trimestre, año])</code></td></tr>
+      <tr><td><code>AuditLog</code></td><td>Registro de quién editó/borró qué y cuándo.</td><td>Index por usuario, escuela, entidad.</td></tr>
+      <tr><td><code>HistorialCalificacion</code></td><td>Historial por celda (como Google Sheets).</td><td>Index por calificación y campo.</td></tr>
+      <tr><td><code>AgentAlert</code></td><td>Alertas de riesgo generadas por el agente.</td><td>Múltiples índices para filtros.</td></tr>
+    </table>
+
+    <h3>4.2. Normalización de notas</h3>
+    <p>
+      El sistema mantiene <strong>dos representaciones</strong> de las notas:
+    </p>
+    <ul>
+      <li><strong>Agregada:</strong> <code>Calificacion.calificacionAC</code>, <code>calificacionAI</code>, <code>examenTrimestral</code>, <code>promedioFinal</code>.</li>
+      <li><strong>Detalle normalizado:</strong> filas en <code>NotaActividad</code> con <code>tipo</code> (cotidiana/integradora/examen) y <code>numeroActividad</code>.</li>
+    </ul>
+    <p>
+      Esto permite reconstruir el historial de cada celda y regenerar promedios cuando cambian los porcentajes de <code>ConfigActividad</code>.
+    </p>
+
+    <h2 id="matematica">5. Matemática de Calificaciones</h2>
+
+    <h3>5.1. Datos de entrada</h3>
+    <p>Para cada estudiante, materia y trimestre, el sistema requiere:</p>
+    <ul>
+      <li><code>AC = [ac₁, ac₂, ..., acₙ]</code>: notas de actividades cotidianas.</li>
+      <li><code>AI = [ai₁, ai₂, ..., aiₘ]</code>: notas de actividades integradoras.</li>
+      <li><code>EX = [ex₁, ex₂, ..., exₖ]</code>: notas de examen (normalmente k=1).</li>
+      <li><code>recuperacion</code>: nota de recuperación trimestral (opcional).</li>
+      <li><code>ConfigActividad</code>: porcentajes <code>pAC, pAI, pEX</code> que deben sumar 100%.</li>
+    </ul>
+
+    <h3>5.2. Promedio simple</h3>
+    <div class="formula">
+      Promedio(AC) = (Σ acᵢ) / n &nbsp;&nbsp; donde acᵢ ≠ null<br>
+      Promedio(AI) = (Σ aiᵢ) / m &nbsp;&nbsp; donde aiᵢ ≠ null<br>
+      Promedio(EX) = (Σ exᵢ) / k &nbsp;&nbsp; donde exᵢ ≠ null
+    </div>
+
+    <h3>5.3. Promedio final trimestral</h3>
+    <div class="formula">
+      PF = Promedio(AC) × (pAC/100) + Promedio(AI) × (pAI/100) + Promedio(EX) × (pEX/100)
+    </div>
+    <p>Si existe recuperación:</p>
+    <div class="formula">
+      PF_final = min(10, PF + recuperacion)
+    </div>
+    <p>
+      El valor se almacena sin redondear en la base de datos, pero el frontend suele mostrar <code>Math.round(pf)</code> para determinar estados y colores.
+    </p>
+
+    <h3>5.4. Promedio anual por materia</h3>
+    <p>
+      El sistema no define un modelo explícito de promedio anual; se calcula sobre la marcha promediando los promedios finales de los trimestres con datos:
+    </p>
+    <div class="formula">
+      PromedioAnual(Materia) = (PF_T1 + PF_T2 + PF_T3) / t &nbsp;&nbsp; donde t = cantidad de trimestres con datos
+    </div>
+
+    <h3>5.5. Clasificación de escala</h3>
+    <p>Usando los umbrales configurables <code>umbralCondicionado</code> (default 4.5) y <code>umbralAprobado</code> (default 6.5):</p>
+    <div class="formula">
+      Si PF &lt; umbralCondicionado → REPROBADO<br>
+      Si umbralCondicionado ≤ PF &lt; umbralAprobado → CONDICIONADO<br>
+      Si PF ≥ umbralAprobado → APROBADO
+    </div>
+
+    <h3>5.6. Promedio general del estudiante</h3>
+    <div class="formula">
+      PromedioGeneral = Σ PromedioAnual(Materiaᵢ) / M &nbsp;&nbsp; donde M = cantidad de materias con datos
+    </div>
+
+    <h3>5.7. Asistencia</h3>
+    <p>El porcentaje de asistencia pondera las tardanzas como medio día:</p>
+    <div class="formula">
+      Asistencia% = ((presentes + tardanzas × 0.5) / total) × 100
+    </div>
+
+    <h3>5.8. Agente de riesgo (puntaje)</h3>
+    <p>El agente asigna un puntaje de riesgo entre 0 y 1 sumando factores:</p>
+    <table>
+      <tr><th>Factor</th><th>Condición</th><th>Peso</th></tr>
+      <tr><td>Promedio muy bajo</td><td>PG &lt; umbralCondicionado</td><td>+0.40</td></tr>
+      <tr><td>Promedio bajo</td><td>umbralCondicionado ≤ PG &lt; umbralAprobado</td><td>+0.25</td></tr>
+      <tr><td>Tendencia fuertemente negativa</td><td>tendencia &lt; -0.5</td><td>+0.20</td></tr>
+      <tr><td>Tendencia negativa</td><td>tendencia &lt; -0.2</td><td>+0.10</td></tr>
+      <tr><td>Materias reprobadas</td><td>cada una</td><td>+0.20 × count</td></tr>
+      <tr><td>Materias condicionadas</td><td>cada una</td><td>+0.10 × count</td></tr>
+      <tr><td>Asistencia crítica</td><td>asistencia% &lt; 70</td><td>+0.30</td></tr>
+      <tr><td>Asistencia baja</td><td>asistencia% &lt; 80</td><td>+0.15</td></tr>
+    </table>
+    <div class="formula">
+      PuntajeRiesgo = min(1, Σ pesos)<br>
+      tipo = riesgo_alto (≥0.6) | riesgo_medio (≥0.4) | asistencia_critica | bajo_rendimiento
+    </div>
+
+    <h3>5.9. Tendencia de promedios</h3>
+    <div class="formula">
+      Tendencia = Σ(PFᵢ - PFᵢ₋₁) / (t - 1) &nbsp;&nbsp; para i = 2..t
+    </div>
+
+    <h2 id="seguridad">6. Seguridad y Multi-tenencia</h2>
+
+    <h3>6.1. Aislamiento por escuela</h3>
+    <ul>
+      <li>Cada modelo incluye <code>escuelaId</code>.</li>
+      <li>La sesión transporta <code>escuelaId</code>; los endpoints filtran por este campo.</li>
+      <li>El email puede repetirse entre escuelas gracias a <code>@@unique([email, escuelaId])</code>.</li>
+    </ul>
+
+    <h3>6.2. Autorización basada en roles</h3>
+    <table>
+      <tr><th>Rol</th><th>Permisos generales</th></tr>
+      <tr><td><code>superadmin</code></td><td>Acceso global; puede gestionar escuelas y usuarios.</td></tr>
+      <tr><td><code>admin</code>, <code>admin-directora</code>, <code>admin-codirectora</code></td><td>Gestión completa de su escuela: usuarios, grados, estudiantes, materias, configuración.</td></tr>
+      <tr><td><code>docente</code></td><td>Ingresa calificaciones y asistencia solo de materias y grados asignados.</td></tr>
+      <tr><td><code>docente-orientador</code></td><td>Similar a docente con funciones orientadoras.</td></tr>
+    </table>
+
+    <h3>6.3. Headers de seguridad</h3>
+    <p>Next.js configura CSP, X-Frame-Options, X-XSS-Protection, COOP, COEP, Referrer-Policy y Permissions-Policy. El middleware aplica rate limiting de 60 req/min por IP.</p>
+
+    <h3>6.4. Observaciones de seguridad</h3>
+    <ul>
+      <li><span class="badge warning">Atención</span> El middleware no realiza autenticación; depende de cada endpoint.</li>
+      <li><span class="badge warning">Atención</span> Algunos endpoints usan <code>any</code> en la sesión y construyen <code>where</code> dinámicos.</li>
+      <li><span class="badge warning">Atención</span> El script mensual del agente usa un header <code>Authorization: Bearer</code> que el API no valida.</li>
+    </ul>
+
+    <h2 id="offline">7. Offline, Resiliencia y PWA</h2>
+
+    <h3>7.1. Service Worker</h3>
+    <p>El archivo <code>public/sw.js</code> implementa estrategias de cacheo:</p>
+    <ul>
+      <li><strong>Pages:</strong> network-first para la app shell.</li>
+      <li><strong>Static (_next/static):</strong> cache-first.</li>
+      <li><strong>Images/fonts:</strong> cache-first.</li>
+      <li><strong>API:</strong> network-only (no cachea datos dinámicos).</li>
+    </ul>
+
+    <h3>7.2. IndexedDB</h3>
+    <p><code>src/lib/offline-database.ts</code> usa <code>idb</code> para almacenar:</p>
+    <ul>
+      <li>Respuestas cacheadas de GET con TTL.</li>
+      <li>Cola de mutaciones pendientes (<code>offlineQueue</code>).</li>
+      <li>Datos locales de estudiantes, calificaciones y configuraciones.</li>
+    </ul>
+
+    <h3>7.3. fetchWithCache</h3>
+    <p><code>src/lib/resilient-fetch.ts</code> proporciona:</p>
+    <ul>
+      <li>Timeout de 15 segundos.</li>
+      <li>Reintentos con backoff exponencial: <code>delay = 1000 × 2^attempt</code> (máx. 10s).</li>
+      <li>Circuit breaker: se abre tras 5 fallos, medio abierto a los 30s.</li>
+      <li>Encolamiento automático de mutaciones fallidas.</li>
+    </ul>
+
+    <h3>7.4. Sincronización</h3>
+    <p>Cuando el navegador vuelve a estar online, <code>NetworkStatusIndicator</code> llama a <code>syncOfflineQueue()</code> para reintentar las operaciones pendientes.</p>
+
+    <h2 id="agente">8. Agente de Alertas Predictivo</h2>
+
+    <h3>8.1. Funcionamiento</h3>
+    <p>El agente analiza periódicamente (o bajo demanda) todos los estudiantes activos de una escuela y genera alertas de riesgo académico. Se compone de:</p>
+    <ul>
+      <li><strong>rules.ts:</strong> motor de puntuación y recomendaciones.</li>
+      <li><strong>/api/agent/monitor:</strong> endpoint para ejecutar y persistir alertas.</li>
+      <li><strong>/api/agent/query:</strong> endpoint de consultas en lenguaje natural simple.</li>
+      <li><strong>/api/alerts/predictive:</strong> análisis predictivo con tendencias, correlaciones y probabilidades de reprobación.</li>
+    </ul>
+
+    <h3>8.2. Predicción de reprobación</h3>
+    <div class="formula">
+      probabilidad = base(promedioGeneral) + 10 × materiasCríticas<br>
+      probabilidad = min(100, probabilidad)
+    </div>
+    <p>Donde la base es: 90% si PG &lt; 4.0; 75% si &lt; 4.5; 60% si &lt; 5.0; 30% si &lt; 5.5; 10% en otro caso.</p>
+
+    <h2 id="testing">9. Testing y Calidad</h2>
+
+    <h3>9.1. Cobertura actual</h3>
+    <table>
+      <tr><th>Tipo</th><th>Herramienta</th><th>Archivos clave</th></tr>
+      <tr><td>Unitarias</td><td>Vitest</td><td><code>gradeCalculations.test.ts</code>, <code>utils.test.ts</code>, <code>roleHelpers.test.ts</code>, <code>validations.test.ts</code></td></tr>
+      <tr><td>Lógica de negocio</td><td>Vitest</td><td><code>calificaciones-logic.test.ts</code>, <code>config-actividades-logic.test.ts</code></td></tr>
+      <tr><td>Seguridad</td><td>Vitest</td><td><code>security.test.ts</code></td></tr>
+      <tr><td>Cliente API</td><td>Vitest</td><td><code>api-client.test.ts</code>, <code>services.test.ts</code></td></tr>
+      <tr><td>Asistencia</td><td>Vitest</td><td><code>AsistenciaBoard.test.ts</code></td></tr>
+      <tr><td>E2E</td><td>Playwright</td><td><code>e2e/login.spec.ts</code></td></tr>
+    </table>
+
+    <h3>9.2. Métricas de calidad</h3>
+    <ul>
+      <li><code>npm run typecheck</code> ejecuta <code>tsc --noEmit</code>.</li>
+      <li><code>npm run lint</code> ejecuta ESLint 9.</li>
+      <li>Husky + lint-staged verifican pre-commit.</li>
+    </ul>
+
+    <h2 id="pros">10. Fortalezas (Pros)</h2>
+    <ul>
+      <li><strong>Stack moderno:</strong> Next.js 16, React 19, Tailwind 4, Prisma 6, TypeScript 5.</li>
+      <li><strong>Multi-tenencia real:</strong> aislamiento por escuela en todos los modelos.</li>
+      <li><strong>Auditoría completa:</strong> historial por celda y logs de acciones.</li>
+      <li><strong>Resiliencia:</strong> cola offline, reintentos, circuit breaker y PWA.</li>
+      <li><strong>UX cuidada:</strong> modo oscuro, animaciones, responsive, shadcn/ui.</li>
+      <li><strong>Agente predictivo:</strong> alertas tempranas con recomendaciones.</li>
+      <li><strong>Flexibilidad curricular:</strong> pesos y cantidad de actividades configurables por materia/trimestre.</li>
+      <li><strong>Tests:</strong> cobertura unitaria, de lógica y E2E.</li>
+      <li><strong>Reportes:</strong> boletas, cuadro de honor, informes técnicos, exportación Excel/PDF.</li>
+      <li><strong>Seguridad básica sólida:</strong> CSP, headers, rate limiting, HMAC en cookies.</li>
+    </ul>
+
+    <h2 id="contras">11. Debilidades y Deuda Técnica</h2>
+    <ul>
+      <li><strong>NextAuth sin uso:</strong> dependencia instalada pero no implementada; confusión arquitectónica.</li>
+      <li><strong>Tipado relajado:</strong> uso de <code>any</code> en helpers de sesión y transacciones Prisma.</li>
+      <li><strong>Cálculos duplicados:</strong> lógica de promedio final repetida en API y utilidades.</li>
+      <li><strong>Recuperación anual desconectada:</strong> no se integra automáticamente en el cálculo del promedio anual.</li>
+      <li><strong>Magic numbers:</strong> valores hardcodeados (35/30, umbrales, topes) dispersos en el código.</li>
+      <li><strong>Validación de porcentajes:</strong> el cálculo permite desviaciones pequeñas pero no hay un único validador central.</li>
+      <li><strong>Escalabilidad del agente:</strong> análisis secuencial N+1 por estudiante; puede ser lento con miles de registros.</li>
+      <li><strong>Script mensual:</strong> usa Bearer token no validado por el endpoint.</li>
+      <li><strong>Dependencias pesadas:</strong> MDX editor, DnD kits, Zod validation error, etc., algunas quizás poco usadas.</li>
+      <li><strong>Middleware limitado:</strong> no autentica; solo rate limiting y headers.</li>
+      <li><strong>Documentación de API:</strong> no hay OpenAPI/Swagger ni contratos formales.</li>
+      <li><strong>Internacionalización:</strong> next-intl está instalado pero la app parece monolingüe (es-SV).</li>
+    </ul>
+
+    <h2 id="mejoras">12. Roadmap de Mejoras</h2>
+
+    <h3>12.1. Mejoras secuenciales (bajo riesgo, impacto acumulativo)</h3>
+    <table>
+      <tr><th>#</th><th>Mejora</th><th>Impacto</th><th>Esforzado</th></tr>
+      <tr><td>1</td><td>Centralizar fórmulas en un único módulo matemático con tests exhaustivos.</td><td>Elimina duplicación y bugs silenciosos.</td><td>Bajo</td></tr>
+      <tr><td>2</td><td>Eliminar <code>next-auth</code> o migrar a él; no dejar ambas aproximaciones.</td><td>Reduce confusión y dependencias.</td><td>Medio</td></tr>
+      <tr><td>3</td><td>Tipar estrictamente sesiones y transacciones Prisma.</td><td>Menor deuda técnica y mejor DX.</td><td>Medio</td></tr>
+      <tr><td>4</td><td>Extraer constantes mágicas a <code>lib/constants</code>.</td><td>Mantenibilidad y configurabilidad.</td><td>Bajo</td></tr>
+      <tr><td>5</td><td>Integrar <code>RecuperacionAnual</code> en el cálculo anual según reglas pedagógicas.</td><td>Completa el flujo académico.</td><td>Medio</td></tr>
+      <tr><td>6</td><td>Agregar validación central de suma de porcentajes = 100.</td><td>Evita configuraciones inválidas.</td><td>Bajo</td></tr>
+      <tr><td>7</td><td>Mejorar middleware para autenticación y autorización centralizada.</td><td>Menos código repetido, más seguridad.</td><td>Medio</td></tr>
+      <tr><td>8</td><td>Documentar API con OpenAPI/Swagger.</td><td>Facilita integraciones y onboarding.</td><td>Bajo-Medio</td></tr>
+    </table>
+
+    <h3>12.2. Mejoras exponenciales (alto impacto, más esfuerzo)</h3>
+    <table>
+      <tr><th>#</th><th>Mejora</th><th>Impacto</th><th>Esforzado</th></tr>
+      <tr><td>1</td><td><strong>Cálculo asincrónico masivo:</strong> procesar promedios y alertas en background jobs (BullMQ/Redis) o Edge Functions.</td><td>Escalabilidad a miles de estudiantes.</td><td>Alto</td></tr>
+      <tr><td>2</td><td><strong>Analytics avanzado:</strong> cubos OLAP o ClickHouse para reportes históricos y comparativos por escuela/año.</td><td>Insights estratégicos para directivos.</td><td>Alto</td></tr>
+      <tr><td>3</td><td><strong>Modelo ML de riesgo:</strong> reemplazar reglas fijas por regresión/logistic regression con features de asistencia, histórico y socioeconómicos.</td><td>Predicción más precisa de desertión/reprobación.</td><td>Alto</td></tr>
+      <tr><td>4</td><td><strong>Sincronización bidireccional offline:</strong> CRDTs o timestamps vectoriales para edición concurrente sin conflictos.</td><td>Trabajo offline robusto en campo.</td><td>Alto</td></tr>
+      <tr><td>5</td><td><strong>Arquitectura de microservicios:</strong> separar agente, reportes y autenticación en servicios independientes.</td><td>Escalabilidad y desacoplamiento.</td><td>Muy alto</td></tr>
+      <tr><td>6</td><td><strong>Observabilidad:</strong> integrar OpenTelemetry, Sentry y dashboards de métricas.</td><td>Diagnóstico proactivo.</td><td>Medio-Alto</td></tr>
+      <tr><td>7</td><td><strong>API pública / SSO:</strong> OAuth2/OpenID Connect, webhooks y API keys para integraciones ministeriales.</td><td>Interoperabilidad institucional.</td><td>Alto</td></tr>
+    </table>
+
+    <h2 id="conclusiones">13. Conclusiones</h2>
+    <p>
+      El Sistema de Calificaciones Escolar es una aplicación madura y funcional para centros educativos pequeños y medianos. Su fortaleza radica en la combinación de una experiencia de usuario moderna, multi-tenencia, auditoría detallada y capacidades offline. Las fórmulas de cálculo son directas pero efectivas, y la configurabilidad de pesos por materia le otorga flexibilidad real.
+    </p>
+    <p>
+      Sin embargo, acumula deuda técnica significativa: duplicación de lógica de cálculo, tipado relajado, dependencias no usadas y procesos potencialmente escalables de forma secuencial. Las mejoras de mayor retorno se concentran en <strong>centralizar la matemática</strong>, <strong>tipar sesiones y transacciones</strong>, <strong>resolver la dualidad NextAuth/custom auth</strong> y <strong>preparar el motor de alertas para escalar</strong>.
+    </p>
+    <p>
+      A corto plazo, el sistema es mantenible y desplegable. A mediano plazo, las mejoras exponenciales (jobs en background, analytics y ML) lo convertirían en una plataforma de inteligencia educativa, no solo un registro de notas.
+    </p>
+  </main>
+
+  <script>
+    document.getElementById('fecha').textContent = new Date().toLocaleDateString('es-SV', {
+      year: 'numeric', month: 'long', day: 'numeric'
+    });
+
+    async function descargarPDF() {
+      const { jsPDF } = window.jspdf;
+      const contenido = document.getElementById('contenido');
+      const btn = document.querySelector('.toolbar button:last-child');
+      const textoOriginal = btn.textContent;
+      btn.textContent = 'Generando PDF...';
+      btn.disabled = true;
+
+      try {
+        const canvas = await html2canvas(contenido, {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          windowWidth: 1000
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const margin = 10;
+        const imgWidth = pageWidth - margin * 2;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let heightLeft = imgHeight;
+        let position = 0;
+
+        pdf.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight);
+        heightLeft -= (pageHeight - margin * 2);
+
+        while (heightLeft > 0) {
+          position = heightLeft - imgHeight + margin;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+          heightLeft -= (pageHeight - margin * 2);
+        }
+
+        pdf.save('Analisis_Tecnico_Sistema_Calificaciones.pdf');
+      } catch (err) {
+        console.error(err);
+        alert('No se pudo generar el PDF automáticamente. Usa el botón "Imprimir / Guardar como PDF" del navegador.');
+      } finally {
+        btn.textContent = textoOriginal;
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
