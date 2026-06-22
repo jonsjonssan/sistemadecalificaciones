@@ -15,6 +15,8 @@ import { db } from "./db";
 import { verifySession } from "./session";
 import { z } from "zod";
 import { sql } from "./neon";
+import type { SessionUsuario } from "@/lib/types/session";
+import { SESSION_CACHE_TTL_MS } from "@/lib/constants";
 
 // ==========================================
 // Zod Validation Helpers
@@ -59,26 +61,14 @@ export function validateObject<T>(obj: unknown, schema: z.ZodType<T>): { data: T
 // Session Helpers
 // ==========================================
 
-export interface SessionUsuario {
-  id: string;
-  email: string;
-  nombre: string;
-  rol: string;
-  escuelaId: string;
-  escuela?: { id: string; nombre: string; codigo?: string; logo?: string; colorPrimario?: string };
-  sessionId?: string;
-  gradoId?: string;
-  materias?: Array<{ id: string; nombre: string; gradoId: string; grado?: { numero: number; seccion: string } }>;
-  gradosAsignados?: Array<{ id: string; numero: number; seccion: string }>;
-  asignaturasAsignadas?: Array<{ id: string; nombre: string; gradoId: string }>;
-}
+export type { SessionUsuario };
 
 // ==========================================
 // Session Activity Cache (60s TTL)
 // ==========================================
 
 const sessionActivityCache = new Map<string, { active: boolean; checkedAt: number }>();
-const SESSION_CACHE_TTL = 60 * 1000; // 60 seconds
+const SESSION_CACHE_TTL = SESSION_CACHE_TTL_MS;
 
 async function isUserActive(userId: string): Promise<boolean> {
   const now = Date.now();
@@ -214,8 +204,8 @@ export function paginationResponse<T>(data: T[], total: number, page: number, li
 // Error Handler Wrapper
 // ==========================================
 
-export function withErrorHandling(handler: (req: NextRequest, ...args: any[]) => Promise<NextResponse>) {
-  return async (req: NextRequest, ...args: any[]) => {
+export function withErrorHandling(handler: (req: NextRequest, ...args: never[]) => Promise<NextResponse>) {
+  return async (req: NextRequest, ...args: never[]) => {
     try {
       return await handler(req, ...args);
     } catch (error) {
@@ -233,7 +223,7 @@ export function withErrorHandling(handler: (req: NextRequest, ...args: any[]) =>
 // ==========================================
 
 export function withAuth(handler: (req: NextRequest, session: SessionUsuario) => Promise<NextResponse>, options?: { requireAdmin?: boolean; requireEscuela?: boolean }) {
-  return withErrorHandling(async (req: NextRequest, ...args: any[]) => {
+  return withErrorHandling(async (req: NextRequest, ...args: never[]) => {
     const session = await getSession();
     if (!session) {
       return NextResponse.json({ error: "No autorizado. Inicia sesión primero." }, { status: 401 });

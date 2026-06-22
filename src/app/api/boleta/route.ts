@@ -3,18 +3,20 @@ import { sql } from "@/lib/neon";
 import { cookies } from "next/headers";
 import { verifySession } from "@/lib/session";
 import { isAdmin } from "@/utils/roleHelpers";
+import { calcularPromedioAnualMateria, calcularPromedioGeneral } from "@/lib/calculations";
+import type { SessionUsuario } from "@/lib/types/session";
 
-async function getUsuarioSession() {
+async function getUsuarioSession(): Promise<SessionUsuario | null> {
   const cookieStore = await cookies();
   const session = cookieStore.get("session");
   if (!session) return null;
   return verifySession(session.value);
 }
 
-function canAccessGrado(session: any, gradoId: string): boolean {
+function canAccessGrado(session: SessionUsuario, gradoId: string): boolean {
   if (isAdmin(session.rol)) return true;
-  if (session.asignaturasAsignadas?.some((m: any) => m.gradoId === gradoId)) return true;
-  if (session.gradosAsignados?.some((g: any) => g.id === gradoId)) return true;
+  if (session.asignaturasAsignadas?.some((m) => m.gradoId === gradoId)) return true;
+  if (session.gradosAsignados?.some((g) => g.id === gradoId)) return true;
   return false;
 }
 
@@ -95,13 +97,17 @@ export async function GET(request: NextRequest) {
         recuperacionPorMateria.set(r.materiaId, r.nota);
       }
 
-      const promediosValidos = calificaciones
-        .map((c: any) => c.promedioFinal)
-        .filter((p: number | null): p is number => p !== null);
-
-      const promedioGeneral = promediosValidos.length > 0
-        ? promediosValidos.reduce((a: number, b: number) => a + b, 0) / promediosValidos.length
-        : null;
+      const porMateria = new Map<string, number[]>();
+      for (const c of calificaciones as Array<{ materiaId: string; promedioFinal: number | null }>) {
+        if (c.promedioFinal !== null) {
+          if (!porMateria.has(c.materiaId)) porMateria.set(c.materiaId, []);
+          porMateria.get(c.materiaId)!.push(c.promedioFinal);
+        }
+      }
+      const promediosAnuales = Array.from(porMateria.entries()).map(([materiaId, trimProms]) =>
+        calcularPromedioAnualMateria(trimProms, recuperacionPorMateria.get(materiaId) ?? null)
+      );
+      const promedioGeneral = calcularPromedioGeneral(promediosAnuales);
 
       return NextResponse.json({
         estudiante: estudiante[0],
@@ -168,13 +174,17 @@ export async function GET(request: NextRequest) {
     const boletasPorEstudiante = estudiantes.map((est: any) => {
       const califEstudiante = calificaciones.filter((c: any) => c.estudianteId === est.id);
 
-      const promediosValidos = califEstudiante
-        .map((c: any) => c.promedioFinal)
-        .filter((p: number | null): p is number => p !== null);
-
-      const promedioGeneral = promediosValidos.length > 0
-        ? promediosValidos.reduce((a: number, b: number) => a + b, 0) / promediosValidos.length
-        : null;
+      const porMateria = new Map<string, number[]>();
+      for (const c of califEstudiante as Array<{ materiaId: string; promedioFinal: number | null }>) {
+        if (c.promedioFinal !== null) {
+          if (!porMateria.has(c.materiaId)) porMateria.set(c.materiaId, []);
+          porMateria.get(c.materiaId)!.push(c.promedioFinal);
+        }
+      }
+      const promediosAnuales = Array.from(porMateria.entries()).map(([materiaId, trimProms]) =>
+        calcularPromedioAnualMateria(trimProms, recuperacionPorEstudianteMateria.get(`${est.id}-${materiaId}`) ?? null)
+      );
+      const promedioGeneral = calcularPromedioGeneral(promediosAnuales);
 
       return {
         estudiante: est,

@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     const fechaDesde = searchParams.get("fechaDesde");
     const fechaHasta = searchParams.get("fechaHasta");
 
-    const escuelaId = (session as any).escuelaId;
+    const escuelaId = session.escuelaId;
     if (!escuelaId) {
       return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
     }
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const escuelaId = (session as any).escuelaId;
+    const escuelaId = session.escuelaId;
     if (!escuelaId) {
       return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
     }
@@ -137,7 +137,7 @@ export async function DELETE(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const olderThan = searchParams.get("olderThan");
 
-    const escuelaId = (session as any).escuelaId;
+    const escuelaId = session.escuelaId;
     if (!escuelaId) {
       return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
     }

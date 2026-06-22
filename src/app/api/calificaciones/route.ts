@@ -4,7 +4,9 @@ import { cookies } from "next/headers";
 import { verifySession } from "@/lib/session";
 import { z } from "zod";
 import { isAdmin } from "@/utils/roleHelpers";
-import { calcularPromedio, calcularPromedioFinal } from "@/utils/gradeCalculations";
+import { calcularPromedio, calcularPromedioFinal, pesosFromConfig, DEFAULT_PESOS } from "@/lib/calculations";
+import type { SessionUsuario } from "@/lib/types/session";
+import type { Prisma } from "@prisma/client";
 
 const calificacionSchema = z.object({
   estudianteId: z.string().min(1, "ID de estudiante requerido"),
@@ -17,16 +19,16 @@ const calificacionSchema = z.object({
   recuperacion: z.number().min(0).max(10).nullable().optional(),
 });
 
-async function getUsuarioSession() {
+async function getUsuarioSession(): Promise<SessionUsuario | null> {
   const cookieStore = await cookies();
   const session = cookieStore.get("session");
   if (!session) return null;
   return verifySession(session.value);
 }
 
-function canAccessMateria(session: any, materiaId: string): boolean {
+function canAccessMateria(session: SessionUsuario, materiaId: string): boolean {
   if (isAdmin(session.rol)) return true;
-  return session.asignaturasAsignadas?.some((m: any) => m.id === materiaId) ?? false;
+  return session.asignaturasAsignadas?.some((m) => m.id === materiaId) ?? false;
 }
 
 /**
@@ -380,7 +382,7 @@ export async function POST(request: NextRequest) {
       recuperacion,
     } = parsed.data;
 
-    const escuelaId = (session as any).escuelaId;
+    const escuelaId = session.escuelaId;
     if (!escuelaId) {
       return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
     }
@@ -470,30 +472,11 @@ export async function POST(request: NextRequest) {
     const examenEfectivo = examenTrimestral !== undefined ? examenTrimestral : (calificacionExFromParts !== null ? calificacionExFromParts : existingForCalc?.examenTrimestral ?? null);
     const recupEfectiva = recuperacion !== undefined ? recuperacion : existingForCalc?.recuperacion ?? null;
 
-    let promedioFinal: number | null = null;
-    if (config) {
-      const porcAC = config.porcentajeAC / 100;
-      const porcAI = config.porcentajeAI / 100;
-      const porcExam = (config.porcentajeExamen ?? 30) / 100;
-
-      const tieneNotas = calificacionAC !== null || calificacionAI !== null || examenEfectivo !== null;
-      if (tieneNotas) {
-        const suma = (calificacionAC ?? 0) * porcAC + (calificacionAI ?? 0) * porcAI + ((examenEfectivo ?? 0)) * porcExam;
-        promedioFinal = isNaN(suma) ? null : suma;
-        if (recupEfectiva !== null && recupEfectiva !== undefined) {
-          promedioFinal = Math.min(10, (promedioFinal ?? 0) + recupEfectiva);
-        }
-      }
-    } else {
-      const tieneNotas = calificacionAC !== null || calificacionAI !== null || examenEfectivo !== null;
-      if (tieneNotas) {
-        const suma = (calificacionAC ?? 0) * 0.35 + (calificacionAI ?? 0) * 0.35 + ((examenEfectivo ?? 0)) * 0.30;
-        promedioFinal = isNaN(suma) ? null : suma;
-        if (recupEfectiva !== null && recupEfectiva !== undefined) {
-          promedioFinal = Math.min(10, (promedioFinal ?? 0) + recupEfectiva);
-        }
-      }
-    }
+    const pesos = config ? pesosFromConfig(config) : DEFAULT_PESOS;
+    const tieneNotas = calificacionAC !== null || calificacionAI !== null || examenEfectivo !== null;
+    const promedioFinal = tieneNotas
+      ? calcularPromedioFinal(calificacionAC, calificacionAI, examenEfectivo, pesos, recupEfectiva)
+      : null;
 
     const acFinal = (calificacionAC !== null && !isNaN(calificacionAC)) ? calificacionAC : null;
     const aiFinal = (calificacionAI !== null && !isNaN(calificacionAI)) ? calificacionAI : null;
@@ -543,7 +526,7 @@ export async function POST(request: NextRequest) {
 
     // Ejecutar todo en una sola transacción interactiva para atomicidad
      
-    const finalResult = await db.$transaction(async (tx: any) => {
+    const finalResult = await db.$transaction(async (tx: Prisma.TransactionClient) => {
       // Buscar calificación existente (sin depender de @@unique)
       const existingCal = await tx.calificacion.findFirst({
         where: {
@@ -850,7 +833,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const escuelaId = (session as any).escuelaId;
+    const escuelaId = session.escuelaId;
     if (!escuelaId) {
       return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
     }

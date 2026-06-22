@@ -2,32 +2,61 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { cookies } from "next/headers";
 import { verifySession } from "@/lib/session";
-import { isAdmin } from "@/utils/roleHelpers";
 import { ejecutarAnalisisCompleto } from "@/lib/agent/rules";
+import { timingSafeEqual } from "crypto";
+import type { SessionUsuario } from "@/lib/types/session";
+import { ADMIN_ROLES } from "@/lib/constants";
+
+const AGENT_SECRET_TOKEN = process.env.AGENT_SECRET_TOKEN;
+
+function validateBearerToken(authHeader: string | null): boolean {
+  if (!authHeader || !authHeader.startsWith("Bearer ")) return false;
+  const token = authHeader.slice(7);
+  if (!AGENT_SECRET_TOKEN || AGENT_SECRET_TOKEN.length < 16) return false;
+  try {
+    const a = Buffer.from(token);
+    const b = Buffer.from(AGENT_SECRET_TOKEN);
+    return a.length === b.length && timingSafeEqual(a, b);
+  } catch {
+    return false;
+  }
+}
+
+async function getMonitorAuth(req: Request): Promise<{ escuelaId: string; usuarioId: string | null; isAutomated: boolean } | { error: NextResponse }> {
+  const authHeader = req.headers.get("authorization");
+  if (validateBearerToken(authHeader)) {
+    const body = await req.json().catch(() => ({}));
+    const escuelaId = body.escuelaId as string | undefined;
+    if (!escuelaId) {
+      return { error: NextResponse.json({ error: "escuelaId es requerido para ejecuciones automatizadas" }, { status: 400 }) };
+    }
+    return { escuelaId, usuarioId: null, isAutomated: true };
+  }
+
+  const cookieStore = await cookies();
+  const sessionCookie = cookieStore.get("session");
+  if (!sessionCookie) {
+    return { error: NextResponse.json({ error: "No autorizado" }, { status: 401 }) };
+  }
+  const session: SessionUsuario | null = verifySession(sessionCookie.value);
+  if (!session) {
+    return { error: NextResponse.json({ error: "Sesión inválida" }, { status: 401 }) };
+  }
+  if (!session.escuelaId) {
+    return { error: NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 }) };
+  }
+  if (!ADMIN_ROLES.includes(session.rol as never)) {
+    return { error: NextResponse.json({ error: "Solo directivos pueden ejecutar el agente monitor" }, { status: 403 }) };
+  }
+  return { escuelaId: session.escuelaId, usuarioId: session.id, isAutomated: false };
+}
 
 export async function POST(req: Request) {
   try {
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get("session");
+    const auth = await getMonitorAuth(req);
+    if ("error" in auth) return auth.error;
 
-    if (!sessionCookie) {
-      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-    }
-
-    const session = verifySession(sessionCookie.value);
-    if (!session) {
-      return NextResponse.json({ error: "Sesión inválida" }, { status: 401 });
-    }
-
-    const escuelaId = (session as any).escuelaId;
-    if (!escuelaId) {
-      return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
-    }
-
-    const soloDirectiva = ["admin", "admin-directora", "admin-codirectora"].includes(session.rol);
-    if (!soloDirectiva) {
-      return NextResponse.json({ error: "Solo directivos pueden ejecutar el agente monitor" }, { status: 403 });
-    }
+    const { escuelaId, usuarioId, isAutomated } = auth;
 
     const body = await req.json().catch(() => ({}));
     const gradoId = body.gradoId as string | undefined;
@@ -43,8 +72,8 @@ export async function POST(req: Request) {
     if (guardarAlertas && resultado.estudiantesEnRiesgo.length > 0) {
       const ejecucion = await db.agentLog.create({
         data: {
-          tipo: gradoId ? "ejecucion_manual" : "ejecucion_mensual",
-          iniciadoPor: session.id,
+          tipo: isAutomated ? "ejecucion_mensual" : (gradoId ? "ejecucion_manual" : "ejecucion_mensual"),
+          iniciadoPor: usuarioId,
           gradosAnalizados: gradoId ? 1 : new Set(resultado.estudiantesEnRiesgo.map((e) => e.gradoId)).size,
           estudiantesAnalizados: resultado.resumen.totalAnalizados,
           alertasGeneradas: resultado.estudiantesEnRiesgo.length,
@@ -100,7 +129,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const session = verifySession(sessionCookie.value);
+    const session: SessionUsuario | null = verifySession(sessionCookie.value);
     if (!session) {
       return NextResponse.json({ error: "Sesión inválida" }, { status: 401 });
     }
@@ -110,7 +139,7 @@ export async function GET(req: Request) {
     const soloNoLeidas = searchParams.get("leidas") === "no";
     const limit = parseInt(searchParams.get("limit") || "50");
 
-    const escuelaId = (session as any).escuelaId;
+    const escuelaId = session.escuelaId;
     if (!escuelaId) {
       return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
     }
@@ -170,17 +199,16 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const session = verifySession(sessionCookie.value);
+    const session: SessionUsuario | null = verifySession(sessionCookie.value);
     if (!session) {
       return NextResponse.json({ error: "Sesión inválida" }, { status: 401 });
     }
 
-    const soloDirectiva = ["admin", "admin-directora", "admin-codirectora"].includes(session.rol);
-    if (!soloDirectiva) {
+    if (!ADMIN_ROLES.includes(session.rol as never)) {
       return NextResponse.json({ error: "Solo directivos pueden borrar alertas del agente" }, { status: 403 });
     }
 
-    const escuelaId = (session as any).escuelaId;
+    const escuelaId = session.escuelaId;
     if (!escuelaId) {
       return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
     }
@@ -195,7 +223,7 @@ export async function DELETE(req: Request) {
     let logsBorrados = 0;
 
     if (borrarAlertas) {
-      const where: any = { escuelaId };
+      const where: { escuelaId: string; leido?: boolean; resuelto?: boolean } = { escuelaId };
       if (!borrarTodo) {
         where.leido = true;
         if (!borrarLeidas) where.resuelto = true;

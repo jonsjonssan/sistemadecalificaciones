@@ -35,7 +35,7 @@ export async function GET() {
             codigo: userRows[0].escuela_codigo,
             logo: userRows[0].escuela_logo,
             colorPrimario: userRows[0].escuela_color,
-          } : null;
+          } : undefined;
           // Re-firmar y actualizar la cookie
           cookieStore.set("session", signSession(sessionData), {
             httpOnly: true,

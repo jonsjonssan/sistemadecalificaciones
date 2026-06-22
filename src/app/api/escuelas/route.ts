@@ -3,6 +3,14 @@ import { neon } from "@neondatabase/serverless";
 import { requireSession } from "@/lib/api-middleware";
 import bcrypt from "bcryptjs";
 import { randomUUID } from "crypto";
+import { db } from "@/lib/db";
+import {
+  UMBRAL_APROBADO_DEFAULT,
+  UMBRAL_CONDICIONADO_DEFAULT,
+  UMBRAL_RECUPERACION_DEFAULT,
+  MAX_HISTORIAL_CELDA_DEFAULT,
+  CANTIDAD_TRIMESTRES,
+} from "@/lib/constants";
 
 // GET: Listar todas las escuelas (público para login)
 export async function GET() {
@@ -23,6 +31,89 @@ export async function GET() {
   }
 }
 
+async function clonarEstructuraEscuela(escuelaPlantillaId: string, nuevaEscuelaId: string, año: number): Promise<{ grados: number; materias: number; configs: number }> {
+  const gradosPlantilla = await db.grado.findMany({
+    where: { escuelaId: escuelaPlantillaId },
+    include: {
+      materias: {
+        include: {
+          configActividades: true,
+        },
+      },
+    },
+    orderBy: { numero: "asc" },
+  });
+
+  let gradosCreados = 0;
+  let materiasCreadas = 0;
+  let configsCreados = 0;
+
+  for (const gradoPlantilla of gradosPlantilla) {
+    const nuevoGrado = await db.grado.create({
+      data: {
+        numero: gradoPlantilla.numero,
+        seccion: gradoPlantilla.seccion,
+        año,
+        escuelaId: nuevaEscuelaId,
+      },
+    });
+    gradosCreados++;
+
+    for (const materiaPlantilla of gradoPlantilla.materias) {
+      const nuevaMateria = await db.materia.create({
+        data: {
+          nombre: materiaPlantilla.nombre,
+          gradoId: nuevoGrado.id,
+          escuelaId: nuevaEscuelaId,
+        },
+      });
+      materiasCreadas++;
+
+      for (const configPlantilla of materiaPlantilla.configActividades) {
+        await db.configActividad.create({
+          data: {
+            materiaId: nuevaMateria.id,
+            trimestre: configPlantilla.trimestre,
+            numActividadesCotidianas: configPlantilla.numActividadesCotidianas,
+            numActividadesIntegradoras: configPlantilla.numActividadesIntegradoras,
+            tieneExamen: configPlantilla.tieneExamen,
+            numExamenes: configPlantilla.numExamenes,
+            porcentajeAC: configPlantilla.porcentajeAC,
+            porcentajeAI: configPlantilla.porcentajeAI,
+            porcentajeExamen: configPlantilla.porcentajeExamen,
+            escuelaId: nuevaEscuelaId,
+          },
+        });
+        configsCreados++;
+      }
+    }
+  }
+
+  return { grados: gradosCreados, materias: materiasCreadas, configs: configsCreados };
+}
+
+async function encontrarEscuelaPlantilla(cloneFromEscuelaId?: string): Promise<string | null> {
+  if (cloneFromEscuelaId) {
+    const escuela = await db.escuela.findUnique({ where: { id: cloneFromEscuelaId } });
+    if (escuela) return escuela.id;
+  }
+
+  const todasEscuelas = await db.escuela.findMany({
+    where: { activo: true },
+    orderBy: { createdAt: "asc" },
+    select: { id: true, nombre: true },
+  });
+
+  const sanJose = todasEscuelas.find((e) =>
+    e.nombre.toLowerCase().includes("san jos") || e.nombre.toLowerCase().includes("san jose")
+  );
+  if (sanJose) return sanJose.id;
+
+  if (todasEscuelas.length > 0) return todasEscuelas[0].id;
+
+  return null;
+}
+
 // POST: Crear nueva escuela (SOLO superadmin)
 export async function POST(req: Request) {
   const { session, error: authError } = await requireSession();
@@ -34,7 +125,7 @@ export async function POST(req: Request) {
 
   const sql = neon(process.env.DATABASE_URL!);
   const body = await req.json();
-  const { nombre, codigo, direccion, distrito, tipo, planEstudio, escalaNotas, periodos, logo, colorPrimario, adminEmail, adminPassword, adminNombre } = body;
+  const { nombre, codigo, direccion, distrito, tipo, planEstudio, escalaNotas, periodos, logo, colorPrimario, adminEmail, adminPassword, adminNombre, cloneFromEscuelaId } = body;
 
   if (!nombre || !codigo) {
     return NextResponse.json({ error: "Nombre y codigo son requeridos" }, { status: 400 });
@@ -45,9 +136,11 @@ export async function POST(req: Request) {
   }
 
   try {
+    const añoEscolar = new Date().getFullYear() + 1;
+
     const escuelaResult = await sql`
       INSERT INTO "Escuela" (id, nombre, codigo, direccion, distrito, tipo, "planEstudio", "escalaNotas", periodos, logo, "colorPrimario", "createdAt", "updatedAt")
-      VALUES (gen_random_uuid()::text, ${nombre}, ${codigo}, ${direccion || null}, ${distrito || null}, ${tipo || 'publico'}, ${planEstudio || 'general'}, ${escalaNotas || '0-10'}, ${periodos || 'trimestres'}, ${logo || null}, ${colorPrimario || '#1E3A8A'}, NOW(), NOW())
+      VALUES (gen_random_uuid()::text, ${nombre}, ${codigo}, ${direccion || null}, ${distrito || null}, ${tipo || 'publico'}, ${planEstudio || 'general'}, ${escalaNotas || '0-10'}, ${periodos || 'trimestres'}, ${logo || null}, ${colorPrimario || '#1a3a2a'}, NOW(), NOW())
       RETURNING id, nombre, codigo
     `;
 
@@ -63,14 +156,30 @@ export async function POST(req: Request) {
 
     const configId = randomUUID();
     await sql`
-      INSERT INTO "ConfiguracionSistema" (id, "escuelaId", "añoEscolar", "nombreDirectora", "umbralCondicionado", "umbralAprobado")
-      VALUES (${configId}, ${nuevaEscuela.id}, ${new Date().getFullYear() + 1}, ${adminNombre}, 4.50, 6.50)
+      INSERT INTO "ConfiguracionSistema" (id, "escuelaId", "añoEscolar", "nombreDirectora", "umbralRecuperacion", "umbralCondicionado", "umbralAprobado", "notaMinima", "notaMaxima", "maxHistorialCelda", "usarIntervaloReprobado", "usarIntervaloCondicionado", "usarIntervaloAprobado")
+      VALUES (${configId}, ${nuevaEscuela.id}, ${añoEscolar}, ${adminNombre}, ${UMBRAL_RECUPERACION_DEFAULT}, ${UMBRAL_CONDICIONADO_DEFAULT}, ${UMBRAL_APROBADO_DEFAULT}, 0.0, 10.0, ${MAX_HISTORIAL_CELDA_DEFAULT}, true, true, true)
     `;
+
+    let clonacion = { grados: 0, materias: 0, configs: 0, escuelaPlantilla: null as string | null };
+    const plantillaId = await encontrarEscuelaPlantilla(cloneFromEscuelaId);
+    if (plantillaId && plantillaId !== nuevaEscuela.id) {
+      const resultado = await clonarEstructuraEscuela(plantillaId, nuevaEscuela.id, añoEscolar);
+      clonacion = { ...resultado, escuelaPlantilla: plantillaId };
+    }
 
     return NextResponse.json({
       escuela: nuevaEscuela,
       admin: { id: adminId, email: adminEmail, nombre: adminNombre, rol: 'admin' },
-      message: "Escuela creada con admin inicial y configuración por defecto"
+      clonacion: {
+        grados: clonacion.grados,
+        materias: clonacion.materias,
+        configuraciones: clonacion.configs,
+        escuelaPlantillaId: clonacion.escuelaPlantilla,
+        trimestrePorDefecto: CANTIDAD_TRIMESTRES,
+      },
+      message: clonacion.grados > 0
+        ? `Escuela creada con admin inicial y estructura clonada (${clonacion.grados} grados, ${clonacion.materias} materias, ${clonacion.configs} configuraciones)`
+        : "Escuela creada con admin inicial y configuración por defecto"
     });
   } catch (error: any) {
     console.error("[escuelas/POST] ERROR:", error.message);

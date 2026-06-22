@@ -17,12 +17,26 @@
  */
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+const ESCUELA_ID = process.env.AGENT_ESCUELA_ID || "";
+const AGENT_TOKEN = process.env.AGENT_SECRET_TOKEN;
+
+if (!AGENT_TOKEN || AGENT_TOKEN.length < 16) {
+  console.error("❌ AGENT_SECRET_TOKEN no configurado o demasiado corto (mínimo 16 caracteres).");
+  console.error("   Genere uno con: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"");
+  process.exit(1);
+}
+
+if (!ESCUELA_ID) {
+  console.error("❌ AGENT_ESCUELA_ID no configurado. Establezca la variable de entorno con el ID de la escuela a analizar.");
+  process.exit(1);
+}
 
 async function ejecutarAgenteMensual() {
   console.log("🤖 Agente Monitor - Ejecución Mensual");
   console.log("======================================");
-  console.log(` Fecha: ${new Date().toLocaleString("es-DO")}`);
+  console.log(` 📅 Fecha: ${new Date().toLocaleString("es-DO")}`);
   console.log(`🌐 URL: ${BASE_URL}`);
+  console.log(`🏫 Escuela ID: ${ESCUELA_ID}`);
   console.log("");
 
   try {
@@ -30,11 +44,12 @@ async function ejecutarAgenteMensual() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.AGENT_SECRET_TOKEN || "monthly-execution-token"}`,
+        "Authorization": `Bearer ${AGENT_TOKEN}`,
       },
       body: JSON.stringify({
         año: new Date().getFullYear(),
         guardarAlertas: true,
+        escuelaId: ESCUELA_ID,
       }),
     });
 

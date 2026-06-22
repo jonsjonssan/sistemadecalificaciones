@@ -3,8 +3,19 @@ import { db } from "@/lib/db";
 import { createAuditLog } from "@/lib/audit";
 import { cookies } from "next/headers";
 import { verifySession } from "@/lib/session";
+import { validarPorcentajes } from "@/lib/calculations";
+import type { SessionUsuario } from "@/lib/types/session";
+import {
+  DEFAULT_NUM_ACTIVIDADES_COTIDIANAS,
+  DEFAULT_NUM_ACTIVIDADES_INTEGRADORAS,
+  DEFAULT_NUM_EXAMENES,
+  PORCENTAJE_DEFAULT_AC,
+  PORCENTAJE_DEFAULT_AI,
+  PORCENTAJE_DEFAULT_EXAMEN,
+  MAX_EXAMENES,
+} from "@/lib/constants";
 
-async function getUsuarioSession() {
+async function getUsuarioSession(): Promise<SessionUsuario | null> {
   try {
     const cookieStore = await cookies();
     const session = cookieStore.get("session");
@@ -23,7 +34,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
-    const escuelaId = (session as any).escuelaId;
+    const escuelaId = session.escuelaId;
     if (!escuelaId) {
       return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
     }
@@ -34,9 +45,9 @@ export async function GET(request: NextRequest) {
     const trimestre = searchParams.get("trimestre");
 
     if (session.rol === "docente" || session.rol === "docente-orientador") {
-      const materiasAsignadasIds = session.asignaturasAsignadas?.map((m: any) => m.id) || [];
-      const gradosByMaterias = session.asignaturasAsignadas?.map((m: any) => m.gradoId) || [];
-      const gradosByTutor = session.gradosAsignados?.map((g: any) => g.id) || [];
+      const materiasAsignadasIds = session.asignaturasAsignadas?.map((m) => m.id) || [];
+      const gradosByMaterias = session.asignaturasAsignadas?.map((m) => m.gradoId) || [];
+      const gradosByTutor = session.gradosAsignados?.map((g) => g.id) || [];
       const todosGradosIds = [...new Set([...gradosByMaterias, ...gradosByTutor])];
 
       if (materiaId && !materiasAsignadasIds.includes(materiaId)) {
@@ -75,13 +86,13 @@ export async function GET(request: NextRequest) {
           data: {
             materiaId,
             trimestre: trimestreNum,
-            numActividadesCotidianas: 4,
-            numActividadesIntegradoras: 1,
+            numActividadesCotidianas: DEFAULT_NUM_ACTIVIDADES_COTIDIANAS,
+            numActividadesIntegradoras: DEFAULT_NUM_ACTIVIDADES_INTEGRADORAS,
             tieneExamen: true,
-            numExamenes: 1,
-            porcentajeAC: 35.0,
-            porcentajeAI: 35.0,
-            porcentajeExamen: 30.0,
+            numExamenes: DEFAULT_NUM_EXAMENES,
+            porcentajeAC: PORCENTAJE_DEFAULT_AC,
+            porcentajeAI: PORCENTAJE_DEFAULT_AI,
+            porcentajeExamen: PORCENTAJE_DEFAULT_EXAMEN,
             escuelaId,
           }
         });
@@ -136,13 +147,13 @@ export async function GET(request: NextRequest) {
               data: {
                 materiaId: materia.id,
                 trimestre: trimestreNum,
-                numActividadesCotidianas: 4,
-                numActividadesIntegradoras: 1,
+                numActividadesCotidianas: DEFAULT_NUM_ACTIVIDADES_COTIDIANAS,
+                numActividadesIntegradoras: DEFAULT_NUM_ACTIVIDADES_INTEGRADORAS,
                 tieneExamen: true,
-                numExamenes: 1,
-                porcentajeAC: 35.0,
-                porcentajeAI: 35.0,
-                porcentajeExamen: 30.0,
+                numExamenes: DEFAULT_NUM_EXAMENES,
+                porcentajeAC: PORCENTAJE_DEFAULT_AC,
+                porcentajeAI: PORCENTAJE_DEFAULT_AI,
+                porcentajeExamen: PORCENTAJE_DEFAULT_EXAMEN,
                 escuelaId,
               }
             });
@@ -182,7 +193,7 @@ export async function POST(request: NextRequest) {
     const session = await getUsuarioSession();
     if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
-    const escuelaId = (session as any).escuelaId;
+    const escuelaId = session.escuelaId;
     if (!escuelaId) {
       return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
     }
@@ -192,9 +203,9 @@ export async function POST(request: NextRequest) {
     const { materiaId, gradoId, aplicarATodasLasMateriasDelGrado, trimestre: trimestreValue, numActividadesCotidianas, numActividadesIntegradoras, tieneExamen, numExamenes, porcentajeAC, porcentajeAI, porcentajeExamen } = data;
 
     if (session.rol === "docente") {
-      const materiasAsignadasIds = session.asignaturasAsignadas?.map((m: any) => m.id) || [];
-      const gradosByMaterias = session.asignaturasAsignadas?.map((m: any) => m.gradoId) || [];
-      const gradosByTutor = session.gradosAsignados?.map((g: any) => g.id) || [];
+      const materiasAsignadasIds = session.asignaturasAsignadas?.map((m) => m.id) || [];
+      const gradosByMaterias = session.asignaturasAsignadas?.map((m) => m.gradoId) || [];
+      const gradosByTutor = session.gradosAsignados?.map((g) => g.id) || [];
       const todosGradosIds = [...new Set([...gradosByMaterias, ...gradosByTutor])];
 
       if (materiaId && !materiasAsignadasIds.includes(materiaId)) {
@@ -213,17 +224,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Trimestre es requerido y debe ser válido (1-3)" }, { status: 400 });
     }
 
-    const numAC = numActividadesCotidianas !== undefined && numActividadesCotidianas !== null ? Math.max(0, parseInt(String(numActividadesCotidianas)) || 4) : 4;
-    const numAI = numActividadesIntegradoras !== undefined && numActividadesIntegradoras !== null ? Math.max(0, parseInt(String(numActividadesIntegradoras)) || 1) : 1;
-    const numEx = numExamenes !== undefined && numExamenes !== null ? Math.max(1, Math.min(5, parseInt(String(numExamenes)) || 1)) : 1;
+    const numAC = numActividadesCotidianas !== undefined && numActividadesCotidianas !== null ? Math.max(0, parseInt(String(numActividadesCotidianas)) || DEFAULT_NUM_ACTIVIDADES_COTIDIANAS) : DEFAULT_NUM_ACTIVIDADES_COTIDIANAS;
+    const numAI = numActividadesIntegradoras !== undefined && numActividadesIntegradoras !== null ? Math.max(0, parseInt(String(numActividadesIntegradoras)) || DEFAULT_NUM_ACTIVIDADES_INTEGRADORAS) : DEFAULT_NUM_ACTIVIDADES_INTEGRADORAS;
+    const numEx = numExamenes !== undefined && numExamenes !== null ? Math.max(1, Math.min(MAX_EXAMENES, parseInt(String(numExamenes)) || DEFAULT_NUM_EXAMENES)) : DEFAULT_NUM_EXAMENES;
     const tieneEx = tieneExamen === true || tieneExamen === "true" || tieneExamen === 1;
-    const porcAC = porcentajeAC !== undefined && porcentajeAC !== null ? parseFloat(String(porcentajeAC)) || 35.0 : 35.0;
-    const porcAI = porcentajeAI !== undefined && porcentajeAI !== null ? parseFloat(String(porcentajeAI)) || 35.0 : 35.0;
-    const porcEx = porcentajeExamen !== undefined && porcentajeExamen !== null ? parseFloat(String(porcentajeExamen)) || 30.0 : 30.0;
+    const porcAC = porcentajeAC !== undefined && porcentajeAC !== null ? parseFloat(String(porcentajeAC)) || PORCENTAJE_DEFAULT_AC : PORCENTAJE_DEFAULT_AC;
+    const porcAI = porcentajeAI !== undefined && porcentajeAI !== null ? parseFloat(String(porcentajeAI)) || PORCENTAJE_DEFAULT_AI : PORCENTAJE_DEFAULT_AI;
+    const porcEx = porcentajeExamen !== undefined && porcentajeExamen !== null ? parseFloat(String(porcentajeExamen)) || PORCENTAJE_DEFAULT_EXAMEN : PORCENTAJE_DEFAULT_EXAMEN;
 
-    const totalPorcentaje = porcAC + porcAI + (tieneEx ? porcEx : 0);
-    if (Math.abs(totalPorcentaje - 100) > 0.01) {
-      return NextResponse.json({ error: `Los porcentajes deben sumar 100%. Actual: AC=${porcAC}% + AI=${porcAI}% + Examen=${tieneEx ? porcEx + '%' : '0% (sin examen)'} = ${totalPorcentaje}%` }, { status: 400 });
+    const validacion = validarPorcentajes(porcAC, porcAI, porcEx, tieneEx);
+    if (!validacion.valido) {
+      return NextResponse.json({ error: validacion.error }, { status: 400 });
     }
 
     if (aplicarATodasLasMateriasDelGrado && gradoId) {

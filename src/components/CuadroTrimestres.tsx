@@ -88,9 +88,10 @@ const CuadroTrimestres = memo(function CuadroTrimestres({ gradoId, gradoNumero, 
       const n2 = c2?.promedioFinal ?? null;
       const n3 = c3?.promedioFinal ?? null;
       const notasValidas = [n1, n2, n3].filter((n): n is number => n !== null && n !== undefined);
-      const pf = notasValidas.length > 0 ? notasValidas.reduce((a, b) => a + b, 0) / notasValidas.length : null;
+      const pfBase = notasValidas.length > 0 ? notasValidas.reduce((a, b) => a + b, 0) / notasValidas.length : null;
       const recup = recuperacionesAnuales.get(est.id) ?? null;
-      return { estudiante: est, n1, n2, n3, pf, recup };
+      const pf = pfBase !== null && recup !== null ? Math.min(10, pfBase + recup) : pfBase;
+      return { estudiante: est, n1, n2, n3, pf, pfBase, recup };
     });
   }, [estudiantes, calificaciones, asignaturaCuadro, recuperacionesAnuales]);
 

@@ -15,11 +15,14 @@ export async function POST(request: NextRequest) {
     }
 
     const sessionData = verifySession(session.value);
+    if (!sessionData) {
+      return NextResponse.json({ error: 'Sesión inválida' }, { status: 401 });
+    }
     if (!isAdmin(sessionData.rol)) {
       return NextResponse.json({ error: "Solo administradores pueden ejecutar esta acción" }, { status: 403 });
     }
 
-    const escuelaId = (sessionData as any).escuelaId;
+    const escuelaId = sessionData.escuelaId;
     if (!escuelaId) {
       return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
     }

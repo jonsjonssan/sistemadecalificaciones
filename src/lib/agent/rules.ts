@@ -1,4 +1,17 @@
 import { db } from "@/lib/db";
+import {
+  AGENTE_TENDENCIA_FUERTE,
+  AGENTE_TENDENCIA_LEVE,
+  AGENTE_UMBRAL_DESCARTAR,
+  AGENTE_UMBRAL_RIESGO_ALTO,
+  AGENTE_UMBRAL_RIESGO_MEDIO,
+  ASISTENCIA_BAJA_PCT,
+  ASISTENCIA_CRITICA_PCT,
+  ASISTENCIA_PESO_TARDANZA,
+  UMBRAL_APROBADO_DEFAULT,
+  UMBRAL_CONDICIONADO_DEFAULT,
+  UMBRAL_RECUPERACION_DEFAULT,
+} from "@/lib/constants";
 
 export interface EstudianteRiesgo {
   estudianteId: string;
@@ -35,50 +48,9 @@ interface Umbrales {
 async function getUmbrales(escuelaId?: string): Promise<Umbrales> {
   const config = await db.configuracionSistema.findFirst({ where: escuelaId ? { escuelaId } : undefined });
   return {
-    umbralAprobado: config?.umbralAprobado ?? 6.5,
-    umbralCondicionado: config?.umbralCondicionado ?? 4.5,
-    umbralRecuperacion: config?.umbralRecuperacion ?? 5.0,
-  };
-}
-
-async function getCalificacionesEstudiante(estudianteId: string) {
-  return db.calificacion.findMany({
-    where: { estudianteId },
-    include: {
-      materia: { select: { id: true, nombre: true, gradoId: true } },
-    },
-    orderBy: [{ materiaId: "asc" }, { trimestre: "asc" }],
-  });
-}
-
-async function getAsistenciaEstudiante(estudianteId: string, año: number) {
-  const inicioAño = new Date(año, 0, 1);
-  const finAño = new Date(año, 11, 31);
-
-  const registros = await db.asistencia.findMany({
-    where: {
-      estudianteId,
-      fecha: { gte: inicioAño, lte: finAño },
-    },
-  });
-
-  if (registros.length === 0) return null;
-
-  const presentes = registros.filter((r) => r.estado === "presente").length;
-  const tardanzas = registros.filter((r) => r.estado === "tarde").length;
-  const ausentes = registros.filter((r) => r.estado === "ausente").length;
-  const justificadas = registros.filter((r) => r.estado === "justificada").length;
-
-  const total = registros.length;
-  const asistenciaPct = ((presentes + tardanzas * 0.5) / total) * 100;
-
-  return {
-    porcentaje: Math.round(asistenciaPct * 100) / 100,
-    presentes,
-    ausentes,
-    tardanzas,
-    justificadas,
-    total,
+    umbralAprobado: config?.umbralAprobado ?? UMBRAL_APROBADO_DEFAULT,
+    umbralCondicionado: config?.umbralCondicionado ?? UMBRAL_CONDICIONADO_DEFAULT,
+    umbralRecuperacion: config?.umbralRecuperacion ?? UMBRAL_RECUPERACION_DEFAULT,
   };
 }
 
@@ -93,31 +65,42 @@ function calcularTendencia(promedios: (number | null)[]): number {
   return sumaDiferencias / (validos.length - 1);
 }
 
-function generarRecomendacion(tipo: string, factores: string[], gradoNumero: number): string {
+function generarRecomendacion(tipo: string): string {
   const recomendaciones: Record<string, string> = {
     riesgo_alto: `Estudiante en riesgo crítico de reprobación. Se recomienda: (1) Citación inmediata a padres/tutores, (2) Plan de refuerzo académico personalizado, (3) Seguimiento semanal de avances, (4) Evaluación psicopedagógica si persiste el bajo rendimiento.`,
     riesgo_medio: `Estudiante con tendencia negativa. Se recomienda: (1) Comunicación con padres para informar situación, (2) Refuerzo en materias débiles, (3) Monitoreo quincenal de calificaciones, (4) Estrategias de motivación y acompañamiento.`,
     bajo_rendimiento: `Estudiante por debajo del umbral aprobado. Se recomienda: (1) Identificar causas del bajo rendimiento (académicas, personales, familiares), (2) Ofrecer actividades de recuperación, (3) Tutoría entre pares o apoyo docente adicional.`,
-    asistencia_critica: `Asistencia por debajo del 70%. El ausentismo impacta directamente el rendimiento. Se recomienda: (1) Contactar a la familia para conocer causas, (2) Establecer compromiso de asistencia, (3) Considerar factores externos (salud, transporte, situación familiar), (4) Reportar a orientación escolar si es necesario.`,
+    asistencia_critica: `Asistencia por debajo del ${ASISTENCIA_CRITICA_PCT}%. El ausentismo impacta directamente el rendimiento. Se recomienda: (1) Contactar a la familia para conocer causas, (2) Establecer compromiso de asistencia, (3) Considerar factores externos (salud, transporte, situación familiar), (4) Reportar a orientación escolar si es necesario.`,
   };
 
   return recomendaciones[tipo] || "Se recomienda seguimiento y evaluación del caso.";
 }
 
-export async function analizarEstudiante(
-  estudianteId: string,
-  año: number,
-  umbrales: Umbrales
-): Promise<EstudianteRiesgo | null> {
-  const estudiante = await db.estudiante.findUnique({
-    where: { id: estudianteId },
-    include: { grado: { select: { id: true, numero: true, seccion: true } } },
-  });
+interface AnalisisData {
+  estudiante: {
+    id: string;
+    nombre: string;
+    gradoId: string;
+    grado: { id: string; numero: number; seccion: string };
+  };
+  calificaciones: Array<{
+    promedioFinal: number | null;
+    trimestre: number;
+    materiaId: string;
+    materia: { id: string; nombre: string; gradoId: string };
+  }>;
+  asistencia: {
+    porcentaje: number;
+    presentes: number;
+    ausentes: number;
+    tardanzas: number;
+    justificadas: number;
+    total: number;
+  } | null;
+}
 
-  if (!estudiante || !estudiante.activo) return null;
-
-  const calificaciones = await getCalificacionesEstudiante(estudianteId);
-  const asistencia = await getAsistenciaEstudiante(estudianteId, año);
+function procesarEstudiante(data: AnalisisData, umbrales: Umbrales): EstudianteRiesgo | null {
+  const { estudiante, calificaciones, asistencia } = data;
 
   if (calificaciones.length === 0) return null;
 
@@ -155,10 +138,10 @@ export async function analizarEstudiante(
   let materiasCondicionadas = 0;
   let materiasReprobadas = 0;
 
-  for (const [materiaId, data] of materiasMap) {
-    const promMateria = data.promedios.reduce((a, b) => a + b, 0) / data.promedios.length;
+  for (const [materiaId, materiaData] of materiasMap) {
+    const promMateria = materiaData.promedios.reduce((a, b) => a + b, 0) / materiaData.promedios.length;
     if (promMateria < umbrales.umbralAprobado) {
-      materiasDebiles.push({ materiaId, nombre: data.nombre, promedio: Math.round(promMateria * 100) / 100 });
+      materiasDebiles.push({ materiaId, nombre: materiaData.nombre, promedio: Math.round(promMateria * 100) / 100 });
       if (promMateria < umbrales.umbralCondicionado) {
         materiasReprobadas++;
       } else {
@@ -178,10 +161,10 @@ export async function analizarEstudiante(
     factores.push(`Promedio general por debajo de aprobado (${promedioGeneral.toFixed(1)})`);
   }
 
-  if (tendencia < -0.5) {
+  if (tendencia < AGENTE_TENDENCIA_FUERTE) {
     puntajeRiesgo += 0.2;
     factores.push(`Tendencia negativa sostenida (${tendencia.toFixed(2)} por trimestre)`);
-  } else if (tendencia < -0.2) {
+  } else if (tendencia < AGENTE_TENDENCIA_LEVE) {
     puntajeRiesgo += 0.1;
     factores.push(`Tendencia ligeramente negativa (${tendencia.toFixed(2)} por trimestre)`);
   }
@@ -196,10 +179,10 @@ export async function analizarEstudiante(
     factores.push(`${materiasCondicionadas} materia(s) condicionada(s)`);
   }
 
-  if (asistencia && asistencia.porcentaje < 70) {
+  if (asistencia && asistencia.porcentaje < ASISTENCIA_CRITICA_PCT) {
     puntajeRiesgo += 0.3;
     factores.push(`Asistencia crítica (${asistencia.porcentaje.toFixed(1)}%)`);
-  } else if (asistencia && asistencia.porcentaje < 80) {
+  } else if (asistencia && asistencia.porcentaje < ASISTENCIA_BAJA_PCT) {
     puntajeRiesgo += 0.15;
     factores.push(`Asistencia baja (${asistencia.porcentaje.toFixed(1)}%)`);
   }
@@ -207,21 +190,21 @@ export async function analizarEstudiante(
   puntajeRiesgo = Math.min(1, puntajeRiesgo);
 
   let tipo: EstudianteRiesgo["tipo"];
-  if (puntajeRiesgo >= 0.6) {
+  if (puntajeRiesgo >= AGENTE_UMBRAL_RIESGO_ALTO) {
     tipo = "riesgo_alto";
-  } else if (puntajeRiesgo >= 0.4) {
+  } else if (puntajeRiesgo >= AGENTE_UMBRAL_RIESGO_MEDIO) {
     tipo = "riesgo_medio";
-  } else if (asistencia && asistencia.porcentaje < 70) {
+  } else if (asistencia && asistencia.porcentaje < ASISTENCIA_CRITICA_PCT) {
     tipo = "asistencia_critica";
   } else {
     tipo = "bajo_rendimiento";
   }
 
-  if (puntajeRiesgo < 0.3 && (!asistencia || asistencia.porcentaje >= 80)) {
+  if (puntajeRiesgo < AGENTE_UMBRAL_DESCARTAR && (!asistencia || asistencia.porcentaje >= ASISTENCIA_BAJA_PCT)) {
     return null;
   }
 
-  const recomendacion = generarRecomendacion(tipo, factores, estudiante.grado.numero);
+  const recomendacion = generarRecomendacion(tipo);
 
   return {
     estudianteId: estudiante.id,
@@ -264,10 +247,78 @@ export async function ejecutarAnalisisCompleto(
     return a.numero - b.numero;
   });
 
+  if (estudiantes.length === 0) {
+    return {
+      estudiantesEnRiesgo: [],
+      resumen: { totalAnalizados: 0, riesgoAlto: 0, riesgoMedio: 0, bajoRendimiento: 0, asistenciaCritica: 0 },
+    };
+  }
+
+  const estudianteIds = estudiantes.map((e) => e.id);
+
+  const [todasCalificaciones, todasAsistencias] = await Promise.all([
+    db.calificacion.findMany({
+      where: { estudianteId: { in: estudianteIds } },
+      include: { materia: { select: { id: true, nombre: true, gradoId: true } } },
+      orderBy: [{ materiaId: "asc" }, { trimestre: "asc" }],
+    }),
+    db.asistencia.findMany({
+      where: {
+        estudianteId: { in: estudianteIds },
+        fecha: { gte: new Date(año, 0, 1), lte: new Date(año, 11, 31) },
+      },
+    }),
+  ]);
+
+  const calificacionesPorEstudiante = new Map<string, typeof todasCalificaciones>();
+  for (const cal of todasCalificaciones) {
+    if (!calificacionesPorEstudiante.has(cal.estudianteId)) {
+      calificacionesPorEstudiante.set(cal.estudianteId, []);
+    }
+    calificacionesPorEstudiante.get(cal.estudianteId)!.push(cal);
+  }
+
+  const asistenciasPorEstudiante = new Map<string, typeof todasAsistencias>();
+  for (const asis of todasAsistencias) {
+    if (!asistenciasPorEstudiante.has(asis.estudianteId)) {
+      asistenciasPorEstudiante.set(asis.estudianteId, []);
+    }
+    asistenciasPorEstudiante.get(asis.estudianteId)!.push(asis);
+  }
+
+  function calcularAsistencia(estId: string): AnalisisData["asistencia"] {
+    const registros = asistenciasPorEstudiante.get(estId) || [];
+    if (registros.length === 0) return null;
+    const presentes = registros.filter((r) => r.estado === "presente").length;
+    const tardanzas = registros.filter((r) => r.estado === "tarde").length;
+    const ausentes = registros.filter((r) => r.estado === "ausente").length;
+    const justificadas = registros.filter((r) => r.estado === "justificada").length;
+    const total = registros.length;
+    const asistenciaPct = ((presentes + tardanzas * ASISTENCIA_PESO_TARDANZA) / total) * 100;
+    return {
+      porcentaje: Math.round(asistenciaPct * 100) / 100,
+      presentes,
+      ausentes,
+      tardanzas,
+      justificadas,
+      total,
+    };
+  }
+
   const resultados: EstudianteRiesgo[] = [];
 
   for (const est of estudiantes) {
-    const analisis = await analizarEstudiante(est.id, año, umbrales);
+    const data: AnalisisData = {
+      estudiante: {
+        id: est.id,
+        nombre: est.nombre,
+        gradoId: est.gradoId,
+        grado: est.grado,
+      },
+      calificaciones: calificacionesPorEstudiante.get(est.id) || [],
+      asistencia: calcularAsistencia(est.id),
+    };
+    const analisis = procesarEstudiante(data, umbrales);
     if (analisis) {
       resultados.push(analisis);
     }
@@ -285,4 +336,59 @@ export async function ejecutarAnalisisCompleto(
       asistenciaCritica: resultados.filter((r) => r.tipo === "asistencia_critica").length,
     },
   };
+}
+
+export async function analizarEstudiante(
+  estudianteId: string,
+  año: number,
+  umbrales: Umbrales
+): Promise<EstudianteRiesgo | null> {
+  const estudiante = await db.estudiante.findUnique({
+    where: { id: estudianteId },
+    include: { grado: { select: { id: true, numero: true, seccion: true } } },
+  });
+
+  if (!estudiante || !estudiante.activo) return null;
+
+  const calificaciones = await db.calificacion.findMany({
+    where: { estudianteId },
+    include: { materia: { select: { id: true, nombre: true, gradoId: true } } },
+    orderBy: [{ materiaId: "asc" }, { trimestre: "asc" }],
+  });
+
+  const registros = await db.asistencia.findMany({
+    where: { estudianteId, fecha: { gte: new Date(año, 0, 1), lte: new Date(año, 11, 31) } },
+  });
+
+  let asistencia: AnalisisData["asistencia"] = null;
+  if (registros.length > 0) {
+    const presentes = registros.filter((r) => r.estado === "presente").length;
+    const tardanzas = registros.filter((r) => r.estado === "tarde").length;
+    const ausentes = registros.filter((r) => r.estado === "ausente").length;
+    const justificadas = registros.filter((r) => r.estado === "justificada").length;
+    const total = registros.length;
+    const asistenciaPct = ((presentes + tardanzas * ASISTENCIA_PESO_TARDANZA) / total) * 100;
+    asistencia = {
+      porcentaje: Math.round(asistenciaPct * 100) / 100,
+      presentes,
+      ausentes,
+      tardanzas,
+      justificadas,
+      total,
+    };
+  }
+
+  return procesarEstudiante(
+    {
+      estudiante: {
+        id: estudiante.id,
+        nombre: estudiante.nombre,
+        gradoId: estudiante.gradoId,
+        grado: estudiante.grado,
+      },
+      calificaciones,
+      asistencia,
+    },
+    umbrales
+  );
 }

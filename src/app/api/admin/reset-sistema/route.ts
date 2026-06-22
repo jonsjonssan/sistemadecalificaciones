@@ -20,6 +20,9 @@ export async function DELETE(request: NextRequest) {
     }
 
     const sessionData = verifySession(session.value);
+   if (!sessionData) {
+     return NextResponse.json({ error: 'Sesión inválida' }, { status: 401 });
+   }
     if (!sessionData) {
       return NextResponse.json({ error: "Sesión inválida" }, { status: 401 });
     }
@@ -28,7 +31,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Permiso denegado. Solo administradores pueden realizar esta acción." }, { status: 403 });
     }
 
-    const escuelaId = (sessionData as any).escuelaId;
+    const escuelaId = sessionData.escuelaId;
     if (!escuelaId) {
       return NextResponse.json({ error: "Sesión sin escuela asignada" }, { status: 400 });
     }
@@ -61,7 +64,7 @@ export async function DELETE(request: NextRequest) {
     });
 
     // Invalidar cache de sesiones de usuarios de esta escuela
-    invalidateSessionCache((sessionData as any).id);
+    invalidateSessionCache(sessionData.id);
 
     return NextResponse.json({
       success: true,

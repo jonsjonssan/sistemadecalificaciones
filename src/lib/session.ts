@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual } from "crypto";
+import type { SessionUsuario } from "@/lib/types/session";
 
 const SESSION_SECRET = process.env.SESSION_SECRET || process.env.NEXTAUTH_SECRET;
 
@@ -25,7 +26,7 @@ export function signSession(data: object): string {
   return `${payload}.${signature}`;
 }
 
-export function verifySession(cookieValue: string): any {
+export function verifySession(cookieValue: string): SessionUsuario | null {
   const dotIndex = cookieValue.indexOf(".");
   if (dotIndex === -1) return null;
 

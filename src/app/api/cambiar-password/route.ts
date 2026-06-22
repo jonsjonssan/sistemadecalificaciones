@@ -14,6 +14,9 @@ export async function POST(request: NextRequest) {
     }
 
     const sessionData = verifySession(session.value);
+   if (!sessionData) {
+     return NextResponse.json({ error: 'Sesión inválida' }, { status: 401 });
+   }
     if (!sessionData || !sessionData.id) {
       return NextResponse.json({ error: "Sesión inválida" }, { status: 401 });
     }

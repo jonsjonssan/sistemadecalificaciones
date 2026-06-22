@@ -1,0 +1,274 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Sistema de Calificaciones - API",
+    "version": "0.2.0",
+    "description": "API REST del Sistema de Calificaciones Escolar. Multi-tenencia por escuela. Autenticación mediante cookie de sesión firmada (HMAC-SHA256) o Bearer token (para automatizaciones)."
+  },
+  "servers": [
+    { "url": "/", "description": "Servidor actual" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "session",
+        "description": "Cookie de sesión firmada con HMAC-SHA256."
+      },
+      "bearerToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Token para automatizaciones (AGENT_SECRET_TOKEN). Solo para endpoints específicos."
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string" },
+          "code": { "type": "string" },
+          "message": { "type": "string" }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": ["email", "password", "escuelaId"],
+        "properties": {
+          "email": { "type": "string", "format": "email" },
+          "password": { "type": "string" },
+          "escuelaId": { "type": "string" }
+        }
+      },
+      "Usuario": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "email": { "type": "string" },
+          "nombre": { "type": "string" },
+          "rol": { "type": "string", "enum": ["superadmin", "admin", "admin-directora", "admin-codirectora", "docente", "docente-orientador"] },
+          "activo": { "type": "boolean" },
+          "escuelaId": { "type": "string" }
+        }
+      },
+      "Calificacion": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "estudianteId": { "type": "string" },
+          "materiaId": { "type": "string" },
+          "trimestre": { "type": "integer", "minimum": 1, "maximum": 3 },
+          "calificacionAC": { "type": "number", "nullable": true },
+          "calificacionAI": { "type": "number", "nullable": true },
+          "examenTrimestral": { "type": "number", "nullable": true },
+          "promedioFinal": { "type": "number", "nullable": true },
+          "recuperacion": { "type": "number", "nullable": true }
+        }
+      },
+      "ConfigActividad": {
+        "type": "object",
+        "properties": {
+          "materiaId": { "type": "string" },
+          "trimestre": { "type": "integer" },
+          "numActividadesCotidianas": { "type": "integer" },
+          "numActividadesIntegradoras": { "type": "integer" },
+          "tieneExamen": { "type": "boolean" },
+          "numExamenes": { "type": "integer" },
+          "porcentajeAC": { "type": "number" },
+          "porcentajeAI": { "type": "number" },
+          "porcentajeExamen": { "type": "number" }
+        }
+      },
+      "Escuela": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "nombre": { "type": "string" },
+          "codigo": { "type": "string" },
+          "tipo": { "type": "string" },
+          "planEstudio": { "type": "string" },
+          "escalaNotas": { "type": "string" },
+          "periodos": { "type": "string" },
+          "activo": { "type": "boolean" }
+        }
+      },
+      "AgentAlert": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "tipo": { "type": "string", "enum": ["riesgo_alto", "riesgo_medio", "bajo_rendimiento", "asistencia_critica"] },
+          "puntajeRiesgo": { "type": "number", "minimum": 0, "maximum": 1 },
+          "factores": { "type": "array", "items": { "type": "string" } },
+          "recomendacion": { "type": "string" },
+          "leido": { "type": "boolean" },
+          "resuelto": { "type": "boolean" }
+        }
+      }
+    }
+  },
+  "security": [{ "sessionCookie": [] }],
+  "paths": {
+    "/api/auth/login": {
+      "post": {
+        "summary": "Iniciar sesión",
+        "security": [],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LoginRequest" } } } },
+        "responses": { "200": { "description": "Sesión iniciada" }, "401": { "description": "Credenciales inválidas" } }
+      }
+    },
+    "/api/auth/me": {
+      "get": { "summary": "Obtener usuario actual", "responses": { "200": { "description": "Usuario actual" }, "401": { "description": "No autorizado" } } }
+    },
+    "/api/auth/logout": {
+      "post": { "summary": "Cerrar sesión", "responses": { "200": { "description": "Sesión cerrada" } } }
+    },
+    "/api/escuelas": {
+      "get": { "summary": "Listar escuelas", "security": [], "responses": { "200": { "description": "Lista de escuelas" } } },
+      "post": {
+        "summary": "Crear nueva escuela (clona estructura de escuela plantilla)",
+        "security": [{ "sessionCookie": [] }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["nombre", "codigo", "adminEmail", "adminPassword", "adminNombre"],
+                "properties": {
+                  "nombre": { "type": "string" },
+                  "codigo": { "type": "string" },
+                  "cloneFromEscuelaId": { "type": "string", "description": "ID de la escuela plantilla a clonar (grados, materias, config). Default: primera escuela activa." },
+                  "adminEmail": { "type": "string" },
+                  "adminPassword": { "type": "string" },
+                  "adminNombre": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Escuela creada con estructura clonada" }, "403": { "description": "Requiere superadmin" } }
+      }
+    },
+    "/api/usuarios": {
+      "get": { "summary": "Listar usuarios", "responses": { "200": { "description": "Lista de usuarios" } } },
+      "post": { "summary": "Crear usuario", "responses": { "201": { "description": "Usuario creado" } } }
+    },
+    "/api/grados": {
+      "get": { "summary": "Listar grados", "responses": { "200": { "description": "Lista de grados" } } },
+      "post": { "summary": "Crear grado", "responses": { "201": { "description": "Grado creado" } } }
+    },
+    "/api/estudiantes": {
+      "get": { "summary": "Listar estudiantes", "responses": { "200": { "description": "Lista de estudiantes" } } },
+      "post": { "summary": "Crear estudiante", "responses": { "201": { "description": "Estudiante creado" } } }
+    },
+    "/api/materias": {
+      "get": { "summary": "Listar materias", "responses": { "200": { "description": "Lista de materias" } } },
+      "post": { "summary": "Crear materia", "responses": { "201": { "description": "Materia creada" } } }
+    },
+    "/api/calificaciones": {
+      "get": {
+        "summary": "Obtener calificaciones",
+        "parameters": [
+          { "name": "gradoId", "in": "query", "schema": { "type": "string" } },
+          { "name": "materiaId", "in": "query", "schema": { "type": "string" } },
+          { "name": "trimestre", "in": "query", "schema": { "type": "integer" } },
+          { "name": "estudianteId", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Lista de calificaciones" } }
+      },
+      "post": {
+        "summary": "Guardar calificación",
+        "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Calificacion" } } } },
+        "responses": { "200": { "description": "Calificación guardada" } }
+      },
+      "delete": {
+        "summary": "Borrar calificación (soft delete)",
+        "parameters": [
+          { "name": "estudianteId", "in": "query", "schema": { "type": "string" } },
+          { "name": "materiaId", "in": "query", "schema": { "type": "string" } },
+          { "name": "trimestre", "in": "query", "schema": { "type": "integer" } },
+          { "name": "gradoId", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Calificación borrada" } }
+      }
+    },
+    "/api/config-actividades": {
+      "get": { "summary": "Obtener configuración de actividades", "responses": { "200": { "description": "Configuración" } } },
+      "post": {
+        "summary": "Guardar configuración de actividades",
+        "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ConfigActividad" } } } },
+        "responses": { "200": { "description": "Configuración guardada" } }
+      }
+    },
+    "/api/asistencia": {
+      "get": { "summary": "Obtener asistencia", "responses": { "200": { "description": "Lista de asistencia" } } },
+      "post": { "summary": "Registrar asistencia", "responses": { "200": { "description": "Asistencia registrada" } } }
+    },
+    "/api/boleta": {
+      "get": {
+        "summary": "Generar boleta de calificaciones",
+        "parameters": [
+          { "name": "estudianteId", "in": "query", "schema": { "type": "string" } },
+          { "name": "gradoId", "in": "query", "schema": { "type": "string" } },
+          { "name": "trimestre", "in": "query", "schema": { "type": "integer" } }
+        ],
+        "responses": { "200": { "description": "Boleta generada" } }
+      }
+    },
+    "/api/recuperacion-anual": {
+      "get": { "summary": "Obtener recuperaciones anuales", "responses": { "200": { "description": "Lista de recuperaciones" } } },
+      "post": { "summary": "Guardar recuperación anual", "responses": { "200": { "description": "Recuperación guardada" } } },
+      "delete": { "summary": "Borrar recuperación anual", "responses": { "200": { "description": "Recuperación borrada" } } }
+    },
+    "/api/stats/dashboard": {
+      "get": {
+        "summary": "Estadísticas del dashboard",
+        "parameters": [
+          { "name": "trimestre", "in": "query", "schema": { "type": "string" } },
+          { "name": "gradoId", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Estadísticas por grado" } }
+      }
+    },
+    "/api/stats/escala-desempeno": {
+      "get": {
+        "summary": "Distribución de escala de desempeño",
+        "parameters": [
+          { "name": "trimestre", "in": "query", "schema": { "type": "string" } },
+          { "name": "gradoId", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Distribución por grado y materia" } }
+      }
+    },
+    "/api/agent/monitor": {
+      "get": { "summary": "Obtener alertas del agente", "responses": { "200": { "description": "Alertas activas" } } },
+      "post": {
+        "summary": "Ejecutar análisis de riesgo",
+        "security": [{ "sessionCookie": [] }, { "bearerToken": [] }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "año": { "type": "integer" },
+                  "gradoId": { "type": "string" },
+                  "guardarAlertas": { "type": "boolean" },
+                  "escuelaId": { "type": "string", "description": "Requerido con Bearer token" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Análisis completado" } }
+      },
+      "delete": { "summary": "Borrar alertas/logs del agente", "responses": { "200": { "description": "Alertas borradas" } } }
+    },
+    "/api/alerts/predictive": {
+      "get": {
+        "summary": "Análisis predictivo avanzado",
+        "parameters": [{ "name": "gradoId", "in": "query", "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Predicciones y tendencias" } }
+      }
+    }
+  }
+}
