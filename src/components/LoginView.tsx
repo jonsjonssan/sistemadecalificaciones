@@ -154,7 +154,7 @@ export default function LoginView({
                 <Button
                   type="submit"
                   className="w-full h-11 text-sm font-semibold rounded-xl bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 disabled:opacity-60"
-                  disabled={loginLoading || !escuelaSeleccionada}
+                  disabled={loginLoading}
                 >
                   {loginLoading ? (
                     <span className="flex items-center gap-2">

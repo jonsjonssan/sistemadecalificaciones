@@ -561,6 +561,10 @@ export function useDashboardData() {
   // Login
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!escuelaSeleccionada) {
+      setLoginError("Debes seleccionar una escuela para continuar");
+      return;
+    }
     setLoginLoading(true);
     setLoginError("");
     try {
