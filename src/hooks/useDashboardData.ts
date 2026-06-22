@@ -376,21 +376,20 @@ export function useDashboardData() {
   };
 
   const initGoogleButton = () => {
-    if (!(window as any).google) return;
+    if (!googleButtonRef.current || !(window as any).google) return;
     (window as any).google.accounts.id.initialize({
       client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "588360712961-5r5mloqlefuq7nghgetgcr18evctl3sp.apps.googleusercontent.com",
       callback: handleGoogleLogin,
       auto_select: false,
     });
-    if (googleButtonRef.current) {
-      (window as any).google.accounts.id.renderButton(googleButtonRef.current, {
-        theme: "outline",
-        size: "large",
-        width: "100%",
-        text: "signin_with",
-        shape: "rectangular",
-      });
-    }
+    (window as any).google.accounts.id.renderButton(googleButtonRef.current, {
+      theme: "outline",
+      size: "large",
+      width: "100%",
+      text: "signin_with",
+      shape: "rectangular",
+      logo_alignment: "center",
+    });
   };
 
   const promptGoogleLogin = () => {
