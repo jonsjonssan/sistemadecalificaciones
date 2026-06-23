@@ -425,10 +425,6 @@ export function useDashboardData() {
       .then(data => {
         if (data.escuelas && data.escuelas.length > 0) {
           setEscuelas(data.escuelas);
-          // Si solo hay una escuela, seleccionarla automáticamente
-          if (data.escuelas.length === 1) {
-            setEscuelaSeleccionada(data.escuelas[0].id);
-          }
         }
       })
       .catch(() => {});
