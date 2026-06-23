@@ -58,7 +58,7 @@ export default function LoginFeatures() {
       transition={{ duration: 0.5, ease: "easeOut" }}
       className="w-full"
     >
-      <div className="flex flex-col sm:flex-row items-stretch justify-center gap-3 sm:gap-4">
+      <div className="flex flex-col sm:flex-row items-stretch justify-center gap-4 sm:gap-5">
         {features.map((feature, index) => {
           const Icon = feature.icon;
           const styles = colorStyles[feature.color];
@@ -69,19 +69,19 @@ export default function LoginFeatures() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: index * 0.08 }}
-              whileHover={{ y: -3, transition: { duration: 0.2 } }}
-              className="group flex-1 min-w-0 flex items-center gap-3 sm:gap-4 rounded-2xl bg-white border border-[#e8e6e0] p-3 sm:p-4 shadow-sm hover:shadow-md transition-all duration-300"
+              whileHover={{ y: -4, transition: { duration: 0.2 } }}
+              className="group flex-1 min-w-[140px] flex items-center gap-4 sm:gap-5 rounded-2xl bg-white border border-[#e8e6e0] p-4 sm:p-5 shadow-sm hover:shadow-lg hover:shadow-black/5 transition-all duration-300"
             >
               <div
-                className={`w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-xl ${styles.bg} flex items-center justify-center transition-transform duration-300 group-hover:scale-110`}
+                className={`w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-xl ${styles.bg} flex items-center justify-center transition-transform duration-300 group-hover:scale-110`}
               >
-                <Icon className={`h-5 w-5 sm:h-6 sm:w-6 ${styles.icon}`} />
+                <Icon className={`h-6 w-6 sm:h-7 sm:w-7 ${styles.icon}`} />
               </div>
-              <div className="min-w-0 flex-1">
-                <h3 className="font-display text-sm sm:text-base font-bold text-[#1a2e1a] leading-tight">
+              <div className="min-w-0 flex-1 py-1">
+                <h3 className="font-display text-base sm:text-lg font-bold text-[#1a2e1a] leading-snug">
                   {feature.title}
                 </h3>
-                <p className="text-[10px] sm:text-xs text-[#7a8a7a] leading-tight mt-0.5">
+                <p className="text-xs sm:text-sm text-[#7a8a7a] leading-snug mt-1">
                   {feature.description}
                 </p>
               </div>
