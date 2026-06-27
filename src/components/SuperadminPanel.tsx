@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Building2, Plus, Edit2, Trash2, Users, GraduationCap, School, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { Building2, Plus, Edit2, Trash2, Users, GraduationCap, School, AlertCircle, CheckCircle2, Loader2, LogIn } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Escuela {
@@ -28,9 +28,10 @@ interface Escuela {
 
 interface SuperadminPanelProps {
   darkMode: boolean;
+  onEntrarEscuela?: (escuelaId: string) => void;
 }
 
-export default function SuperadminPanel({ darkMode }: SuperadminPanelProps) {
+export default function SuperadminPanel({ darkMode, onEntrarEscuela }: SuperadminPanelProps) {
   const { toast } = useToast();
   const [escuelas, setEscuelas] = useState<Escuela[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,6 +39,7 @@ export default function SuperadminPanel({ darkMode }: SuperadminPanelProps) {
   const [editMode, setEditMode] = useState(false);
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [entrandoEscuelaId, setEntrandoEscuelaId] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     id: "",
@@ -63,7 +65,13 @@ export default function SuperadminPanel({ darkMode }: SuperadminPanelProps) {
       const res = await fetch("/api/escuelas", { cache: "no-store", credentials: "include" });
       if (res.ok) {
         const data = await res.json();
-        setEscuelas(data.escuelas || []);
+        const escuelasNormalizadas = (data.escuelas || []).map((e: any) => ({
+          ...e,
+          usuarios_count: Number(e.usuarios_count) || 0,
+          grados_count: Number(e.grados_count) || 0,
+          estudiantes_count: Number(e.estudiantes_count) || 0,
+        }));
+        setEscuelas(escuelasNormalizadas);
       }
     } catch {
       toast({ title: "Error al cargar escuelas", variant: "destructive" });
@@ -157,6 +165,16 @@ export default function SuperadminPanel({ darkMode }: SuperadminPanelProps) {
       toast({ title: "Error de conexion", variant: "destructive" });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleEntrar = async (escuelaId: string) => {
+    if (!onEntrarEscuela) return;
+    setEntrandoEscuelaId(escuelaId);
+    try {
+      await onEntrarEscuela(escuelaId);
+    } finally {
+      setEntrandoEscuelaId(null);
     }
   };
 
@@ -307,6 +325,21 @@ export default function SuperadminPanel({ darkMode }: SuperadminPanelProps) {
                       </div>
                     </div>
                     <div className="flex gap-2">
+                      {onEntrarEscuela && (
+                        <Button
+                          size="sm"
+                          className="flex-1 btn-press gap-1.5"
+                          onClick={() => handleEntrar(escuela.id)}
+                          disabled={entrandoEscuelaId === escuela.id}
+                        >
+                          {entrandoEscuelaId === escuela.id ? (
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <LogIn className="h-3.5 w-3.5" />
+                          )}
+                          Entrar
+                        </Button>
+                      )}
                       <Button
                         size="sm"
                         variant="outline"

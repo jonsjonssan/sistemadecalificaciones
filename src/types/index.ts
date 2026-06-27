@@ -3,6 +3,8 @@ export interface UsuarioSesion {
   email: string;
   nombre: string;
   rol: string;
+  escuelaId?: string;
+  escuela?: { id: string; nombre: string; codigo?: string; logo?: string | null; colorPrimario?: string };
   gradosAsignados?: { id: string; numero: number; seccion: string }[];
   asignaturasAsignadas?: {
     id: string;

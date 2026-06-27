@@ -124,6 +124,34 @@ export default function Home() {
     setMateriasLoading(false);
   };
 
+  const handleEntrarEscuela = async (escuelaId: string) => {
+    try {
+      const res = await fetch("/api/auth/switch-escuela", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ escuelaId }),
+      });
+      const data = await res.json();
+      if (res.ok && data.usuario) {
+        d.setUsuario(data.usuario);
+        d.setActiveTab("dashboard");
+        localStorage.setItem("ss_tab", "dashboard");
+        await Promise.all([
+          d.loadGrados(),
+          d.loadTodasAsignaturas(),
+          d.loadUsuarios(),
+          d.loadConfiguracion(),
+        ]);
+        toast({ title: `Soporte en ${data.usuario.escuela?.nombre || "escuela"}`, description: "Has cambiado de escuela correctamente." });
+      } else {
+        toast({ title: data.error || "Error al cambiar de escuela", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Error de conexión al cambiar de escuela", variant: "destructive" });
+    }
+  };
+
   const handleUpdateMateria = async () => {
     if (!editMateriaNombre.trim() || !editMateriaId) return;
     setMateriasLoading(true);
@@ -216,7 +244,7 @@ export default function Home() {
             </div>
             <div className="min-w-0">
               <h1 className="font-display text-xs sm:text-sm tracking-tight truncate">Sistema de Calificaciones</h1>
-              <p className="text-[10px] sm:text-xs font-medium truncate text-muted-foreground/60">CEC San José de la Montaña</p>
+              <p className="text-[10px] sm:text-xs font-medium truncate text-muted-foreground/60">{usuario.escuela?.nombre || "Centro Educativo"}</p>
             </div>
           </motion.div>
           <motion.div
@@ -235,6 +263,20 @@ export default function Home() {
               >
                 {d.configuracion.añoEscolar}
               </motion.span>
+            )}
+            {isSuperAdmin(usuario.rol) && (
+              <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => d.setActiveTab("superadmin")}
+                  className="touch-target px-1.5 sm:px-2 text-xs text-institutional hover:text-institutional hover:bg-institutional/10 sm:h-10 press-feedback"
+                  title="Gestionar escuelas"
+                >
+                  <School className="h-4 w-4 sm:h-5 sm:w-5 sm:mr-1" />
+                  <span className="hidden sm:inline">Escuelas</span>
+                </Button>
+              </motion.div>
             )}
             <motion.button
               whileHover={{ scale: 1.08, rotate: darkMode ? -8 : 8 }}
@@ -305,7 +347,6 @@ export default function Home() {
                 { v: "reportes", icon: BarChart3, label: "Reportes" },
                 ...(isAdmin(usuario.rol) ? [{ v: "avance", icon: GraduationCap, label: "Avance" }] : []),
                 ...(isAdmin(usuario.rol) ? [{ v: "admin", icon: Settings, label: "Admin" }] : []),
-                ...(isSuperAdmin(usuario.rol) ? [{ v: "superadmin", icon: School, label: "Escuelas" }] : []),
               ].map(({ v, icon: Icon, label }) => {
                 const isActive = d.activeTab === v;
                 return (
@@ -1025,7 +1066,7 @@ export default function Home() {
           {/* Superadmin - Gestion de escuelas */}
           {isSuperAdmin(usuario.rol) && (
             <TabsContent value="superadmin" className="mt-3">
-              <SuperadminPanel darkMode={darkMode} />
+              <SuperadminPanel darkMode={darkMode} onEntrarEscuela={handleEntrarEscuela} />
             </TabsContent>
           )}
         </Tabs>

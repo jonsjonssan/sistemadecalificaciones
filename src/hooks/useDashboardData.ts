@@ -103,7 +103,6 @@ export function useDashboardData() {
     { value: "reportes", icon: undefined, label: "Reportes" },
     ...(usuario?.rol && isAdmin(usuario.rol) ? [{ value: "avance", icon: undefined, label: "Avance" }] : []),
     ...(usuario?.rol && isAdmin(usuario.rol) ? [{ value: "admin", icon: undefined, label: "Admin" }] : []),
-    ...(usuario?.rol && isSuperAdmin(usuario.rol) ? [{ value: "superadmin", icon: undefined, label: "Escuelas" }] : []),
   ];
 
   const [materiasEnBoleta, setMateriasEnBoleta] = useState<string[]>([]);
@@ -211,7 +210,12 @@ export function useDashboardData() {
   // Load persisted state
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const tb = localStorage.getItem("ss_tab"); if (tb) queueMicrotask(() => setActiveTab(tb));
+      const tb = localStorage.getItem("ss_tab");
+      if (tb) {
+        queueMicrotask(() => setActiveTab(tb));
+      } else if (usuario && isSuperAdmin(usuario.rol)) {
+        queueMicrotask(() => setActiveTab("superadmin"));
+      }
       const gr = localStorage.getItem("ss_grado"); if (gr) queueMicrotask(() => setGradoSeleccionado(gr));
       const mt = localStorage.getItem("ss_materia"); if (mt) queueMicrotask(() => setAsignaturaSeleccionada(mt));
       const tr = localStorage.getItem("ss_trimestre"); if (tr) queueMicrotask(() => setTrimestreSeleccionado(tr));
@@ -569,7 +573,11 @@ export function useDashboardData() {
       if (res.ok && data.usuario) {
         setUsuario(data.usuario);
         const savedState = loadUserState();
-        if (savedState.activeTab) setActiveTab(savedState.activeTab);
+        if (isSuperAdmin(data.usuario.rol)) {
+          setActiveTab("superadmin");
+        } else if (savedState.activeTab) {
+          setActiveTab(savedState.activeTab);
+        }
       } else {
         setLoginError(data.error || "Credenciales inválidas");
       }
