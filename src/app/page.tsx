@@ -268,7 +268,7 @@ export default function Home() {
                 {d.configuracion.añoEscolar}
               </motion.span>
             )}
-            {isSuperAdmin(usuario.rol) && (
+            {isSuperAdmin(usuario.rol) && d.activeTab !== "superadmin" && (
               <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
                 <Button
                   variant="ghost"
