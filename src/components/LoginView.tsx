@@ -98,7 +98,7 @@ export default function LoginView({
                   <Label className="text-[11px] font-bold text-[#5a6b5a] uppercase tracking-wider">Escuela o Centro Escolar</Label>
                   <div className="relative">
                     <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9aaa9a] z-10" aria-hidden="true" />
-                    <Select value={escuelaSeleccionada} onValueChange={setEscuelaSeleccionada} required>
+                    <Select value={escuelaSeleccionada} onValueChange={setEscuelaSeleccionada}>
                       <SelectTrigger className="h-12 pl-11 text-sm rounded-xl bg-[#fafaf8] border-[#e0ddd6] focus:border-primary focus:ring-primary w-full">
                         <SelectValue placeholder="Selecciona una escuela..." />
                       </SelectTrigger>
@@ -111,6 +111,9 @@ export default function LoginView({
                       </SelectContent>
                     </Select>
                   </div>
+                  <p className="text-[10px] text-[#9aaa9a] pl-1">
+                    Los administradores generales pueden dejar este campo vacío para acceder al panel multi-escuela.
+                  </p>
                 </div>
 
                 <div className="space-y-1.5">

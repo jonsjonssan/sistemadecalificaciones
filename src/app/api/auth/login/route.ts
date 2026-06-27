@@ -76,27 +76,38 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Email y contraseña son requeridos" }, { status: 400 });
     }
 
-    if (!escuelaId) {
+    // Buscar usuario por email (sin filtrar por escuela todavía)
+    const usuarios = await sql`
+      SELECT id, email, nombre, rol, activo, password, "escuelaId" FROM "Usuario" WHERE LOWER(email) = LOWER(${email})
+    `;
+
+    if (usuarios.length === 0) {
+      // Timing-safe: comparar contra un hash dummy para evitar enumeración por tiempo
+      await bcrypt.compare(password, "$2a$10$timing.safe.dummy.hash.for.constant.time.compare");
+      return NextResponse.json({ error: "Credenciales inválidas" }, { status: 401 });
+    }
+
+    const usuario = usuarios[0];
+    const esSuperadmin = usuario.rol === "superadmin";
+
+    // Solo el superadmin puede iniciar sesión sin escuela; los demás usuarios deben seleccionar una
+    if (!esSuperadmin && !escuelaId) {
       return NextResponse.json({ error: "Debe seleccionar una escuela" }, { status: 400 });
     }
 
-    const usuario = await sql`
-      SELECT id, email, nombre, rol, activo, password, "escuelaId" FROM "Usuario" WHERE LOWER(email) = LOWER(${email}) AND "escuelaId" = ${escuelaId}
-    `;
-
-    if (usuario.length === 0) {
-      // Timing-safe: comparar contra un hash dummy para evitar enumeración por tiempo
+    // Si no es superadmin, validar que la escuela seleccionada coincida con la del usuario
+    if (!esSuperadmin && usuario.escuelaId !== escuelaId) {
       await bcrypt.compare(password, "$2a$10$timing.safe.dummy.hash.for.constant.time.compare");
       return NextResponse.json({ error: "Credenciales inválidas o usuario no pertenece a esta escuela" }, { status: 401 });
     }
 
-    const hashMatch = await bcrypt.compare(password, usuario[0].password);
+    const hashMatch = await bcrypt.compare(password, usuario.password);
 
     if (!hashMatch) {
       return NextResponse.json({ error: "Credenciales inválidas" }, { status: 401 });
     }
 
-    if (!usuario[0].activo) {
+    if (!usuario.activo) {
       return NextResponse.json({ error: "Credenciales inválidas" }, { status: 401 });
     }
 
@@ -106,21 +117,25 @@ export async function POST(request: NextRequest) {
       FROM "DocenteMateria" dm
       JOIN "Materia" m ON dm."materiaId" = m.id
       JOIN "Grado" gr ON m."gradoId" = gr.id
-      WHERE dm."docenteId" = ${usuario[0].id}
+      WHERE dm."docenteId" = ${usuario.id}
     `;
 
-    // Obtener datos de la escuela
-    const escuela = await sql`
-      SELECT id, nombre, codigo, logo, "colorPrimario" FROM "Escuela" WHERE id = ${escuelaId}
-    `;
+    // Obtener datos de la escuela (solo para usuarios que no son superadmin)
+    let escuela: any = null;
+    if (!esSuperadmin && escuelaId) {
+      const escuelaRows = await sql`
+        SELECT id, nombre, codigo, logo, "colorPrimario" FROM "Escuela" WHERE id = ${escuelaId}
+      `;
+      escuela = escuelaRows[0] || null;
+    }
 
     const userData: any = {
-      id: usuario[0].id,
-      email: usuario[0].email,
-      nombre: usuario[0].nombre,
-      rol: usuario[0].rol,
-      escuelaId: usuario[0].escuelaId,
-      escuela: escuela[0] || null,
+      id: usuario.id,
+      email: usuario.email,
+      nombre: usuario.nombre,
+      rol: usuario.rol,
+      escuelaId: esSuperadmin ? undefined : usuario.escuelaId,
+      escuela: esSuperadmin ? undefined : escuela,
       gradosAsignados: [],
       asignaturasAsignadas: materiasAsignadas.map((m: any) => ({
         id: m.id,
@@ -140,17 +155,17 @@ export async function POST(request: NextRequest) {
       const userAgent = headers["user-agent"] || "unknown";
 
       await createAuditLog({
-        usuarioId: usuario[0].id,
-        escuelaId: escuelaId,
+        usuarioId: usuario.id,
+        escuelaId: esSuperadmin ? undefined : escuelaId,
         accion: "LOGIN",
         entidad: "Usuario",
-        entidadId: usuario[0].id,
-        detalles: JSON.stringify({ email: usuario[0].email, nombre: usuario[0].nombre }),
+        entidadId: usuario.id,
+        detalles: JSON.stringify({ email: usuario.email, nombre: usuario.nombre }),
       });
 
       const sessionResult = await sql`
         INSERT INTO "LoginSession" ("id", "usuarioId", "escuelaId", "ip", "userAgent", "loginAt")
-        VALUES (gen_random_uuid()::text, ${usuario[0].id}, ${escuelaId}, ${ip}, ${userAgent}, NOW())
+        VALUES (gen_random_uuid()::text, ${usuario.id}, ${esSuperadmin ? null : escuelaId}, ${ip}, ${userAgent}, NOW())
         RETURNING id
       `;
 

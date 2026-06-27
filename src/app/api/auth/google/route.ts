@@ -72,8 +72,9 @@ export async function POST(request: NextRequest) {
       WHERE dm."docenteId" = ${userRecord.id}
     `;
 
-    // Obtener datos de la escuela del usuario
-    const escuelaId = userRecord.escuelaId;
+    // El superadmin inicia sesión sin escuela activa para acceder al panel multi-escuela
+    const esSuperadmin = userRecord.rol === "superadmin";
+    const escuelaId = esSuperadmin ? undefined : userRecord.escuelaId;
     let escuela: any = null;
     if (escuelaId) {
       const escuelaRows = await sql`
@@ -87,7 +88,7 @@ export async function POST(request: NextRequest) {
       email: userRecord.email,
       nombre: userRecord.nombre,
       rol: userRecord.rol,
-      escuelaId: escuelaId || undefined,
+      escuelaId: escuelaId,
       escuela: escuela,
       gradosAsignados: [],
       asignaturasAsignadas: materiasAsignadas.map((m: any) => ({

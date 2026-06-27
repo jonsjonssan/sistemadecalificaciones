@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Building2, Plus, Edit2, Trash2, Users, GraduationCap, School, AlertCircle, CheckCircle2, Loader2, LogIn } from "lucide-react";
+import { Building2, Plus, Edit2, Trash2, Users, GraduationCap, School, AlertCircle, CheckCircle2, Loader2, LogIn, ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Escuela {
@@ -29,6 +29,28 @@ interface Escuela {
 interface SuperadminPanelProps {
   darkMode: boolean;
   onEntrarEscuela?: (escuelaId: string) => void;
+}
+
+function EscuelaLogo({ nombre, logo, colorPrimario }: { nombre: string; logo: string | null; colorPrimario: string }) {
+  const [error, setError] = useState(false);
+  if (logo && !error) {
+    return (
+      <img
+        src={logo}
+        alt={`Logo ${nombre}`}
+        className="w-10 h-10 rounded-lg object-cover border border-border/50"
+        onError={() => setError(true)}
+      />
+    );
+  }
+  return (
+    <div
+      className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold shrink-0"
+      style={{ backgroundColor: colorPrimario || "#1E3A8A" }}
+    >
+      {nombre.charAt(0).toUpperCase()}
+    </div>
+  );
 }
 
 export default function SuperadminPanel({ darkMode, onEntrarEscuela }: SuperadminPanelProps) {
@@ -291,12 +313,11 @@ export default function SuperadminPanel({ darkMode, onEntrarEscuela }: Superadmi
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-3">
-                        <div
-                          className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold shrink-0"
-                          style={{ backgroundColor: escuela.colorPrimario || "#1E3A8A" }}
-                        >
-                          {escuela.nombre.charAt(0).toUpperCase()}
-                        </div>
+                        <EscuelaLogo
+                          nombre={escuela.nombre}
+                          logo={escuela.logo}
+                          colorPrimario={escuela.colorPrimario}
+                        />
                         <div>
                           <CardTitle className="text-base">{escuela.nombre}</CardTitle>
                           <CardDescription className="text-xs">

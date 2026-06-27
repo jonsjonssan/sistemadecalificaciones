@@ -372,6 +372,9 @@ export function useDashboardData() {
       const data = await res.json();
       if (res.ok && data.usuario) {
         setUsuario(data.usuario);
+        if (isSuperAdmin(data.usuario.rol)) {
+          setActiveTab("superadmin");
+        }
       } else {
         setLoginError(data.error || "Error al iniciar sesión con Google");
       }
@@ -561,10 +564,6 @@ export function useDashboardData() {
   // Login
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!escuelaSeleccionada) {
-      setLoginError("Debes seleccionar una escuela para continuar");
-      return;
-    }
     setLoginLoading(true);
     setLoginError("");
     try {

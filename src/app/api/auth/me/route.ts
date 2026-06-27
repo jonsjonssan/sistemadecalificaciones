@@ -17,8 +17,9 @@ export async function GET() {
       return NextResponse.json({ usuario: null });
     }
 
-    // Si la sesión no tiene escuelaId, enriquecerla desde la DB
-    if (!sessionData.escuelaId && sessionData.id) {
+    // Si la sesión no tiene escuelaId, enriquecerla desde la DB (excepto para superadmin,
+    // que gestiona todas las escuelas desde el panel multi-escuela)
+    if (!sessionData.escuelaId && sessionData.id && sessionData.rol !== "superadmin") {
       try {
         const userRows = await sql`
           SELECT u."escuelaId", e.id as escuela_id, e.nombre as escuela_nombre,

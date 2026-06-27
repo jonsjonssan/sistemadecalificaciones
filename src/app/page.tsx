@@ -32,7 +32,7 @@ import { ContextualHelp } from "@/components/ContextualHelp";
 import { CalificacionRow } from "@/components/grading/CalificacionRow";
 import { HistorialCalificacionPopup } from "@/components/grading/HistorialCalificacionPopup";
 import LoginView from "@/components/LoginView";
-import { Usuario, AsignaturaConGrado, ConfigActividadPartial, Calificacion, ConfiguracionSistema } from "@/types";
+import { Usuario, UsuarioSesion, AsignaturaConGrado, ConfigActividadPartial, Calificacion, ConfiguracionSistema } from "@/types";
 import { isAdmin, getDocentesDelGrado, isSuperAdmin } from "@/utils/roleHelpers";
 import { calcularPromedio, calcularPromedioFinal, parseNotas, contarEstados } from "@/utils/gradeCalculations";
 import { escapeHtml } from "@/lib/utils/index";
@@ -53,6 +53,42 @@ import SuperadminPanel from "@/components/SuperadminPanel";
 import { MobileTabBar } from "@/components/MobileTabBar";
 import { useDashboardData } from "@/hooks/useDashboardData";
 import { useToast } from "@/hooks/use-toast";
+
+function HeaderLogo({ usuario, activeTab }: { usuario: UsuarioSesion; activeTab: string }) {
+  const esSuperAdminEnPanel = isSuperAdmin(usuario.rol) && activeTab === "superadmin";
+  const logoEscuela = !esSuperAdminEnPanel && usuario.escuela?.logo ? usuario.escuela.logo : undefined;
+  const nombreEscuela = esSuperAdminEnPanel ? "Gestión Multi-Escuela" : (usuario.escuela?.nombre || "Centro Educativo");
+  const [logoError, setLogoError] = React.useState(false);
+
+  return (
+    <>
+      <div className="h-9 w-9 sm:h-10 sm:w-10 shrink-0 rounded-full flex items-center justify-center bg-muted/50 ring-1 ring-border relative animate-float-soft overflow-hidden">
+        {logoEscuela && !logoError ? (
+          <img
+            src={logoEscuela}
+            alt="Logo escuela"
+            className="h-full w-full object-cover"
+            onError={() => setLogoError(true)}
+          />
+        ) : (
+          <img
+            src="/logo-sistema.svg"
+            alt="Logo"
+            className="h-7 w-7 sm:h-8 sm:w-8 object-contain"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          />
+        )}
+        <span className="absolute inset-0 rounded-full ring-1 ring-primary/30 pointer-events-none animate-pulse-glow" />
+      </div>
+      <div className="min-w-0">
+        <h1 className="font-display text-xs sm:text-sm tracking-tight truncate">Sistema de Calificaciones</h1>
+        <p className="text-[10px] sm:text-xs font-medium truncate text-muted-foreground/60">
+          {nombreEscuela}
+        </p>
+      </div>
+    </>
+  );
+}
 
 export default function Home() {
   const d = useDashboardData();
@@ -238,18 +274,7 @@ export default function Home() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
           >
-            <div className="h-9 w-9 sm:h-10 sm:w-10 shrink-0 rounded-full flex items-center justify-center bg-muted/50 ring-1 ring-border relative animate-float-soft">
-              <img src="/0.png" alt="Logo" className="h-7 w-7 sm:h-8 sm:w-8 object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-              <span className="absolute inset-0 rounded-full ring-1 ring-primary/30 pointer-events-none animate-pulse-glow" />
-            </div>
-            <div className="min-w-0">
-              <h1 className="font-display text-xs sm:text-sm tracking-tight truncate">Sistema de Calificaciones</h1>
-              <p className="text-[10px] sm:text-xs font-medium truncate text-muted-foreground/60">
-                {isSuperAdmin(usuario.rol) && d.activeTab === "superadmin"
-                  ? "Gestión Multi-Escuela"
-                  : (usuario.escuela?.nombre || "Centro Educativo")}
-              </p>
-            </div>
+            <HeaderLogo usuario={usuario} activeTab={d.activeTab} />
           </motion.div>
           <motion.div
             className="flex items-center gap-1 sm:gap-3"
