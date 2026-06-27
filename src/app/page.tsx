@@ -244,7 +244,11 @@ export default function Home() {
             </div>
             <div className="min-w-0">
               <h1 className="font-display text-xs sm:text-sm tracking-tight truncate">Sistema de Calificaciones</h1>
-              <p className="text-[10px] sm:text-xs font-medium truncate text-muted-foreground/60">{usuario.escuela?.nombre || "Centro Educativo"}</p>
+              <p className="text-[10px] sm:text-xs font-medium truncate text-muted-foreground/60">
+                {isSuperAdmin(usuario.rol) && d.activeTab === "superadmin"
+                  ? "Gestión Multi-Escuela"
+                  : (usuario.escuela?.nombre || "Centro Educativo")}
+              </p>
             </div>
           </motion.div>
           <motion.div
