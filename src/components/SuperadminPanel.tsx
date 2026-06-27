@@ -62,6 +62,9 @@ export default function SuperadminPanel({ darkMode, onEntrarEscuela }: Superadmi
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [entrandoEscuelaId, setEntrandoEscuelaId] = useState<string | null>(null);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [logoUploading, setLogoUploading] = useState(false);
 
   const [form, setForm] = useState({
     id: "",
@@ -112,6 +115,8 @@ export default function SuperadminPanel({ darkMode, onEntrarEscuela }: Superadmi
       adminEmail: "", adminPassword: "", adminNombre: "",
     });
     setEditMode(false);
+    setLogoFile(null);
+    setLogoPreview(null);
   };
 
   const handleOpenCreate = () => {
@@ -134,6 +139,56 @@ export default function SuperadminPanel({ darkMode, onEntrarEscuela }: Superadmi
     });
     setEditMode(true);
     setDialogOpen(true);
+    setLogoFile(null);
+    setLogoPreview(escuela.logo || null);
+  };
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!["image/png", "image/jpeg", "image/jpg"].includes(file.type)) {
+      toast({ title: "Formato no válido", description: "Solo se permiten archivos PNG o JPG", variant: "destructive" });
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ title: "Archivo muy grande", description: "El logo no debe superar los 2MB", variant: "destructive" });
+      return;
+    }
+
+    setLogoFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setLogoPreview(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const subirLogo = async (): Promise<string | null> => {
+    if (!logoFile) return form.logo || null;
+    setLogoUploading(true);
+    try {
+      const data = new FormData();
+      data.append("logo", logoFile);
+      data.append("escuelaId", form.id || "nueva");
+
+      const res = await fetch("/api/escuelas/logo", {
+        method: "POST",
+        credentials: "include",
+        body: data,
+      });
+
+      const result = await res.json();
+      if (!res.ok) {
+        toast({ title: result.error || "Error al subir logo", variant: "destructive" });
+        return form.logo || null;
+      }
+      return result.url;
+    } catch {
+      toast({ title: "Error de conexión al subir logo", variant: "destructive" });
+      return form.logo || null;
+    } finally {
+      setLogoUploading(false);
+    }
   };
 
   const handleSave = async () => {
@@ -152,9 +207,10 @@ export default function SuperadminPanel({ darkMode, onEntrarEscuela }: Superadmi
 
     setSaving(true);
     try {
+      const logoUrl = await subirLogo();
       const url = "/api/escuelas";
       const method = editMode ? "PUT" : "POST";
-      const body: any = { ...form };
+      const body: any = { ...form, logo: logoUrl };
       if (editMode) {
         delete body.adminEmail;
         delete body.adminPassword;
@@ -449,6 +505,47 @@ export default function SuperadminPanel({ darkMode, onEntrarEscuela }: Superadmi
                     onChange={(e) => setForm({ ...form, colorPrimario: e.target.value })}
                     className="flex-1 input-focus-glow"
                   />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs">Logo de la escuela</Label>
+              <div className="flex items-start gap-3">
+                <div className="shrink-0">
+                  {logoPreview ? (
+                    <img
+                      src={logoPreview}
+                      alt="Vista previa del logo"
+                      className="w-16 h-16 rounded-lg object-cover border border-border"
+                    />
+                  ) : form.logo ? (
+                    <img
+                      src={form.logo}
+                      alt="Logo actual"
+                      className="w-16 h-16 rounded-lg object-cover border border-border"
+                    />
+                  ) : (
+                    <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center text-muted-foreground text-xs text-center px-1">
+                      Sin logo
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 space-y-2">
+                  <Input
+                    type="file"
+                    accept="image/png,image/jpeg,image/jpg"
+                    onChange={handleLogoChange}
+                    className="text-sm file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+                  />
+                  <p className="text-[10px] text-muted-foreground">
+                    Formatos: PNG o JPG. Tamaño máximo: 2MB. Se recomienda una imagen cuadrada de al menos 512x512 px para mejor calidad.
+                  </p>
+                  {logoUploading && (
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <Loader2 className="h-3 w-3 animate-spin" /> Subiendo logo…
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
