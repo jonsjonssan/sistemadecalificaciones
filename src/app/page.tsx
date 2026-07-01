@@ -47,6 +47,7 @@ import { TrimestreDatesConfig } from "@/components/TrimestreDatesConfig";
 import ReporteAsistenciaMultiGrado from "@/components/ReporteAsistenciaMultiGrado";
 import { DescargaCompletaButton } from "@/components/DescargaCompletaButton";
 import { DescargaBoletasPorCiclo } from "@/components/DescargaBoletasPorCiclo";
+import { ImprimirEstudiantesLote } from "@/components/ImprimirEstudiantesLote";
 import InformeTecnicoDialog from "@/components/InformeTecnicoDialog";
 import AvanceDocentes from "@/components/AvanceDocentes";
 import SuperadminPanel from "@/components/SuperadminPanel";
@@ -504,9 +505,18 @@ export default function Home() {
                     <SelectTrigger className={`w-full md:w-[250px] h-10 sm:h-12 text-xs sm:text-sm ${darkMode ? 'bg-card border-white/30 text-white' : ''}`}><SelectValue /></SelectTrigger>
                     <SelectContent>{d.gradosFiltrados.map((g: any) => <SelectItem key={g.id} value={g.id} className="text-sm">{g.numero}° "{g.seccion}" ({g._count?.estudiantes || 0})</SelectItem>)}</SelectContent>
                   </Select>
-                  <Button size="sm" variant="outline" onClick={d.imprimirListadoEstudiantesPDF} className={`h-10 text-xs sm:text-sm ${darkMode ? 'border-white/30 text-white hover-gradient-strong' : ''}`}>
-                    <Printer className="h-4 w-4 mr-1" />Imprimir PDF
-                  </Button>
+                  <div className="flex gap-2 w-full sm:w-auto">
+                    <Button size="sm" variant="outline" onClick={d.imprimirListadoEstudiantesPDF} className={`h-10 text-xs sm:text-sm ${darkMode ? 'border-white/30 text-white hover-gradient-strong' : ''}`}>
+                      <Printer className="h-4 w-4 mr-1" />Imprimir PDF
+                    </Button>
+                    {isAdmin(usuario.rol) && (
+                      <ImprimirEstudiantesLote
+                        grados={d.gradosFiltrados}
+                        darkMode={darkMode}
+                        paperSize={d.paperSize}
+                      />
+                    )}
+                  </div>
                 </div>
                 <div className={`rounded border ${darkMode ? 'border-slate-700' : ''}`}>
                   <EstudiantesTable
