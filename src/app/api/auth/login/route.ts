@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/neon";
-import { db } from "@/lib/db";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import { createAuditLog } from "@/lib/audit";

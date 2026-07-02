@@ -1,6 +1,6 @@
 "use client";
 
-import type { Usuario, UsuarioSesion, Estudiante, Asignatura, AsignaturaConGrado, Calificacion, Grado, ConfigActividad, ConfigActividadPartial, ConfiguracionSistema } from "@/types";
+import type { Usuario, UsuarioSesion, Estudiante, AsignaturaConGrado, Calificacion, Grado, ConfigActividad, ConfiguracionSistema } from "@/types";
 
 interface ApiResponse<T> {
   data?: T;

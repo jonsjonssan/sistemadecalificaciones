@@ -6,7 +6,7 @@ import { Users, ChevronDown, ChevronUp, Wifi, WifiOff, Pencil, ClipboardList, Ey
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useRealtimePresence, OnlineUser, ActionEvent } from "@/hooks/useRealtimePresence";
+import { useRealtimePresence, ActionEvent } from "@/hooks/useRealtimePresence";
 
 interface PresenceIndicatorProps {
   userId: string;

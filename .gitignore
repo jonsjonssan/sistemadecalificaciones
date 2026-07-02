@@ -73,5 +73,19 @@ download/
 uploads/
 downloads/
 
+# Accidental scratch files
+/=
+/.zscripts/*.log
+/.zscripts/*.pid
+/.zscripts/*.out.log
+/query-*.js
+/query-*.json
+/query-*.txt
+/verify_grades.js
+
 # Test coverage
 /coverage
+
+# Playwright artifacts
+/playwright-report/
+/test-results/

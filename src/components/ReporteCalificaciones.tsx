@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useCallback, useEffect, memo } from "react";
+import { useState, useMemo, useCallback, memo } from "react";
 import { Grado, Estudiante, Asignatura } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid, Cell, LabelList } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer, CartesianGrid } from "recharts";
 import { FileText, Download, AlertTriangle, CheckCircle2, HelpCircle, X, Check } from "lucide-react";
 
 type CalificacionRow = {
@@ -75,7 +75,7 @@ interface ReporteCalificacionesProps {
   umbralAprobado?: number;
 }
 
-const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, darkMode, todasAsignaturas, umbralCondicionado = 4.5, umbralAprobado = 6.5 }: ReporteCalificacionesProps) {
+const ReporteCalificaciones = memo(function ReporteCalificaciones({ grados, darkMode, umbralCondicionado = 4.5, umbralAprobado = 6.5 }: ReporteCalificacionesProps) {
   const [gradoId, setGradoId] = useState("");
   const [trimestre, setTrimestre] = useState("1");
   const [estudiantes, setEstudiantes] = useState<Estudiante[]>([]);

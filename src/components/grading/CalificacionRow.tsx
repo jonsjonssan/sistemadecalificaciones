@@ -3,9 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Estudiante, Calificacion, ConfigActividadPartial } from "@/types";
 import { calcularPromedio, calcularPromedioFinal, parseNotas, getEstadoCompletitud } from "@/utils/gradeCalculations";
-import { RefreshCw, History, AlertTriangle, Check, AlertCircle, Trash2 } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { HistorialCalificacionPopup } from "./HistorialCalificacionPopup";
+import { RefreshCw, Check, AlertCircle, Trash2 } from "lucide-react";
 
 interface CalificacionRowProps {
   estudiante: Estudiante;
@@ -76,7 +74,7 @@ function NotaInput({ value, onChange, darkMode, hasError, onBlur, onNavigate, in
     }
   };
 
-  const handleTouchStart = (e: React.TouchEvent) => {
+  const handleTouchStart = (_e: React.TouchEvent) => {
     cancelLongPress();
     longPressTimerRef.current = setTimeout(() => {
       longPressTimerRef.current = null;
@@ -271,7 +269,6 @@ export const CalificacionRow = React.memo(function CalificacionRow({
   onBorrar,
   promedioDecimal = false,
   rowIndex = 0,
-  totalRows = 0,
   onNavigate,
   inputRefs,
   onShowHistory,
@@ -574,7 +571,7 @@ useEffect(() => {
       return next;
     });
   }, []);
-  const blurExamen = useCallback((v: string | number | null) => {
+  const blurExamen = useCallback((_v: string | number | null) => {
     setExamenErrors(new Set());
   }, []);
   const blurRecup = useCallback((v: string | number | null) => {

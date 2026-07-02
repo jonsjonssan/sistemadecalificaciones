@@ -34,7 +34,6 @@ interface GradoEscala {
 
 interface EscalaDesempenoProps {
   gradoId?: string;
-  esAdmin?: boolean;
 }
 
 const COLORS = {
@@ -43,7 +42,7 @@ const COLORS = {
   aprobado: "var(--color-primary)",
 };
 
-export function EscalaDesempeno({ gradoId, esAdmin = false }: EscalaDesempenoProps) {
+export function EscalaDesempeno({ gradoId }: EscalaDesempenoProps) {
   const { resolvedTheme } = useTheme();
   const darkMode = resolvedTheme === "dark";
   const [data, setData] = useState<GradoEscala[]>([]);

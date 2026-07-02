@@ -4,11 +4,10 @@ import { useState, useEffect } from "react";
 import { Printer, FileText, ChevronUp, ChevronDown, Download } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { escapeHtml } from "@/lib/utils/index";
-import { getBoletaCSS, getBoletaHeaderHTML, getBoletaHeaderHTMLShort } from "@/lib/boleta-template";
+import { getBoletaCSS } from "@/lib/boleta-template";
 import type { Estudiante, Asignatura, Grado, Calificacion } from "@/types";
 export default function BoletaList({ estudiantes, calificaciones, materias, grado, trimestre, expandedBoleta, setExpandedBoleta, darkMode, configuracion, paperSize, incluirAsistencia = true, mostrarRecuperacion = true, porcentajes, incluirAsistenciaManual = false, asistenciaManualHabilitado = false, mostrarAsistencia = true, asistenciaManualData = {}, onAsistenciaManualChange }: { estudiantes: Estudiante[]; calificaciones: Calificacion[]; materias: Asignatura[]; grado?: Grado; trimestre: number; expandedBoleta: string | null; setExpandedBoleta: (id: string | null) => void; darkMode: boolean; configuracion?: { nombreDirectora?: string; umbralCondicionado?: number; umbralAprobado?: number }; paperSize?: "letter" | "a4"; incluirAsistencia?: boolean; mostrarRecuperacion?: boolean; porcentajes?: { ac: number; ai: number; ex: number }; incluirAsistenciaManual?: boolean; asistenciaManualHabilitado?: boolean; mostrarAsistencia?: boolean; asistenciaManualData?: { [key: string]: { asistencias: string; inasistencias: string; tardanzas: string; justificadas: string; totalDias: string; observaciones: string } }; onAsistenciaManualChange?: (estudianteId: string, field: string, value: string) => void; }) {
   const [resumenAsistencia, setResumenAsistencia] = useState<any[]>([]);
@@ -554,7 +553,6 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     if (!est) return;
 
     const año = grado?.año || new Date().getFullYear();
-    const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
     const asistAnual = getAsistenciaAnual(id);
 
     // Obtener nombre del docente orientador
@@ -695,7 +693,6 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
 
     let allBoletasHtml = '';
     const año = grado?.año || new Date().getFullYear();
-    const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
 
     // Obtener nombre del docente orientador
     const docenteOrientador = escapeHtml(grado?.docente?.nombre || '_______________________________');
@@ -782,7 +779,6 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
     if (!est) return;
 
     const año = grado?.año || new Date().getFullYear();
-    const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
     const asistAnual = getAsistenciaAnual(id);
 
     const docenteOrientador = escapeHtml(grado?.docente?.nombre || '_______________________________');
@@ -925,7 +921,6 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
 
     let allBoletasHtml = '';
     const año = grado?.año || new Date().getFullYear();
-    const fechaImpresion = new Date().toLocaleDateString('es-SV', { day: '2-digit', month: 'long', year: 'numeric' });
 
     const docenteOrientador = escapeHtml(grado?.docente?.nombre || '_______________________________');
     const nombreDirectora = escapeHtml(configuracion?.nombreDirectora || '_______________________________');
@@ -1188,7 +1183,7 @@ export default function BoletaList({ estudiantes, calificaciones, materias, grad
           </Button>
         </div>
       </div>
-      {(estudiantes || []).map((est, idx) => {
+      {(estudiantes || []).map((est) => {
         const califs = getCalifs(est.id), prom = calcProm(califs), open = expandedBoleta === est.id;
         const promColor = prom !== null && prom >= ua
           ? 'bg-status-success-muted text-status-success border-status-success/20'

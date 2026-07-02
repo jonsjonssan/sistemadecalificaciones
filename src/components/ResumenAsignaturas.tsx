@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { ChevronDown, ChevronUp, Eye } from "lucide-react";
 
 type Estudiante = { id: string; numero: number; nombre: string };

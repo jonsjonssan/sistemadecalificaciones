@@ -186,7 +186,7 @@ function calcularAsignaturasCriticas(calificaciones: any[]) {
 
   const criticas: any[] = [];
 
-  for (const [key, califs] of porMateria) {
+  for (const [_key, califs] of porMateria) {
     const materia = (califs as any[])[0].materia;
     const trimestre = (califs as any[])[0].trimestre;
     const grado = (califs as any[])[0].estudiante.grado;
@@ -216,7 +216,7 @@ function calcularAsignaturasCriticas(calificaciones: any[]) {
   return criticas.sort((a: any, b: any) => a.promedioMateria - b.promedioMateria);
 }
 
-function calcularPrediccionReprobacion(calificaciones: any[], configs: any[]) {
+function calcularPrediccionReprobacion(calificaciones: any[], _configs: any[]) {
   const porEstudiante = new Map<string, any[]>();
   calificaciones.forEach((cal: any) => {
     if (!porEstudiante.has(cal.estudianteId)) {

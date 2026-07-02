@@ -16,7 +16,6 @@ interface MobileTabBarProps {
   items: NavItem[];
   activeTab: string;
   onTabChange: (value: string) => void;
-  darkMode: boolean;
   isAdmin?: boolean;
 }
 
@@ -32,7 +31,7 @@ const tabIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   admin: Settings,
 };
 
-export function MobileTabBar({ items, activeTab, onTabChange, darkMode, isAdmin }: MobileTabBarProps) {
+export function MobileTabBar({ items, activeTab, onTabChange, isAdmin }: MobileTabBarProps) {
   const visibleItems = isAdmin ? items : items.filter(i => i.value !== "admin" && i.value !== "avance");
 
   return (
@@ -74,7 +73,6 @@ export function MobileTabBar({ items, activeTab, onTabChange, darkMode, isAdmin 
             items={visibleItems.slice(5)}
             activeTab={activeTab}
             onTabChange={onTabChange}
-            darkMode={darkMode}
           />
         )}
       </div>
@@ -86,12 +84,10 @@ function MobileMoreMenu({
   items,
   activeTab,
   onTabChange,
-  darkMode,
 }: {
   items: NavItem[];
   activeTab: string;
   onTabChange: (value: string) => void;
-  darkMode: boolean;
 }) {
   const [open, setOpen] = useState(false);
 

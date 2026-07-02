@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Building2, Plus, Edit2, Trash2, Users, GraduationCap, School, AlertCircle, CheckCircle2, Loader2, LogIn, ImageIcon } from "lucide-react";
+import { Building2, Plus, Edit2, Trash2, Users, GraduationCap, School, AlertCircle, CheckCircle2, Loader2, LogIn } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Escuela {
@@ -53,7 +53,7 @@ function EscuelaLogo({ nombre, logo, colorPrimario }: { nombre: string; logo: st
   );
 }
 
-export default function SuperadminPanel({ darkMode, onEntrarEscuela }: SuperadminPanelProps) {
+export default function SuperadminPanel({ onEntrarEscuela }: SuperadminPanelProps) {
   const { toast } = useToast();
   const [escuelas, setEscuelas] = useState<Escuela[]>([]);
   const [loading, setLoading] = useState(true);

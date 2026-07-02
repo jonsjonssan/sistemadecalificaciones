@@ -1,13 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef, useMemo, useDeferredValue, startTransition } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo, useDeferredValue } from "react";
 import { useTheme } from "next-themes";
 import { useToast } from "@/hooks/use-toast";
-import { useLocalStorage } from "@/hooks/useLocalStorage";
-import { isAdmin, canDeleteUsers, getDocentesDelGrado } from "@/utils/roleHelpers";
+import { isAdmin, canDeleteUsers } from "@/utils/roleHelpers";
 import { isSuperAdmin } from "@/utils/roleHelpers";
-import { calcularPromedio, calcularPromedioFinal, parseNotas, contarEstados } from "@/utils/gradeCalculations";
-import { useDashboardStore } from "@/lib/stores/dashboard-store";
+import { parseNotas, contarEstados } from "@/utils/gradeCalculations";
 import type { Usuario, UsuarioSesion, Estudiante, Asignatura, AsignaturaConGrado, Calificacion, Grado, ConfigActividad, ConfigActividadPartial, ConfiguracionSistema } from "@/types";
 
 interface UserState {
@@ -38,8 +36,6 @@ export function useDashboardData() {
   const { toast } = useToast();
   const { theme, setTheme, resolvedTheme } = useTheme();
   const darkMode = resolvedTheme === "dark";
-
-  const store = useDashboardStore();
 
   // Auth state (local for login flow)
   const [usuario, setUsuario] = useState<UsuarioSesion | null>(null);
@@ -190,7 +186,6 @@ export function useDashboardData() {
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
-  const [loginSessions, setLoginSessions] = useState<any[]>([]);
   const [auditLoading, setAuditLoading] = useState(false);
   const [auditFilter, setAuditFilter] = useState({ accion: "", usuarioId: "", entidad: "", fechaDesde: "", fechaHasta: "" });
   const [auditPage, setAuditPage] = useState(1);

@@ -5,7 +5,7 @@ import { verifySession } from "@/lib/session";
 import { isAdmin } from "@/utils/roleHelpers";
 
 // API para agregar Inglés y corregir datos
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const cookieStore = await cookies();
     const session = cookieStore.get("session");

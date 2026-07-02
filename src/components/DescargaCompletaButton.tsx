@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { FileText, FileSpreadsheet, FileDown, Download, Loader2, Lock, ChevronDown, AlertCircle } from "lucide-react";
+import { FileText, FileSpreadsheet, Download, Loader2, Lock, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -428,8 +428,6 @@ async function generarPDF(data: ApiResponse) {
 
   for (const grado of gradosOrdenados) {
     const califsGrado = (data.datos || []).filter(c => c.gradoId === grado.id);
-    const estudiantesUnicos = new Set(califsGrado.map(c => c.estudianteId));
-    const totalEst = estudiantesUnicos.size;
     const aprobados = califsGrado.filter(c => c.promedioFinal !== null && c.promedioFinal >= 6.5).length;
     const condicionados = califsGrado.filter(c => c.promedioFinal !== null && c.promedioFinal >= 4.5 && c.promedioFinal < 6.5).length;
     const reprobados = califsGrado.filter(c => c.promedioFinal !== null && c.promedioFinal < 4.5).length;
@@ -535,7 +533,6 @@ async function generarExcel(data: ApiResponse) {
   const wb = XLSX.utils.book_new();
 
   for (const grado of gradosOrdenados) {
-    const gradoLabel = `Grado ${grado.numero}° ${grado.seccion}`;
     const sheetName = `${grado.numero}°${grado.seccion}`.substring(0, 31);
     const materias = grado.materias || [];
     const estudiantes = grado.estudiantes || [];

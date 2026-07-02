@@ -1,12 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useTheme } from "next-themes";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { FileText, Printer, Download, Loader2, AlertCircle } from "lucide-react";
+import { FileText, Loader2 } from "lucide-react";
 import { escapeHtml } from "@/lib/utils/index";
 
 interface InformeTecnicoProps {
@@ -35,7 +34,7 @@ export default function InformeTecnicoDialog({
   const [trimestre, setTrimestre] = useState("1");
   const [generando, setGenerando] = useState(false);
   const [stats, setStats] = useState<any[]>([]);
-  const [statsLoading, setStatsLoading] = useState(false);
+  const [, setStatsLoading] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -98,7 +97,6 @@ export default function InformeTecnicoDialog({
     setGenerando(true);
 
     // Recopilar datos del trimestre seleccionado
-    const trim = parseInt(trimestre);
     const totalEstudiantes = grados.reduce((sum, g) => sum + (g._count?.estudiantes || 0), 0);
     const totalGrados = grados.length;
 

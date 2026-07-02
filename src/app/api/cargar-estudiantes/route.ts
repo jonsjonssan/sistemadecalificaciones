@@ -93,7 +93,7 @@ const estudiantesPorGrado: Record<number, string[]> = {
   ],
 };
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const cookieStore = await cookies();
     const session = cookieStore.get("session");

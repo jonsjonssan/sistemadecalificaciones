@@ -3,14 +3,12 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
-  AlertTriangle, TrendingDown, TrendingUp, Users, CheckCircle2, Clock,
+  AlertTriangle, TrendingUp, Users, CheckCircle2,
   CalendarX, BookOpen, Target, Lightbulb, ChevronDown, ChevronUp,
   ArrowDownCircle, ArrowUpCircle, MinusCircle, BarChart3
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface PredictiveAlertsProps {
   gradoId?: string;
@@ -19,7 +17,7 @@ interface PredictiveAlertsProps {
   umbralAprobado?: number;
 }
 
-export default function PredictiveAlerts({ gradoId, trimestre, darkMode, umbralAprobado }: PredictiveAlertsProps) {
+export default function PredictiveAlerts({ gradoId, darkMode, umbralAprobado }: PredictiveAlertsProps) {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>("tendencias");

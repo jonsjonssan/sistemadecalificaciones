@@ -3,12 +3,11 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CalendarDays, Download, AlertTriangle, CheckCircle2, Clock, XCircle } from "lucide-react";
+import { CalendarDays, Download, CheckCircle2, Clock, XCircle } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts";
 import { escapeHtml } from "@/lib/utils/index";
 
@@ -120,7 +119,6 @@ export default function ReporteAsistenciaMultiGrado({ grados, darkMode: darkMode
 
   const exportPDF = () => {
     if (!data) return;
-    const year = summaryRange === "month" ? selectedMonth.split('-')[0] : selectedYear;
     const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
     const periodo = summaryRange === "month"
       ? `${monthNames[parseInt(selectedMonth.split('-')[1]) - 1]} ${selectedMonth.split('-')[0]}`

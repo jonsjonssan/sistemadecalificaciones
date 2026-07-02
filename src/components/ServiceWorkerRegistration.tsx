@@ -7,7 +7,6 @@ import { useEffect, useState } from "react";
  * Se monta una sola vez en la app
  */
 export function ServiceWorkerRegistration() {
-  const [isRegistered, setIsRegistered] = useState(false);
   const [updateAvailable, setUpdateAvailable] = useState(false);
 
   useEffect(() => {
@@ -23,7 +22,6 @@ export function ServiceWorkerRegistration() {
         });
 
         console.log("[App] Service Worker registered:", registration.scope);
-        setIsRegistered(true);
 
         // Escuchar actualizaciones
         registration.addEventListener("updatefound", () => {

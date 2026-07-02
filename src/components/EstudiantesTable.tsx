@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -82,8 +82,6 @@ export function EstudiantesTable({ estudiantes, darkMode, isAdmin, loading = fal
       onReorder(nuevos);
     }
   };
-
-  const colSpanBase = isAdmin ? 5 : 3;
 
   if (!isAdmin) {
     return (

@@ -457,8 +457,6 @@ export async function POST(request: NextRequest) {
     // Si se enviaron actividadesExamen, calcular examenTrimestral como promedio
     const notasValidasEx = exNotas.filter((n): n is number => n !== null && n !== undefined);
     const calificacionExFromParts = notasValidasEx.length > 0 ? notasValidasEx.reduce((a, b) => a + b, 0) / notasValidasEx.length : null;
-    // examenTrimestral explícito gana sobre el calculado de partes
-    const examenEfectivoFromParts = examenTrimestral !== undefined ? examenTrimestral : calificacionExFromParts;
 
     const config = await db.configActividad.findFirst({
       where: { materiaId, trimestre: parseInt(String(trimestre)) },

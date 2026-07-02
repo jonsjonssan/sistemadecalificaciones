@@ -7,7 +7,7 @@ import { generateSecurePassword } from "@/lib/security";
 import { isAdmin } from "@/utils/roleHelpers";
 
 // API para crear usuarios docentes con sus asignaciones
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const cookieStore = await cookies();
     const session = cookieStore.get("session");

@@ -20,24 +20,10 @@ async function getUsuarioSession() {
 }
 
 /**
- * Verifica si el usuario tiene rol de administrador (cualquier variante)
- */
-function esAdminRol(rol: string): boolean {
-  return isAdmin(rol);
-}
-
-/**
  * Verifica si el usuario puede eliminar otros usuarios
  * Cualquier administrador puede eliminar usuarios
  */
 function canDeleteUsers(session: any): boolean {
-  return isAdmin(session.rol);
-}
-
-/**
- * Verifica si el usuario puede ver todas las calificaciones
- */
-function canViewAll(session: any): boolean {
   return isAdmin(session.rol);
 }
 

@@ -4,7 +4,7 @@ import { useState, memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Users, Book, ChevronDown, ChevronRight } from "lucide-react";
-import { CICLOS, getCicloDark, CicloAsignaturas } from "@/lib/ciclos";
+import { CICLOS, getCicloDark } from "@/lib/ciclos";
 
 function calcularPromedioGradoAjustado(
   stat: any,

@@ -38,7 +38,7 @@ class OfflineDatabase {
     this.initPromise = (async () => {
       try {
         this.db = await openDB(DB_NAME, DB_VERSION, {
-          upgrade(db, oldVersion, newVersion) {
+          upgrade(db) {
             // Store para caché de datos
             if (!db.objectStoreNames.contains("cache")) {
               db.createObjectStore("cache", { keyPath: "key" });

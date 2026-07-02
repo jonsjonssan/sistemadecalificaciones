@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { Calculator, HelpCircle } from "lucide-react";
 import {
   Sheet,

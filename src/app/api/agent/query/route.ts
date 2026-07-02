@@ -24,13 +24,6 @@ function extraerNumero(texto: string): number | null {
   return match ? parseInt(match[0]) : null;
 }
 
-async function buscarGradoPorNumero(numero: number) {
-  return db.grado.findFirst({
-    where: { numero },
-    select: { id: true, numero: true, seccion: true },
-  });
-}
-
 async function contarEstudiantesEnRiesgo(gradoId?: string): Promise<{ total: number; alto: number; medio: number }> {
   const where: any = { resuelto: false };
   if (gradoId) where.gradoId = gradoId;

@@ -1,24 +1,22 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo, startTransition } from "react";
+import { startTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CalificacionRow } from "@/components/grading/CalificacionRow";
 import CuadroTrimestres from "@/components/CuadroTrimestres";
 import ResumenAsignaturas from "@/components/ResumenAsignaturas";
 import {
   School, Save, RefreshCw, Settings, Hash, Search, FileText, Download,
-  ChevronDown, ChevronUp, ClipboardList, AlertTriangle, GraduationCap,
-  BookOpen, Filter, BarChart3, CheckCircle, Clock, XCircle, Trash2
+  ChevronDown, ClipboardList, AlertTriangle, GraduationCap,
+  BookOpen, BarChart3, CheckCircle, Clock, XCircle, Trash2
 } from "lucide-react";
 import { Calificacion } from "@/types";
 import { isAdmin } from "@/utils/roleHelpers";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 interface Props {
   d: any;
@@ -27,8 +25,6 @@ interface Props {
 }
 
 export default function CalificacionesTab({ d, darkMode, usuario }: Props) {
-  const [showFilters, setShowFilters] = useState(true);
-
   if (!d.gradosFiltrados || d.gradosFiltrados.length === 0) {
     return (
       <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>

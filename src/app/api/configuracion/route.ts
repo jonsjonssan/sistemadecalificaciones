@@ -144,7 +144,7 @@ export async function PUT(request: NextRequest) {
     const valUsarCondicionado = typeof usarIntervaloCondicionado === 'boolean' ? usarIntervaloCondicionado : (config[0]?.usarIntervaloCondicionado ?? true);
     const valUsarAprobado = typeof usarIntervaloAprobado === 'boolean' ? usarIntervaloAprobado : (config[0]?.usarIntervaloAprobado ?? true);
 
-    const parseDate = (val: any, fallback: string | null): Date | null => {
+    const parseDate = (val: any, _fallback: string | null): Date | null => {
       if (val === null || val === undefined || val === '') return null;
       const d = new Date(val);
       return isNaN(d.getTime()) ? null : d;

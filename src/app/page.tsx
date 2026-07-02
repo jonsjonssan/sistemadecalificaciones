@@ -1,9 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo, startTransition } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import dynamic from "next/dynamic";
-import { SuspenseTab } from "@/components/SuspenseWrapper";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,11 +15,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import {
   LogOut, Users, User, ClipboardList, FileText, Plus, RefreshCw,
-  School, Save, Printer, ChevronDown, ChevronUp, Settings, Upload,
-  Download, Trash2, ListPlus, UserPlus, Key, Calendar, LayoutDashboard, CalendarDays, Lightbulb, Hash,
-  Search, ArrowUpDown, Globe, BarChart3, AlertTriangle, GraduationCap
+  School, Save, Printer, Settings, Upload,
+  Download, Trash2, ListPlus, UserPlus, Key, Calendar, LayoutDashboard, CalendarDays, Lightbulb,
+  Globe, BarChart3, GraduationCap
 } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
 import Dashboard from "@/components/Dashboard";
 import AsistenciaBoard from "@/components/AsistenciaBoard";
 import CalificacionesTab from "@/components/CalificacionesTab";
@@ -29,18 +26,13 @@ import { EstudiantesTable } from "@/components/EstudiantesTable";
 import GettingStartedWizard from "@/components/GettingStartedWizard";
 import PredictiveAlerts from "@/components/PredictiveAlerts";
 import { ContextualHelp } from "@/components/ContextualHelp";
-import { CalificacionRow } from "@/components/grading/CalificacionRow";
 import { HistorialCalificacionPopup } from "@/components/grading/HistorialCalificacionPopup";
 import LoginView from "@/components/LoginView";
-import { Usuario, UsuarioSesion, AsignaturaConGrado, ConfigActividadPartial, Calificacion, ConfiguracionSistema } from "@/types";
-import { isAdmin, getDocentesDelGrado, isSuperAdmin } from "@/utils/roleHelpers";
-import { calcularPromedio, calcularPromedioFinal, parseNotas, contarEstados } from "@/utils/gradeCalculations";
-import { escapeHtml } from "@/lib/utils/index";
+import { UsuarioSesion, ConfigActividadPartial } from "@/types";
+import { isAdmin, isSuperAdmin } from "@/utils/roleHelpers";
 import PresenceIndicator from "@/components/PresenceIndicator";
 import BoletaList from "@/components/BoletaList";
 import ReporteCalificaciones from "@/components/ReporteCalificaciones";
-import CuadroTrimestres from "@/components/CuadroTrimestres";
-import ResumenAsignaturas from "@/components/ResumenAsignaturas";
 import EnlacesInstitucionales from "@/components/EnlacesInstitucionales";
 import { SystemThresholdsCard } from "@/components/SystemThresholdsCard";
 import { TrimestreDatesConfig } from "@/components/TrimestreDatesConfig";
@@ -96,7 +88,7 @@ export default function Home() {
   const { toast } = useToast();
 
   const {
-    loading, dataLoading, usuario, initialized, loginError, loginLoading, dataReady,
+    loading, dataLoading, usuario, initialized, loginError, loginLoading,
     darkMode, handleLogout, perfilDialogOpen, setPerfilDialogOpen,
     passwordDialogOpen, setPasswordDialogOpen, passwordForm, setPasswordForm, passwordLoading, handleChangePassword,
   } = d;
@@ -1242,7 +1234,6 @@ export default function Home() {
         items={d.navItems}
         activeTab={d.activeTab}
         onTabChange={d.setActiveTab}
-        darkMode={darkMode}
         isAdmin={isAdmin(usuario.rol)}
       />
     </div>

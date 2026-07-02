@@ -2,23 +2,20 @@
 
 import { useState, useEffect, useRef, useMemo, memo } from "react";
 import { useTheme } from "next-themes";
-import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { type LucideIcon, Users, BookOpen, School, GraduationCap, Book, Target, TrendingUp, ChevronDown, ChevronRight, Trophy, AlertTriangle, ClipboardList, CalendarDays } from "lucide-react";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend, Cell } from "recharts";
+import { type LucideIcon, Users, BookOpen, School, GraduationCap, Target, TrendingUp, Trophy, AlertTriangle, ClipboardList, CalendarDays } from "lucide-react";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell } from "recharts";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { StatCard } from "@/components/ui/stat-card";
 import { GradeChart } from "@/components/ui/grade-chart";
 import { MathInfoButton, mathExplanations } from "./MathInfoButton";
 import { CiclosSection } from "./CiclosSection";
 import { PromedioCircular } from "./PromedioCircular";
 import { EscalaDesempeno } from "./EscalaDesempeno";
 import { CheckCircle2, AlertCircle, MinusCircle } from "lucide-react";
-import { CICLOS, getCicloDark, CicloAsignaturas } from "@/lib/ciclos";
+import { CICLOS } from "@/lib/ciclos";
 import { AgentAlertsPanel } from "./AgentAlertsPanel";
 
 interface UsuarioSesion { id: string; email: string; nombre: string; rol: string; asignaturasAsignadas?: Array<{ gradoId: string }>; }
@@ -118,12 +115,11 @@ function calcularPromedioGradoAjustado(
   return Math.round(promOriginal * (promSeleccionadas / promTodas) * 100) / 100;
 }
 
-function StatBadge({ icon: Icon, label, value, note, darkMode, action }: {
+function StatBadge({ icon: Icon, label, value, note, action }: {
   icon: LucideIcon;
   label: string;
   value: number | string;
   note: string;
-  darkMode: boolean;
   action?: React.ReactNode;
 }) {
   return (
@@ -167,7 +163,7 @@ function QuickActionRow({ icon: Icon, label, sub, onClick }: {
   );
 }
 
-const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, totalAsignaturas, asignaturasAsignadas, totalDocentes, configuracion, onNavigate }: DashboardProps) {
+const Dashboard = memo(function Dashboard({ usuario, grados, totalAsignaturas, asignaturasAsignadas, totalDocentes, configuracion, onNavigate }: DashboardProps) {
   const { resolvedTheme } = useTheme();
   const darkMode = resolvedTheme === "dark";
   const [stats, setStats] = useState<GradeStats[]>([]);
@@ -346,10 +342,6 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
     }
   }, [todasAsignaturasList]);
 
-  const statsConAC = stats.filter(s => s.promedios?.cotidiana != null);
-  const statsConAI = stats.filter(s => s.promedios?.integradora != null);
-  const statsConEx = stats.filter(s => s.promedios?.examen != null);
-  
   // Calcular datos por trimestre para el gráfico de categorías
   function calcularDatosCategoria(trimestreKey?: 1 | 2 | 3): Array<{ name: string; value: number; target: number }> {
     const data: Array<{ name: string; value: number; target: number }> = [];
@@ -416,10 +408,10 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
             </>
           ) : (
             <>
-              <StatBadge icon={Users} label="Estudiantes" value={totalEstudiantesVisibles} note="Registrados" darkMode={darkMode} action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.totalEstudiantes} />} />
-              <StatBadge icon={School} label="Grados" value={gradosVisibles.length} note="Secciones" darkMode={darkMode} action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.gradosActivos} />} />
-              <StatBadge icon={BookOpen} label="Asignaturas" value={totalAsignaturasVisibles} note="Impartidas" darkMode={darkMode} action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.asignaturas} />} />
-              <StatBadge icon={GraduationCap} label="Docentes" value={totalDocentes} note="Activos" darkMode={darkMode} action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.docentes} />} />
+              <StatBadge icon={Users} label="Estudiantes" value={totalEstudiantesVisibles} note="Registrados" action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.totalEstudiantes} />} />
+              <StatBadge icon={School} label="Grados" value={gradosVisibles.length} note="Secciones" action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.gradosActivos} />} />
+              <StatBadge icon={BookOpen} label="Asignaturas" value={totalAsignaturasVisibles} note="Impartidas" action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.asignaturas} />} />
+              <StatBadge icon={GraduationCap} label="Docentes" value={totalDocentes} note="Activos" action={<MathInfoButton darkMode={darkMode} explanation={mathExplanations.docentes} />} />
             </>
           )}
         </div>
@@ -722,7 +714,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
                         )}
                       </h4>
                       <div className="space-y-1.5">
-                        {effectiveStats.alertas && effectiveStats.alertas.length > 0 ? effectiveStats.alertas.slice(0, 10).map((est, i) => (
+                        {effectiveStats.alertas && effectiveStats.alertas.length > 0 ? effectiveStats.alertas.slice(0, 10).map((est) => (
                           <div key={est.id} className="flex items-center justify-between text-xs gap-2">
                             <span className="truncate text-foreground/80">{est.nombre}</span>
                             <div className="flex items-center gap-1 shrink-0">
@@ -752,7 +744,7 @@ const Dashboard = memo(function Dashboard({ usuario, grados, totalEstudiantes, t
 
           {/* Escala de Desempeño */}
           <div className="animate-fade-slide-up" style={{ animationDelay: '0.18s' }}>
-            <EscalaDesempeno gradoId={esDocente ? gradoAsignado || undefined : undefined} esAdmin={esDirectiva} />
+            <EscalaDesempeno gradoId={esDocente ? gradoAsignado || undefined : undefined} />
           </div>
         </div>
 

@@ -10,16 +10,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar as CalendarIcon, Save, RefreshCw, CheckCircle2, XCircle, Clock, CalendarDays, Download, Trash2, FileCheck, Lock } from "lucide-react";
+import { Save, RefreshCw, CheckCircle2, XCircle, CalendarDays, Download, Trash2, FileCheck, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { escapeHtml } from "@/lib/utils/index";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 
 interface Grado { id: string; numero: number; seccion: string; }
 interface Asignatura { id: string; nombre: string; gradoId: string; }
 interface Estudiante { id: string; numero: number; nombre: string; activo: boolean; }
-interface AsistenciaRecord { id?: string; estudianteId: string; estado: string; }
 interface ResumenAsistencia {
   id: string;
   nombre: string;
@@ -44,7 +41,7 @@ interface AsistenciaBoardProps {
   usuario?: { nombre: string; rol: string };
 }
 
-export default function AsistenciaBoard({ grados, asignaturas, estudiantes, gradoInicial = "", onGradoChange, onPresenceEmit, usuario }: AsistenciaBoardProps) {
+export default function AsistenciaBoard({ grados, estudiantes, gradoInicial = "", onGradoChange, onPresenceEmit, usuario }: AsistenciaBoardProps) {
   const { resolvedTheme } = useTheme();
   const darkMode = resolvedTheme === "dark";
   const { toast } = useToast();
@@ -70,7 +67,6 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
   const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().slice(0, 7));
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
   const [asistenciaDetallada, setAsistenciaDetallada] = useState<Record<string, Record<string, string>>>({});
-  const [dateToDelete, setDateToDelete] = useState<string>("");
   const [deletingDate, setDeletingDate] = useState<string | null>(null);
   const [asistenciaBloqueada, setAsistenciaBloqueada] = useState(false);
   const [bloqueoDialogOpen, setBloqueoDialogOpen] = useState(false);
@@ -218,7 +214,7 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     link.click();
   };
 
-  const downloadPDFMensual = (estudianteId?: string) => {
+  const downloadPDFMensual = (_estudianteId?: string) => {
     if (!gradoId) return;
     const grado = grados.find(g => g.id === gradoId);
     const [year, month] = selectedMonth.split('-');
@@ -663,33 +659,6 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
     }
   };
 
-  const handleDeleteStudentAttendance = async (estudianteId: string) => {
-    const estudiante = estudiantes.find(e => e.id === estudianteId);
-    if (!estudiante || !gradoId || !fecha) return;
-
-    if (!confirm(`¿Eliminar la asistencia de "${estudiante.nombre}" del ${fecha}?`)) return;
-
-    try {
-      const params = new URLSearchParams({
-        fecha: `${fecha}T00:00:00.000Z`,
-        gradoId,
-        estudianteId
-      });
-      const res = await fetch(`/api/asistencia?${params.toString()}`, { method: "DELETE", credentials: "include" });
-      if (res.ok) {
-        const data = await res.json();
-        toast({ title: data.eliminados > 0 ? `Asistencia de ${estudiante.nombre} eliminada` : "No se encontró asistencia para eliminar" });
-        loadAsistencia();
-      } else {
-        const data = await res.json();
-        toast({ title: data.error || "Error al eliminar", variant: "destructive" });
-      }
-    } catch (error) {
-      console.error("Error eliminando asistencia individual:", error);
-      toast({ title: "Error de red al eliminar asistencia", variant: "destructive" });
-    }
-  };
-
   const handleDeleteAttendanceByDate = async (estudianteId: string, fechaAEliminar: string) => {
     const estudiante = estudiantes.find(e => e.id === estudianteId);
     if (!estudiante || !gradoId || !fechaAEliminar) return;
@@ -977,17 +946,6 @@ export default function AsistenciaBoard({ grados, asignaturas, estudiantes, grad
                             return darkMode ? 'bg-amber-900/60 text-amber-200 ring-1 ring-amber-600' : 'bg-amber-100 text-amber-800 ring-1 ring-amber-300';
                           default:
                             return darkMode ? 'bg-slate-700 text-slate-400' : 'bg-slate-100 text-slate-400';
-                        }
-                      };
-
-                      const getEstadoLabel = (e: string) => {
-                        if (!e) return 'Sin marcar';
-                        switch (e) {
-                          case 'presente': return 'Presente';
-                          case 'ausente': return 'Ausente';
-                          case 'justificada': return 'Justificada';
-                          case 'tarde': return 'Tardanza';
-                          default: return e;
                         }
                       };
 

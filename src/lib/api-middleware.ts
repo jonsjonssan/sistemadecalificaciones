@@ -11,7 +11,6 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { db } from "./db";
 import { verifySession } from "./session";
 import { z } from "zod";
 import { sql } from "./neon";
@@ -223,7 +222,7 @@ export function withErrorHandling(handler: (req: NextRequest, ...args: never[]) 
 // ==========================================
 
 export function withAuth(handler: (req: NextRequest, session: SessionUsuario) => Promise<NextResponse>, options?: { requireAdmin?: boolean; requireEscuela?: boolean }) {
-  return withErrorHandling(async (req: NextRequest, ...args: never[]) => {
+  return withErrorHandling(async (req: NextRequest, ..._args: never[]) => {
     const session = await getSession();
     if (!session) {
       return NextResponse.json({ error: "No autorizado. Inicia sesión primero." }, { status: 401 });
